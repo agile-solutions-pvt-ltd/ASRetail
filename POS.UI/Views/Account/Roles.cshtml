@@ -1,0 +1,40 @@
+﻿@model IEnumerable<Microsoft.AspNetCore.Identity.IdentityRole>
+@{
+    ViewData["Title"] = "Users";
+    int count = 1;
+}
+
+<h2>List of Roles</h2>
+@Html.Partial("_ResponseMessagePartial")
+<p>
+    <a asp-action="RoleCreate">Create New</a>
+</p>
+<div class="row">
+    <div class="col-md-12">
+        <table class="table table-hover" id="example1">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    @*<th>Id</th>*@
+                    <th>Name</th>
+                    <th></th>
+                </tr>
+            </thead>
+            @foreach (var role in Model)
+            {
+                <tr>
+                    <td>@count</td>
+                    @*<td>@role.Id</td>*@
+                    <td>@role.Name</td>
+                    <td>
+                        <a asp-action="RoleEdit" asp-route-id="@role.Id">Edit</a>
+                        <a asp-action="RoleDelete" asp-route-id="@role.Id">Delete</a>
+                    </td>
+
+                </tr>
+                count++;
+            }
+        </table>
+    </div>
+</div>
+

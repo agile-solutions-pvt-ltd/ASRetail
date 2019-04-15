@@ -1,0 +1,142 @@
+﻿@model POS.DTO.SalesInvoiceBill
+
+@{
+    ViewData["Title"] = "Billing";
+    var salesInvoice = (POS.DTO.SalesInvoiceTmp)ViewBag.SalesInvoiceTemp;
+}
+
+<style>
+    #error-message{
+        display:none;
+    }
+</style>
+
+<div class="br"></div>
+<div class="alert alert-danger alert-dismissible fade show" id="error-message" role="alert">
+   <span></span>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+<p><br /></p>
+<h4>Total Bill Amount : Rs. <span id="totalNetAmountSpan">@salesInvoice.Total_Net_Amount </span></h4>
+<p></p>
+
+<form asp-action="Billing">
+    <input type="hidden" asp-for="Invoice_Id" value="@salesInvoice.Id" />
+    <input type="hidden" id="TotalNetAmount" value="@salesInvoice.Total_Net_Amount" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+
+
+
+    <div class="row">
+        <div class="col-md-9">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header bg-success">Cash</div>
+                        <div class="card-body">
+                            Cash Amount : <input type="text" class="form-control form-control-sm text-right" name="cashAmount" id="cashAmount" />
+                            <div class="br"></div>
+                            <input type="button" id="AddCashButton" class="btn btn-success pull-right btn-sm" value="Add" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header bg-primary">Debit Card</div>
+                        <div class="card-body">
+                            Card Type : @*<input type="text" class="form-control" name="cardType" id="cardType" />*@
+                            <select id="cardType" name="cardType" class="form-control form-control-sm text-right">
+                                <option value="CREDIT CARD A\C">CREDIT CARD A\C</option>
+                            </select>
+                            <div class="br"></div>
+                            Amount : <input type="text" class="form-control form-control-sm" name="cardAmount" id="cardAmount" />
+                            <div class="br"></div>
+                            <input type="button" id="AddDebitCardButton" class="btn btn-primary btn-sm pull-right" value="Add" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header bg-danger">Credit</div>
+                        <div class="card-body">
+                            Credit Customer : @*<input type="text" class="form-control form-control-sm" name="customer" id="customer" />*@
+                            <select class="form-control form-control-sm" id="customer" asp-items="@ViewBag.Customer">
+                                <option>--Select --</option>
+                            </select>
+                            <div class="br"></div>
+                            Amount : <input type="text" class="form-control form-control-sm text-right" name="creditAmount" id="creditAmount" />
+                            <div class="br"></div>
+                            <input type="button" id="AddCreditButton" class="btn btn-danger btn-sm pull-right" value="Add" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    Total Remaining : <input type="text" id="totalRemainingAmountTextBox" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    Change : <input type="text" id="totalChangeAmountTextBox" class="form-control" />
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-3">
+            <table id="billing-table" class="billing-table table table-sm table-bordered table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Mode</th>
+                        <th>Account</th>
+                        <th>Amount</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+                <tfoot>
+                    <tr>
+                        <th id="total" class="text-right" colspan="3">Total :</th>
+                        <th id="totalTableAmount">0</th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+    </div>
+    <div class="br"></div>
+    <div class="row">
+        <div class="col-md-11">
+            <input type="button" value="Pay Bill" id="SaveButton" class="btn btn-lg pull-right btn-success" />
+
+        </div>
+    </div>
+
+
+    @*<div class="form-group">
+            <label asp-for="Trans_Mode" class="control-label"></label>
+            <input asp-for="Trans_Mode" class="form-control" />
+            <span asp-validation-for="Trans_Mode" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Account" class="control-label"></label>
+            <input asp-for="Account" class="form-control" />
+            <span asp-validation-for="Account" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Amount" class="control-label"></label>
+            <input asp-for="Amount" class="form-control" />
+            <span asp-validation-for="Amount" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Create" class="btn btn-default" />
+        </div>*@
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script src="~/js/Page/SalesInvoiceBill.js"></script>
+}

@@ -1,0 +1,54 @@
+﻿@model IEnumerable<POS.DTO.SalesInvoiceTmp>
+@{
+    int count = 1;
+}
+
+<div class="modal" id="PausedTransactionListModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Transaction in Queue</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table id="pausedTransactionListTable" class="table table-strip table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>
+                                @Html.DisplayName("Trans Mode")
+                            </th>
+
+                            <th>
+                                @Html.DisplayName("Total Amount")
+                            </th>
+
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="invoice-id"> @Html.DisplayFor(modelItem => item.Id)</td>
+                                <td>@count</td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Remarks)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Total_Net_Amount)
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger" onclick="invoice.deleteInvoice(this,'@item.Id')"><span class="fa fa-times"></span></button>
+                                </td>
+                            </tr>
+                            count++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,47 @@
+﻿@model POS.DTO.UserViewModel
+@{
+    ViewData["Title"] = "Update User";
+}
+<h2>@ViewData["Title"].</h2>
+<div class="row">
+    <div class="col-md-8">
+        <form asp-controller="Account" asp-action="UserEdit" method="post" class="form-horizontal" role="form">
+
+            <hr />
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="Password" value="Password" />
+            <input type="hidden" asp-for="ConfirmPassword" value="Password" />
+            <div class="form-group">
+                <label asp-for="UserName" class="col-md-2 control-label"></label>
+                <div class="col-md-10">
+                    <input asp-for="UserName" class="form-control form-control-sm" />
+                    <span asp-validation-for="UserName" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="Email" class="col-md-2 control-label"></label>
+                <div class="col-md-10">
+                    <input asp-for="Email" class="form-control form-control-sm" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+            </div>           
+            <div class="form-group">
+                <label asp-for="Role" class="col-md-2 control-label"></label>
+                <div class="col-md-10">
+                    <select asp-for="Role" class="form-control form-control-sm" asp-items="@ViewBag.Roles"><option>--Select Role--</option></select>
+                    <span asp-validation-for="Role" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-10">
+                    <button type="submit" class="btn btn-default">Update Account</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

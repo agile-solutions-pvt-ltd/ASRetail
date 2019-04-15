@@ -1,0 +1,238 @@
+﻿@model POS.DTO.RoleWisePermissionCommon
+
+@{
+    ViewData["Title"] = "Role Wise Permission";
+}
+<style>
+
+    .card-header {
+        padding: -0.25rem 1.25rem !important;
+    }
+</style>
+<h4>Role Wise Permission</h4>
+<hr />
+<div class="row">
+    <div class="col-md-12">
+        <form asp-action="RoleWisePermission">
+            @Html.Partial("_ResponseMessagePartial")
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label asp-for="roleWiseUserPermission.RoleId" class="control-label"></label>
+                    <select asp-for="roleWiseUserPermission.RoleId" asp-items="@ViewBag.Roles" class="form-control form-control-sm">
+                        <option>--Select Role --</option>
+                    </select>
+                    <span asp-validation-for="roleWiseUserPermission.RoleId" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    @*First half*@
+                    <div class="card card-header label-warning text-center">User Rights</div>
+                    <div class="br"></div>
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <div class="checkbox">
+                                <label>
+                                    <input asp-for="roleWiseUserPermission.Sales_Discount_Flat_Item" /> @Html.DisplayNameFor(model => model.roleWiseUserPermission.Sales_Discount_Flat_Item)
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label asp-for="roleWiseUserPermission.Sales_Discount_Flat_Item_Limit" class="control-label"></label>
+                        </div>
+                        <div class="form-group form-group-sm col-md-2">
+                            <input asp-for="roleWiseUserPermission.Sales_Discount_Flat_Item_Limit" class="form-control form-control-sm" type="number" max="100" min="0" disabled="disabled" />
+                            <span asp-validation-for="roleWiseUserPermission.Sales_Discount_Flat_Item_Limit" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-md-1">
+                            <label asp-for="roleWiseUserPermission.Sales_Discount_Flat_Item_Limit" class="control-label">%</label>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <div class="checkbox">
+                                <label>
+                                    <input asp-for="roleWiseUserPermission.Sales_Discount_Line_Item" /> @Html.DisplayNameFor(model => model.roleWiseUserPermission.Sales_Discount_Line_Item)
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label asp-for="roleWiseUserPermission.Sales_Discount_Line_Item_Limit" class="control-label"></label>
+                        </div>
+                        <div class="form-group form-group-sm col-md-2">
+                            <input asp-for="roleWiseUserPermission.Sales_Discount_Line_Item_Limit" class="form-control form-control-sm" type="number" max="100" min="0" disabled="disabled" />
+                            <span asp-validation-for="roleWiseUserPermission.Sales_Discount_Line_Item_Limit" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-md-1">
+                            <label asp-for="roleWiseUserPermission.Sales_Discount_Line_Item_Limit" class="control-label">%</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="checkbox">
+                            <label>
+                                <input asp-for="roleWiseUserPermission.Sales_Rate_Edit" /> @Html.DisplayNameFor(model => model.roleWiseUserPermission.Sales_Rate_Edit)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    @*Second half*@
+                    <div class="card card-header label-warning text-center">Menu Rights</div>
+                    <div class="br"></div>
+                    <div id="MenuTreeView"></div>
+                </div>
+
+            </div>
+            <div class="br"></div>
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <input type="button" id="Save" value="Save Changes" class="btn btn-block btn-primary" />
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        var roleWiseMenuPermissionData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.roleWiseMenuPermissions));
+        function TreeviewFormat(list) {
+            var map = {}, node, roots = [], i;
+            for (i = 0; i < list.length; i += 1) {
+                list[i].text = list[i].name;
+                list[i].menuId = list[i].id;
+                map[list[i].id] = i; // initialize the map
+
+                list[i].nodes = []; // initialize the children
+            }
+            for (i = 0; i < list.length; i += 1) {
+                node = list[i];
+                if (node.parentId === "0" || node.parentId === null || node.parentId === undefined) {
+                    roots.push(node);
+                } else {
+                    // if you have dangling branches check that map[node.parentId] exists
+                    list[map[node.parentId]].nodes.push(node);
+                }
+            }
+            return roots;
+        }
+        function GetTreeViewMenu() {
+            $.ajax({
+                method: "GET",
+                url: "/Settings/GetMenu",
+                complete: function (result) {
+                    if (result.status === 200) {
+                        var formattedData = TreeviewFormat(result.responseJSON);
+
+                        $('#MenuTreeView').treeview({
+                            data: formattedData,
+
+                            // custom icons
+                            expandIcon: 'fa fa-plus',
+                            collapseIcon: 'fa fa-minus',
+                            emptyIcon: 'glyphicon',
+                            nodeIcon: '',
+                            selectedIcon: '',
+                            checkedIcon: 'fa fa-check-square',
+                            uncheckedIcon: 'fa fa-square',
+                            // shows borders
+                            showBorder: true,
+                            // shows icons
+                            showIcon: true,
+                            // shows checkboxes
+                            showCheckbox: false,
+                            // shows tags
+                            showTags: false,
+                            // enables multi select
+                            multiSelect: true
+
+                        });
+                    }
+                }
+            });
+        }
+
+
+        $('#roleWiseUserPermission_Sales_Discount').click(function () {
+            
+            if ($('#roleWiseUserPermission_Sales_Discount').is(":checked") == true)
+                $("#roleWiseUserPermission_Discount_Limit").attr("disabled", false);
+            else
+                $("#roleWiseUserPermission_Discount_Limit").attr("disabled", true);
+        });
+        GetTreeViewMenu();
+
+
+
+        $("#Save").on('click', () => {
+            
+            var nodeId = [];
+            var selectedNodes = $('#MenuTreeView').treeview('getSelected', nodeId);
+            var selectedNodesFinal = [];
+            _.each(selectedNodes, function (val) {
+                selectedNodesFinal.push({
+                    RoleId: $("#roleWiseUserPermission_RoleId").val(),
+                    MenuId: val.id
+                });
+            });
+            //getting data
+            let data = {
+                roleWiseUserPermission: {
+
+                    RoleId: $("#roleWiseUserPermission_RoleId").val(),
+                    Sales_Discount: $("#roleWiseUserPermission_Sales_Discount").is(":checked"),
+                    Discount_Limit: $("#roleWiseUserPermission_Discount_Limit").val(),
+                    Sales_Rate_Edit: $("#roleWiseUserPermission_Sales_Rate_Edit").is(":checked")
+                },
+                roleWiseMenuPermissions: selectedNodesFinal
+            }
+            $.ajax({
+                method: "POST",
+                url: "/Account/RoleWisePermission",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(data),
+                complete: function (result) {
+                    
+                    if (result.status === 200) {
+                        window.location.href = window.location.origin + "/Account/RoleWisePermission/" + result.responseText;
+                    }
+                }
+            });
+        });
+
+        function loadMenuTree(treeviewData) {
+            // checks a given node
+
+            if (!$.isArray($('#MenuTreeView').treeview('getUnselected', [])))
+                setTimeout(() => { loadMenuTree(treeviewData); });
+            else {
+                var getAllNodes = $('#MenuTreeView').treeview('getUnselected', []);
+                var selectedNode = _.filter(getAllNodes, function (x) {
+                    return _.find(treeviewData, function (y) { return y.MenuId == x.id });
+                });
+                $('#MenuTreeView').treeview('selectNode', [selectedNode, { silent: true }]);
+            }
+        }
+
+        $("#roleWiseUserPermission_RoleId").change(function () {
+            var roleId = $("#roleWiseUserPermission_RoleId").val()
+            window.location.href = window.location.origin + "/Account/RoleWisePermission/" +  roleId;
+        })
+
+
+        //init
+        if (roleWiseMenuPermissionData != null || roleWiseMenuPermissionData != undefined) {
+            loadMenuTree(roleWiseMenuPermissionData);
+        }
+
+    </script>
+
+
+
+}
+

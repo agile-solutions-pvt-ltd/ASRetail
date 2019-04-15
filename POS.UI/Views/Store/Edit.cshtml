@@ -1,0 +1,84 @@
+﻿@model POS.DTO.Store
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h2>Edit</h2>
+
+<h4>Store</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="ID" />
+            <div class="form-group">
+                <label asp-for="INITIAL" class="control-label"></label>
+                <input asp-for="INITIAL" class="form-control" />
+                <span asp-validation-for="INITIAL" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="NAME" class="control-label"></label>
+                <input asp-for="NAME" class="form-control" />
+                <span asp-validation-for="NAME" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="COMPANY_NAME" class="control-label"></label>
+                <input asp-for="COMPANY_NAME" class="form-control" />
+                <span asp-validation-for="COMPANY_NAME" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ADDRESS" class="control-label"></label>
+                <input asp-for="ADDRESS" class="form-control" />
+                <span asp-validation-for="ADDRESS" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PHONE" class="control-label"></label>
+                <input asp-for="PHONE" class="form-control" />
+                <span asp-validation-for="PHONE" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PHONE_ALT" class="control-label"></label>
+                <input asp-for="PHONE_ALT" class="form-control" />
+                <span asp-validation-for="PHONE_ALT" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FAX" class="control-label"></label>
+                <input asp-for="FAX" class="form-control" />
+                <span asp-validation-for="FAX" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="VAT" class="control-label"></label>
+                <input asp-for="VAT" class="form-control" />
+                <span asp-validation-for="VAT" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EMAIL" class="control-label"></label>
+                <input asp-for="EMAIL" class="form-control" />
+                <span asp-validation-for="EMAIL" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="WEBSITE" class="control-label"></label>
+                <input asp-for="WEBSITE" class="form-control" />
+                <span asp-validation-for="WEBSITE" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FISCAL_YEAR" class="control-label"></label>
+                <input asp-for="FISCAL_YEAR" class="form-control" />
+                <span asp-validation-for="FISCAL_YEAR" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Update" class="btn btn-default" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

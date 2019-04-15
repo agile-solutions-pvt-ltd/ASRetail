@@ -1,0 +1,60 @@
+﻿@model IEnumerable<POS.DTO.Denomination>
+
+@{
+    ViewData["Title"] = "Denomination";
+}
+
+<h2>Cash Denomination</h2>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table table-hover table-striped" id="denomination-table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Terminal)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Date)
+            </th>
+
+            <th>
+                @Html.DisplayNameFor(model => model.Total)
+            </th>
+
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Terminal.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Date)
+                </td>
+
+                <td class="total text-right pr-5">
+                    @Html.DisplayFor(modelItem => item.Total)
+                </td>
+
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        var table = document.getElementById("denomination-table").getElementsByTagName('tbody')[0];
+        $.each(table.rows, function (i, v) {            
+            $(this).find(".total").text(CurrencyFormat($(this).find(".total").text()));
+        });
+    </script>
+}
