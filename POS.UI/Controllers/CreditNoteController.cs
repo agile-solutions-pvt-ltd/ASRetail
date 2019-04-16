@@ -50,13 +50,25 @@ namespace POS.UI.Controllers
                 }
                 await _context.SaveChangesAsync();
 
+                //now update invoice remarks also
+                SalesInvoice invoice = _context.SalesInvoice.FirstOrDefault(x => x.Invoice_Number == creditNote.Reference_Number);
+                invoice.Remarks = "Return";
+                _context.Entry(invoice).State = EntityState.Modified;
+                _context.SaveChanges();
+
                 //for api return
                 TempData["StatusMessage"] = "Credit Note Added Successfully";
-                return Ok(new { redirectUrl = "/CreditNote" });
+                return Ok(new { redirectUrl = "/CreditNote", Message = "Credit Note Added Successfully" });
             }
             return View(creditNote);
         }
 
 
+        //[HttpGet]
+        //public IActionResult Index(Guid id)
+        //{
+            
+        //    return View("CreditNote");
+        //}
     }
 }

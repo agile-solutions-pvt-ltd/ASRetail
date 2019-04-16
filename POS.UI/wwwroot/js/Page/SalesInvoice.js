@@ -225,7 +225,7 @@
             setTimeout(() => { row.className = ""; }, 300);
         }
 
-        debugger;
+        ;
         //test logic
         // Change the selector if needed
         var $table = $('#item_table'),
@@ -287,7 +287,7 @@
         var unit = result.unit || result.Unit;
         var rate = result.rate || result.Rate;
         var quantity = result.Quantity === undefined ? 1 : result.Quantity;
-        debugger;
+        ;
         var grossAmount = rate * quantity;
         var discount = result.Discount || result.discount === undefined ? 0 : result.Discount || result.discount;
         var isDiscountable = result.is_Discountable || result.Is_Discountable || false;
@@ -363,13 +363,23 @@
             data.Flat_Discount_Percent = $("#flat_discount").val();
         else
             data.Flat_Discount_Amount = $("#flat_discount").val();
-
+        debugger;
         data.SalesInvoiceItems = invoiceItems;
+        var membership = $("#Customer_Id");
+        var final = {
+            salesInvoiceTmp: data,
+            customer: {
+                Name: membership.data("name"),
+                Address: membership.data("address"),
+                Vat: membership.data("vat"),
+                Mobile1: membership.data("mobile")
+            }
+        };
 
         $.ajax({
             method: "POST",
             url: "/SalesInvoice/Index",
-            data: JSON.stringify(data),
+            data: JSON.stringify(final),
             dataType: "json",
             contentType: "application/json; charset=utf-8",
             complete: function (result) {
@@ -463,6 +473,12 @@
             return false; // prevent the button click from happening
         }
     };
+    let customerPanelToggle = () => {
+        $(".bill_to_info_div").slideToggle("slow", function () {
+            $("fieldset").toggleClass("bill_to_background_color");
+            $("#customer_icon_toggle").toggleClass("fa-chevron-down");
+        });
+    };
     let getPermissions = (Callback) => {
         $.ajax({
             url: window.location.origin + "/Settings/UserPermissions",
@@ -477,6 +493,50 @@
     let updatePageWithRespectToPermission = () => {
 
     };
+    let membershipIdChangeEvent = (evt) => {             
+        evt.preventDefault();
+        let $mId = $("#membershipId").val();
+        if (_.isEmpty($mId) && $mId.length < 4)
+            return false;
+
+        //search through customer
+        let customer = _.filter(customerList, (x) => { return x.Member_Id == $mId; })[0]; //donot update double equal
+        if (customer !== undefined) {
+            $("#Customer_Id").val(customer.Id).trigger('change');
+        }
+        else
+            $("#Customer_Id").val("").trigger('change');
+
+    };
+    let addNewMemberClickEvent = (evt) => {
+        evt.preventDefault();
+        customerPanelToggle();
+        $("#Customer_Id").val("").trigger("change");
+        $("#Customer_Id option[value='new']").remove();
+        $("#memberSaveButton").attr("disabled", false);
+        $("#memberSaveButtonSH").show();
+    };
+    let saveNewMemberClickEvent = (evt) => {
+        evt.preventDefault();       
+        let $name = $("#Customer_Name").val();
+        let $mobile = $("#Customer_Mobile").val();
+        let $vat = $("#Customer_Vat").val();
+        let $address = $("#Customer_Address").val();
+        if (!_.isEmpty($name) && !_.isEmpty($mobile)) {
+            $("#membershipId").attr("readonly", true);
+            $("#Customer_Id").attr("readonly", true);
+            $("#Customer_Id").append($('<option>', {
+                value: "new",
+                text: $name,
+                "data-mobile": $mobile,
+                "data-vat": $vat,
+                "data-address" : $address
+            })).val("new");
+            $("#memberSaveButton").attr("disabled", true);
+            customerPanelToggle();
+        }
+    };
+
 
 
     //events
@@ -492,27 +552,31 @@
     $('#trans_date_ad').change(function () {
         $('#trans_date_bs').val(AD2BS(FormatForInput($('#trans_date_ad').val())));
     });
-    $("#customer_icon_toggle").on('click', function () {
-        $(".bill_to_info_div").slideToggle("slow", function () {
-            $("fieldset").toggleClass("bill_to_background_color");
-            $("#customer_icon_toggle").toggleClass("fa-chevron-down");
-        });
-
-    });
+    $("#customer_icon_toggle").on('click', customerPanelToggle);
     $("#Customer_Id").on('change', function () {
         var selectedValue = $('#Customer_Id').find(":selected").val();
         var selectedItem = _.filter(customerList, function (x) {
             return x.Id == selectedValue; //donot update to === //its a type convertion
         })[0];
-        $("#Customer_Name").val(selectedItem.Name);
-        $("#Customer_Address").val(selectedItem.Address);
-        $("#Customer_Vat").val(selectedItem.Vat);
-        $("#Customer_Mobile").val(selectedItem.Mobile);
+        if (selectedItem) {
+            $("#Customer_Name").val(selectedItem.Name);
+            $("#Customer_Address").val(selectedItem.Address);
+            $("#Customer_Vat").val(selectedItem.Vat);
+            $("#Customer_Mobile").val(selectedItem.Mobile);
+        } else {
+            $("#Customer_Name").val("");
+            $("#Customer_Address").val("");
+            $("#Customer_Vat").val("");
+            $("#Customer_Mobile").val("");
+        }
+        $("#memberSaveButtonSH").hide();
+
     });
     $("input[name='flatDiscount'],#flat_discount").on('change', updateFlatDiscount);
     $("#convert-sales-tax").on('click', function (e) {
         e.preventDefault();
         convertSalesTax();
+        return false;
     });
     $('#pausedTransactionListTable >tbody > tr').on('dblclick', function () {
         loadPausedTransaction($(this));
@@ -521,7 +585,9 @@
     $("#ResetButton").on('click', function () {
         resetForm();
     });
-
+    $("#membershipId").on('change', membershipIdChangeEvent);
+    $("#memberAddButton").on('click', addNewMemberClickEvent);
+    $("#memberSaveButton").on("click", saveNewMemberClickEvent);
 
     //Public Output
     return {

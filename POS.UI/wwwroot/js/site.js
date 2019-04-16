@@ -14,7 +14,15 @@ function FormatForInput(date) {
     let formatted_date = current_datetime.getFullYear() + "-" + (current_datetime.getMonth() + 1) + "-" + current_datetime.getDate();
     return formatted_date;
 }
+function GetUrlParameters() {
+    var sPageURL = window.location.href;
+    var indexOfLastSlash = sPageURL.lastIndexOf("/");
 
+    if (indexOfLastSlash > 0 && sPageURL.length - 1 !== indexOfLastSlash)
+        return sPageURL.substring(indexOfLastSlash + 1);
+    else
+        return 0;
+}
 
 $.fn.serializeObject = function () {
     var o = {};

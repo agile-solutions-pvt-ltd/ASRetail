@@ -28,6 +28,10 @@
     .flat-discount {
         background-color: white;
     }
+    .flatDiscountHide{
+        display:none;
+        visibility:hidden;
+    }
 
 
 
@@ -77,7 +81,7 @@
         @Html.Partial("_ResponseMessagePartial")
         <form id="Credit_Note_Form" method="post" asp-action="Index">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-           
+            <div id="Message" class="text-danger sr-only"></div>
             <input type="hidden" asp-for="Flat_Discount_Amount" />
             <input type="hidden" asp-for="Flat_Discount_Percent" />
             <input type="hidden" asp-for="Trans_Type" value="Sales" />
@@ -89,21 +93,22 @@
             <input type="hidden" asp-for="Remarks" />
 
             <div class="br"></div>
+
             <div class="form-row">
                 <div class="form-group col-md-3">
                     <label asp-for="Reference_Number" class="control-label"></label>
-                    <input asp-for="Reference_Number" placeholder="Format: 'SI-XXXX-CHK-075/76'" class="form-control form-control-sm" />
+                    <input asp-for="Reference_Number" placeholder="Format: 'SI-XXXX-CHK-075/76'" value="TI-0001-CHK-075/76" class="form-control form-control-sm" />
                     <span asp-validation-for="Reference_Number" class="text-danger"></span>
                 </div>
 
                 <div class="form-group col-md-2">
                     <label asp-for="Trans_Date_Ad" class="control-label"></label>
-                    <input asp-for="Trans_Date_Ad" type="text" id="trans_date_ad" class="form-control form-control-sm" readonly disabled/>
+                    <input asp-for="Trans_Date_Ad" type="text" id="trans_date_ad" class="form-control form-control-sm" readonly />
                     <span asp-validation-for="Trans_Date_Ad" class="text-danger"></span>
                 </div>
                 <div class="form-group col-md-2">
                     <label asp-for="Trans_Date_Bs" class="control-label"></label>
-                    <input asp-for="Trans_Date_Bs" class="form-control form-control-sm" id="trans_date_bs" readonly disabled/>
+                    <input asp-for="Trans_Date_Bs" class="form-control form-control-sm" id="trans_date_bs" readonly />
                     <span asp-validation-for="Trans_Date_Bs" class="text-danger"></span>
                 </div>
                 <div class="form-group col-md-5">
@@ -126,11 +131,11 @@
                     <div class="form-group ml-2">
                         <span class="fa fa-chevron-right" id="customer_icon_toggle"></span>
                     </div>
-                    <label class="control-label col-md-1">Flat Discount:</label>
-                    <div class="form-group col-md-1">
-                        <input name="flat_discount" id="flat_discount" class="form-control form-control-sm" readonly/>
+                    <label class="control-label col-md-1 flatDiscountHide">Flat Discount:</label>
+                    <div class="form-group col-md-1 flatDiscountHide">
+                        <input name="flat_discount" id="flat_discount" class="form-control form-control-sm" readonly />
                     </div>
-                    <div class="form-group col-md-4">
+                    <div class="form-group col-md-4 flatDiscountHide">
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="radio" name="flatDiscount" id="percentRadio" value="percent" disabled>
                             <label class="form-check-label" for="percentRadio">%</label>
@@ -221,6 +226,7 @@
 
             </div>
         </form>
+
     </div>
 </div>
 

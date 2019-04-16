@@ -154,5 +154,35 @@ namespace POS.UI.Controllers
         {
             return _context.Customer.Any(e => e.Id == id);
         }
+
+
+
+
+
+
+       
+        public IActionResult CreateMembership()
+        {
+            return View();
+        }
+
+       
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult CreateMembership([FromBody] Customer customer)
+        {
+            if (ModelState.IsValid)
+            {
+                customer.Is_Member = true;
+                customer.Member_Id = _context.Customer.Select(x => x.Member_Id).DefaultIfEmpty(1000).Max() + 1;
+                _context.Add(customer);
+                 _context.SaveChangesAsync();
+                //TempData["StatusMessage"] = "Customer Created Successfully !!";
+                return Ok("Membership Created Successfully !!");
+            }
+            return StatusCode(400, "Not Valid");
+            
+        }
+
     }
 }

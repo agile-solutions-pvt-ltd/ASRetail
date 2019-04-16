@@ -211,3 +211,4 @@ E:\Projects\POS\POS.UI\obj\Debug\netcoreapp2.1\Razor\Views\ItemType\Delete.g.csh
 E:\Projects\POS\POS.UI\obj\Debug\netcoreapp2.1\Razor\Views\ItemType\Details.g.cshtml.cs
 E:\Projects\POS\POS.UI\obj\Debug\netcoreapp2.1\Razor\Views\ItemType\Edit.g.cshtml.cs
 E:\Projects\POS\POS.UI\obj\Debug\netcoreapp2.1\Razor\Views\ItemType\Index.g.cshtml.cs
+E:\Projects\POS\POS.UI\obj\Debug\netcoreapp2.1\Razor\Views\CreditNote\_CreditNotePrintPartial.g.cshtml.cs

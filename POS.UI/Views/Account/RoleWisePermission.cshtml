@@ -20,7 +20,7 @@
                 <div class="form-group col-md-6">
                     <label asp-for="roleWiseUserPermission.RoleId" class="control-label"></label>
                     <select asp-for="roleWiseUserPermission.RoleId" asp-items="@ViewBag.Roles" class="form-control form-control-sm">
-                        <option>--Select Role --</option>
+                        <option value="">--Select Role --</option>
                     </select>
                     <span asp-validation-for="roleWiseUserPermission.RoleId" class="text-danger"></span>
                 </div>
@@ -98,140 +98,10 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    <script>
-        var roleWiseMenuPermissionData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.roleWiseMenuPermissions));
-        function TreeviewFormat(list) {
-            var map = {}, node, roots = [], i;
-            for (i = 0; i < list.length; i += 1) {
-                list[i].text = list[i].name;
-                list[i].menuId = list[i].id;
-                map[list[i].id] = i; // initialize the map
-
-                list[i].nodes = []; // initialize the children
-            }
-            for (i = 0; i < list.length; i += 1) {
-                node = list[i];
-                if (node.parentId === "0" || node.parentId === null || node.parentId === undefined) {
-                    roots.push(node);
-                } else {
-                    // if you have dangling branches check that map[node.parentId] exists
-                    list[map[node.parentId]].nodes.push(node);
-                }
-            }
-            return roots;
-        }
-        function GetTreeViewMenu() {
-            $.ajax({
-                method: "GET",
-                url: "/Settings/GetMenu",
-                complete: function (result) {
-                    if (result.status === 200) {
-                        var formattedData = TreeviewFormat(result.responseJSON);
-
-                        $('#MenuTreeView').treeview({
-                            data: formattedData,
-
-                            // custom icons
-                            expandIcon: 'fa fa-plus',
-                            collapseIcon: 'fa fa-minus',
-                            emptyIcon: 'glyphicon',
-                            nodeIcon: '',
-                            selectedIcon: '',
-                            checkedIcon: 'fa fa-check-square',
-                            uncheckedIcon: 'fa fa-square',
-                            // shows borders
-                            showBorder: true,
-                            // shows icons
-                            showIcon: true,
-                            // shows checkboxes
-                            showCheckbox: false,
-                            // shows tags
-                            showTags: false,
-                            // enables multi select
-                            multiSelect: true
-
-                        });
-                    }
-                }
-            });
-        }
-
-
-        $('#roleWiseUserPermission_Sales_Discount').click(function () {
-            
-            if ($('#roleWiseUserPermission_Sales_Discount').is(":checked") == true)
-                $("#roleWiseUserPermission_Discount_Limit").attr("disabled", false);
-            else
-                $("#roleWiseUserPermission_Discount_Limit").attr("disabled", true);
-        });
-        GetTreeViewMenu();
-
-
-
-        $("#Save").on('click', () => {
-            
-            var nodeId = [];
-            var selectedNodes = $('#MenuTreeView').treeview('getSelected', nodeId);
-            var selectedNodesFinal = [];
-            _.each(selectedNodes, function (val) {
-                selectedNodesFinal.push({
-                    RoleId: $("#roleWiseUserPermission_RoleId").val(),
-                    MenuId: val.id
-                });
-            });
-            //getting data
-            let data = {
-                roleWiseUserPermission: {
-
-                    RoleId: $("#roleWiseUserPermission_RoleId").val(),
-                    Sales_Discount: $("#roleWiseUserPermission_Sales_Discount").is(":checked"),
-                    Discount_Limit: $("#roleWiseUserPermission_Discount_Limit").val(),
-                    Sales_Rate_Edit: $("#roleWiseUserPermission_Sales_Rate_Edit").is(":checked")
-                },
-                roleWiseMenuPermissions: selectedNodesFinal
-            }
-            $.ajax({
-                method: "POST",
-                url: "/Account/RoleWisePermission",
-                dataType: "json",
-                contentType: "application/json; charset=utf-8",
-                data: JSON.stringify(data),
-                complete: function (result) {
-                    
-                    if (result.status === 200) {
-                        window.location.href = window.location.origin + "/Account/RoleWisePermission/" + result.responseText;
-                    }
-                }
-            });
-        });
-
-        function loadMenuTree(treeviewData) {
-            // checks a given node
-
-            if (!$.isArray($('#MenuTreeView').treeview('getUnselected', [])))
-                setTimeout(() => { loadMenuTree(treeviewData); });
-            else {
-                var getAllNodes = $('#MenuTreeView').treeview('getUnselected', []);
-                var selectedNode = _.filter(getAllNodes, function (x) {
-                    return _.find(treeviewData, function (y) { return y.MenuId == x.id });
-                });
-                $('#MenuTreeView').treeview('selectNode', [selectedNode, { silent: true }]);
-            }
-        }
-
-        $("#roleWiseUserPermission_RoleId").change(function () {
-            var roleId = $("#roleWiseUserPermission_RoleId").val()
-            window.location.href = window.location.origin + "/Account/RoleWisePermission/" +  roleId;
-        })
-
-
-        //init
-        if (roleWiseMenuPermissionData != null || roleWiseMenuPermissionData != undefined) {
-            loadMenuTree(roleWiseMenuPermissionData);
-        }
-
-    </script>
-
+<script>
+        var roleWiseMenuPermissionData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.roleWiseMenuPermissions));       
+</script>
+<script src="~/js/Page/RoleWisePermission.js"></script>
 
 
 }

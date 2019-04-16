@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -53,7 +54,7 @@ namespace POS.UI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Index([FromBody] SalesInvoiceTmp salesInvoiceTmp)
+        public async Task<IActionResult> Index([FromBody] SalesInvoiceTmp salesInvoiceTmp, Customer customer)
         {
             if (ModelState.IsValid)
             {
@@ -66,13 +67,21 @@ namespace POS.UI.Controllers
                     if (oldData != null) isExistOldSalesInvoice = true;
                 }
 
+                //add membership
+                customer.Is_Member = true;
+                customer.Member_Id = _context.Customer.Select(x => x.Member_Id).DefaultIfEmpty(1000).Max() + 1;
+                _context.Add(customer);
+
+
                 //now processed to new save
                 salesInvoiceTmp.Id = Guid.NewGuid();
                 salesInvoiceTmp.Trans_Time = DateTime.Now.TimeOfDay;
                 salesInvoiceTmp.Division = "Divisioin";
-                salesInvoiceTmp.Terminal = "Terminal";
+                salesInvoiceTmp.Terminal = "Terminal1";
                 salesInvoiceTmp.Created_Date = DateTime.Now;
-                salesInvoiceTmp.Created_By = "";
+                salesInvoiceTmp.Created_By = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                salesInvoiceTmp.Customer_Id = customer.Id;
+                
                 _context.Add(salesInvoiceTmp);
 
                 foreach (var item in salesInvoiceTmp.SalesInvoiceItems)
@@ -81,6 +90,11 @@ namespace POS.UI.Controllers
                     item.Invoice_Number = salesInvoiceTmp.Invoice_Number;
                     _context.SalesInvoiceItemsTmp.Add(item);
                 }
+
+
+               
+                
+
                 await _context.SaveChangesAsync();
 
                 //if everything goes right then delete old sales invoice

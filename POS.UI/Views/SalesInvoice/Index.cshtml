@@ -82,6 +82,16 @@
     #totalNetAmount {
         background-color: #f5edc9;
     }
+
+    #memberAddButton {
+        position: absolute;
+        right: -42px;
+        top: 0px;
+        z-index:1;
+    }
+    #memberSaveButtonSH{
+        display:none;
+    }
 </style>
 
 
@@ -133,7 +143,11 @@
 
             <fieldset>
                 <div class="form-row">
-                    <label class="control-label col-md-1">Bill To</label>
+                    <div class="form-group col-md-2">
+                        <input class="form-control form-control-sm" name="membershipId" id="membershipId" placeholder="Enter Membership Id">
+                        <button id="memberAddButton" class="btn btn-sm btn-primary" title="Add New Member"><span class="fa fa-user-plus"></span></button>
+                    </div>
+                    <label class="control-label col-md-1 text-right pr-1">Bill To</label>
                     <div class="form-group col-md-2">
                         @Html.DropDownList("Customer_Id", new SelectList(ViewBag.Customer, "Id", "Name"), "--Select Customer--", new { @class = "form-control form-control-sm" })
                     </div>
@@ -143,22 +157,22 @@
                     <div class="form-group ml-2">
                         <span class="fa fa-chevron-right" id="customer_icon_toggle"></span>
                     </div>
-                   
-                        <label class="control-label flatDiscountHide col-md-1">Flat Discount:</label>
-                        <div class="form-group col-md-1 flatDiscountHide">
-                            <input name="flat_discount" id="flat_discount" class="form-control form-control-sm text-right" />
+
+                    <label class="control-label flatDiscountHide col-md-1">Flat Discount:</label>
+                    <div class="form-group col-md-1 flatDiscountHide">
+                        <input name="flat_discount" id="flat_discount" class="form-control form-control-sm text-right" />
+                    </div>
+                    <div class="form-group col-md-4 flatDiscountHide">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="flatDiscount" id="percentRadio" value="percent">
+                            <label class="form-check-label" for="percentRadio">%</label>
                         </div>
-                        <div class="form-group col-md-4 flatDiscountHide">
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="flatDiscount" id="percentRadio" value="percent">
-                                <label class="form-check-label" for="percentRadio">%</label>
-                            </div>
-                            <div class="form-check form-check-inline flatDiscountHide">
-                                <input class="form-check-input" type="radio" name="flatDiscount" id="amountRadio" value="amount">
-                                <label class="form-check-label" for="amountRadio">Rs</label>
-                            </div>
+                        <div class="form-check form-check-inline flatDiscountHide">
+                            <input class="form-check-input" type="radio" name="flatDiscount" id="amountRadio" value="amount">
+                            <label class="form-check-label" for="amountRadio">Rs</label>
                         </div>
-                    
+                    </div>
+
                 </div>
 
                 <div class="bill_to_info_div">
@@ -182,6 +196,10 @@
                             <label asp-for="Customer_Address" class="control-label"></label>
                             <input asp-for="Customer_Address" class="form-control form-control-sm" />
                             <span asp-validation-for="Customer_Address" class="text-danger"></span>
+                        </div>
+                        <div id="memberSaveButtonSH" class="form-group col-md-1">
+                            <label class="control-label">&nbsp;</label>
+                            <input type="button" id="memberSaveButton" class="form-control form-control-sm btn btn-sm btn-primary" value="Add" />
                         </div>
                     </div>
                 </div>

@@ -3,6 +3,7 @@
     let salesItems = [];
     var isFirstTimeLoadItem = true;
     var table = document.getElementById("item_table").getElementsByTagName('tbody')[0];
+    let $form = $('form#Credit_Note_Form');
 
 
     let init = () => {
@@ -20,8 +21,10 @@
     let loadInvoice = (invoiceNumber) => {
         if (validateInvoiceNumber(invoiceNumber)) {
             getInvoice(invoiceNumber, function (data) {
-                salesItems = data.salesInvoiceItems;
-                loadPausedTransactionData(data);
+                if (validateInvoiceData(data)) {
+                    salesItems = data.salesInvoiceItems;
+                    loadPausedTransactionData(data);
+                }
             });
         }
     };
@@ -41,6 +44,25 @@
     };
     let validateInvoiceNumber = (invoiceNumber) => {
         //do validation here
+        return true;
+    };
+    let validateInvoiceData = (data) => {
+        let transDate = new Date(data.trans_Date_Ad);
+        let compareDate = new Date();
+        compareDate.setDate(compareDate.getDate() - 7);
+        compareDate = new Date(compareDate);
+
+        if (data.remarks === "Return") {
+            displayError("Error: Already Return !! \n You can only return one time of this purchase !!");
+            return false;
+        }
+
+        if (transDate < compareDate) {
+            displayError("Expired: You can only return within 7 days of purchase !!");
+            return false;
+        }
+
+       
         return true;
     };
     let validateCreditNoteItems = () => {

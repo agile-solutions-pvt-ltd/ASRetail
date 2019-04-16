@@ -36,6 +36,9 @@
     <Content Update="Views\CreditNote\Index.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\CreditNote\_CreditNotePrintPartial.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\Reports\CreditNote.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

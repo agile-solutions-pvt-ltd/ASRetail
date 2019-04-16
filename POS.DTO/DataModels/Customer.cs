@@ -27,7 +27,7 @@ namespace POS.DTO
         public int? Credit_Day { get; set; }
         public bool? Is_Sale_Refused { get; set; }
         public bool? Is_Member { get; set; }
-        public string Member_Id { get; set; }
+        public int? Member_Id { get; set; }
         public string Barcode { get; set; }
         public DateTime? Dob { get; set; }
         public string Dob_Bs { get; set; }
