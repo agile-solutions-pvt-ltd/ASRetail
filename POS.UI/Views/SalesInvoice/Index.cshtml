@@ -111,6 +111,7 @@
             <input type="hidden" asp-for="Total_Quantity" />
             <input type="hidden" asp-for="Total_Vat" />
             <input type="hidden" asp-for="Remarks" />
+            <input type="hidden" id="isNewMember" value="false"/>
 
             <div class="br"></div>
             <div class="form-row">
@@ -126,12 +127,12 @@
                 </div>
                 <div class="form-group col-md-2">
                     <label asp-for="Trans_Date_Ad" class="control-label"></label>
-                    <input asp-for="Trans_Date_Ad" type="text" id="trans_date_ad" class="form-control form-control-sm" disabled readonly />
+                    <input asp-for="Trans_Date_Ad" type="text" id="trans_date_ad" class="form-control form-control-sm" readonly />
                     <span asp-validation-for="Trans_Date_Ad" class="text-danger"></span>
                 </div>
                 <div class="form-group col-md-2">
                     <label asp-for="Trans_Date_Bs" class="control-label"></label>
-                    <input asp-for="Trans_Date_Bs" class="form-control form-control-sm" id="trans_date_bs" disabled readonly />
+                    <input asp-for="Trans_Date_Bs" class="form-control form-control-sm" id="trans_date_bs" readonly />
                     <span asp-validation-for="Trans_Date_Bs" class="text-danger"></span>
                 </div>
                 <div class="form-group col-md-2">

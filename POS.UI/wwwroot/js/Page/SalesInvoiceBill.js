@@ -122,6 +122,20 @@
         else
             return 0;
     };
+
+    let PaymentMethodClickEvent = (evt) => {       
+        evt.preventDefault();
+        $this = $(evt.currentTarget);
+        let selectedMode = $this.data("mode");
+        $(".payment-mode-panel").hide();        
+        $("#" + selectedMode + "-panel").show();
+
+        $(".payment-mode > span").removeClass("text-success");
+        $this.find("span").addClass("text-success");
+        
+
+
+    };
     let SaveBill = () => {
         //some validation
 
@@ -163,6 +177,7 @@
             }
         });
     };
+    
 
     //********* Events **************//
     $("#AddCashButton").on('click', function () {
@@ -204,6 +219,7 @@
             return false; // prevent the button click from happening
         }
     });
+    $(".payment-mode").on("click", PaymentMethodClickEvent);
     $("#SaveButton").on('click', SaveBill);
 
     //*********Public Output **************//

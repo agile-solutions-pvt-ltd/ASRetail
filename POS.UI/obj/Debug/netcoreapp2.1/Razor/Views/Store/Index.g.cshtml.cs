@@ -266,7 +266,7 @@ using POS.UI.Models;
             WriteLiteral("    </dl>\r\n</div>\r\n<div>\r\n    ");
             EndContext();
             BeginContext(2058, 54, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "7df1d945804f4c75a6f12ac6db756b69", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "e52d467bd5d44839afe91e20cefee833", async() => {
                 BeginContext(2104, 4, true);
                 WriteLiteral("Edit");
                 EndContext();

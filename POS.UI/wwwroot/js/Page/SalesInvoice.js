@@ -82,13 +82,13 @@
                     var grossAmount = quantity * parseFloat(rate);
                     discount = parseFloat(discount);
                     if ($("#Trans_Type").val() === "Tax" && $(this).find(".Tax").data("isvatable") === true)
-                        tax = (grossAmount - discount) * taxPercent / 100;
+                        tax = calculateTax(grossAmount , taxPercent);
                     else if ($("#Trans_Type").val() === "Tax")
                         tax = parseFloat(tax);
                     else
                         tax = 0;
 
-                    var netAmount = grossAmount - discount + tax;
+                    var netAmount = grossAmount - discount;
 
                     totalQuantity += quantity;
                     totalDiscount += discount;
@@ -160,6 +160,12 @@
             $(this).find(".sn").text((table.rows.length - i).toString());
         });
     };
+    let calculateTax = (grossAmount, taxPercent) => {
+        //tax deduction formula
+        let tax = (taxPercent * grossAmount) / (taxPercent + 100);
+        return tax;
+
+    };
     let convertSalesTax = () => {
         let salesInvoiceNumber = "";
         if (!_.isEmpty($("#Invoice_Number").val()))
@@ -213,6 +219,61 @@
             });
         }
     };
+    let addRowWithData = (result) => {
+        var table = document.getElementById("item_table").getElementsByTagName('tbody')[0];
+
+
+        var row = table.insertRow(0);
+        var cell1 = row.insertCell(0); //SN
+        var cell2 = row.insertCell(1); //Bar Code
+        var cell3 = row.insertCell(2); //Item Name
+        var cell4 = row.insertCell(3); //Unit
+        var cell5 = row.insertCell(4); //Rate
+        var cell6 = row.insertCell(5); //Quantity
+        var cell7 = row.insertCell(6); //G Amount
+        var cell8 = row.insertCell(7); //Discount
+        var cell9 = row.insertCell(8); //Tax
+        var cell10 = row.insertCell(9); //Net Amount
+        var cell11 = row.insertCell(10); //delete button
+
+
+        var barCode = result.bar_Code || result.Bar_Code;
+        var itemName = result.name || result.Name;
+        var unit = result.unit || result.Unit;
+        var rate = result.rate || result.Rate;
+        var quantity = result.Quantity === undefined ? 1 : result.Quantity;
+       
+        var grossAmount = rate * quantity;
+        var discount = result.Discount || result.discount === undefined ? 0 : result.Discount || result.discount;
+        var isDiscountable = result.is_Discountable || result.Is_Discountable || false;
+        var tax = result.Tax === undefined ? 0 : result.Tax;
+        var isVatable = result.is_Vatable || result.Is_Vatable;
+        if ($("#Trans_Type").val() === "Tax" && isVatable !== undefined && isVatable && tax === 0) {
+            tax = (grossAmount - discount) * taxPercent / 100;
+        }
+        grossAmount = 0;
+        tax = 0;
+        var netAmount = 0;
+
+        //invoiceItems[0].sn
+        //highlight row
+        makeRowAtTopAndHightlight(row);
+
+        $('<i class="sn font-weight-bold">' + (table.rows.length) + '</i>').appendTo(cell1);
+        $("<span class='barcode'>" + barCode + "</span>").appendTo(cell2);
+        $("<span>" + itemName + "</span>").appendTo(cell3);
+        $("<span>" + unit + "</span>").appendTo(cell4);
+        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Rate" type="number" min="0" onkeyup="invoice.calcTotal()" name="Rate" disabled value=' + rate.toFixed(2) + '>').appendTo(cell5);
+        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Quantity" type="number" min="1" onkeyup="invoice.calcTotal()" name="Quantity" value=' + quantity.toString() + '>').appendTo(cell6);
+        $('<input class="tabledit-input form-control form-control-sm input-sm text-right GrossAmount" type="number" onkeyup="invoice.calcTotal()" name="GrossAmount" disabled value=' + grossAmount.toFixed(2) + '>').appendTo(cell7);
+        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Discount" type="number" data-isDiscountable="' + isDiscountable + '" min="0" onkeyup="invoice.calcTotal()" name="Discount" value=' + discount.toFixed(2) + '>').appendTo(cell8);
+        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Tax" data-isVatable="' + isVatable + '" type="number" onkeyup="invoice.calcTotal()" name="Tax" disabled value=' + tax.toFixed(2) + '>').appendTo(cell9);
+        $('<input class="tabledit-input form-control form-control-sm input-sm text-right NetAmount" type="number" onkeyup="invoice.calcTotal()" name="NetAmount" disabled value=' + netAmount.toFixed(2) + '>').appendTo(cell10);
+
+        $('<botton onclick="invoice.delete_row(this);" class="btn btn-sm btn-danger"><i class="fa fa-times fa-sm"></i></botton>').appendTo(cell11);
+
+        calcAll();
+    };
     let makeRowAtTopAndHightlight = (row) => {
         if (row.className === undefined) {
             row.addClass("active");
@@ -264,140 +325,11 @@
             }
         });
     };
-    let addRowWithData = (result) => {
-        var table = document.getElementById("item_table").getElementsByTagName('tbody')[0];
-
-
-        var row = table.insertRow(0);
-        var cell1 = row.insertCell(0); //SN
-        var cell2 = row.insertCell(1); //Bar Code
-        var cell3 = row.insertCell(2); //Item Name
-        var cell4 = row.insertCell(3); //Unit
-        var cell5 = row.insertCell(4); //Rate
-        var cell6 = row.insertCell(5); //Quantity
-        var cell7 = row.insertCell(6); //G Amount
-        var cell8 = row.insertCell(7); //Discount
-        var cell9 = row.insertCell(8); //Tax
-        var cell10 = row.insertCell(9); //Net Amount
-        var cell11 = row.insertCell(10); //delete button
-
-
-        var barCode = result.bar_Code || result.Bar_Code;
-        var itemName = result.name || result.Name;
-        var unit = result.unit || result.Unit;
-        var rate = result.rate || result.Rate;
-        var quantity = result.Quantity === undefined ? 1 : result.Quantity;
-        ;
-        var grossAmount = rate * quantity;
-        var discount = result.Discount || result.discount === undefined ? 0 : result.Discount || result.discount;
-        var isDiscountable = result.is_Discountable || result.Is_Discountable || false;
-        var tax = result.Tax === undefined ? 0 : result.Tax;
-        var isVatable = result.is_Vatable || result.Is_Vatable;
-        if ($("#Trans_Type").val() === "Tax" && isVatable !== undefined && isVatable && tax === 0) {
-            tax = (grossAmount - discount) * taxPercent / 100;
-        }
-        var netAmount = grossAmount - discount + tax;
-
-        //invoiceItems[0].sn
-        //highlight row
-        makeRowAtTopAndHightlight(row);
-
-        $('<i class="sn font-weight-bold">' + (table.rows.length) + '</i>').appendTo(cell1);
-        $("<span class='barcode'>" + barCode + "</span>").appendTo(cell2);
-        $("<span>" + itemName + "</span>").appendTo(cell3);
-        $("<span>" + unit + "</span>").appendTo(cell4);
-        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Rate" type="number" min="0" onkeyup="invoice.calcTotal()" name="Rate" value=' + rate.toFixed(2) + '>').appendTo(cell5);
-        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Quantity" type="number" min="1" onkeyup="invoice.calcTotal()" name="Quantity" value=' + quantity.toString() + '>').appendTo(cell6);
-        $('<input class="tabledit-input form-control form-control-sm input-sm text-right GrossAmount" type="number" onkeyup="invoice.calcTotal()" name="GrossAmount" disabled value=' + grossAmount.toFixed(2) + '>').appendTo(cell7);
-        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Discount" type="number" data-isDiscountable="' + isDiscountable+'" min="0" onkeyup="invoice.calcTotal()" name="Discount" value=' + discount.toFixed(2) + '>').appendTo(cell8);
-        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Tax" data-isVatable="' + isVatable + '" type="number" onkeyup="invoice.calcTotal()" name="Tax" disabled value=' + tax.toFixed(2) + '>').appendTo(cell9);
-        $('<input class="tabledit-input form-control form-control-sm input-sm text-right NetAmount" type="number" onkeyup="invoice.calcTotal()" name="NetAmount" disabled value=' + netAmount.toFixed(2) + '>').appendTo(cell10);
-
-        $('<botton onclick="invoice.delete_row(this);" class="btn btn-sm btn-danger"><i class="fa fa-times fa-sm"></i></botton>').appendTo(cell11);
-
-        calcAll();
-    };
-    let SaveSalesInvoice = () => {
-        //save field data first
-        $("#Total_Quantity").val(CurrencyUnFormat($("#totalQuantity").text()));
-        $("#Total_Gross_Amount").val(CurrencyUnFormat($("#totalGrossAmount").text()));
-        $("#Total_Discount").val(CurrencyUnFormat($("#totalDiscount").text()));
-        $("#Total_Tax").val(CurrencyUnFormat($("#totalTax").text()));
-        $("#Total_Net_Amount").val(CurrencyUnFormat($("#totalNetAmount").text()));
-
-        //validate
-        if (!$('form#Sales_Invoice_Form').valid())
-            return false;
-
-        //check sales limit
-        if (transType.val() === "Sales" && totalNetAmount.val() >= salesTransactionLimit) {
-            if (confirm('Your Transaction Amount Is Greater Than Sale Limit. \n Do You Want To Convert To Tax Invoice?')) {
-                convertSalesTax();
-                return false;
-            }
-        }
-
-        //get items
-        var table = $("#item_table");
-        var invoiceItems = [];
-        table.find('tbody > tr').each(function (i, el) {
-            var $tds = $(this).find('td');
-            invoiceItems.push({
-                Bar_Code: $tds.eq(1).text(),
-                Name: $tds.eq(2).text(),
-                Unit: $tds.eq(3).text(),
-                Rate: $(this).find('td input.Rate').val(),
-                Quantity: $(this).find('td input.Quantity').val(),
-                Gross_Amount: $(this).find('td input.GrossAmount').val(),
-                Discount: $(this).find('td input.Discount').val(),
-                Tax: $(this).find('td input.Tax').val(),
-                Is_Vatable: $(this).find('td input.Tax').attr("data-isVatable") === "true",
-                Net_Amount: $(this).find('td input.NetAmount').val()
-            });
-        });
-
-        //call ajaxnow       
-        var data = $('form#Sales_Invoice_Form').serializeObject();
-
-        if ($("input[name='flatDiscount']:checked").val() === "percent")
-            data.Flat_Discount_Percent = $("#flat_discount").val();
-        else
-            data.Flat_Discount_Amount = $("#flat_discount").val();
-        debugger;
-        data.SalesInvoiceItems = invoiceItems;
-        var membership = $("#Customer_Id");
-        var final = {
-            salesInvoiceTmp: data,
-            customer: {
-                Name: membership.data("name"),
-                Address: membership.data("address"),
-                Vat: membership.data("vat"),
-                Mobile1: membership.data("mobile")
-            }
-        };
-
-        $.ajax({
-            method: "POST",
-            url: "/SalesInvoice/Index",
-            data: JSON.stringify(final),
-            dataType: "json",
-            contentType: "application/json; charset=utf-8",
-            complete: function (result) {
-                if (result.status === 200) {
-                    window.location.href = window.location.origin + result.responseJSON.redirectUrl;
-                }
-            }
-        });
-
-
-        // $('form#Sales_Invoice_Form').submit();
-
-
-    };
+   
+    let count = 0;
     let holdTransaction = () => {
         $("#Remarks").val($("#Trans_Type").val());
-        $("#Trans_Type").val("Hold");
-
+        $("#Trans_Type").val("Hold");       
         SaveSalesInvoice();
     };
     let showPausedTransaction = () => {
@@ -410,8 +342,17 @@
     let loadPausedTransactionData = (data) => {
         if (getUrlParameters() !== 0 && salesInvoiceTmpData.SalesInvoiceItems !== null) {
 
+          
+           
             //customer info
-            $("#Customer_Id").val(salesInvoiceTmpData.Customer_Id);
+            $("#Customer_Id").val();
+             //update membership           
+            var selectedItem = _.filter(customerList, function (x) {
+                return x.Id == salesInvoiceTmpData.Customer_Id; //donot update to === //its a type convertion
+            })[0];
+            if (selectedItem) {
+                $("#membershipId").val(selectedItem.Member_Id);
+            }
             //flat discount
             if (salesInvoiceTmpData.Flat_Discount_Amount !== null) {
                 $("#amountRadio").prop("checked", true);
@@ -457,15 +398,27 @@
             return 0;
     };
     let barCodeKeyPressEvent = (e) => {
+        if (e.keyCode === 13) {
+            count += 1;
+            console.log(count);
+        }
+       
         var $this = $(e.currentTarget);
-        if (e.keyCode === 13 && $this.val() !== "" && $this.val().length > 2) {
+        if (e.keyCode === 13 && $this.val() !== "" && $this.val().length > 2) {          
             addRowGetUpdateData($this.val());
             //highlight the selected code
             $this.focus();
             $this.select();
 
+            //for barcode device
+            setTimeout(() => {
+                $this.focus();
+                $this.select();
+            },20);
+
+
             // Work around Chrome's little problem
-            $this.mouseup(function () {
+            $this.mouseup(function () {                
                 // Prevent further mouseup intervention
                 $this.unbind("mouseup");
                 return false;
@@ -512,7 +465,7 @@
         evt.preventDefault();
         customerPanelToggle();
         $("#Customer_Id").val("").trigger("change");
-        $("#Customer_Id option[value='new']").remove();
+        $("#Customer_Id option[value='0']").remove();
         $("#memberSaveButton").attr("disabled", false);
         $("#memberSaveButtonSH").show();
     };
@@ -522,21 +475,102 @@
         let $mobile = $("#Customer_Mobile").val();
         let $vat = $("#Customer_Vat").val();
         let $address = $("#Customer_Address").val();
-        if (!_.isEmpty($name) && !_.isEmpty($mobile)) {
+        if (!_.isEmpty($name) && !_.isEmpty($mobile) && $mobile.length > 9) {
             $("#membershipId").attr("readonly", true);
             $("#Customer_Id").attr("readonly", true);
             $("#Customer_Id").append($('<option>', {
-                value: "new",
+                value: "0",
                 text: $name,
                 "data-mobile": $mobile,
                 "data-vat": $vat,
                 "data-address" : $address
-            })).val("new");
+            })).val("0");
+            $("#isNewMember").val(true);
             $("#memberSaveButton").attr("disabled", true);
             customerPanelToggle();
         }
     };
 
+    let SaveSalesInvoice = () => {
+        //save field data first
+        $("#Total_Quantity").val(CurrencyUnFormat($("#totalQuantity").text()));
+        $("#Total_Gross_Amount").val(CurrencyUnFormat($("#totalGrossAmount").text()));
+        $("#Total_Discount").val(CurrencyUnFormat($("#totalDiscount").text()));
+        $("#Total_Vat").val(CurrencyUnFormat($("#totalTax").text()));
+        $("#Total_Net_Amount").val(CurrencyUnFormat($("#totalNetAmount").text()));
+
+        //validate
+        if (!$('form#Sales_Invoice_Form').valid())
+            return false;
+
+        //check sales limit
+        if (transType.val() === "Sales" && totalNetAmount.val() >= salesTransactionLimit) {
+            //if (confirm('Your Transaction Amount Is Greater Than Sale Limit. \n Do You Want To Convert To Tax Invoice?')) {
+            //    convertSalesTax();
+            //    return false;
+            //}
+            convertSalesTax();
+        }
+
+        //get items
+        var table = $("#item_table");
+        var invoiceItems = [];
+        table.find('tbody > tr').each(function (i, el) {
+            var $tds = $(this).find('td');
+            invoiceItems.push({
+                Bar_Code: $tds.eq(1).text(),
+                Name: $tds.eq(2).text(),
+                Unit: $tds.eq(3).text(),
+                Rate: $(this).find('td input.Rate').val(),
+                Quantity: $(this).find('td input.Quantity').val(),
+                Gross_Amount: $(this).find('td input.GrossAmount').val(),
+                Discount: $(this).find('td input.Discount').val(),
+                Tax: $(this).find('td input.Tax').val(),
+                Is_Vatable: $(this).find('td input.Tax').attr("data-isVatable") === "true",
+                Net_Amount: $(this).find('td input.NetAmount').val()
+            });
+        });
+
+        //call ajaxnow       
+        var data = $('form#Sales_Invoice_Form').serializeObject();
+
+        if ($("input[name='flatDiscount']:checked").val() === "percent")
+            data.Flat_Discount_Percent = $("#flat_discount").val();
+        else
+            data.Flat_Discount_Amount = $("#flat_discount").val();
+        debugger;
+        data.SalesInvoiceItems = invoiceItems;
+        var membership = $("#Customer_Id option[value='0'");
+        
+        var final = {
+            SalesInvoice: data,
+            Customer: {
+                Name: membership.text(),
+                Address: membership.data("address"),
+                Vat: membership.data("vat"),
+                Mobile1: membership.data("mobile"),
+                Is_Member: $("#isNewMember").val()
+            }
+        };
+
+        $.ajax({
+            method: "POST",
+            url: "/SalesInvoice/Index",
+            data: JSON.stringify(final),
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            complete: function (result) {
+                if (result.status === 200) {
+                    window.location.href = window.location.origin + result.responseJSON.redirectUrl;
+                }
+            }
+        });
+
+
+        // $('form#Sales_Invoice_Form').submit();
+
+
+    };
 
 
     //events
@@ -563,6 +597,7 @@
             $("#Customer_Address").val(selectedItem.Address);
             $("#Customer_Vat").val(selectedItem.Vat);
             $("#Customer_Mobile").val(selectedItem.Mobile);
+            $("#membershipId").val(selectedItem.Member_Id);
         } else {
             $("#Customer_Name").val("");
             $("#Customer_Address").val("");

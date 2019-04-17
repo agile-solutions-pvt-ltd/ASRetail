@@ -6,14 +6,18 @@
 }
 
 <style>
-    #error-message{
-        display:none;
+    #error-message {
+        display: none;
+    }
+
+    #debitCard-panel, #credit-panel, #creditNote-panel {
+        display: none;
     }
 </style>
 
 <div class="br"></div>
 <div class="alert alert-danger alert-dismissible fade show" id="error-message" role="alert">
-   <span></span>
+    <span></span>
     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
         <span aria-hidden="true">&times;</span>
     </button>
@@ -31,9 +35,18 @@
 
 
     <div class="row">
-        <div class="col-md-9">
+        <div class="col-md-2 text-center">
+            <button class="btn payment-mode" data-mode="cash"><span class="fa fa-money fa-4x text-primary text-success"></span><br />Cash (F1)</button>
+            <div class="br"></div>
+            <button class="btn payment-mode" data-mode="debitCard"><span class="fa fa-credit-card fa-4x text-primary"></span><br />Credit Card (F2)</button>
+            <div class="br"></div>
+            <button class="btn payment-mode" data-mode="credit"><span class="fa fa-id-card  fa-4x text-primary"></span><br />Credit (F3)</button>
+            <div class="br"></div>
+            <button class="btn payment-mode" data-mode="creditNote"><span class="fa fa-credit-card-alt  fa-4x text-primary"></span><br />Credit Note (F4)</button>
+        </div>
+        <div class="col-md-6">
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-12 pt-5 payment-mode-panel" id="cash-panel">
                     <div class="card">
                         <div class="card-header bg-success">Cash</div>
                         <div class="card-body">
@@ -43,38 +56,58 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-12 pt-5 payment-mode-panel" id="debitCard-panel">
                     <div class="card">
-                        <div class="card-header bg-primary">Debit Card</div>
+                        <div class="card-header bg-success">ATM Card</div>
                         <div class="card-body">
-                            Card Type : @*<input type="text" class="form-control" name="cardType" id="cardType" />*@
-                            <select id="cardType" name="cardType" class="form-control form-control-sm text-right">
-                                <option value="CREDIT CARD A\C">CREDIT CARD A\C</option>
-                            </select>
-                            <div class="br"></div>
+                            @*Card Type : <input type="text" class="form-control" name="cardType" id="cardType" />
+                                <select id="cardType" name="cardType" class="form-control form-control-sm text-right">
+                                    <option value="CREDIT CARD A\C">CREDIT CARD A\C</option>
+                                </select>
+                                <div class="br"></div>*@
                             Amount : <input type="text" class="form-control form-control-sm" name="cardAmount" id="cardAmount" />
                             <div class="br"></div>
-                            <input type="button" id="AddDebitCardButton" class="btn btn-primary btn-sm pull-right" value="Add" />
+                            <input type="button" id="AddDebitCardButton" class="btn btn-success btn-sm pull-right" value="Add" />
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-12 pt-5 payment-mode-panel" id="credit-panel">
                     <div class="card">
-                        <div class="card-header bg-danger">Credit</div>
+                        <div class="card-header bg-success">Credit Account</div>
                         <div class="card-body">
-                            Credit Customer : @*<input type="text" class="form-control form-control-sm" name="customer" id="customer" />*@
-                            <select class="form-control form-control-sm" id="customer" asp-items="@ViewBag.Customer">
-                                <option>--Select --</option>
-                            </select>
+                            Credit Customer :
+                            @Html.DropDownList("customer", new SelectList(ViewBag.Customer, "Id", "Name"), "--Select Customer--", new { @class = "form-control form-control-sm" })
+                            <div class="br"></div>
+                            <div class="br"></div>
+                            <div class="row form-horizontal">
+                                <div class="col-md-4"><strong>Pan No.: </strong> <label id="customerPan"></label></div>
+                                <div class="col-md-8"><strong>Address: </strong> <label id="customerAddress"></label> </div>
+                            </div>
+
                             <div class="br"></div>
                             Amount : <input type="text" class="form-control form-control-sm text-right" name="creditAmount" id="creditAmount" />
                             <div class="br"></div>
-                            <input type="button" id="AddCreditButton" class="btn btn-danger btn-sm pull-right" value="Add" />
+                            <input type="button" id="AddCreditButton" class="btn btn-success btn-sm pull-right" value="Add" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12 pt-5 payment-mode-panel" id="creditNote-panel">
+                    <div class="card">
+                        <div class="card-header bg-success">Credit Note</div>
+                        <div class="card-body">
+                            <input type="text" class="form-control form-control-sm" placeholder="Enter CreditNote No." name="creditNoteNumber" id="creditNoteNumber" />
+                            <div class="br"></div>
+                           
+                            Credit Note Amount : <input type="text" class="form-control form-control-sm text-right" name="creditNoteAmount" id="creditNoteAmount" readonly/>
+                            <div class="br"></div>
+                            <input type="button" id="AddCreditNoteNumbertButton" class="btn btn-success btn-sm pull-right" value="Add" />
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="row">
+            <div class="br"></div>
+            <div class="br"></div>
+            <div class="row pt-5">
                 <div class="col-md-6">
                     Total Remaining : <input type="text" id="totalRemainingAmountTextBox" class="form-control" />
                 </div>
@@ -84,7 +117,7 @@
             </div>
 
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <table id="billing-table" class="billing-table table table-sm table-bordered table-striped table-hover">
                 <thead>
                     <tr>
@@ -138,5 +171,8 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+
+    </script>
     <script src="~/js/Page/SalesInvoiceBill.js"></script>
 }

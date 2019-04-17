@@ -14,7 +14,7 @@ using POS.DTO;
 
 namespace POS.UI.Controllers
 {
-   [Authorize]
+  
     public class SalesInvoiceController : Controller
     {
         private readonly EntityCore _context;
@@ -54,8 +54,10 @@ namespace POS.UI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Index([FromBody] SalesInvoiceTmp salesInvoiceTmp, Customer customer)
+        public async Task<IActionResult> Index([FromBody] SalesInvoiceAndCustomerViewModel model)
         {
+            SalesInvoiceTmp salesInvoiceTmp = model.SalesInvoice;
+            Customer customer = model.Customer;
             if (ModelState.IsValid)
             {
                 //if that salesinvoice already exist, than track first
@@ -68,19 +70,24 @@ namespace POS.UI.Controllers
                 }
 
                 //add membership
-                customer.Is_Member = true;
-                customer.Member_Id = _context.Customer.Select(x => x.Member_Id).DefaultIfEmpty(1000).Max() + 1;
-                _context.Add(customer);
+                if (!string.IsNullOrEmpty(customer.Name) && !string.IsNullOrEmpty(customer.Mobile1) && customer.Is_Member == true)
+                {              
+                    customer.Code = Guid.NewGuid().ToString();
+                    customer.Member_Id = _context.Customer.Select(x => x.Member_Id).DefaultIfEmpty(1000).Max() + 1;
+                    _context.Add(customer);
+                    _context.SaveChanges();
+                    salesInvoiceTmp.Customer_Id = customer.Id;
+                }
 
 
-                //now processed to new save
+                //now processed to new save invoice
                 salesInvoiceTmp.Id = Guid.NewGuid();
                 salesInvoiceTmp.Trans_Time = DateTime.Now.TimeOfDay;
                 salesInvoiceTmp.Division = "Divisioin";
                 salesInvoiceTmp.Terminal = "Terminal1";
                 salesInvoiceTmp.Created_Date = DateTime.Now;
                 salesInvoiceTmp.Created_By = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
-                salesInvoiceTmp.Customer_Id = customer.Id;
+                
                 
                 _context.Add(salesInvoiceTmp);
 
@@ -143,7 +150,7 @@ namespace POS.UI.Controllers
         public IActionResult Billing(Guid id)
         {
             ViewBag.SalesInvoiceTemp = _context.SalesInvoiceTmp.FirstOrDefault(x => x.Id == id);
-            ViewData["Customer"] = new SelectList(_context.Customer, "Id", "Name");
+            ViewData["Customer"] = _context.Customer;
             return View();
         }
 
