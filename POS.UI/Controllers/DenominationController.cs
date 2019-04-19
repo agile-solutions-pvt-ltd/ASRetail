@@ -50,7 +50,7 @@ namespace POS.UI.Controllers
 
         // GET: Denomination/Create
         public IActionResult Create()
-        {
+        {        
             ViewData["Terminal_Id"] = new SelectList(_context.Terminal, "Id", "Name");
             return View();
         }
@@ -64,12 +64,23 @@ namespace POS.UI.Controllers
         {
             if (ModelState.IsValid)
             {
-                denomination.User_Id = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
-                _context.Add(denomination);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                //check if already exist
+                Denomination oldData = _context.Denomination.FirstOrDefault(x => x.Terminal_Id == denomination.Terminal_Id && x.Date.Equals(denomination.Date));
+                if (oldData != null)
+                {
+                    ModelState.AddModelError(string.Empty,"Already Saved, Cannot Save Twice !!");
+                }
+                else
+                {
+                    denomination.User_Id = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    _context.Add(denomination);
+                    await _context.SaveChangesAsync();
+                    TempData["StatusMessage"] = "Saved Successfully";
+                    return RedirectToAction(nameof(Edit), new { id= denomination.Id});
+                }
             }
             ViewData["Terminal_Id"] = new SelectList(_context.Terminal, "Id", "Name", denomination.Terminal_Id);
+           
             return View(denomination);
         }
 
@@ -86,6 +97,7 @@ namespace POS.UI.Controllers
             {
                 return NotFound();
             }
+           // TempData["StatusMessage"] = TempData["StatusMessage"];
             ViewData["Terminal_Id"] = new SelectList(_context.Terminal, "Id", "Name", denomination.Terminal_Id);
             return View(denomination);
         }

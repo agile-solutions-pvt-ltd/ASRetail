@@ -21,17 +21,20 @@
                 <th>
                     @Html.DisplayNameFor(model => model.Trans_Date_Bs)
                 </th>
-                <th>
+                <th class="text-center">
                     @Html.DisplayName("Gross Amount")
                 </th>
-                <th>
+                <th class="text-center">
                     @Html.DisplayName("Discount")
                 </th>
-                <th>
+                <th class="text-center">
                     @Html.DisplayName("Net Amount")
                 </th>
                 <th>
                     @Html.DisplayName("Credit Note")
+                </th>
+                <th>
+                    @Html.DisplayName("Status")
                 </th>
             </tr>
         </thead>
@@ -51,28 +54,33 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.Trans_Date_Bs)
                 </td>
-                <td class="gross-amount text-right pr-5">
+                <td class="gross-amount text-right pr-3">
                     @Html.DisplayFor(modelItem => item.Total_Gross_Amount)
                 </td>
-                <td class="discount text-right pr-5">
+                <td class="discount text-right pr-3">
                     @Html.DisplayFor(modelItem => item.Total_Discount)
                 </td>
-                <td class="net-amount text-right pr-5">
+                <td class="net-amount text-right pr-3">
                     @Html.DisplayFor(modelItem => item.Total_Net_Amount)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Credit_Note)
                 </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Remarks)
+                </td>
             </tr>}
         </tbody>
         <tfoot align="right">
             <tr>
-                <th colspan="3" class="pr-5"></th>
-                <th class="pr-5"></th>
-                <th class="pr-5"></th>
-                <th class="pr-5"></th>
-                <th class="pr-5"></th>
-                <th class="pr-5"></th>
+                <th colspan="3" class="pr-3"></th>
+                <th class="pr-3"></th>
+                <th class="pr-3"></th>
+                <th class="pr-3"></th>
+                <th class="pr-3"></th>
+                <th class="pr-3"></th>
+                <th class="pr-3"></th>
+               
             </tr>
         </tfoot>
     </table>
@@ -91,7 +99,7 @@
         $("#CreditNoteTable").DataTable({
             paging: false,
             searching: false,
-            order: [1, "desc"],
+            order: [0, "desc"],
             "footerCallback": function (row, data, start, end, display) {
                 var api = this.api(), data;
 

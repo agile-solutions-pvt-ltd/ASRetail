@@ -13,6 +13,14 @@
     #debitCard-panel, #credit-panel, #creditNote-panel {
         display: none;
     }
+
+    .total {
+        font-size: x-large;
+        font-weight: bold;
+    }
+    #creditNote, .onetimewarning{
+        display:none;
+    }
 </style>
 
 <div class="br"></div>
@@ -42,7 +50,7 @@
             <div class="br"></div>
             <button class="btn payment-mode" data-mode="credit"><span class="fa fa-id-card  fa-4x text-primary"></span><br />Credit (F3)</button>
             <div class="br"></div>
-            <button class="btn payment-mode" data-mode="creditNote"><span class="fa fa-credit-card-alt  fa-4x text-primary"></span><br />Credit Note (F4)</button>
+            <button class="btn payment-mode" id="creditNote" data-mode="creditNote"><span class="fa fa-credit-card-alt  fa-4x text-primary"></span><br />Credit Note (F4)</button>
         </div>
         <div class="col-md-6">
             <div class="row">
@@ -50,7 +58,7 @@
                     <div class="card">
                         <div class="card-header bg-success">Cash</div>
                         <div class="card-body">
-                            Cash Amount : <input type="text" class="form-control form-control-sm text-right" name="cashAmount" id="cashAmount" />
+                            Cash Amount : <input type="text" class="form-control form-control-sm text-right amount" name="cashAmount" id="cashAmount" />
                             <div class="br"></div>
                             <input type="button" id="AddCashButton" class="btn btn-success pull-right btn-sm" value="Add" />
                         </div>
@@ -65,7 +73,7 @@
                                     <option value="CREDIT CARD A\C">CREDIT CARD A\C</option>
                                 </select>
                                 <div class="br"></div>*@
-                            Amount : <input type="text" class="form-control form-control-sm" name="cardAmount" id="cardAmount" />
+                            Amount : <input type="text" class="form-control form-control-sm text-right amount" name="cardAmount" id="cardAmount" />
                             <div class="br"></div>
                             <input type="button" id="AddDebitCardButton" class="btn btn-success btn-sm pull-right" value="Add" />
                         </div>
@@ -85,7 +93,7 @@
                             </div>
 
                             <div class="br"></div>
-                            Amount : <input type="text" class="form-control form-control-sm text-right" name="creditAmount" id="creditAmount" />
+                            Amount : <input type="text" class="form-control form-control-sm text-right amount" name="creditAmount" id="creditAmount" />
                             <div class="br"></div>
                             <input type="button" id="AddCreditButton" class="btn btn-success btn-sm pull-right" value="Add" />
                         </div>
@@ -98,8 +106,9 @@
                             <input type="text" class="form-control form-control-sm" placeholder="Enter CreditNote No." name="creditNoteNumber" id="creditNoteNumber" />
                             <div class="br"></div>
                            
-                            Credit Note Amount : <input type="text" class="form-control form-control-sm text-right" name="creditNoteAmount" id="creditNoteAmount" readonly/>
+                            Credit Note Amount : <input type="text" class="form-control form-control-sm text-right amount" name="creditNoteAmount" id="creditNoteAmount" readonly/>
                             <div class="br"></div>
+                            <span class="fa fa-info-circle text-warning onetimewarning"> This is one time use Amount.</span>
                             <input type="button" id="AddCreditNoteNumbertButton" class="btn btn-success btn-sm pull-right" value="Add" />
                         </div>
                     </div>
@@ -109,10 +118,10 @@
             <div class="br"></div>
             <div class="row pt-5">
                 <div class="col-md-6">
-                    Total Remaining : <input type="text" id="totalRemainingAmountTextBox" class="form-control" />
+                    <span class="total">Total Remaining :</span> <input type="text" id="totalRemainingAmountTextBox" class="form-control" />
                 </div>
                 <div class="col-md-6">
-                    Change : <input type="text" id="totalChangeAmountTextBox" class="form-control" />
+                    <span class="total"> Change :</span> <input type="text" id="totalChangeAmountTextBox" class="form-control" />
                 </div>
             </div>
 
@@ -172,7 +181,7 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
-
+         var customerList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Customer));
     </script>
     <script src="~/js/Page/SalesInvoiceBill.js"></script>
 }

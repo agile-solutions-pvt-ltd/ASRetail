@@ -87,13 +87,21 @@
         position: absolute;
         right: -42px;
         top: 0px;
-        z-index:1;
+        z-index: 1;
     }
-    #memberSaveButtonSH{
-        display:none;
-    }
-</style>
 
+    #memberSaveButtonSH {
+        display: none;
+    }
+
+    .flatDiscountHide {
+        display: none;
+    }
+
+
+
+   
+</style>
 
 <div class="row">
     <div class="col-md-12">
@@ -136,7 +144,7 @@
                     <span asp-validation-for="Trans_Date_Bs" class="text-danger"></span>
                 </div>
                 <div class="form-group col-md-2">
-                    <button id="convert-sales-tax" value=" Convert" title="Convert to Tax Invoice" class="btn btn-sm btn-convert-to-tax btn-warning"><span class="fa fa-exchange"></span> Convert</button>
+                    <button type="button" id="convert-sales-tax" value=" Convert" title="Convert to Tax Invoice" class="btn btn-sm btn-convert-to-tax btn-warning"><span class="fa fa-exchange"></span> Convert</button>
 
                 </div>
             </div>
@@ -168,7 +176,7 @@
                             <input class="form-check-input" type="radio" name="flatDiscount" id="percentRadio" value="percent">
                             <label class="form-check-label" for="percentRadio">%</label>
                         </div>
-                        <div class="form-check form-check-inline flatDiscountHide">
+                        <div class="form-check form-check-inline">
                             <input class="form-check-input" type="radio" name="flatDiscount" id="amountRadio" value="amount">
                             <label class="form-check-label" for="amountRadio">Rs</label>
                         </div>
@@ -272,5 +280,8 @@
         var salesInvoiceTmpData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
     </script>
     <script src="~/js/Page/SalesInvoice.js"></script>
-
+    <script src="~/lib/jquery-tablescroll/jquery.tablescroll.js"></script>
+<script>
+   // $('#item_table').tableScroll({height:220});
+</script>
 }

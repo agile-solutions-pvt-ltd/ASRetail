@@ -108,9 +108,10 @@
                 RoleId: $("#roleWiseUserPermission_RoleId").val(),
                 Sales_Discount_Flat_Item: $("#roleWiseUserPermission_Sales_Discount_Flat_Item").is(":checked"),
                 Sales_Discount_Line_Item: $("#roleWiseUserPermission_Sales_Discount_Line_Item").is(":checked"),
-                Sales_Discount_Flat_Item_Limit: $("#roleWiseUserPermission_Sales_Discount_Flat_Item_Limit").val(),
-                Sales_Discount_Line_Item_Limit: $("#roleWiseUserPermission_Sales_Discount_Line_Item_Limit").val(),
-                Sales_Rate_Edit: $("#roleWiseUserPermission_Sales_Rate_Edit").is(":checked")
+                Sales_Discount_Flat_Item_Limit: $("#roleWiseUserPermission_Sales_Discount_Flat_Item_Limit").val() || 0,
+                Sales_Discount_Line_Item_Limit: $("#roleWiseUserPermission_Sales_Discount_Line_Item_Limit").val() || 0,
+                Sales_Rate_Edit: $("#roleWiseUserPermission_Sales_Rate_Edit").is(":checked"),
+                Credit_Note_Bill_Pay: $("#roleWiseUserPermission_Credit_Note_Bill_Pay").is(":checked")
             },
             roleWiseMenuPermissions: selectedNodesFinal
         };

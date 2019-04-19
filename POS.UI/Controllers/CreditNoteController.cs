@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -39,7 +40,7 @@ namespace POS.UI.Controllers
                 creditNote.Division = "Divisioin";
                 creditNote.Terminal = "Terminal";
                 creditNote.Created_Date = DateTime.Now;
-                creditNote.Created_By = "";
+                creditNote.Created_By = this.User.FindFirstValue(ClaimTypes.NameIdentifier); ;
                 _context.Add(creditNote);
 
                 foreach (var item in creditNote.CreditNoteItems)
@@ -67,8 +68,29 @@ namespace POS.UI.Controllers
         //[HttpGet]
         //public IActionResult Index(Guid id)
         //{
-            
-        //    return View("CreditNote");
+        //    if (id != null) {
+        //        CreditNote creditNote = _context.CreditNote.Include(x => x.CreditNoteItems).FirstOrDefault(x => x.Id == id);
+        //        return Ok(creditNote);
+        //    }
+        //    return StatusCode(404);
         //}
+        [HttpGet]
+        public IActionResult GetCreditNote(string CN)
+        {
+            if (!string.IsNullOrEmpty(CN))
+            {
+                CreditNote creditNote = _context.CreditNote.Include(x => x.CreditNoteItems).FirstOrDefault(x => x.Credit_Note_Number == CN);                
+                if(creditNote != null && creditNote.Trans_Date_Ad.Value < DateTime.Now.AddDays(-7))
+                {
+                    return StatusCode(400, new { Message = "Credit Note Expired !!" });
+                }
+                else if(creditNote.Remarks == "Claimed")
+                {
+                    return StatusCode(400, new { Message = "Already Claimed !!" });
+                }
+                return Ok(creditNote);
+            }
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

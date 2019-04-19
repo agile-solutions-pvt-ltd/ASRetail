@@ -21,6 +21,7 @@ namespace POS.DTO
         public decimal? Quantity { get; set; }
         public decimal? Gross_Amount { get; set; }
         public decimal? Discount { get; set; }
+        public bool Is_Discountable { get; set; }
         public decimal? Tax { get; set; }
         public decimal? Net_Amount { get; set; }
         public bool? Is_Vatable { get; set; } = false;

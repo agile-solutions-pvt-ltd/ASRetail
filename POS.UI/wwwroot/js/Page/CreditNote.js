@@ -2,6 +2,7 @@
     //*********Private Variables **************//
     let salesItems = [];
     var isFirstTimeLoadItem = true;
+    var invoiceExpiredDays = 7;
     var table = document.getElementById("item_table").getElementsByTagName('tbody')[0];
     let $form = $('form#Credit_Note_Form');
 
@@ -21,8 +22,9 @@
     let loadInvoice = (invoiceNumber) => {
         if (validateInvoiceNumber(invoiceNumber)) {
             getInvoice(invoiceNumber, function (data) {
-                if (validateInvoiceData(data)) {
+                if (validateInvoiceData(data)) {                   
                     salesItems = data.salesInvoiceItems;
+                    resetTransactionData();
                     loadPausedTransactionData(data);
                 }
             });
@@ -39,7 +41,7 @@
 
                 } else
                     callback(data.responseJSON);
-            },
+            }
         });
     };
     let validateInvoiceNumber = (invoiceNumber) => {
@@ -49,7 +51,7 @@
     let validateInvoiceData = (data) => {
         let transDate = new Date(data.trans_Date_Ad);
         let compareDate = new Date();
-        compareDate.setDate(compareDate.getDate() - 7);
+        compareDate.setDate(compareDate.getDate() - invoiceExpiredDays);
         compareDate = new Date(compareDate);
 
         if (data.remarks === "Return") {
@@ -67,19 +69,20 @@
     };
     let validateCreditNoteItems = () => {
         //check if quantity is max then sales quantity
-
+        
         //but skip for firsttime load
         let isValid = true;
-        if (!isFirstTimeLoadItem)
-            $.each(table.rows, function (i, v) {
-                if (parseFloat($(this).find(".Quantity").val()) >= parseFloat($(this).find(".Quantity").attr("max"))) {
-                    displayError("Return quantity cannot be greater than sales quantity !!");
-                    $(this).find(".Quantity").val($(this).find(".Quantity").attr("max"));
-                    isValid = false;
-                    return false;
-                }
-            });
-        isFirstTimeLoadItem = false;
+        //if (!isFirstTimeLoadItem)
+           
+        //isFirstTimeLoadItem = false;
+        $.each(table.rows, function (i, v) {
+            if (parseFloat($(this).find(".Quantity").val()) >= parseFloat($(this).find(".Quantity").attr("max"))) {
+                displayError("Return quantity cannot be greater than sales quantity !!");
+                $(this).find(".Quantity").val($(this).find(".Quantity").attr("max"));
+                isValid = false;
+                return false;
+            }
+        });
         //check when new quantity is added
         let itemCode = $("#item_code").val();
         if (!_.isEmpty(itemCode)) {
@@ -100,11 +103,26 @@
        // updateFlatDiscount();
         validateCreditNoteItems();
     };
+    let resetTransactionData = () => {
+        var table = document.getElementById("item_table").getElementsByTagName('tbody')[0];
+        if (table.rows.length > 0) {
+            $('#item_table').find('tbody').detach();
+            $('#item_table').append($('<tbody>'));             
+        }
+    };
+    let convertSalesTax = (type) => {
+        if (type === "Sales") {
+            //remove tax columns
+            $('thead > tr > th:nth-child(9),tbody > tr > td:nth-child(9), tfoot > tr > td:nth-child(5)').hide();
+        } else {
+            $('thead > tr > th:nth-child(9),tbody > tr > td:nth-child(9), tfoot > tr > td:nth-child(5)').show();
+        }
+    };
     let displayError = (message) => {
         $("#errorMessage").text(message);
         $("#errorMessage").show();
         setTimeout(function () { $("#errorMessage").hide(); }, 9000);
-    };
+    };   
     let GetItems = (code, callback) => {
         $.ajax({
             url: "https://localhost:44355/item/GetItems/?code=" + code,
@@ -193,7 +211,7 @@
         $.each(table.rows, function (i, v) {
             var grossAmount = parseFloat($(this).find(".GrossAmount").val());
             var discount = grossAmount * percent / 100;
-            $(this).find(".Discount").val((discount).toFixed(2));
+            $(this).find(".Discount").val(discount.toFixed(2));
         });
         calcTotal();
     };
@@ -215,7 +233,7 @@
             return false;
 
         var table = document.getElementById("item_table").getElementsByTagName('tbody')[0];
-        var t1 = (table.rows.length);
+        var t1 = table.rows.length;
 
         //first check there alreay item in pos  
         var checkAlreadyExistItem = false;
@@ -259,7 +277,7 @@
         var table = document.getElementById("item_table").getElementsByTagName('tbody')[0];
         var t1 = table.rows.length;
 
-        var row = table.insertRow(t1);
+        var row = table.insertRow(0);
         var cell1 = row.insertCell(0); //SN
         var cell2 = row.insertCell(1); //Bar Code
         var cell3 = row.insertCell(2); //Item Name
@@ -271,35 +289,33 @@
         var cell9 = row.insertCell(8); //Tax
         var cell10 = row.insertCell(9); //Net Amount
         var cell11 = row.insertCell(10); //delete button
-        debugger;
+       
 
         var barCode = result.bar_Code || result.Bar_Code;
         var itemName = result.name || result.Name;
         var unit = result.unit || result.Unit;
         var rate = result.rate || result.Rate;
-        var quantity = (result.quantity || result.Quantity) === undefined ? 1 : (result.quantity || result.Quantity);
-
-        var grossAmount = rate * quantity;
+        var quantity = (result.quantity || result.Quantity) === undefined ? 1 : (result.quantity || result.Quantity);        
         var discount = (result.discount || result.Discount) === undefined ? 0 : (result.discount || result.Discount);
         var tax = (result.tax || result.Tax) === undefined ? 0 : (result.tax || result.Tax);
-        var netAmount = grossAmount - discount;
+        var grossAmount = 0;
+        var netAmount = 0;
 
-        //invoiceItems[0].sn
-
-        $('<i class="sn font-weight-bold">' + (table.rows.length) + '</i>').appendTo(cell1);
+        
+        $('<i class="sn font-weight-bold">' + table.rows.length + '</i>').appendTo(cell1);
         $("<span class='barcode'>" + barCode + "</span>").appendTo(cell2);
         $("<span>" + itemName + "</span>").appendTo(cell3);
         $("<span>" + unit + "</span>").appendTo(cell4);
-        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Rate" type="number" onkeyup="creditNote.calcTotal()" name="Rate" min="0" value=' + rate.toFixed(2) + '>').appendTo(cell5);
+        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Rate" type="number" onkeyup="creditNote.calcTotal()" disabled name="Rate" min="0" value=' + rate.toFixed(2) + '>').appendTo(cell5);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Quantity" type="number" onkeyup="creditNote.quantityChangeEvent(this);creditNote.calcTotal();" name="Quantity" min="1" max=' + quantity.toString() + ' value=' + quantity.toString() + '>').appendTo(cell6);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right GrossAmount" type="number" onkeyup="creditNote.calcTotal()" name="GrossAmount" disabled value=' + grossAmount.toFixed(2) + '>').appendTo(cell7);
-        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Discount" type="number" onkeyup="creditNote.calcTotal()" name="Discount" min="0" value=' + discount.toFixed(2) + '>').appendTo(cell8);
+        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Discount" type="number" disabled onkeyup="creditNote.calcTotal()" name="Discount" min="0" value=' + discount.toFixed(2) + '>').appendTo(cell8);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Tax" type="number" onkeyup="creditNote.calcTotal()" name="Tax" disabled value=' + tax.toFixed(2) + '>').appendTo(cell9);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right NetAmount" type="number" onkeyup="creditNote.calcTotal()" name="NetAmount" disabled value=' + netAmount.toFixed(2) + '>').appendTo(cell10);
 
         $('<botton onclick="creditNote.delete_row(this);" class="btn btn-sm btn-danger"><i class="fa fa-times fa-sm"></i></botton>').appendTo(cell11);
 
-        calcAll();
+        calcTotal();
     };
     let resetForm = () => {
         window.location.href = window.location.origin + "/CreditNote";
@@ -377,14 +393,14 @@
         if (data.salesInvoiceItems !== null) {
             //customer info
             $("#Customer_Id").val(data.customer_Id);
-            //flat discount
-            if (data.flat_Discount_Amount !== null) {
-                $("#amountRadio").prop("checked", true);
-                $("#flat_discount").val(data.flat_Discount_Amount);
-            } else {
-                $("#percentRadio").prop("checked", true);
-                $("#flat_discount").val(data.flat_Discount_Percent);
-            }
+            ////flat discount
+            //if (data.flat_Discount_Amount !== null) {
+            //    $("#amountRadio").prop("checked", true);
+            //    $("#flat_discount").val(data.flat_Discount_Amount);
+            //} else {
+            //    $("#percentRadio").prop("checked", true);
+            //    $("#flat_discount").val(data.flat_Discount_Percent);
+            //}
 
             //insert items
             if (data.salesInvoiceItems.length > 0) {
@@ -392,6 +408,8 @@
                     addRowWithData(x);
                 });
             }
+           
+            convertSalesTax(data.trans_Type);
         }
     };
     let getUrlParameters = () => {
@@ -431,16 +449,19 @@
 
 
 
-    $("#trans_date_ad").datepicker();
-    $('#trans_date_bs').nepaliDatePicker({
-        onChange: function () {
-            $('#trans_date_ad').val(FormatForDisplay(BS2AD($('#trans_date_bs').val())));
+   // $("#trans_date_ad").datepicker();
+    //$('#trans_date_bs').nepaliDatePicker({
+    //    onChange: function () {
+    //        $('#trans_date_ad').val(FormatForDisplay(BS2AD($('#trans_date_bs').val())));
 
-        }
-    });
+    //    }
+    //});
 
     $('#trans_date_ad').change(function () {
         $('#trans_date_bs').val(AD2BS(FormatForInput($('#trans_date_ad').val())));
+    });
+    $('#trans_date_bs').change(function () {
+        $('#trans_date_ad').val(FormatForDisplay(BS2AD($('#trans_date_bs').val())));
     });
 
     $("#customer_icon_toggle").on('click', function () {

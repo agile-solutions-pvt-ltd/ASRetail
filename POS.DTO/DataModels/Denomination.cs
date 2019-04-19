@@ -48,6 +48,7 @@ namespace POS.DTO
         [Display(Name = "IC")]
         public decimal? Ric { get; set; } = 0;
         public decimal? Other { get; set; } = 0;
+        [Required,Range(1, double.MaxValue, ErrorMessage = "Total Amount should be greater than zero !!")]
         public decimal? Total { get; set; } = 0;
         public string Remarks { get; set; }
 

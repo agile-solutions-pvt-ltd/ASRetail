@@ -699,13 +699,20 @@ namespace POS.UI.Controllers
         [HttpGet]
         public IActionResult RoleWiseUserPermission()
         {
-            var role = ((ClaimsIdentity)User.Identity).Claims
+            var roleName = ((ClaimsIdentity)User.Identity).Claims
                  .Where(c => c.Type == ClaimTypes.Role)
                  .Select(c => c.Value).FirstOrDefault();
+
+           //Task<string> roleId =  _roleManager.GetRoleIdAsync(new IdentityRole(role));
+           // roleId.Wait();
+
+
+            var role =_roleManager.FindByNameAsync(roleName);
+            var roleId = role.Result.Id;
             RoleWisePermissionCommon data = new RoleWisePermissionCommon();
             if (role != null)
             {
-                data.roleWiseUserPermission = _context.RoleWisePermission.FirstOrDefault(x => x.RoleId == role.FirstOrDefault().ToString());
+                data.roleWiseUserPermission = _context.RoleWisePermission.FirstOrDefault(x => x.RoleId == roleId);
                // data.roleWiseMenuPermissions = _context.RoleWiseMenuPermission.Where(x => x.RoleId == id).ToList();
             }
             return Ok(data);

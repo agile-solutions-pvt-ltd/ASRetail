@@ -106,7 +106,7 @@ namespace POS.UI
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseCookiePolicy();
+            
 
             app.UseAuthentication();
 
@@ -116,7 +116,7 @@ namespace POS.UI
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
-
+            app.UseCookiePolicy();
             Task t = CreateUserRoles(service);
             t.Wait();
 

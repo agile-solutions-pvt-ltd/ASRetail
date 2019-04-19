@@ -26,8 +26,8 @@ namespace POS.UI.Controllers
 
 
 
-
-        public IActionResult Index(Guid? id)
+        [HttpGet]
+        public IActionResult Index(Guid? id, string StatusMessage)
         {
             SalesInvoiceTmp tmp;
             if (id != null)
@@ -49,6 +49,7 @@ namespace POS.UI.Controllers
                     Invoice_Number = "SI-" + invoiceId.ToString("0000") + "-" + store.INITIAL + "-" + store.FISCAL_YEAR
                 };
             }
+            TempData["StatusMessage"] = StatusMessage;
             ViewData["Customer"] = _context.Customer;
             return View(tmp);
         }
@@ -193,15 +194,32 @@ namespace POS.UI.Controllers
                     item.Invoice_Number = salesInvoice.Invoice_Number;
                     item.Invoice_Type = salesInvoice.Trans_Type;
                     _context.SalesInvoiceBill.Add(item);
+
+
+                    //if credit note amount is used then update credit note table
+                    if (item.Trans_Mode == "Credit Note")
+                    {
+                        CreditNote creditNote = _context.CreditNote.FirstOrDefault(x => x.Credit_Note_Number == item.Account);
+                        if(creditNote != null)
+                        {
+                            creditNote.Created_By = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                            creditNote.Created_Date = DateTime.Now;
+                            creditNote.Remarks = "Claimed";
+                            _context.Entry(creditNote).State = EntityState.Modified;
+                        }
+                    }
                 }
+
+
+               
                 _context.SaveChanges();
 
                 //if everything seems good, then delete salesInvoiceTmp
                 _context.Remove(salesInvoiceTmp);
                 _context.SaveChanges();
 
-                TempData["StatusMessage"] = "Bill Payment Successfull !!";
-                return RedirectToAction("Index");
+                //TempData["StatusMessage"] = "Bill Payment Successfull !!";
+                return Ok("Bill Payment Successfull !!");
             }
             catch (Exception ex)
             {
