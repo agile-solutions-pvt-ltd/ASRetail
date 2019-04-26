@@ -1,9 +1,0 @@
-E:\Projects\POS\POS.DTO\bin\Release\netcoreapp2.1\POS.DTO.deps.json
-E:\Projects\POS\POS.DTO\bin\Release\netcoreapp2.1\POS.DTO.dll
-E:\Projects\POS\POS.DTO\bin\Release\netcoreapp2.1\POS.DTO.pdb
-E:\Projects\POS\POS.DTO\obj\Release\netcoreapp2.1\POS.DTO.csprojAssemblyReference.cache
-E:\Projects\POS\POS.DTO\obj\Release\netcoreapp2.1\POS.DTO.csproj.CoreCompileInputs.cache
-E:\Projects\POS\POS.DTO\obj\Release\netcoreapp2.1\POS.DTO.AssemblyInfoInputs.cache
-E:\Projects\POS\POS.DTO\obj\Release\netcoreapp2.1\POS.DTO.AssemblyInfo.cs
-E:\Projects\POS\POS.DTO\obj\Release\netcoreapp2.1\POS.DTO.dll
-E:\Projects\POS\POS.DTO\obj\Release\netcoreapp2.1\POS.DTO.pdb

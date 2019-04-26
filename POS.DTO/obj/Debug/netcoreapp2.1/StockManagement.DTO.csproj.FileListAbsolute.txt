@@ -1,9 +1,0 @@
-d:\Users\Ashok\Documents\Visual Studio 2017\Projects\StockManagement\StockManagement.DTO\bin\Debug\netcoreapp2.1\StockManagement.DTO.deps.json
-d:\Users\Ashok\Documents\Visual Studio 2017\Projects\StockManagement\StockManagement.DTO\bin\Debug\netcoreapp2.1\StockManagement.DTO.dll
-d:\Users\Ashok\Documents\Visual Studio 2017\Projects\StockManagement\StockManagement.DTO\bin\Debug\netcoreapp2.1\StockManagement.DTO.pdb
-d:\Users\Ashok\Documents\Visual Studio 2017\Projects\StockManagement\StockManagement.DTO\obj\Debug\netcoreapp2.1\StockManagement.DTO.csproj.CoreCompileInputs.cache
-d:\Users\Ashok\Documents\Visual Studio 2017\Projects\StockManagement\StockManagement.DTO\obj\Debug\netcoreapp2.1\StockManagement.DTO.AssemblyInfoInputs.cache
-d:\Users\Ashok\Documents\Visual Studio 2017\Projects\StockManagement\StockManagement.DTO\obj\Debug\netcoreapp2.1\StockManagement.DTO.AssemblyInfo.cs
-d:\Users\Ashok\Documents\Visual Studio 2017\Projects\StockManagement\StockManagement.DTO\obj\Debug\netcoreapp2.1\StockManagement.DTO.dll
-d:\Users\Ashok\Documents\Visual Studio 2017\Projects\StockManagement\StockManagement.DTO\obj\Debug\netcoreapp2.1\StockManagement.DTO.pdb
-D:\Users\ashok\Documents\Visual Studio 2017\Projects\StockManagement\StockManagement.DTO\obj\Debug\netcoreapp2.1\StockManagement.DTO.csprojAssemblyReference.cache
