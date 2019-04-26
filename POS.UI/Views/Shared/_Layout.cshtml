@@ -19,11 +19,20 @@
     <environment exclude="Development">
         <link href="~/lib/bootstrap-v4.0/dist/css/bootstrap.css" rel="stylesheet" />
         <link href="~/lib/bootstrap-treeview/css/bootstrap-treeview.css" rel="stylesheet" />
+        @*<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />*@
+        <link href="~/css/bootstrap-override.css" rel="stylesheet" />
+        <link rel="stylesheet" href="~/css/site.css" />
+        <link href="~/lib/jquery-ui/jquery-ui.css" rel="stylesheet" />
+        <link href="~/lib/nepali.datepicker/nepali.datepicker.v2.2.min.css" rel="stylesheet" />
+        <link href="~/lib/font-awesome/css/font-awesome.css" rel="stylesheet" />
+        <link href="~/lib/datatable/datatables.min.css" rel="stylesheet" />
+        @*<link href="~/lib/bootstrap-v4.0/dist/css/bootstrap.css" rel="stylesheet" />
+        <link href="~/lib/bootstrap-treeview/css/bootstrap-treeview.css" rel="stylesheet" />
         <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
         <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
         <link href="~/lib/nepali.datepicker/nepali.datepicker.v2.2.min.css" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-        <link href="~/lib/datatable/datatables.min.css" rel="stylesheet" />
+        <link href="~/lib/datatable/datatables.min.css" rel="stylesheet" />*@
     </environment>
 </head>
 <body>
@@ -70,69 +79,7 @@
     </nav>*@
 
 
-    <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
-        <a class="navbar-brand" asp-action="Index" asp-controller="Home">POS</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainnavbar" aria-controls="mainnavbar" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="mainnavbar">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item active">
-                    <a class="nav-link" asp-area="" asp-controller="Store" asp-action="Index">Store Info </a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="transactiondropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Transaction</a>
-                    <div class="dropdown-menu" aria-labelledby="transactiondropdown">
-                        <a class="dropdown-item" asp-controller="SalesInvoice" asp-action="Index" asp-route-id="">Sales Invoice</a>
-                        <a class="dropdown-item" href="/SalesInvoice?tax">Tax Invoice</a>
-                        <a class="dropdown-item" asp-controller="CreditNote" asp-action="Index">Credit Note</a>
-                        <a class="dropdown-item" asp-controller="Denomination" asp-action="Index">Cash Denomination</a>
-                    </div>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="setupdropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Setup</a>
-                    <div class="dropdown-menu" aria-labelledby="setupdropdown">
-                        <a class="dropdown-item" asp-controller="Customer" asp-action="Index">Customer Setup</a>
-                        <a class="dropdown-item" asp-controller="ItemCategory" asp-action="Index">Item Category Setup</a>
-                        <a class="dropdown-item" asp-controller="ItemGroup" asp-action="Index">Item Group Setup</a>
-                        <a class="dropdown-item" asp-controller="ItemType" asp-action="Index">Item Type Setup</a>
-                        <a class="dropdown-item" asp-controller="Item" asp-action="Index">Item Setup</a>
-                        <a class="dropdown-item" asp-controller="Terminal" asp-action="Index">Terminal Setup</a>
-                        <a class="dropdown-item" asp-controller="Account" asp-action="Roles">UserRole Setup</a>
-                        <a class="dropdown-item" asp-controller="Account" asp-action="Users">User Setup</a>
-                        <a class="dropdown-item" asp-controller="Account" asp-action="RoleWisePermission">RoleWise Permission</a>
-
-                    </div>
-                </li>
-                @*<li class="nav-item active">
-                    <a class="nav-link" asp-area="" asp-controller="Settings" asp-action="Index">Setting</a>
-                </li>*@
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="Reportdropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Reports</a>
-                    <div class="dropdown-menu" aria-labelledby="Reportdropdown">
-                        <a class="dropdown-item" asp-controller="Reports" asp-action="SalesInvoice">Sales Invoice Reports</a>
-                        <a class="dropdown-item" asp-controller="Reports" asp-action="TaxInvoice">Tax Invoice Reports</a>
-                        <a class="dropdown-item" asp-controller="Reports" asp-action="CreditNote">Credit Note Reports</a>
-                    </div>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" id="helpdropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Help</a>
-                    <div class="dropdown-menu" aria-labelledby="helpdropdown">
-                        <a class="dropdown-item" asp-controller="Settings" asp-action="Shortcuts">Shortcuts</a>
-
-                    </div>
-                </li>
-                @*<li class="nav-item active">
-                    <a class="nav-link" asp-area="" asp-controller="Store" asp-action="Index">Contact</a>
-                </li>*@
-            </ul>
-            <partial name="_LoginPartial" />
-            @*<form class="form-inline my-2 my-md-0">
-            <input class="form-control" type="text" placeholder="Search">
-        </form>*@
-        </div>
-    </nav>
+   <partial name="_NavBarPartial" />
 
 
     @*<partial name="_CookieConsentPartial" />*@
@@ -160,7 +107,19 @@
         <script src="~/js/assign-shortcut-keys.js"></script>
     </environment>
     <environment exclude="Development">
-        <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js"
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/lib/jquery-ui/jquery-ui.js"></script>
+        <script src="~/lib/bootstrap-v4.0/dist/js/bootstrap.js"></script>
+        <script src="~/lib/bootstrap-treeview/js/bootstrap-treeview.js"></script>
+        <script src="~/js/site.js" asp-append-version="true"></script>
+        <script src="~/lib/nepali.datepicker/nepali.datepicker.v2.2.min.js"></script>
+        @*<script src="~/lib/font-awesome/js/fontawesome.js"></script>*@
+        <script src="~/lib/underscore/underscore-min.js"></script>
+        <script src="~/lib/bootbox/bootbox.min.js"></script>
+        <script src="~/lib/datatable/datatables.min.js"></script>
+        <script src="~/lib/assign-shortcuts/mousetrap.js"></script>
+        <script src="~/js/assign-shortcut-keys.js"></script>
+        @*<script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js"
                 asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
                 asp-fallback-test="window.jQuery"
                 crossorigin="anonymous"
@@ -181,7 +140,7 @@
         <script src="~/lib/bootbox/bootbox.min.js"></script>
         <script src="~/lib/datatable/datatables.min.js"></script>
         <script src="~/lib/assign-shortcuts/mousetrap.min.js"></script>
-        <script src="~/js/assign-shortcut-keys.js"></script>
+        <script src="~/js/assign-shortcut-keys.js"></script>*@
     </environment>
 
     @RenderSection("Scripts", required: false)

@@ -66,7 +66,7 @@
     }
 
 
-    #item_table > tbody > tr.active {
+    .item_table > tbody > tr.active {
         background: #bbdabb;
         border-width: 1px;
         padding: 8px;
@@ -74,7 +74,7 @@
         border-color: #999999;
     }
 
-    #item_table > tfoot > tr {
+    .item_table > tfoot > tr {
         font-size: 20px;
         font-weight: bold;
     }
@@ -98,8 +98,36 @@
         display: none;
     }
 
+    #item_table_header{
+        /*width: 99%;*/
+        margin-bottom:0px;
+    }
+    .scrollable-table{
+        height:260px; 
+        overflow-y:hidden;
+    }
 
+/*table widths*/
+.sn-width{ width: 1%; }
+.barCode-width { width: 1%; }
+.itemName-width{ width: 12%; }
+.unit-width { width: 1%; }
+.rate-width{ width: 2%; }
+.quantity-width { width: 2%; }
+.grossAmount-width{ width: 2%; }
+.discount-width{ width: 2%; }
+.tax-width { width: 2%; }
+.netAmount-width{ width: 2%; }
+.action-width { width: 1%; }
 
+/*table footer*/
+#total{width: 22%;}
+#totalQuantity{ width: 2%; }
+#totalGrossAmount{ width: 2%; }
+#totalDiscount { width: 2%; }
+#totalTax{ width: 2%; }
+#totalNetAmount { width: 2%; }
+#actionFooter {width:1.4%; }
    
 </style>
 
@@ -158,7 +186,7 @@
                     </div>
                     <label class="control-label col-md-1 text-right pr-1">Bill To</label>
                     <div class="form-group col-md-2">
-                        @Html.DropDownList("Customer_Id", new SelectList(ViewBag.Customer, "Id", "Name"), "--Select Customer--", new { @class = "form-control form-control-sm" })
+                        @Html.DropDownList("Customer_Id", new SelectList(ViewBag.Customer, "Code", "Name"), "--Select Customer--", new { @class = "form-control form-control-sm" })
                     </div>
                     <div class="horizontal-form-padding">
 
@@ -227,23 +255,29 @@
 
             <div class="row">
                 <div class="col-md-12">
-                    <table id="item_table" class="item_table table table-sm table-bordered table-hover">
+                    <table id="item_table_header" class="item_table table table-sm table-bordered table-hover">
                         <thead>
                             <tr>
-                                <th>#</th>
-                                <th>BarCode</th>
-                                <th id="table-item-name">Item</th>
-                                <th>Unit</th>
-                                <th>Rate</th>
-                                <th>Quantity</th>
-                                <th>Gross Amount</th>
-                                <th>Discount</th>
-                                <th>Tax</th>
-                                <th>Net Amount</th>
-                                <th></th>
+                                <th class="sn-width">#</th>
+                                <th class="barCode-width">BarCode</th>
+                                <th class="itemName-width">Item</th>
+                                <th class="unit-width">Unit</th>
+                                <th class="rate-width">Rate</th>
+                                <th class="quantity-width">Quantity</th>
+                                <th class="grossAmount-width">Gross Amount</th>
+                                <th class="discount-width">Discount</th>
+                                <th class="tax-width">Tax</th>
+                                <th class="netAmount-width">Net Amount</th>
+                                <th class="action-width"></th>
                             </tr>
                         </thead>
-                        <tbody></tbody>
+                    </table>
+                    <div class="scrollable-table">
+                        <table id="item_table" class="item_table table table-sm table-bordered table-hover">
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <table id="item_table_footer" class="item_table table table-sm table-bordered table-hover">                       
                         <tfoot>
                             <tr>
                                 <th class="text-right" id="total" colspan="5">Total :</th>
@@ -252,7 +286,7 @@
                                 <td class="text-right" id="totalDiscount">0</td>
                                 <td class="text-right" id="totalTax">0</td>
                                 <td class="text-right" id="totalNetAmount">0</td>
-                                <td></td>
+                                <td id="actionFooter"></td>
                             </tr>
                         </tfoot>
                     </table>
@@ -280,7 +314,7 @@
         var salesInvoiceTmpData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
     </script>
     <script src="~/js/Page/SalesInvoice.js"></script>
-    <script src="~/lib/jquery-tablescroll/jquery.tablescroll.js"></script>
+    @*<script src="~/lib/jquery-tablescroll/jquery.tablescroll.js"></script>*@
 <script>
    // $('#item_table').tableScroll({height:220});
 </script>

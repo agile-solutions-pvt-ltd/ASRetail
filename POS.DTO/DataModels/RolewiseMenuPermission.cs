@@ -14,6 +14,9 @@ namespace POS.DTO
         [Display(Name ="Role")]
         public string RoleId { get; set; }
         [Display(Name = "Menu")]
-        public int MenuId { get; set; }        
+        public int MenuId { get; set; } 
+        
+        [ForeignKey("MenuId")]
+        public Menu Menu { get; set; }
     }
 }

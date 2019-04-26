@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using POS.UI.Models;
 
@@ -18,6 +19,9 @@ namespace POS.UI.Controllers
         public IActionResult About()
         {
             ViewData["Message"] = "Your application description page.";
+
+            var jobId = BackgroundJob.Enqueue(
+    () => Console.WriteLine("Fire-and-forget!"));
 
             return View();
         }

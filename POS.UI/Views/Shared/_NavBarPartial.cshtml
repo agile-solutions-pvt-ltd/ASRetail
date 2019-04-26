@@ -1,0 +1,71 @@
+
+<style>
+    /*.role-menu{
+        display:none;
+    }*/
+</style>
+
+<nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+    <a class="navbar-brand" asp-action="Index" asp-controller="Home">POS</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainnavbar" aria-controls="mainnavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="mainnavbar">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active role-menu Store_Info">
+                <a class="nav-link " asp-area="" asp-controller="Store" asp-action="Index">Store Info </a>
+            </li>
+            <li class="nav-item dropdown role-menu Transaction">
+                <a class="nav-link dropdown-toggle" id="transactiondropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Transaction</a>
+                <div class="dropdown-menu" aria-labelledby="transactiondropdown">
+                    <a class="dropdown-item role-menu Sales_Invoice" asp-controller="SalesInvoice" asp-action="Landing" asp-route-id="">Sales Invoice</a>
+                    <a class="dropdown-item role-menu Tax_Invoice" asp-controller="SalesInvoice" asp-action="Landing" asp-route-mode="tax">Tax Invoice</a>
+                    <a class="dropdown-item role-menu Credit_Note" asp-controller="CreditNote" asp-action="Index">Credit Note</a>
+                    <a class="dropdown-item role-menu Cash_Denomination" asp-controller="Denomination" asp-action="Index">Cash Denomination</a>
+                    <a class="dropdown-item role-menu Cash_Settlement" asp-controller="Settlement" asp-action="Index">Cash Settlement</a>
+                </div>
+            </li>
+            <li class="nav-item dropdown role-menu Setup">
+                <a class="nav-link dropdown-toggle" id="setupdropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Setup</a>
+                <div class="dropdown-menu" aria-labelledby="setupdropdown">
+                    <a class="dropdown-item role-menu Customer_Setup" asp-controller="Customer" asp-action="Index">Customer Setup</a>
+                    <a class="dropdown-item role-menu Item_Category_Setup" asp-controller="ItemCategory" asp-action="Index">Item Category Setup</a>
+                    <a class="dropdown-item role-menu Item_Group_Setup" asp-controller="ItemGroup" asp-action="Index">Item Group Setup</a>
+                    <a class="dropdown-item role-menu Item_Type_Setup" asp-controller="ItemType" asp-action="Index">Item Type Setup</a>
+                    <a class="dropdown-item role-menu Item_Setup" asp-controller="Item" asp-action="Index">Item Setup</a>
+                    <a class="dropdown-item role-menu Terminal_Setup" asp-controller="Terminal" asp-action="Index">Terminal Setup</a>
+                    <a class="dropdown-item role-menu UserRole_Setup" asp-controller="Account" asp-action="Roles">UserRole Setup</a>
+                    <a class="dropdown-item role-menu User_Setup" asp-controller="Account" asp-action="Users">User Setup</a>
+                    <a class="dropdown-item role-menu RoleWise_Permission" asp-controller="Account" asp-action="RoleWisePermission">RoleWise Permission</a>
+
+                </div>
+            </li>
+            @*<li class="nav-item active">
+                    <a class="nav-link" asp-area="" asp-controller="Settings" asp-action="Index">Setting</a>
+                </li>*@
+            <li class="nav-item dropdown role-menu Reports">
+                <a class="nav-link dropdown-toggle" id="Reportdropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Reports</a>
+                <div class="dropdown-menu" aria-labelledby="Reportdropdown">
+                    <a class="dropdown-item role-menu Sales_Invoice_Report" asp-controller="Reports" asp-action="SalesInvoice">Sales Invoice Reports</a>
+                    <a class="dropdown-item role-menu Tax_Invoice_Report" asp-controller="Reports" asp-action="TaxInvoice">Tax Invoice Reports</a>
+                    <a class="dropdown-item role-menu Credit_Note_Report" asp-controller="Reports" asp-action="CreditNote">Credit Note Reports</a>
+                </div>
+            </li>
+            <li class="nav-item dropdown role-menu Help">
+                <a class="nav-link dropdown-toggle" id="helpdropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Help</a>
+                <div class="dropdown-menu" aria-labelledby="helpdropdown">
+                    <a class="dropdown-item role-menu Shortcuts" asp-controller="Settings" asp-action="Shortcuts">Shortcuts</a>
+
+                </div>
+            </li>
+            @*<li class="nav-item active">
+                    <a class="nav-link" asp-area="" asp-controller="Store" asp-action="Index">Contact</a>
+                </li>*@
+        </ul>
+        <partial name="_LoginPartial" />
+        @*<form class="form-inline my-2 my-md-0">
+                <input class="form-control" type="text" placeholder="Search">
+            </form>*@
+    </div>
+</nav>

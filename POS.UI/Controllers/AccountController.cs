@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -70,7 +71,12 @@ namespace POS.UI.Controllers
                 {
                     var user = await _userManager.FindByEmailAsync(model.Email);
                     if (user != null)
+                    {
+                        //check if user is in session
+                       // _context.Settlement.Any(x => x.UserId == user.Id && x.Status == "Open");
+
                         result = await _signInManager.PasswordSignInAsync(user, model.Password, model.RememberMe, lockoutOnFailure: false);
+                    }
                 }
                 if (result.Succeeded)
                 {
@@ -96,6 +102,9 @@ namespace POS.UI.Controllers
             // If we got this far, something failed, redisplay form
             return View(model);
         }
+
+
+       
 
         //
         // GET: /Account/Register
@@ -144,6 +153,10 @@ namespace POS.UI.Controllers
         {
             await _signInManager.SignOutAsync();
             _logger.LogInformation(4, "User logged out.");
+            Response.Cookies.Append(User.Identity.Name, "", new CookieOptions()
+            {
+                Expires = DateTime.Now.AddDays(-1)
+            });
             return RedirectToAction("Login", "Account");
         }
 
@@ -716,6 +729,21 @@ namespace POS.UI.Controllers
                // data.roleWiseMenuPermissions = _context.RoleWiseMenuPermission.Where(x => x.RoleId == id).ToList();
             }
             return Ok(data);
+        }
+
+        [HttpGet]
+        public IActionResult RoleWiseMenuPermission()
+        {
+            var roleName = ((ClaimsIdentity)User.Identity).Claims
+                 .Where(c => c.Type == ClaimTypes.Role)
+                 .Select(c => c.Value).FirstOrDefault();
+
+            
+            var role = _roleManager.FindByNameAsync(roleName);
+            var roleId = role.Result.Id;
+           IList<RoleWiseMenuPermission> permission = _context.RoleWiseMenuPermission.Where(x => x.RoleId == roleId).Include(x => x.Menu).ToList();
+           
+            return Ok(permission);
         }
         #endregion
 

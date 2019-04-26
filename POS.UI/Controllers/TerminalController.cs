@@ -149,5 +149,17 @@ namespace POS.UI.Controllers
         {
             return _context.Terminal.Any(e => e.Id == id);
         }
+
+
+
+
+
+
+        [HttpGet]
+        public IActionResult DeviceMapping()
+        {
+            ViewData["Terminal_Id"] = new SelectList(_context.Terminal, "Id", "Name");
+            return View();
+        }
     }
 }

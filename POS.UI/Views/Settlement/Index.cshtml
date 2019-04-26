@@ -1,0 +1,86 @@
+﻿@model IEnumerable<POS.DTO.SettlementViewModel>
+
+@{
+    ViewData["Title"] = "Settlement";
+}
+
+<style>
+    .hr {
+        display: block;
+        margin-left: 0px;
+        margin-top: -5px;
+        width: 50%;
+        overflow: hidden;
+        border-style: inset;
+        border-width: 1px;
+    }
+</style>
+<h2>List of UnSettled Cash</h2>
+<hr />
+
+<div class="row" id="settlement-row">
+    <div class="col-md-12 pt-3 settlement-node">
+        <div class="card">
+            <div class="card-header bg-success">$Username || $terminalName</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h4>Transaction Amount</h4>
+                        <hr class="hr" />
+                        <div class="row">
+                            <div class="col-md-3 text-right">
+                                <span class="font-weight-bold">Duration :</span>
+                            </div>
+                            <div class="col-md-9">
+                                $startDate  <span class="font-weight-bold">To</span>  $endDate
+                            </div>
+                        </div>
+                        <div class="br"></div>
+                        <div id="settlement-payment-row">
+                            <div class="row" id="settlement-payment-node">
+                                <div class="col-md-3 text-right">
+                                    <span class="font-weight-bold">$paymentMode :</span>
+                                </div>
+                                <div class="col-md-9">
+                                    $amount
+                                </div>
+                            </div>
+                            <div class="br"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <h4>Denomination Amount</h4>
+                        <hr class="hr" />
+                        <div class="br"></div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <span class="font-weight-bold">Cash :</span>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                $denominationAmount
+                            </div>
+                        </div>
+                        <div class="br"></div>
+                        <a href="#" class="denomination-view" onclick="settlement.denominationView($denominationId);">view Details</a>
+                    </div>
+                    <div class="col-md-4">
+                        <h4>Adjustment Amount</h4>
+                        <hr class="hr" />
+                        <input type="text" class="form-control form-control-sm text-right col-md-7" placeholder="+- 0.00" />
+                    </div>
+                </div>
+                <input type="button" id="VerifyButton" class="btn btn-success pull-right btn-sm" value="Verify" />
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+@section Scripts {
+    <script src="~/js/Page/Settlement.js"></script>
+   
+}

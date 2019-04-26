@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -6,6 +7,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace POS.DTO 
 {
     [Table("SALES_INVOICE")]
+    [JsonObject(IsReference = true)]
     public partial class SalesInvoice
     {
         [Key]
@@ -26,7 +28,7 @@ namespace POS.DTO
         public string Division { get; set; }
         public string Terminal { get; set; }
         [Display(Name = "Bill To")]
-        public int? Customer_Id { get; set; }
+        public string Customer_Id { get; set; }
         [Display(Name = "Name")]
         public string Customer_Name { get; set; }
         [Display(Name = "Vat")]
@@ -48,6 +50,9 @@ namespace POS.DTO
         [Display(Name = "Total Vat")]
         public decimal? Total_Vat { get; set; } = 0;
         [Display(Name = "Total Net Amount")]
+
+        public decimal TaxableAmount { get; set; }
+        public decimal NonTaxableAmount { get; set; }
         public decimal? Total_Net_Amount { get; set; } = 0;
         [Display(Name = "Created By")]
         public string Created_By { get; set; }

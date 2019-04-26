@@ -37,20 +37,19 @@ namespace POS.UI.Controllers
                 return NotFound();
             }
 
-            var denomination = await _context.Denomination
-                .Include(d => d.Terminal)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var denomination = await _context.Denomination.FindAsync(id);
             if (denomination == null)
             {
                 return NotFound();
             }
-
+            // TempData["StatusMessage"] = TempData["StatusMessage"];
+            // ViewData["Terminal_Id"] = new SelectList(_context.Terminal, "Id", "Name", denomination.Terminal_Id);
             return View(denomination);
         }
 
         // GET: Denomination/Create
         public IActionResult Create()
-        {        
+        {
             ViewData["Terminal_Id"] = new SelectList(_context.Terminal, "Id", "Name");
             return View();
         }
@@ -64,23 +63,40 @@ namespace POS.UI.Controllers
         {
             if (ModelState.IsValid)
             {
-                //check if already exist
-                Denomination oldData = _context.Denomination.FirstOrDefault(x => x.Terminal_Id == denomination.Terminal_Id && x.Date.Equals(denomination.Date));
-                if (oldData != null)
+                //check if Session present
+                denomination.User_Id = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                IList<Settlement> settlementData = _context.Settlement.Where(x => x.TerminalId == denomination.Terminal_Id && x.UserId == denomination.User_Id).ToList();
+                if (settlementData == null || settlementData.Count == 0)
                 {
-                    ModelState.AddModelError(string.Empty,"Already Saved, Cannot Save Twice !!");
+                    ModelState.AddModelError(string.Empty, "Sorry, No Transaction Found In Your Name !!");
+                }
+                else if (!settlementData.Any(x => x.Status == "Open"))
+                {
+                    if (settlementData.Any(x => x.Status == "Closed"))
+                        ModelState.AddModelError(string.Empty, "Already Saved, Cannot Save Twice !!");
+                    else
+                        ModelState.AddModelError(string.Empty, "Sorry, No Transaction Found In Your Name !!");
                 }
                 else
                 {
-                    denomination.User_Id = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
                     _context.Add(denomination);
+
+                    await _context.SaveChangesAsync();
+                    var newSettlementData = settlementData.Where(x => x.Status == "Open");
+                    foreach (var item in newSettlementData)
+                    {
+                        item.Status = "Closed";
+                        item.DenominationId = denomination.Id;
+                        item.DenominationAmount = denomination.Total.Value;
+                        _context.Entry(item).State = EntityState.Modified;
+                    }
                     await _context.SaveChangesAsync();
                     TempData["StatusMessage"] = "Saved Successfully";
-                    return RedirectToAction(nameof(Edit), new { id= denomination.Id});
+                    return RedirectToAction(nameof(Edit), new { id = denomination.Id });
                 }
             }
             ViewData["Terminal_Id"] = new SelectList(_context.Terminal, "Id", "Name", denomination.Terminal_Id);
-           
+
             return View(denomination);
         }
 
@@ -97,7 +113,7 @@ namespace POS.UI.Controllers
             {
                 return NotFound();
             }
-           // TempData["StatusMessage"] = TempData["StatusMessage"];
+            // TempData["StatusMessage"] = TempData["StatusMessage"];
             ViewData["Terminal_Id"] = new SelectList(_context.Terminal, "Id", "Name", denomination.Terminal_Id);
             return View(denomination);
         }
@@ -135,7 +151,7 @@ namespace POS.UI.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["Terminal_Id"] = new SelectList(_context.Terminal, "Id", "Name" , denomination.Terminal_Id);
+            ViewData["Terminal_Id"] = new SelectList(_context.Terminal, "Id", "Name", denomination.Terminal_Id);
             return View(denomination);
         }
 

@@ -1,0 +1,65 @@
+﻿@{
+    ViewData["Title"] = "Landing";
+}
+<style>
+    .cinfo {
+        font-size: xx-large;
+    }
+    /* hide the blue outline */
+    .form-control:focus {
+        outline: 0 !important;
+        border-color: initial;
+        box-shadow: none;
+    }
+
+    .selected {
+        background-color: rgb(128, 128, 128);
+        color: #FFF;
+    }
+</style>
+<div class="cinfo text-center font-weight-bold p-5">Salesways Company, Satdobato</div>
+<div class="pt-3" style="        min-height: 300px">
+
+    <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-8">
+            <div class="form-group input-group">
+                <input type="search" class="form-control form-control-lg py-2 border-right-0 border search search-input" placeholder="Search Membership" />
+                <span class="input-group-append">
+                    <button class="btn btn-outline-secondar border-left-0 border search" type="button">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </span>
+            </div>
+            <div class="br"></div>
+            <div class= ="row">
+                <table id="memberTable" class="table table-sm table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Id</th>
+                            <th>Name</th>
+                            <th>Mobile</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-md-2"></div>
+
+    </div>
+</div>
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        var customerList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Customer));
+    </script>
+    <script src="~/js/Page/InvoiceLanding.js"></script>
+
+}

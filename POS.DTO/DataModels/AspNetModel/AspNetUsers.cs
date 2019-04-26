@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace POS.DTO
 {
     public partial class AspNetUsers
     {
-        public AspNetUsers()
-        {
-            AspNetUserClaims = new HashSet<AspNetUserClaims>();
-            AspNetUserLogins = new HashSet<AspNetUserLogins>();
-            AspNetUserRoles = new HashSet<AspNetUserRoles>();
-            AspNetUserTokens = new HashSet<AspNetUserTokens>();
-        }
-
+        //public AspNetUsers()
+        //{
+        //    AspNetUserClaims = new HashSet<AspNetUserClaims>();
+        //    AspNetUserLogins = new HashSet<AspNetUserLogins>();
+        //    AspNetUserRoles = new HashSet<AspNetUserRoles>();
+        //    AspNetUserTokens = new HashSet<AspNetUserTokens>();
+        //}
+        [Key]
         public string Id { get; set; }
         public string UserName { get; set; }
         public string NormalizedUserName { get; set; }
@@ -29,9 +30,9 @@ namespace POS.DTO
         public bool LockoutEnabled { get; set; }
         public int AccessFailedCount { get; set; }
 
-        public ICollection<AspNetUserClaims> AspNetUserClaims { get; set; }
-        public ICollection<AspNetUserLogins> AspNetUserLogins { get; set; }
-        public ICollection<AspNetUserRoles> AspNetUserRoles { get; set; }
-        public ICollection<AspNetUserTokens> AspNetUserTokens { get; set; }
+        //public ICollection<AspNetUserClaims> AspNetUserClaims { get; set; }
+        //public ICollection<IdentityUserLogin> AspNetUserLogins { get; set; }
+        //public ICollection<AspNetUserRoles> AspNetUserRoles { get; set; }
+        //public ICollection<AspNetUserTokens> AspNetUserTokens { get; set; }
     }
 }

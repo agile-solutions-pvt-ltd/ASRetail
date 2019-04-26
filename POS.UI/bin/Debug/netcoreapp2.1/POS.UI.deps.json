@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.1",
-    "signature": "98fa39dcd476e2d4e7e54af710144b71ab9ea10f"
+    "signature": "32ba6658ffa19bc2602798fd0f231267f3b37917"
   },
   "compilationOptions": {
     "defines": [
@@ -24,6 +24,7 @@
     ".NETCoreApp,Version=v2.1": {
       "POS.UI/1.0.0": {
         "dependencies": {
+          "Hangfire": "1.7.1",
           "Microsoft.AspNetCore.App": "2.1.1",
           "Microsoft.AspNetCore.Razor.Design": "2.1.2",
           "Microsoft.NETCore.App": "2.1.0",
@@ -37,6 +38,72 @@
         },
         "compile": {
           "POS.UI.dll": {}
+        }
+      },
+      "Hangfire/1.7.1": {
+        "dependencies": {
+          "Hangfire.AspNetCore": "1.7.1",
+          "Hangfire.Core": "1.7.1",
+          "Hangfire.SqlServer": "1.7.1"
+        }
+      },
+      "Hangfire.AspNetCore/1.7.1": {
+        "dependencies": {
+          "Hangfire.Core": "1.7.1",
+          "Microsoft.AspNetCore.Antiforgery": "2.1.1",
+          "Microsoft.AspNetCore.Hosting.Abstractions": "2.1.1",
+          "Microsoft.AspNetCore.Http.Abstractions": "2.1.1",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "2.1.1",
+          "Microsoft.Extensions.Logging.Abstractions": "2.1.1"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Hangfire.AspNetCore.dll": {
+            "assemblyVersion": "1.7.1.0",
+            "fileVersion": "1.7.1.0"
+          }
+        },
+        "compile": {
+          "lib/netstandard2.0/Hangfire.AspNetCore.dll": {}
+        }
+      },
+      "Hangfire.Core/1.7.1": {
+        "dependencies": {
+          "Newtonsoft.Json": "11.0.2"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Hangfire.Core.dll": {
+            "assemblyVersion": "1.7.1.0",
+            "fileVersion": "1.7.1.0"
+          }
+        },
+        "resources": {
+          "lib/netstandard2.0/es/Hangfire.Core.resources.dll": {
+            "locale": "es"
+          },
+          "lib/netstandard2.0/zh-TW/Hangfire.Core.resources.dll": {
+            "locale": "zh-TW"
+          },
+          "lib/netstandard2.0/zh/Hangfire.Core.resources.dll": {
+            "locale": "zh"
+          }
+        },
+        "compile": {
+          "lib/netstandard2.0/Hangfire.Core.dll": {}
+        }
+      },
+      "Hangfire.SqlServer/1.7.1": {
+        "dependencies": {
+          "Hangfire.Core": "1.7.1",
+          "System.Data.SqlClient": "4.5.1"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Hangfire.SqlServer.dll": {
+            "assemblyVersion": "1.7.1.0",
+            "fileVersion": "1.7.1.0"
+          }
+        },
+        "compile": {
+          "lib/netstandard2.0/Hangfire.SqlServer.dll": {}
         }
       },
       "Libuv/1.10.0": {
@@ -4415,6 +4482,34 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
+    },
+    "Hangfire/1.7.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-fHMFy2XsSsKwbOGkvUXIdvIHomtukRZlx8lf8/r8jvXUz6zLKu1dAZMUd67J87ELp7uwnM4ZINDqLSxMbPkRqA==",
+      "path": "hangfire/1.7.1",
+      "hashPath": "hangfire.1.7.1.nupkg.sha512"
+    },
+    "Hangfire.AspNetCore/1.7.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-IalrSP1i46YZ3vAvi+fuvxOKgZYTarrHTmcDE/ozHDWQAb+kn0mIv6V2bgaflSke9iKTZcNGr3tiuwS0iiA2Vw==",
+      "path": "hangfire.aspnetcore/1.7.1",
+      "hashPath": "hangfire.aspnetcore.1.7.1.nupkg.sha512"
+    },
+    "Hangfire.Core/1.7.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-h3TRinkn1JqBbbL/R3VrZxhdtrr0AZ6Etz/919U1WDVoK7fzvxUu4YEZyNxtUwcgNZ+MZVXd4y9sj6S9rfY95Q==",
+      "path": "hangfire.core/1.7.1",
+      "hashPath": "hangfire.core.1.7.1.nupkg.sha512"
+    },
+    "Hangfire.SqlServer/1.7.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Aqtqk+Hzc1qBK4krBJ4ziATSC+oRIiHD4gO09C+YwxDm5RYRvgk5K8z+LDLmZVcoeO3/KaR/X8l31MHPTaQ8sw==",
+      "path": "hangfire.sqlserver/1.7.1",
+      "hashPath": "hangfire.sqlserver.1.7.1.nupkg.sha512"
     },
     "Libuv/1.10.0": {
       "type": "package",

@@ -13,6 +13,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using POS.Core;
 using POS.DTO;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Hangfire;
 
 namespace POS.UI
 {
@@ -20,7 +22,7 @@ namespace POS.UI
     {
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;           
+            Configuration = configuration;
         }
 
         public IConfiguration Configuration { get; }
@@ -88,6 +90,13 @@ namespace POS.UI
 
             ////for global variables
             services.Configure<AppSettings>(Configuration);
+
+            //prevent multiple login
+            services.Configure<SecurityStampValidatorOptions>(options => options.ValidationInterval = TimeSpan.FromSeconds(30));
+
+            services.AddHangfire(
+                    x => x.UseSqlServerStorage(Configuration.GetConnectionString("DefaultConnection"))
+                    );
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -106,7 +115,7 @@ namespace POS.UI
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            
+
 
             app.UseAuthentication();
 
@@ -117,8 +126,12 @@ namespace POS.UI
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
             app.UseCookiePolicy();
+
             Task t = CreateUserRoles(service);
             t.Wait();
+
+            app.UseHangfireDashboard();
+            app.UseHangfireServer();
 
             // ResolveMethods();
 
@@ -158,6 +171,6 @@ namespace POS.UI
         }
 
 
-      
+
     }
 }

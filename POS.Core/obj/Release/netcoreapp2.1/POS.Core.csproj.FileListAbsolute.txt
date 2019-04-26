@@ -1,0 +1,12 @@
+E:\Projects\POS\POS.Core\bin\Release\netcoreapp2.1\POS.Core.deps.json
+E:\Projects\POS\POS.Core\bin\Release\netcoreapp2.1\POS.Core.dll
+E:\Projects\POS\POS.Core\bin\Release\netcoreapp2.1\POS.Core.pdb
+E:\Projects\POS\POS.Core\bin\Release\netcoreapp2.1\POS.DTO.dll
+E:\Projects\POS\POS.Core\bin\Release\netcoreapp2.1\POS.DTO.pdb
+E:\Projects\POS\POS.Core\obj\Release\netcoreapp2.1\POS.Core.csprojAssemblyReference.cache
+E:\Projects\POS\POS.Core\obj\Release\netcoreapp2.1\POS.Core.csproj.CoreCompileInputs.cache
+E:\Projects\POS\POS.Core\obj\Release\netcoreapp2.1\POS.Core.AssemblyInfoInputs.cache
+E:\Projects\POS\POS.Core\obj\Release\netcoreapp2.1\POS.Core.AssemblyInfo.cs
+E:\Projects\POS\POS.Core\obj\Release\netcoreapp2.1\POS.Core.csproj.CopyComplete
+E:\Projects\POS\POS.Core\obj\Release\netcoreapp2.1\POS.Core.dll
+E:\Projects\POS\POS.Core\obj\Release\netcoreapp2.1\POS.Core.pdb

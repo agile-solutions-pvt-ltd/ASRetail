@@ -42,14 +42,25 @@ namespace POS.Core
         public virtual DbSet<RoleWiseMenuPermission> RoleWiseMenuPermission { get; set; }
 
         public virtual DbSet<Menu> Menu { get; set; }
-       
+        public virtual DbSet<Settlement> Settlement { get; set; }
+        public virtual DbSet<SettlementViewModel> SettlementViewModel { get; set; }
+        public virtual DbSet<User> User { get; set; }
 
 
+        public virtual DbSet<InvoiceMaterializedView> InvoiceMaterializedView { get; set; }
 
+        
+
+        
         //protected override void OnModelCreating(ModelBuilder modelBuilder)
         //{
         //    // ignore a type that is not mapped to a database table
-        //    modelBuilder.Ignore<ApplicationUser>();            
+        //    // modelBuilder.Ignore<ApplicationUser>();
+
+        //    modelBuilder.Entity<IdentityUserLogin>().HasKey(table => new {
+        //        table.LoginProvider,
+        //        table.ProviderKey
+        //    });
         //}
     }
 }

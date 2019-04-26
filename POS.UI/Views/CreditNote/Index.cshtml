@@ -123,7 +123,7 @@
                 <div class="form-row">
                     <label class="control-label col-md-1">Bill To</label>
                     <div class="form-group col-md-2">
-                        @Html.DropDownList("Customer_Id", new SelectList(ViewBag.Customer, "Id", "Name"), "--Select Customer--", new { @class = "form-control form-control-sm" })
+                        @Html.DropDownList("Customer_Id", new SelectList(ViewBag.Customer, "Code", "Name"), "--Select Customer--", new { @class = "form-control form-control-sm" })
                     </div>
                     <div class="horizontal-form-padding">
 

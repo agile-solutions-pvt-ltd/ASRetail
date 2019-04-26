@@ -26,7 +26,7 @@ namespace POS.DTO
         public string Division { get; set; }
         public string Terminal { get; set; }
         [Display(Name = "Bill To")]
-        public int? Customer_Id { get; set; }
+        public string Customer_Id { get; set; }
         [Display(Name = "Name")]
         public string Customer_Name { get; set; }
         [Display(Name = "Vat")]
@@ -44,6 +44,8 @@ namespace POS.DTO
         public decimal? Total_Gross_Amount { get; set; }
         public decimal? Total_Discount { get; set; }
         public decimal? Total_Vat { get; set; }
+        public decimal TaxableAmount { get; set; }
+        public decimal NonTaxableAmount { get; set; }
         public decimal? Total_Net_Amount { get; set; }
         public string Created_By { get; set; }
         public DateTime? Created_Date { get; set; }
