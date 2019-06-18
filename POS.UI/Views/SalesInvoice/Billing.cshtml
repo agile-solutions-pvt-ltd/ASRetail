@@ -18,170 +18,270 @@
         font-size: x-large;
         font-weight: bold;
     }
-    #creditNote, .onetimewarning{
-        display:none;
+
+    #creditNote, #credit, .onetimewarning, #promoDiscount, #loyaltyDiscount,#Vat13 {
+        display: none;
+    }
+
+    .font-amount {
+        font-size: 22px
+    }
+
+    .font-amount-lg {
+        font-size: 32px;
+    }
+
+    .net-amount-color {
+        color: blue;
+    }
+
+    .change-amount-color {
+        color: red;
     }
 </style>
 
-<div class="br"></div>
-<div class="alert alert-danger alert-dismissible fade show" id="error-message" role="alert">
-    <span></span>
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-    </button>
-</div>
-<p><br /></p>
-<h4>Total Bill Amount : Rs. <span id="totalNetAmountSpan">@salesInvoice.Total_Net_Amount </span></h4>
-<p></p>
-
-<form asp-action="Billing">
-    <input type="hidden" asp-for="Invoice_Id" value="@salesInvoice.Id" />
-    <input type="hidden" id="TotalNetAmount" value="@salesInvoice.Total_Net_Amount" />
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-
-
-
-    <div class="row">
-        <div class="col-md-2 text-center">
-            <button class="btn payment-mode" data-mode="cash"><span class="fa fa-money fa-4x text-primary text-success"></span><br />Cash (F1)</button>
-            <div class="br"></div>
-            <button class="btn payment-mode" data-mode="debitCard"><span class="fa fa-credit-card fa-4x text-primary"></span><br />Credit Card (F2)</button>
-            <div class="br"></div>
-            <button class="btn payment-mode" data-mode="credit"><span class="fa fa-id-card  fa-4x text-primary"></span><br />Credit (F3)</button>
-            <div class="br"></div>
-            <button class="btn payment-mode" id="creditNote" data-mode="creditNote"><span class="fa fa-credit-card-alt  fa-4x text-primary"></span><br />Credit Note (F4)</button>
+<div class="page-wrapper">
+    <div class="page-header">
+        <div class="page-header-title">
+            <h4>@ViewData["Title"]</h4>
         </div>
-        <div class="col-md-6">
-            <div class="row">
-                <div class="col-md-12 pt-5 payment-mode-panel" id="cash-panel">
-                    <div class="card">
-                        <div class="card-header bg-success">Cash</div>
-                        <div class="card-body">
-                            Cash Amount : <input type="text" class="form-control form-control-sm text-right amount" name="cashAmount" id="cashAmount" />
-                            <div class="br"></div>
-                            <input type="button" id="AddCashButton" class="btn btn-success pull-right btn-sm" value="Add" />
+        <div class="page-header-breadcrumb">
+            <ul class="breadcrumb-title">
+                <li class="breadcrumb-item">
+                    <a href="index.html">
+                        <i class="icofont icofont-home"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">Terminal</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">@ViewData["Title"]</a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+    <div class="page-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-block">
+                        @*Your content here*@
+
+                        <div class="alert alert-danger alert-dismissible fade show" id="error-message" role="alert">
+                            <span></span>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
                         </div>
-                    </div>
-                </div>
-                <div class="col-md-12 pt-5 payment-mode-panel" id="debitCard-panel">
-                    <div class="card">
-                        <div class="card-header bg-success">ATM Card</div>
-                        <div class="card-body">
-                            @*Card Type : <input type="text" class="form-control" name="cardType" id="cardType" />
-                                <select id="cardType" name="cardType" class="form-control form-control-sm text-right">
-                                    <option value="CREDIT CARD A\C">CREDIT CARD A\C</option>
-                                </select>
-                                <div class="br"></div>*@
-                            Amount : <input type="text" class="form-control form-control-sm text-right amount" name="cardAmount" id="cardAmount" />
-                            <div class="br"></div>
-                            <input type="button" id="AddDebitCardButton" class="btn btn-success btn-sm pull-right" value="Add" />
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-12 pt-5 payment-mode-panel" id="credit-panel">
-                    <div class="card">
-                        <div class="card-header bg-success">Credit Account</div>
-                        <div class="card-body">
-                            Credit Customer :
-                            @Html.DropDownList("customer", new SelectList(ViewBag.Customer, "Code", "Name"), "--Select Customer--", new { @class = "form-control form-control-sm" })
-                            <div class="br"></div>
-                            <div class="br"></div>
-                            <div class="row form-horizontal">
-                                <div class="col-md-4"><strong>Pan No.: </strong> <label id="customerPan"></label></div>
-                                <div class="col-md-8"><strong>Address: </strong> <label id="customerAddress"></label> </div>
+
+
+
+                        <form asp-action="Billing">
+                            <input type="hidden" asp-for="Invoice_Id" value="@salesInvoice.Id" />
+                            <input type="hidden" id="TotalNetAmount" value="@salesInvoice.Total_Net_Amount" />
+                            <input type="hidden" asp-for="Trans_Mode" value="@salesInvoice.Trans_Type"/>
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                            <div class="row">
+
+                                <button class="col-md-3 mr-1 btn payment-mode" data-mode="cash" data-shortcut="f1"><span class="fa fa-money fa-4x text-primary text-success"></span><br />Cash (F1)</button>
+
+                                <button class="col-md-2 mr-1 btn payment-mode" data-mode="debitCard" data-shortcut="f2"><span class="fa fa-credit-card fa-4x text-primary"></span><br />Card (F2)</button>
+
+                                <button class="col-md-3 mr-1 btn payment-mode" id="credit" data-mode="credit" data-shortcut="f3"><span class="fa fa-id-card  fa-4x text-primary"></span><br />Credit (F3)</button>
+
+                                <button class="col-md-3 mr-1 btn payment-mode" id="creditNote" data-mode="creditNote" data-shortcut="f4"><span class="fa fa-credit-card-alt  fa-4x text-primary"></span><br />Cr. Note (F4)</button>
+
                             </div>
 
-                            <div class="br"></div>
-                            Amount : <input type="text" class="form-control form-control-sm text-right amount" name="creditAmount" id="creditAmount" />
-                            <div class="br"></div>
-                            <input type="button" id="AddCreditButton" class="btn btn-success btn-sm pull-right" value="Add" />
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-12 pt-5 payment-mode-panel" id="creditNote-panel">
-                    <div class="card">
-                        <div class="card-header bg-success">Credit Note</div>
-                        <div class="card-body">
-                            <input type="text" class="form-control form-control-sm" placeholder="Enter CreditNote No." name="creditNoteNumber" id="creditNoteNumber" />
-                            <div class="br"></div>
-                           
-                            Credit Note Amount : <input type="text" class="form-control form-control-sm text-right amount" name="creditNoteAmount" id="creditNoteAmount" readonly/>
-                            <div class="br"></div>
-                            <span class="fa fa-info-circle text-warning onetimewarning"> This is one time use Amount.</span>
-                            <input type="button" id="AddCreditNoteNumbertButton" class="btn btn-success btn-sm pull-right" value="Add" />
-                        </div>
+
+
+
+                            <div class="row">
+                                @*<div class="col-md-2 pl-0 text-center">
+                                    <button class="btn payment-mode" data-mode="cash" data-shortcut="f1"><span class="fa fa-money fa-4x text-primary text-success"></span><br />Cash (F1)</button>
+                                    <div class="br"></div>
+                                    <button class="btn payment-mode" data-mode="debitCard" data-shortcut="f2"><span class="fa fa-credit-card fa-4x text-primary"></span><br />Card (F2)</button>
+                                    <div class="br"></div>
+                                    <button class="btn payment-mode" id="credit" data-mode="credit" data-shortcut="f3"><span class="fa fa-id-card  fa-4x text-primary"></span><br />Credit (F3)</button>
+                                    <div class="br"></div>
+                                    <button class="btn payment-mode" id="creditNote" data-mode="creditNote" data-shortcut="f4"><span class="fa fa-credit-card-alt  fa-4x text-primary"></span><br />Cr. Note (F4)</button>
+                                </div>*@
+                                <div class="col-md-6">
+                                    <div class="row">
+                                        <div class="col-md-12 pt-5 payment-mode-panel" id="cash-panel">
+                                            <div class="card">
+                                                <div class="card-header bg-success">Cash</div>
+                                                <div class="card-body">
+                                                    Cash Amount : <input type="text" class="form-control form-control-sm text-right amount" name="cashAmount" id="cashAmount" />
+                                                    <div class="br"></div>
+                                                    <input type="button" id="AddCashButton" class="btn btn-success pull-right btn-sm" value="Add" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12 pt-5 payment-mode-panel" id="debitCard-panel">
+                                            <div class="card">
+                                                <div class="card-header bg-success">ATM Card</div>
+                                                <div class="card-body">
+                                                    @*Card Type : <input type="text" class="form-control" name="cardType" id="cardType" />
+                                                    <select id="cardType" name="cardType" class="form-control form-control-sm text-right">
+                                                        <option value="CREDIT CARD A\C">CREDIT CARD A\C</option>
+                                                    </select>
+                                                    <div class="br"></div>*@
+                                                    Amount : <input type="text" class="form-control form-control-sm text-right amount" name="cardAmount" id="cardAmount" />
+                                                    <div class="br"></div>
+                                                    <input type="button" id="AddDebitCardButton" class="btn btn-success btn-sm pull-right" value="Add" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12 pt-5 payment-mode-panel" id="credit-panel">
+                                            <div class="card">
+                                                <div class="card-header bg-success">Credit Account</div>
+                                                <div class="card-body">
+                                                    Credit Customer :
+                                                    @Html.DropDownList("customer", new SelectList(ViewBag.Customer, "Code", "Name"), "--Select Customer--", new { @class = "form-control form-control-sm" })
+                                                    <div class="br"></div>
+                                                    <div class="br"></div>
+                                                    <div class="row form-horizontal">
+                                                        <div class="col-md-4"><strong>Pan No.: </strong> <label id="customerPan"></label></div>
+                                                        <div class="col-md-8"><strong>Address: </strong> <label id="customerAddress"></label> </div>
+                                                    </div>
+
+                                                    <div class="br"></div>
+                                                    Amount : <input type="text" class="form-control form-control-sm text-right amount" name="creditAmount" id="creditAmount" />
+                                                    <div class="br"></div>
+                                                    <input type="button" id="AddCreditButton" class="btn btn-success btn-sm pull-right" value="Add" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12 pt-5 payment-mode-panel" id="creditNote-panel">
+                                            <div class="card">
+                                                <div class="card-header bg-success">Credit Note</div>
+                                                <div class="card-body">
+                                                    <input type="text" class="form-control form-control-sm" placeholder="Enter CreditNote No." name="creditNoteNumber" id="creditNoteNumber" />
+                                                    <div class="br"></div>
+
+                                                    Credit Note Amount : <input type="text" class="form-control form-control-sm text-right amount" name="creditNoteAmount" id="creditNoteAmount" readonly />
+                                                    <div class="br"></div>
+                                                    <span class="fa fa-info-circle text-warning onetimewarning"> This is one time use Amount.</span>
+                                                    <input type="button" id="AddCreditNoteNumbertButton" class="btn btn-success btn-sm pull-right" value="Add" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="br"></div>
+                                    <div class="row">
+                                        <table id="billing-table" class="billing-table table table-bordered table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Mode</th>
+                                                    <th>Account</th>
+                                                    <th>Amount</th>
+                                                    <th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <th id="total" class="text-right" colspan="3">Total :</th>
+                                                    <th id="totalTableAmount">0</th>
+                                                    <th></th>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+
+                                </div>
+
+                                <div class="col-md-6 pt-5">
+                                    <div class="row">
+                                        <div class="col-sm-7 font-weight-bold font-amount text-right">Total Gross Amount :</div>
+                                        <div class="col-sm-5 font-weight-bold font-amount text-right">Rs. <span id="totalNetAmountSpan">@salesInvoice.Total_Gross_Amount </span></div>
+                                    </div>
+                                    <div class="br"></div>
+                                    <div id="promoDiscount">
+                                        <div class="row">
+                                            <div class="col-sm-7 font-weight-bold font-amount text-right">Promo Discount :</div>
+                                            <div class="col-sm-5 font-weight-bold font-amount text-right">Rs. <span id="promoDiscountSpan">@salesInvoice.Total_Discount </span></div>
+                                        </div>
+                                    </div>
+                                    <div class="br"></div>
+                                    <div id="loyaltyDiscount">
+                                        <div class="row">
+                                            <div class="col-sm-7 font-weight-bold font-amount text-right">Loyalty Discount :</div>
+                                            <div class="col-sm-5 font-weight-bold font-amount text-right">Rs. <span id="loyaltyDiscountSpan"></span></div>
+                                        </div>
+                                    </div>
+                                    <div class="br"></div>
+                                    <div id="Vat13">
+                                        <div class="row">
+                                            <div class="col-sm-7 font-weight-bold font-amount text-right">Vat (13%) :</div>
+                                            <div class="col-sm-5 font-weight-bold font-amount text-right">Rs. <span id="vatSpan">@salesInvoice.Total_Vat</span></div>
+                                        </div>
+                                    </div>
+                                    <div class="br"></div>
+                                    <div class="row">
+                                        <div class="col-sm-7 font-weight-bold font-amount net-amount-color  text-right">Payable Amount :</div>
+                                        <div class="col-sm-5 font-weight-bold font-amount-lg net-amount-color text-right">Rs. <span id="totalPayableAmount"> </span></div>
+                                    </div>
+                                    <div class="br"></div>
+
+                                    <div class="row pt-1">
+                                        <div class="col-sm-7 font-weight-bold font-amount text-right">Tender Amount :</div>
+                                        <div class="col-sm-5 font-weight-bold font-amount text-right">Rs. <span id="tenderAmount"> </span></div>
+                                    </div>
+                                    <div class="br"></div>
+                                    <div class="row pt-1">
+                                        <div class="col-sm-7 font-weight-bold font-amount change-amount-color text-right">Change Amount :</div>
+                                        <div class="col-sm-5 font-weight-bold font-amount-lg change-amount-color text-right">Rs. <span id="changeAmount"> </span></div>
+                                    </div>
+                                    <div class="br"></div>
+                                    <div class="row pt-3">
+                                        <div class="col-sm-12">
+                                            <input type="button" value="Pay Bill" id="SaveButton" class="btn btn-block btn-lg pull-right btn-success" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                            @*<div class="form-group">
+                                <label asp-for="Trans_Mode" class="control-label"></label>
+                                <input asp-for="Trans_Mode" class="form-control" />
+                                <span asp-validation-for="Trans_Mode" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Account" class="control-label"></label>
+                                <input asp-for="Account" class="form-control" />
+                                <span asp-validation-for="Account" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Amount" class="control-label"></label>
+                                <input asp-for="Amount" class="form-control" />
+                                <span asp-validation-for="Amount" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <input type="submit" value="Create" class="btn btn-default" />
+                            </div>*@
+                        </form>
                     </div>
                 </div>
             </div>
-            <div class="br"></div>
-            <div class="br"></div>
-            <div class="row pt-5">
-                <div class="col-md-6">
-                    <span class="total">Total Remaining :</span> <input type="text" id="totalRemainingAmountTextBox" class="form-control" />
-                </div>
-                <div class="col-md-6">
-                    <span class="total"> Change :</span> <input type="text" id="totalChangeAmountTextBox" class="form-control" />
-                </div>
-            </div>
-
-        </div>
-        <div class="col-md-4">
-            <table id="billing-table" class="billing-table table table-sm table-bordered table-striped table-hover">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Mode</th>
-                        <th>Account</th>
-                        <th>Amount</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-                <tfoot>
-                    <tr>
-                        <th id="total" class="text-right" colspan="3">Total :</th>
-                        <th id="totalTableAmount">0</th>
-                        <th></th>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-
-    </div>
-    <div class="br"></div>
-    <div class="row">
-        <div class="col-md-11">
-            <input type="button" value="Pay Bill" id="SaveButton" class="btn btn-lg pull-right btn-success" />
-
         </div>
     </div>
+</div>
 
 
-    @*<div class="form-group">
-            <label asp-for="Trans_Mode" class="control-label"></label>
-            <input asp-for="Trans_Mode" class="form-control" />
-            <span asp-validation-for="Trans_Mode" class="text-danger"></span>
-        </div>
-        <div class="form-group">
-            <label asp-for="Account" class="control-label"></label>
-            <input asp-for="Account" class="form-control" />
-            <span asp-validation-for="Account" class="text-danger"></span>
-        </div>
-        <div class="form-group">
-            <label asp-for="Amount" class="control-label"></label>
-            <input asp-for="Amount" class="form-control" />
-            <span asp-validation-for="Amount" class="text-danger"></span>
-        </div>
-        <div class="form-group">
-            <input type="submit" value="Create" class="btn btn-default" />
-        </div>*@
-</form>
+
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    <script>
+<script>
          var customerList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Customer));
-    </script>
-    <script src="~/js/Page/SalesInvoiceBill.js"></script>
+</script>
+<script src="~/js/Page/SalesInvoiceBill.js"></script>
 }

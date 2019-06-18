@@ -1,0 +1,182 @@
+﻿
+@{
+    ViewData["Title"] = "API Setup";
+}
+
+<div class="page-wrapper">
+    <div class="page-header">
+        <div class="page-header-title">
+            <h4>@ViewData["Title"]</h4>
+            <span>List of @ViewData["Title"]</span>
+        </div>
+        <div class="page-header-breadcrumb">
+            <ul class="breadcrumb-title">
+                <li class="breadcrumb-item">
+                    <a href="index.html">
+                        <i class="icofont icofont-home"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">Settings</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">@ViewData["Title"]</a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+    <div class="page-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-block">
+                        @*Your content here*@
+                        <pre>//***** NAV API Setup ********//</pre>
+                        <div class="row">
+                            <label class="col-md-2">Base Url</label>
+                            <div class="col-md-4">
+                                <input type="text" id="NavApiBaseUrl" class="form-control form-control-sm" value="@ViewBag.API.NavApiBaseUrl" />
+                            </div>
+                        </div>
+                        <div class="br"></div>
+                        <div class="row">
+                            <label class="col-md-2">Path</label>
+                            <div class="col-md-4">
+                                <input type="text" id="NavPath" class="form-control form-control-sm" value="@ViewBag.API.NavPath" />
+                            </div>
+                        </div>
+                        <div class="br"></div>
+                        <div class="row">
+                            <label class="col-md-2">Server Id</label>
+                            <div class="col-md-4">
+                                <input type="text" id="NavCompanyId" class="form-control form-control-sm" value="@ViewBag.API.NavCompanyId" />
+                            </div>
+                        </div>
+                        <div class="br"></div>
+                        <div class="row">
+                            <label class="col-md-2">Branch Code</label>
+                            <div class="col-md-4">
+                                <input type="text" id="Location" class="form-control form-control-sm" value="@ViewBag.API.Location" />
+                            </div>
+                        </div>
+                        <div class="br"></div>
+                        <div class="row">
+                            <label class="col-md-2">UserName</label>
+                            <div class="col-md-4">
+                                <input type="text" id="NavUserName" class="form-control form-control-sm" value="@ViewBag.API.NavUserName" />
+                            </div>
+                        </div>
+                        <div class="br"></div>
+                        <div class="row">
+                            <label class="col-md-2">Password</label>
+                            <div class="col-md-4 input-group ">
+                                <input type="password" id="NavPassword" class="form-control form-control-sm border-right-0 border" value="@ViewBag.API.NavPassword" />
+                                <span class="input-group-append border-left-0 border p-2">
+                                    <i toggle="#NavPassword" class="fa fa-fw fa-eye field-icon toggle-password bg-transparent"></i>
+                                </span>
+                               
+
+                            </div>
+                        </div>
+
+
+
+
+                        <div class="br pt-5"></div>
+                        <pre>//***** IRD API Setup ********//</pre>
+                        <div class="row">
+                            <label class="col-md-2">Base Url</label>
+                            <div class="col-md-4">
+                                <input type="text" id="IRDBaseUrl" class="form-control form-control-sm" value="@ViewBag.API.IRDBaseUrl" />
+                            </div>
+                        </div>
+                        <div class="br"></div>
+                        <div class="row">
+                            <label class="col-md-2">Path</label>
+                            <div class="col-md-4">
+                                <input type="text" id="IRDBillUrl" class="form-control form-control-sm" value="@ViewBag.API.IRDBillUrl" />
+                            </div>
+                        </div>
+                        <div class="br"></div>
+                        <div class="row">
+                            <label class="col-md-2">UserName</label>
+                            <div class="col-md-4">
+                                <input type="text" id="IRDUserName" class="form-control form-control-sm" value="@ViewBag.API.IRDUserName" />
+                            </div>
+                        </div>
+                        <div class="br"></div>
+                        <div class="row">
+                            <label class="col-md-2">Password</label>
+                            <div class="col-md-4 input-group">
+                                <input type="password" id="IRDPassword" class="form-control form-control-sm border-right-0 border" value="@ViewBag.API.IRDPassword" />
+                                <span class="input-group-append border-left-0 border p-2">
+                                    <i toggle="#IRDPassword" class="fa fa-fw fa-eye field-icon toggle-password bg-transparent"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="br"></div>
+                        <div class="row">
+                            <label class="col-md-2"></label>
+                            <div class="col-md-4 ">
+                                <input type="button" id="Save" class="btn btn-block btn-success" value="Save" />
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section scripts{
+    <script>
+        $(".toggle-password").click(function () {
+
+            $(this).toggleClass("fa-eye fa-eye-slash");
+            var input = $($(this).attr("toggle"));
+            if (input.attr("type") == "password") {
+                input.attr("type", "text");
+            } else {
+                input.attr("type", "password");
+            }
+        });
+
+
+
+        $("#Save").on("click", function () {
+            var final = {
+                IRDBaseUrl: $("#IRDBaseUrl").val(),
+                IRDBillUrl: $("#IRDBillUrl").val(),
+                IRDUserName: $("#IRDUserName").val(),
+                IRDPassword: $("#IRDPassword").val(),
+                NavApiBaseUrl: $("#NavApiBaseUrl").val(),
+                NavPath: $("#NavPath").val(),
+                NavCompanyId: $("#NavCompanyId").val(),
+                NavUserName: $("#NavUserName").val(),
+                NavPassword: $("#NavPassword").val(),
+                Location: $("#Location").val()
+            };
+
+            $.ajax({
+                method: "POST",
+                url: "/Settings/APISetup",
+                data: JSON.stringify(final),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                complete: function (result) {
+                    if (result.status === 200) {
+                        StatusNotify("success", "Changes Saved Successfully")
+                    }
+                    else
+                         StatusNotify("error", "Error occur, try again later")
+                }
+            });
+        });
+    </script>
+
+}

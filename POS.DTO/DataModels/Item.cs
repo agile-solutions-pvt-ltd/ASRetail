@@ -10,7 +10,7 @@ namespace POS.DTO
     {     
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
+        public string Id { get; set; }
         public string Code { get; set; }
         public string Bar_Code { get; set; }
         public string Name { get; set; }
@@ -21,6 +21,10 @@ namespace POS.DTO
         public decimal Discount { get; set; }
         public bool Is_Discountable { get; set; }
         public bool? Is_Vatable { get; set; } = false;
+        public bool KeyInWeight { get; set; } = false;
+        public bool? Is_Active { get; set; } = true;
         public string Remarks { get; set; }
+        public string VendorNumber { get; set; }
+        public string DiscountGroup { get; set; }
     }
 }

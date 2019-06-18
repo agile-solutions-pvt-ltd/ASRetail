@@ -12,10 +12,10 @@ namespace POS.DTO
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string SessionId { get; set; }
-        public int TerminalId { get; set; }
+        public int? TerminalId { get; set; }
         public string UserId { get; set; }
         public int DenominationId { get; set; }
-        public decimal DenominationAmount { get; set; }
+       
         public string TransactionNumber { get; set; }
         public DateTime TransactionDate { get; set; }
         public string PaymentMode { get; set; }
@@ -23,6 +23,8 @@ namespace POS.DTO
         public string Status { get; set; }
         public string VerifiedBy { get; set; }
         public DateTime VerifiedDate { get; set; }
+        public decimal AdjustmentAmount { get; set; }
+        public decimal ShortExcessAmount { get; set; }
         public string Remarks { get; set; }
 
         [ForeignKey("UserId")]

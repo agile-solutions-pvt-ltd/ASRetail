@@ -13,7 +13,11 @@ namespace POS.DTO
         public string fiscal_year { get; set; }
         public string buyer_name { get; set; }
         public string invoice_number { get; set; }
+        public string ref_invoice_number { get; set; }
         public string invoice_date { get; set; }
+       public string  credit_note_date { get; set; }
+        public string credit_note_number { get; set; }
+        public string reason_for_return { get; set; }
         public double total_sales { get; set; }
         public double taxable_sales_vat { get; set; }
         public double vat { get; set; }

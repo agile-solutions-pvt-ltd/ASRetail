@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,7 @@ using POS.DTO;
 
 namespace POS.UI.Controllers
 {
-    [Authorize]
+    [RolewiseAuthorized]
     public class DenominationController : Controller
     {
         private readonly EntityCore _context;
@@ -50,7 +51,8 @@ namespace POS.UI.Controllers
         // GET: Denomination/Create
         public IActionResult Create()
         {
-            ViewData["Terminal_Id"] = new SelectList(_context.Terminal, "Id", "Name");
+            var terminal = HttpContext.Session.GetString("Terminal");
+            ViewData["Terminal_Id"] = new SelectList(_context.Terminal, "Id", "Name", terminal);
             return View();
         }
 
@@ -64,8 +66,8 @@ namespace POS.UI.Controllers
             if (ModelState.IsValid)
             {
                 //check if Session present
-                denomination.User_Id = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
-                IList<Settlement> settlementData = _context.Settlement.Where(x => x.TerminalId == denomination.Terminal_Id && x.UserId == denomination.User_Id).ToList();
+                denomination.User_Id = User.Identity.Name;
+                IList<Settlement> settlementData = _context.Settlement.Where(x => x.UserId == denomination.User_Id).ToList();
                 if (settlementData == null || settlementData.Count == 0)
                 {
                     ModelState.AddModelError(string.Empty, "Sorry, No Transaction Found In Your Name !!");
@@ -79,6 +81,7 @@ namespace POS.UI.Controllers
                 }
                 else
                 {
+                    denomination.TotalCash = denomination.Total;//CalcTotalCash(denomination);
                     _context.Add(denomination);
 
                     await _context.SaveChangesAsync();
@@ -86,8 +89,7 @@ namespace POS.UI.Controllers
                     foreach (var item in newSettlementData)
                     {
                         item.Status = "Closed";
-                        item.DenominationId = denomination.Id;
-                        item.DenominationAmount = denomination.Total.Value;
+                        item.DenominationId = denomination.Id;                        
                         _context.Entry(item).State = EntityState.Modified;
                     }
                     await _context.SaveChangesAsync();
@@ -134,7 +136,7 @@ namespace POS.UI.Controllers
             {
                 try
                 {
-                    denomination.User_Id = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    denomination.User_Id = User.Identity.Name;
                     _context.Update(denomination);
                     await _context.SaveChangesAsync();
                 }
@@ -188,6 +190,28 @@ namespace POS.UI.Controllers
         private bool DenominationExists(int id)
         {
             return _context.Denomination.Any(e => e.Id == id);
+        }
+
+
+        private decimal CalcTotalCash(Denomination denomination)
+        {
+
+
+            var result = (denomination.R05.HasValue ? denomination.R05.Value : 0) +
+            (denomination.R1.HasValue ? denomination.R1.Value : 0) +
+            (denomination.R10.HasValue ? denomination.R10.Value : 0) +
+            (denomination.R100.HasValue ? denomination.R100.Value : 0) +
+            (denomination.R1000.HasValue ? denomination.R1000.Value : 0) +
+            (denomination.R2.HasValue ? denomination.R2.Value : 0) +
+            (denomination.R20.HasValue ? denomination.R20.Value : 0) +
+            (denomination.R25.HasValue ? denomination.R25.Value : 0) +
+            (denomination.R250.HasValue ? denomination.R250.Value : 0) +
+            (denomination.R5.HasValue ? denomination.R5.Value : 0) +
+            (denomination.R50.HasValue ? denomination.R50.Value : 0) +
+            (denomination.R500.HasValue ? denomination.R500.Value : 0) +
+            (denomination.Ric.HasValue ? denomination.Ric.Value : 0);
+
+            return result;
         }
     }
 }

@@ -17,5 +17,6 @@ namespace POS.DTO
         public string Remarks { get; set; }
         [Display(Name="Cash Drop Limit")]
         public decimal? Cash_Drop_Limit { get; set; }
+        public decimal Cash_Opening_Balance { get; set; }
     }
 }

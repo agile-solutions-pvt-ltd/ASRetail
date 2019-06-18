@@ -1,0 +1,187 @@
+﻿<nav class="pcoded-navbar">
+    <div class="sidebar_toggle"><a href="#"><i class="icon-close icons"></i></a></div>
+    <div class="pcoded-inner-navbar main-menu">
+        <ul class="pcoded-item pcoded-left-item">
+            <li class="pcoded">
+                <a asp-action="index" asp-controller="Home">
+                    <span class="pcoded-micon"><i class="ti-home"></i></span>
+                    <span class="pcoded-mtext" data-i18n="nav.dash.main">Dashboard</span>
+
+                </a>
+            </li>
+        </ul>
+        <div class="pcoded-navigatio-lavel" data-i18n="nav.category.navigation">Transaction</div>
+        <ul class="pcoded-item pcoded-left-item">
+            <li class="pcoded role-menu Sales_Invoice">
+                <a asp-controller="SalesInvoice" asp-action="Landing" asp-route-id="">
+                    <span class="pcoded-micon"><i class="ti-home"></i></span>
+                    <span class="pcoded-mtext" data-i18n="nav.dash.main">Sales Invoice</span>
+                    <span class="pcoded-badge label label-primary">Ctrl+Alt+i</span>
+                   
+                </a>
+            </li>
+            <li class="pcoded role-menu Tax_Invoice">
+                <a asp-controller="SalesInvoice" asp-action="Landing" asp-route-mode="tax">
+                    <span class="pcoded-micon"><i class="ti-layout"></i></span>
+                    <span class="pcoded-mtext" data-i18n="nav.page_layout.main">Tax Invoice</span>
+                    <span class="pcoded-badge label label-primary">Ctrl+Alt+t</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+            <li class="pcoded role-menu Credit_Note">
+                <a asp-controller="CreditNote" asp-action="Index">
+                    <span class="pcoded-micon"><i class="ti-layout-cta-right"></i></span>
+                    <span class="pcoded-mtext" data-i18n="nav.navigate.main">Credit Note</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+            <li class="pcoded role-menu Cash_Denomination">
+                <a asp-controller="Denomination" asp-action="Index">
+                    <span class="pcoded-micon"><i class="ti-layout-cta-right"></i></span>
+                    <span class="pcoded-mtext" data-i18n="nav.navigate.main">Cash Denomination</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+            <li class="pcoded role-menu Cash_Settlement">
+                <a asp-controller="Settlement" asp-action="Index">
+                    <span class="pcoded-micon"><i class="ti-layout-cta-right"></i></span>
+                    <span class="pcoded-mtext" data-i18n="nav.navigate.main">Cash Settlement</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+        </ul>
+        <div class="pcoded-navigatio-lavel" data-i18n="nav.category.pages">Others</div>
+        <ul class="pcoded-item pcoded-left-item">
+            
+
+            <li class="pcoded-hasmenu role-menu Setup">
+                <a href="javascript:void(0)">
+                    <span class="pcoded-micon"><i class="ti-user"></i></span>
+                    <span class="pcoded-mtext">Setup</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+                <ul class="pcoded-submenu">
+                    <li class="role-menu Customer_Setup">
+                        <a asp-controller="Customer" asp-action="Index">
+                            <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                            <span class="pcoded-mtext">Customer Setup</span>
+                            <span class="pcoded-mcaret"></span>
+                        </a>
+                    </li>
+                    <li class="role-menu Item_Category_Setup">
+                        <a asp-controller="ItemCategory" asp-action="Index">
+                            <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                            <span class="pcoded-mtext">Item Category Setup</span>
+                            <span class="pcoded-mcaret"></span>
+                        </a>
+                    </li>
+                    <li class="role-menu Item_Group_Setup">
+                        <a asp-controller="ItemGroup" asp-action="Index">
+                            <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                            <span class="pcoded-mtext" data-i18n="nav.user-profile.user-profile">Product Group Setup</span>
+                            <span class="pcoded-mcaret"></span>
+                        </a>
+                    </li>
+                    <li class="role-menu Item_Type_Setup">
+                        <a asp-controller="ItemType" asp-action="Index">
+                            <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                            <span class="pcoded-mtext" data-i18n="nav.user-profile.user-card">Item Type Setup</span>
+                            <span class="pcoded-mcaret"></span>
+                        </a>
+                    </li>
+                    <li class="role-menu Item_Setup">
+                        <a asp-controller="Item" asp-action="Index">
+                            <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                            <span class="pcoded-mtext" data-i18n="nav.user-profile.timeline">Item Setup</span>
+                            <span class="pcoded-mcaret"></span>
+                        </a>
+                    </li>
+                    <li class="role-menu Terminal_Setup">
+                        <a asp-controller="Terminal" asp-action="Index">
+                            <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                            <span class="pcoded-mtext" data-i18n="nav.user-profile.timeline-social">Terminal Setup</span>
+                            <span class="pcoded-mcaret"></span>
+                        </a>
+                    </li>
+                    <li class="role-menu Terminal_Mapping">
+                        <a asp-controller="Terminal" asp-action="TerminalMapping">
+                            <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                            <span class="pcoded-mtext" data-i18n="nav.user-profile.user-profile">Terminal Mapping</span>
+                            <span class="pcoded-mcaret"></span>
+                        </a>
+                    </li>
+                    <li class="role-menu UserRole_Setup">
+                        <a asp-controller="Account" asp-action="Roles">
+                            <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                            <span class="pcoded-mtext" data-i18n="nav.user-profile.user-card">UserRole Setup</span>
+                            <span class="pcoded-mcaret"></span>
+                        </a>
+                    </li>
+                    <li class="role-menu User_Setup">
+                        <a asp-controller="Account" asp-action="Users">
+                            <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                            <span class="pcoded-mtext" data-i18n="nav.user-profile.user-profile">User Setup</span>
+                            <span class="pcoded-mcaret"></span>
+                        </a>
+                    </li>
+                    <li class="role-menu RoleWise_Permission">
+                        <a asp-controller="Account" asp-action="RoleWisePermission">
+                            <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                            <span class="pcoded-mtext" data-i18n="nav.user-profile.user-card">Rolewise Permission</span>
+                            <span class="pcoded-mcaret"></span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li class="pcoded-hasmenu role-menu Report">
+                <a href="javascript:void(0)">
+                    <span class="pcoded-micon"><i class="ti-email"></i></span>
+                    <span class="pcoded-mtext" data-i18n="nav.email.main">Reports</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+                <ul class="pcoded-submenu">
+                    <li class="role-menu Sales_Invoice_Report">
+                        <a asp-controller="Reports" asp-action="SalesInvoice">
+                            <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                            <span class="pcoded-mtext">Sales Invoice Report</span>
+                            <span class="pcoded-mcaret"></span>
+                        </a>
+                    </li>
+                    <li class="role-menu Tax_Invoice_Report">
+                        <a asp-controller="Reports" asp-action="TaxInvoice">
+                            <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                            <span class="pcoded-mtext">Tax Invoice Report</span>
+                            <span class="pcoded-mcaret"></span>
+                        </a>
+                    </li>
+                    <li class="role-menu Credit_Note_Report">
+                        <a asp-controller="Reports" asp-action="CreditNote">
+                            <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                            <span class="pcoded-mtext">Credit Note Report</span>
+                            <span class="pcoded-mcaret"></span>
+                        </a>
+                    </li>
+                  
+                </ul>
+            </li>
+        </ul>
+       
+        <div class="pcoded-navigatio-lavel">Support</div>
+        <ul class="pcoded-item pcoded-left-item">
+            @*<li class="role-menu Documentation">
+                <a href="#" target="_blank">
+                    <span class="pcoded-micon"><i class="ti-file"></i></span>
+                    <span class="pcoded-mtext" data-i18n="nav.documentation.main">Documentation</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>*@
+            <li class="role-menu Help">
+                <a asp-controller="Settings" asp-action="Shortcuts">
+                    <span class="pcoded-micon"><i class="ti-layout-list-post"></i></span>
+                    <span class="pcoded-mtext" data-i18n="nav.submit-issue.main">ShortCuts</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>

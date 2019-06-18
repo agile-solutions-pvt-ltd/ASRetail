@@ -16,13 +16,104 @@
         $("#trans_date_ad").val(FormatForDisplay(new Date()));
         $("#trans_date_ad").trigger('change');
 
+        //initialize table to kendo grid
+        grid = $("#item_table").kendoGrid({
+            height: CalcGridHeight() - 160,
+            editable: true,
+            sortable: false,
+            scrollable: true,
+            resizable:true,
+            columns: [
+                {
+                    title: "SN",
+                    width: "3%"
+
+                },
+                {
+                    title: "BarCode",
+                    width: "8%"
+                },
+                {
+                    title: "Item",
+                    width: "31%"
+                },
+                {
+                    title: "Unit",
+                    width: "7%"
+                },
+                {
+                    title: "Rate",
+                    width: "8%",
+                    footerAttributes: {
+                        "class": "p-1 text-right"
+
+                    },
+                    footerTemplate: "Total"
+                },
+                {
+                    title: "Qty",
+                    width: "5%",
+                    footerAttributes: {
+                        "class": "p-1 text-right"
+                    },
+                    footerTemplate: "<span class='text-right' id='totalQuantity'>0</span>"
+                }, {
+                    title: "GA",
+                    width: "9%",
+                    footerAttributes: {
+                        "class": "p-1 text-right"
+                    },
+                    footerTemplate: "<span class='text-right' id='totalGrossAmount'>0</span>"
+                },
+
+                {
+                    title: "Dis",
+                    width: "8%",
+                    footerAttributes: {
+                        "class": "p-1 text-right"
+                    },
+                    footerTemplate: "<span class='text-right' id='totalDiscount'>0</span>"
+                },
+                {
+                    title: "Tax",
+                    width: "8%",
+                    footerAttributes: {
+                        "class": "p-1 text-right tax-show-hide"
+                    },
+                    footerTemplate: "<span class='text-right' id='totalTax'>0</span>"
+                }, {
+                    title: "Net",
+                    width: "10%",
+                    footerAttributes: {
+                        "class": "p-1 text-right"
+                    },
+                    footerTemplate: "<span class='text-right' id='totalNetAmount'>0</span>"
+                }, {
+                    title: "Action",
+                    width: "3%",
+                },
+
+
+            ]
+        });
+
+
+        //initialize customer dropdown
+        $("#Customer_Id").kendoComboBox({
+            filter: "contains",
+            suggest: true,
+            index: 1
+        });
         //hide bill to customer info
         $(".bill_to_info_div").hide();
+
+        AssignKeyEvent();
     };
     let loadInvoice = (invoiceNumber) => {
         if (validateInvoiceNumber(invoiceNumber)) {
             getInvoice(invoiceNumber, function (data) {
-                if (validateInvoiceData(data)) {                   
+                if (validateInvoiceData(data)) {  
+                    
                     salesItems = data.salesInvoiceItems;
                     resetTransactionData();
                     loadPausedTransactionData(data);
@@ -32,9 +123,9 @@
     };
     let getInvoice = (invoiceNumber, callback) => {
         $.ajax({
-            url: "https://localhost:44355/SalesInvoice/GetInvoice?invoiceNumber=" + invoiceNumber,
+            url: window.location.origin +  "/SalesInvoice/GetInvoice?invoiceNumber=" + invoiceNumber,
             type: "GET",
-            complete: function (data) {
+            complete: function (data) {               
                 if (data.status !== 200) {
                     $("#itemNotFoundLabel").show();
                     setTimeout(function () { $("#itemNotFoundLabel").hide(); }, 9000);
@@ -49,6 +140,7 @@
         return true;
     };
     let validateInvoiceData = (data) => {
+        
         let transDate = new Date(data.trans_Date_Ad);
         let compareDate = new Date();
         compareDate.setDate(compareDate.getDate() - invoiceExpiredDays);
@@ -125,7 +217,7 @@
     };   
     let GetItems = (code, callback) => {
         $.ajax({
-            url: "https://localhost:44355/item/GetItems/?code=" + code,
+            url: window.location.origin + "/item/GetItems/?code=" + code,
             type: "GET",
             success: function (data) {
                 if (data.length === 0) {
@@ -289,6 +381,18 @@
         var cell9 = row.insertCell(8); //Tax
         var cell10 = row.insertCell(9); //Net Amount
         var cell11 = row.insertCell(10); //delete button
+
+        cell1.className = "sn-width-item p-1";
+        cell2.className = "barCode-width-item p-1";
+        cell3.className = "itemName-width-item p-1";
+        cell4.className = "unit-width-item p-1";
+        cell5.className = "rate-width-item p-1 pr-3";
+        cell6.className = "quantity-width-item p-1 pr-3";
+        cell7.className = "grossAmount-width-item p-1 pr-3";
+        cell8.className = "discount-width-item p-1 pr-3";
+        cell9.className = "tax-width-item p-1 pr-3 tax-show-hide";
+        cell10.className = "netAmount-width-item p-1 pr-3";
+        cell11.className = "action-width-item p-1";
        
 
         var barCode = result.bar_Code || result.Bar_Code;
@@ -317,8 +421,45 @@
 
         calcTotal();
     };
+    let AssignKeyEvent = () => {
+        
+        Mousetrap.bindGlobal('ctrl+end', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            SaveCreditNote();
+        });
+
+        Mousetrap.bindGlobal('shift+enter', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            $(".bootbox-cancel").trigger("click");
+        });
+
+
+    };
     let resetForm = () => {
-        window.location.href = window.location.origin + "/CreditNote";
+        bootbox.confirm({
+            message: "Are you Sure ?",
+            buttons: {
+                cancel: {
+                    label: 'Proceed',
+                    className: 'btn-warning'
+                },
+                confirm: {
+                    label: 'Go Back',
+                    className: 'btn-success'
+                }
+            },
+            callback: function (result) {
+
+                if (!result) {
+                    window.location.href = window.location.origin + "/CreditNote";
+                }
+                else {
+                    
+                }
+
+            }
+        });
+        
     };
     let SaveCreditNote = () => {
         //save field data first
@@ -357,6 +498,7 @@
 
         var data = $('form#Credit_Note_Form').serializeObject();
         data.CreditNoteItems = invoiceItems;
+
         $.ajax({
             method: "POST",
             url: "/CreditNote/Index",
@@ -364,8 +506,15 @@
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify(data),
             complete: function (result) {
+                
                 if (result.status === 200) {
-                    window.location.href = window.location.origin + result.responseJSON.redirectUrl;
+                    StatusNotify("success", result.responseJSON.message);
+                    setTimeout(function () {
+                        window.location.href = window.location.origin + result.responseJSON.redirectUrl;
+                    }, 3000);
+                }
+                else {
+                    StatusNotify("error", "Error occur, try again later !!");
                 }
             }
         });
@@ -390,9 +539,23 @@
         window.location.href = window.location.origin + "/SalesInvoice/Index/" + invoiceId.trim();
     };
     let loadPausedTransactionData = (data) => {
+        
         if (data.salesInvoiceItems !== null) {
-            //customer info
-            $("#Customer_Id").val(data.customer_Id);
+            //customer info   
+           
+            let customer = _.filter(customerList, (x) => { return x.Membership_Number === data.customer_Id; })[0]; //donot update double equal
+            var customerDropdown = $("#Customer_Id").data("kendoComboBox");
+            if (customer !== undefined) {
+                customerDropdown.value(customer.Membership_Number);
+                $("#Customer_Id").val(customer.Membership_Number).trigger('change');
+            }
+
+            $("#Customer_Name").val(data.customer_Name);
+            $("#Customer_Vat").val(data.customer_Vat);
+            $("#Customer_Mobile").val(data.customer_Mobile);
+            $("#Customer_Address").val(data.customer_Address);
+
+           // $("#Customer_Id").val(data.customer_Id);
             ////flat discount
             //if (data.flat_Discount_Amount !== null) {
             //    $("#amountRadio").prop("checked", true);
@@ -401,7 +564,7 @@
             //    $("#percentRadio").prop("checked", true);
             //    $("#flat_discount").val(data.flat_Discount_Percent);
             //}
-
+            
             //insert items
             if (data.salesInvoiceItems.length > 0) {
                 _.each(data.salesInvoiceItems, function (x) {
@@ -474,14 +637,14 @@
 
 
     $("#Customer_Id").on('change', function () {
-        var selectedValue = $('#Customer_Id').find(":selected").val();
+        var selectedValue = $("#Customer_Id").data("kendoComboBox").value();
         var selectedItem = _.filter(customerList, function (x) {
-            return x.Id === selectedValue;
+            return x.Membership_Number === selectedValue;
         })[0];
         $("#Customer_Name").val(selectedItem.Name);
         $("#Customer_Address").val(selectedItem.Address);
         $("#Customer_Vat").val(selectedItem.Vat);
-        $("#Customer_Mobile").val(selectedItem.Mobile);
+        $("#Customer_Mobile").val(selectedItem.Mobile1);
     });
 
 

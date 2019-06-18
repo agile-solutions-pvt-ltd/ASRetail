@@ -1,42 +1,98 @@
 ﻿@model IEnumerable<POS.DTO.Terminal>
 
 @{
-    ViewData["Title"] = "Denomination";
+    ViewData["Title"] = "Terminal";
 }
 
-<h2>Cash Denomination</h2>
+<div class="page-wrapper">
+    <div class="page-header">
+        <div class="page-header-title">
+            <h4>@ViewData["Title"]</h4>
+            <span>List of @ViewData["Title"]</span>
+        </div>
+        <div class="page-header-breadcrumb">
+            <ul class="breadcrumb-title">
+                <li class="breadcrumb-item">
+                    <a href="index.html">
+                        <i class="icofont icofont-home"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">Pages</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">@ViewData["Title"]</a>
+                </li>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Initial)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-           
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Initial)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-           
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Details</a> 
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+            </ul>
+        </div>
+    </div>
+    <div class="page-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-block">
+                        @*Your content here*@
+                        <table id="grid" class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Initial)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Name)
+                                    </th>
+
+                                    @*<th></th>*@
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Initial)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Name)
+                                        </td>
+
+                                        @*<td>
+                                                <a asp-action="Edit" asp-route-id="@item.Id">Details</a>
+                                                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                                            </td>*@
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $("#grid").kendoGrid({
+                height: CalcGridHeight(),
+                //sortable: true,
+                //pageable: {
+                //    messages: {
+                //        empty: "No items to display"
+                //    },
+                //    refresh: true,
+                //    pageSizes: [5, 10, 25, 50, 100],
+                //    buttonCount: 5
+                //},
+                filterable: true,
+                sortable: true,
+
+            });
+            $(".k-grid-content").css("overflow-y", "hidden").mCustomScrollbar();
+            //$("#grid").data("kendoGrid").dataSource.pageSize(10);
+            //PageSlimScroll();
+        });
+    </script>
 }
-    </tbody>
-</table>

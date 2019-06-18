@@ -1,5 +1,4 @@
-﻿
-@model POS.DTO.SalesInvoiceTmp
+﻿@model POS.DTO.SalesInvoiceTmp
 
 @{
     ViewData["Title"] = "Sales Invoice";
@@ -19,14 +18,18 @@
 
 
     #item_code {
-        font-size: 36px;
-        height: 45px;
+        font-size: 34px;
+        height: 40px;
     }
 
 
 
     .flat-discount {
         background-color: white;
+    }
+
+    #flat_discount {
+        margin-left: -18px;
     }
 
 
@@ -62,7 +65,7 @@
 
 
     .btn-convert-to-tax {
-        margin-top: 31px;
+        margin-top: 21px;
     }
 
 
@@ -81,7 +84,9 @@
 
     #totalNetAmount {
         background-color: #f5edc9;
+        font-size: 18px;
     }
+
 
     #memberAddButton {
         position: absolute;
@@ -98,224 +103,313 @@
         display: none;
     }
 
-    #item_table_header{
+    #item_table_header {
         /*width: 99%;*/
-        margin-bottom:0px;
-    }
-    .scrollable-table{
-        height:260px; 
-        overflow-y:hidden;
+        margin-bottom: 0px;
     }
 
-/*table widths*/
-.sn-width{ width: 1%; }
-.barCode-width { width: 1%; }
-.itemName-width{ width: 12%; }
-.unit-width { width: 1%; }
-.rate-width{ width: 2%; }
-.quantity-width { width: 2%; }
-.grossAmount-width{ width: 2%; }
-.discount-width{ width: 2%; }
-.tax-width { width: 2%; }
-.netAmount-width{ width: 2%; }
-.action-width { width: 1%; }
+    .scrollable-table {
+        height: 260px;
+        overflow-y: hidden;
+    }
 
-/*table footer*/
-#total{width: 22%;}
-#totalQuantity{ width: 2%; }
-#totalGrossAmount{ width: 2%; }
-#totalDiscount { width: 2%; }
-#totalTax{ width: 2%; }
-#totalNetAmount { width: 2%; }
-#actionFooter {width:1.4%; }
-   
+    .card {
+        margin-bottom: 5px;
+    }
+
+    .card-block {
+        padding-bottom: 0.5rem;
+    }
+
+    /*table widths*/
+    /*.sn-width {
+        width: 1%;
+    }
+
+    .barCode-width {
+        width: 1%;
+    }
+
+    .itemName-width {
+        width: 12%;
+    }
+
+    .unit-width {
+        width: 1%;
+    }
+
+    .rate-width {
+        width: 2%;
+    }
+
+    .quantity-width {
+        width: 2%;
+    }
+
+    .grossAmount-width {
+        width: 2%;
+    }
+
+    .discount-width {
+        width: 2%;
+    }
+
+    .tax-width {
+        width: 2%;
+    }
+
+    .netAmount-width {
+        width: 2%;
+    }
+
+    .action-width {
+        width: 1%;
+    }
+
+    /*table footer
+    #total {
+        width: 22%;
+    }
+
+    #totalQuantity {
+        width: 2%;
+    }
+
+    #totalGrossAmount {
+        width: 2%;
+    }
+
+    #totalDiscount {
+        width: 2%;
+    }
+
+    #totalTax {
+        width: 2%;
+    }
+
+    #totalNetAmount {
+        width: 2%;
+    }
+
+    #actionFooter {
+        width: 1.4%;
+    }*/
+
+    .k-footer-template td:nth-child(1),
+    .k-footer-template td:nth-child(2),
+    .k-footer-template td:nth-child(3),
+    .k-footer-template td:nth-child(4),
+    .k-footer-template td:nth-child(5) {
+        border-width: 0;
+    }
 </style>
 
-<div class="row">
-    <div class="col-md-12">
-        @Html.Partial("_ResponseMessagePartial")
-        <form id="Sales_Invoice_Form" asp-action="Index">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-            <input type="hidden" asp-for="Id" />
-            <input type="hidden" asp-for="Flat_Discount_Amount" />
-            <input type="hidden" asp-for="Flat_Discount_Percent" />
-            <input type="hidden" asp-for="Trans_Type" value="Sales" />
-            <input type="hidden" asp-for="Total_Discount" />
-            <input type="hidden" asp-for="Total_Gross_Amount" />
-            <input type="hidden" asp-for="Total_Net_Amount" />
-            <input type="hidden" asp-for="Total_Quantity" />
-            <input type="hidden" asp-for="Total_Vat" />
-            <input type="hidden" asp-for="Remarks" />
-            <input type="hidden" id="isNewMember" value="false"/>
+<div class="page-wrapper">
+    <div class="page-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-block">
+                        @*Your content here*@
+                        <div class="row">
+                            <div class="col-md-12">
+                                @Html.Partial("_ResponseMessagePartial")
+                                <form id="Sales_Invoice_Form" asp-action="Index">
+                                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-            <div class="br"></div>
-            <div class="form-row">
-                <div class="form-group col-md-3">
-                    <label asp-for="Invoice_Number" class="control-label"></label>
-                    <input asp-for="Invoice_Number" class="form-control form-control-sm disabled" placeholder="SI-0000-CHK-075/76" readonly />
-                    <span asp-validation-for="Invoice_Number" class="text-danger"></span>
-                </div>
-                <div class="form-group col-md-3">
-                    <label asp-for="Chalan_Number" class="control-label"></label>
-                    <input asp-for="Chalan_Number" class="form-control form-control-sm" readonly />
-                    <span asp-validation-for="Chalan_Number" class="text-danger"></span>
-                </div>
-                <div class="form-group col-md-2">
-                    <label asp-for="Trans_Date_Ad" class="control-label"></label>
-                    <input asp-for="Trans_Date_Ad" type="text" id="trans_date_ad" class="form-control form-control-sm" readonly />
-                    <span asp-validation-for="Trans_Date_Ad" class="text-danger"></span>
-                </div>
-                <div class="form-group col-md-2">
-                    <label asp-for="Trans_Date_Bs" class="control-label"></label>
-                    <input asp-for="Trans_Date_Bs" class="form-control form-control-sm" id="trans_date_bs" readonly />
-                    <span asp-validation-for="Trans_Date_Bs" class="text-danger"></span>
-                </div>
-                <div class="form-group col-md-2">
-                    <button type="button" id="convert-sales-tax" value=" Convert" title="Convert to Tax Invoice" class="btn btn-sm btn-convert-to-tax btn-warning"><span class="fa fa-exchange"></span> Convert</button>
+                                    <input type="hidden" asp-for="Id" />
+                                    <input type="hidden" asp-for="Flat_Discount_Amount" />
+                                    <input type="hidden" asp-for="Flat_Discount_Percent" />
+                                    <input type="hidden" asp-for="Trans_Type" value="Sales" />
+                                    <input type="hidden" asp-for="Total_Discount" />
+                                    <input type="hidden" asp-for="Total_Gross_Amount" />
+                                    <input type="hidden" asp-for="Total_Net_Amount" />
+                                    <input type="hidden" asp-for="Total_Quantity" />
+                                    <input type="hidden" asp-for="Total_Vat" />
+                                    <input type="hidden" asp-for="Remarks" />
+                                    <input type="hidden" asp-for="NonTaxableAmount" />
+                                    <input type="hidden" asp-for="TaxableAmount" />
 
+                                    <input type="hidden" id="isNewMember" value="false" />
+
+                                    <div class="br"></div>
+                                    <div class="form-row">
+                                        <div class="form-group col-md-3">
+                                            <label asp-for="Invoice_Number" class="control-label"></label>
+                                            <input asp-for="Invoice_Number" class="form-control form-control-sm disabled" placeholder="SI-0000-CHK-075/76" readonly />
+                                            <span asp-validation-for="Invoice_Number" class="text-danger"></span>
+                                        </div>
+                                        <div class="form-group col-md-3 sr-only">
+                                            <label asp-for="Chalan_Number" class="control-label"></label>
+                                            <input asp-for="Chalan_Number" class="form-control form-control-sm" readonly />
+                                            <span asp-validation-for="Chalan_Number" class="text-danger"></span>
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            <label asp-for="Trans_Date_Ad" class="control-label"></label>
+                                            <input asp-for="Trans_Date_Ad" type="text" id="trans_date_ad" class="form-control form-control-sm" readonly />
+                                            <span asp-validation-for="Trans_Date_Ad" class="text-danger"></span>
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            <label asp-for="Trans_Date_Bs" class="control-label"></label>
+                                            <input asp-for="Trans_Date_Bs" class="form-control form-control-sm" id="trans_date_bs" readonly />
+                                            <span asp-validation-for="Trans_Date_Bs" class="text-danger"></span>
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            <button type="button" id="convert-sales-tax" value=" Convert" data-selectedValue="" title="Convert to Tax Invoice" class="btn btn-sm btn-convert-to-tax btn-primary"><span class="fa fa-exchange"></span> Convert (Alt+C)</button>
+
+                                        </div>
+                                    </div>
+
+
+                                    <fieldset>
+                                        <div class="form-row">
+                                            <div class="form-group col-md-2">
+                                                <input class="form-control form-control-sm" name="membershipId" id="membershipId" placeholder="Enter Membership Id">
+                                                <button id="memberAddButton" class="btn btn-sm btn-primary" title="Add New Member"><span class="fa fa-user-plus"></span></button>
+                                            </div>
+                                            <label class="control-label col-md-1 text-right pr-1">Bill To</label>
+                                            <div class="form-group col-md-2">
+                                                @Html.DropDownList("Customer_Id", new SelectList(ViewBag.Customer, "Membership_Number", "Name"), "", new { @class = "form-control form-control-sm" })
+                                            </div>
+                                            <div class="form-group ml-2">
+                                                <span class="fa fa-chevron-right" id="customer_icon_toggle"></span>
+                                            </div>
+
+                                            <label class="control-label flatDiscountHide col-md-2 text-center">Flat Discount:</label>
+                                            <div class="form-group col-md-1 flatDiscountHide">
+                                                <input name="flat_discount" id="flat_discount" class="form-control form-control-sm text-right" />
+                                            </div>
+                                            <div class="form-group col-md-3 pl-4 flatDiscountHide">
+                                                <div class="form-check form-check-inline pr-3">
+                                                    <input class="form-check-input" type="radio" name="flatDiscount" id="percentRadio" value="percent">
+                                                    <label class="form-check-label" for="percentRadio">%</label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="flatDiscount" id="amountRadio" value="amount">
+                                                    <label class="form-check-label" for="amountRadio">Rs</label>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="bill_to_info_div">
+                                            <div class="form-row">
+                                                <div class="form-group col-md-3">
+                                                    <label asp-for="Customer_Name" class="control-label"></label>
+                                                    <input asp-for="Customer_Name" class="form-control form-control-sm" />
+                                                    <span asp-validation-for="Customer_Name" class="text-danger"></span>
+                                                </div>
+                                                <div class="form-group col-md-3">
+                                                    <label asp-for="Customer_Vat" class="control-label"></label>
+                                                    <input asp-for="Customer_Vat" class="form-control form-control-sm" />
+                                                    <span asp-validation-for="Customer_Vat" class="text-danger"></span>
+                                                </div>
+                                                <div class="form-group col-md-2">
+                                                    <label asp-for="Customer_Mobile" class="control-label"></label>
+                                                    <input asp-for="Customer_Mobile" class="form-control form-control-sm" />
+                                                    <span asp-validation-for="Customer_Mobile" class="text-danger"></span>
+                                                </div>
+                                                <div class="form-group col-md-2">
+                                                    <label asp-for="Customer_Address" class="control-label"></label>
+                                                    <input asp-for="Customer_Address" class="form-control form-control-sm" />
+                                                    <span asp-validation-for="Customer_Address" class="text-danger"></span>
+                                                </div>
+                                                <div id="memberSaveButtonSH" class="form-group col-md-1">
+                                                    <label class="control-label">&nbsp;</label>
+                                                    <input type="button" id="memberSaveButton" class="form-control form-control-sm btn btn-sm btn-primary" value="Add" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    <div class="br clearfix"></div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group input-wrapper">
+                                                <input type="text" name="item_code" id="item_code" class="form-control" placeholder="Enter Bar Code ..." autocomplete="off">
+                                                <i class="fa fa-barcode input-icon"></i>
+                                                <label id="itemNotFoundLabel">Item Not Found !! Try different Bar Code !!!!</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="br"></div>
+
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div id="example" class="k-content">
+                                                <table id="item_table" class="item_table table table-sm table-bordered table-hover border">
+                                                    <colgroup>
+                                                        <col style="width:3%" />
+                                                        <col style="width:8%" />
+                                                        <col id="col-item-name" style="width:31%" />
+                                                        <col style="width:7%" />
+                                                        <col style="width:8%" />
+                                                        <col style="width:5%" />
+                                                        <col style="width:9%" />
+                                                        <col style="width:8%" />
+                                                        <col style="width:8%" />
+                                                        <col style="width:10%" />
+                                                        <col style="width:3%" />                                                        
+                                                    </colgroup>
+                                                    <thead>
+                                                        <tr>
+                                                            <th>#</th>
+                                                            <th>BarCode</th>
+                                                            <th id="table-item-name">Item</th>
+                                                            <th>Unit</th>
+                                                            <th>Rate</th>
+                                                            <th>Qty</th>
+                                                            <th>Gr. Amount</th>
+                                                            <th>Discount</th>
+                                                            <th class="tax-show-hide">Tax</th>
+                                                            <th>Net Amount</th>
+                                                            <th></th>                                                            
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody></tbody>
+
+                                                </table>
+
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+
+
+                                    <div class="br"></div>
+                                    <div class="form-group">
+                                        <input type="button" value="Next" id="NextButton" class="btn pull-right btn-success" />
+                                        <label class="pull-right">&nbsp;&nbsp;</label>
+                                        <input type="button" value="Reset" id="ResetButton" class="btn pull-right btn-danger" />
+
+                                    </div>
+                                </form>
+                                @Html.RenderAction("PausedTransactionListPartial", "SalesInvoice")
+
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
-
-
-            <fieldset>
-                <div class="form-row">
-                    <div class="form-group col-md-2">
-                        <input class="form-control form-control-sm" name="membershipId" id="membershipId" placeholder="Enter Membership Id">
-                        <button id="memberAddButton" class="btn btn-sm btn-primary" title="Add New Member"><span class="fa fa-user-plus"></span></button>
-                    </div>
-                    <label class="control-label col-md-1 text-right pr-1">Bill To</label>
-                    <div class="form-group col-md-2">
-                        @Html.DropDownList("Customer_Id", new SelectList(ViewBag.Customer, "Code", "Name"), "--Select Customer--", new { @class = "form-control form-control-sm" })
-                    </div>
-                    <div class="horizontal-form-padding">
-
-                    </div>
-                    <div class="form-group ml-2">
-                        <span class="fa fa-chevron-right" id="customer_icon_toggle"></span>
-                    </div>
-
-                    <label class="control-label flatDiscountHide col-md-1">Flat Discount:</label>
-                    <div class="form-group col-md-1 flatDiscountHide">
-                        <input name="flat_discount" id="flat_discount" class="form-control form-control-sm text-right" />
-                    </div>
-                    <div class="form-group col-md-4 flatDiscountHide">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="flatDiscount" id="percentRadio" value="percent">
-                            <label class="form-check-label" for="percentRadio">%</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="flatDiscount" id="amountRadio" value="amount">
-                            <label class="form-check-label" for="amountRadio">Rs</label>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="bill_to_info_div">
-                    <div class="form-row">
-                        <div class="form-group col-md-3">
-                            <label asp-for="Customer_Name" class="control-label"></label>
-                            <input asp-for="Customer_Name" class="form-control form-control-sm" />
-                            <span asp-validation-for="Customer_Name" class="text-danger"></span>
-                        </div>
-                        <div class="form-group col-md-3">
-                            <label asp-for="Customer_Vat" class="control-label"></label>
-                            <input asp-for="Customer_Vat" class="form-control form-control-sm" />
-                            <span asp-validation-for="Customer_Vat" class="text-danger"></span>
-                        </div>
-                        <div class="form-group col-md-2">
-                            <label asp-for="Customer_Mobile" class="control-label"></label>
-                            <input asp-for="Customer_Mobile" class="form-control form-control-sm" />
-                            <span asp-validation-for="Customer_Mobile" class="text-danger"></span>
-                        </div>
-                        <div class="form-group col-md-2">
-                            <label asp-for="Customer_Address" class="control-label"></label>
-                            <input asp-for="Customer_Address" class="form-control form-control-sm" />
-                            <span asp-validation-for="Customer_Address" class="text-danger"></span>
-                        </div>
-                        <div id="memberSaveButtonSH" class="form-group col-md-1">
-                            <label class="control-label">&nbsp;</label>
-                            <input type="button" id="memberSaveButton" class="form-control form-control-sm btn btn-sm btn-primary" value="Add" />
-                        </div>
-                    </div>
-                </div>
-            </fieldset>
-            <div class="br clearfix"></div>
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="form-group input-wrapper">
-                        <input type="text" name="item_code" id="item_code" class="form-control" placeholder="Enter Bar Code ..." autocomplete="off">
-                        <i class="fa fa-barcode input-icon"></i>
-                        <label id="itemNotFoundLabel">Item Not Found !! Try different Bar Code !!!!</label>
-                    </div>
-                </div>
-            </div>
-            <div class="br"></div>
-
-            <div class="row">
-                <div class="col-md-12">
-                    <table id="item_table_header" class="item_table table table-sm table-bordered table-hover">
-                        <thead>
-                            <tr>
-                                <th class="sn-width">#</th>
-                                <th class="barCode-width">BarCode</th>
-                                <th class="itemName-width">Item</th>
-                                <th class="unit-width">Unit</th>
-                                <th class="rate-width">Rate</th>
-                                <th class="quantity-width">Quantity</th>
-                                <th class="grossAmount-width">Gross Amount</th>
-                                <th class="discount-width">Discount</th>
-                                <th class="tax-width">Tax</th>
-                                <th class="netAmount-width">Net Amount</th>
-                                <th class="action-width"></th>
-                            </tr>
-                        </thead>
-                    </table>
-                    <div class="scrollable-table">
-                        <table id="item_table" class="item_table table table-sm table-bordered table-hover">
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                    <table id="item_table_footer" class="item_table table table-sm table-bordered table-hover">                       
-                        <tfoot>
-                            <tr>
-                                <th class="text-right" id="total" colspan="5">Total :</th>
-                                <td class="text-right" id="totalQuantity">0</td>
-                                <td class="text-right" id="totalGrossAmount">0</td>
-                                <td class="text-right" id="totalDiscount">0</td>
-                                <td class="text-right" id="totalTax">0</td>
-                                <td class="text-right" id="totalNetAmount">0</td>
-                                <td id="actionFooter"></td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-
-
-            <div class="form-group">
-                <input type="button" value="Next" id="NextButton" class="btn pull-right btn-success" />
-                <label class="pull-right">&nbsp;&nbsp;</label>
-                <input type="button" value="Reset" id="ResetButton" class="btn pull-right btn-danger" />
-
-            </div>
-        </form>
-        @Html.RenderAction("PausedTransactionListPartial", "SalesInvoice")
-
+        </div>
     </div>
 </div>
 
+
+
+
+
+
+
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
     <script>
 
         var customerList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Customer));
-        var salesInvoiceTmpData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+    var salesInvoiceTmpData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
     </script>
     <script src="~/js/Page/SalesInvoice.js"></script>
-    @*<script src="~/lib/jquery-tablescroll/jquery.tablescroll.js"></script>*@
-<script>
-   // $('#item_table').tableScroll({height:220});
-</script>
 }

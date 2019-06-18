@@ -1,0 +1,394 @@
+﻿@{
+    ViewData["Title"] = "Denomination";
+}
+
+
+
+    <div id="printbody">
+        <style>
+            *, html, body {
+                background-color: #fff;
+                font-family: "FontA11", FontB21, SaxMono,Consolas;
+                font-size: 16px;
+                color: #999;
+            }
+
+            .font-store {
+                font-size: 20px;
+            }
+
+            .items {
+                font-size: 15px;
+            }
+
+            hr.style {
+                border-top: 1px dotted #8c8b8b;
+                margin-top: 2px;
+                margin-bottom: 2px;
+            }
+
+            hr.style-mt {
+                border-top: 1px dotted #8c8b8b;
+                margin-top: 2px;
+            }
+
+            hr.style-mb {
+                border-top: 1px dotted #8c8b8b;
+                margin-bottom: 2px;
+            }
+
+
+
+           /*for header*/
+           .header{
+               margin-left:-10px;
+           }
+
+
+            /*for item table */
+            .col-sm-sn {
+                max-width: 4%;
+                flex: 0 0 4%;
+                padding-left: 15px;
+            }
+
+            .col-sm-particulars {
+                max-width: 17%;
+                flex: 0 0 17%;
+            }
+
+            .col-sm-qty {
+                max-width: 7%;
+                flex: 0 0 7%;
+            }
+
+            .col-sm-rate {
+                max-width: 10%;
+                flex: 0 0 10%;
+            }
+
+            .col-sm-total {
+                max-width: 10%;
+                flex: 0 0 10%;
+            }
+            .total-quantity{
+                margin-top: -15px;
+    margin-bottom: -6px;
+            }
+        </style>
+
+        @* fonts *@
+        @*<basefont face="arial, verdana, sans-serif">*@
+
+        @* Store Info *@
+        <center class="header">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="make-center font-store">
+                        SALESWAYS CASH & CARRY P. LTD.
+                    </div>
+                    <div class="make-center">
+                        SATDOBATO, LALITPUR, NEPAL
+                    </div>
+                    <div class="make-center">
+                        VAT No: 99999999
+                    </div>
+                    <div class="make-center">
+                        ABBREVIATED TAX INVOICE
+                    </div>
+                    <div class="make-center">
+                        (COPY OF ORIGINAL)
+                    </div>
+                </div>
+            </div>
+        </center>
+        <div class="clearfix"><br /></div>
+
+
+        @* Billing Info *@
+        <div class="row">
+            <div class="col-sm-12">
+
+                <div class="row pb-1">
+
+                    <div class="col-sm-2">
+                        BILL #
+                    </div>
+                    <div class="col-sm-7">
+                        : SI-0001-075/76
+                    </div>
+                </div>
+                <div class="row pb-1">
+                    <div class="col-sm-2">
+                        Date
+                    </div>
+                    <div class="col-sm-9">
+                        : 14/04/2075 (05/17/2019)
+                    </div>
+                </div>
+                <div class="row pb-1">
+                    <div class="col-sm-2">
+                        Bill To
+                    </div>
+                    <div class="col-sm-9">
+                        : Ashok Subedi
+                    </div>
+                </div>
+                <div class="row pb-1">
+                    <div class="col-sm-2">
+                        Address
+                    </div>
+                    <div class="col-sm-9">
+                        : Kathmandu
+                    </div>
+                </div>
+                <div class="row pb-1">
+                    <div class="col-sm-2">
+                        Mobile
+                    </div>
+                    <div class="col-sm-9">
+                        : 9840094364
+                    </div>
+                </div>
+                <div class="row pb-1">
+                    <div class="col-sm-2">
+                        Pay Mode
+                    </div>
+                    <div class="col-sm-4">
+                        : Cash
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <hr class="style-4 style-mb" />
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        @* Item Table *@
+        <div class="row">
+            <div class="col-sm-11">
+                <div class="row pb-1 item-header">
+                    <div class="sn col-sm-sn">
+                        Sn
+                    </div>
+                    <div class="col-sm-particulars">
+                        Particulars
+                    </div>
+                    <div class="col-sm-qty text-right">
+                        Qty
+                    </div>
+                    <div class="col-sm-rate text-right">
+                        Rate
+                    </div>
+                    <div class="col-sm-total text-right">
+                        Amount
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-12">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <hr class="style-mt" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-11">
+                <div class="row pb-1 items">
+                    <div class="col-sm-sn">
+                        1
+                    </div>
+                    <div class="col-sm-particulars">
+                        Fruits
+                    </div>
+                    <div class="col-sm-qty text-right">
+                        99
+                    </div>
+                    <div class="col-sm-rate text-right">
+                        999.00
+                    </div>
+                    <div class="col-sm-total text-right">
+                        9999.00
+                    </div>
+                </div>
+                <div class="row pb-1 items">
+                    <div class="col-sm-sn">
+                        2
+                    </div>
+                    <div class="col-sm-particulars">
+                       Fresh Fruits
+                    </div>
+                    <div class="col-sm-qty text-right">
+                        9999
+                    </div>
+                    <div class="col-sm-rate text-right">
+                        9999.00
+                    </div>
+                    <div class="col-sm-total text-right">
+                        99999.00
+                    </div>
+                </div>
+
+
+
+            </div>
+            <div class="col-sm-12">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <hr class="style-mt" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        @* Total Calculation *@
+        <div class="row">
+            <div class="col-sm-11">
+                <div class="row items total-quantity">
+                    <div class="col-sm-sn">
+
+                    </div>
+                    <div class="col-sm-particulars">
+
+                    </div>
+                    <div class="col-sm-qty text-right">
+                        9999
+                    </div>
+                    <div class="col-sm-rate text-right">
+
+                    </div>
+                    <div class="col-sm-total text-right">
+
+                    </div>
+                </div>
+
+
+                <div class="row pb-1">
+                    <div class="col-sm-1"></div>
+                    <div class="col-sm-3">
+                        &nbsp; Gross Amount
+                        <span class="pull-right">:</span>
+                    </div>
+                    <div class="col-sm-2 text-right">
+                        45678.00
+                    </div>
+                </div>
+                <div class="row pb-1">
+                    <div class="col-sm-1"></div>
+                    <div class="col-sm-3">
+                        &nbsp; Promo Discount
+                        <span class="pull-right">:</span>
+                    </div>
+                    <div class="col-sm-2 text-right">
+                        21.00
+                    </div>
+                </div>
+                <div class="row pb-1">
+                    <div class="col-sm-1"></div>
+                    <div class="col-sm-3">
+                        &nbsp; Loyalty Discount
+                        <span class="pull-right">:</span>
+                    </div>
+                    <div class="col-sm-2 text-right">
+                        21.00
+                    </div>
+                </div>
+                <div class="row pb-1">
+                    <div class="col-sm-1"></div>
+                    <div class="col-sm-3">
+                        &nbsp; Net Amount
+                        <span class="pull-right">:</span>
+                    </div>
+                    <div class="col-sm-2 text-right">
+                        45478.00
+                    </div>
+                </div>
+                <div class="row pb-1">
+                    <div class="col-sm-1"></div>
+                    <div class="col-sm-5">
+                        <hr class="style" />
+                    </div>
+                </div>
+                <div class="row pb-1">
+                    <div class="col-sm-1"></div>
+                    <div class="col-sm-3">
+                        &nbsp; Tender
+                        <span class="pull-right">:</span>
+                    </div>
+                    <div class="col-sm-2 text-right">
+                        50000.00
+                    </div>
+                </div>
+                <div class="row pb-1">
+                    <div class="col-sm-1"></div>
+                    <div class="col-sm-3">
+                        &nbsp; Change
+                        <span class="pull-right">:</span>
+                    </div>
+                    <div class="col-sm-2 text-right">
+                        2.00
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <hr class="style-mt" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* Footer *@
+        <div class="row">
+            <div class="col-sm-11">
+                <div class="row pb-1">
+                    <div class="col-sm-6 text-justify">
+                        Welcome to great shopping experience.
+                        Goods exchange within 7 days with original bill.
+                        contact: 01-5550422,23
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <hr class="style" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row pb-1">
+            <div class="col-sm-11">
+                <div class="row pb-1">
+                    <div class="col-sm-2">
+                        Counter
+                    </div>
+                    <div class="col-sm-5">
+                        : Terminal 5 (8:41:42 AM)
+                    </div>
+                </div>
+                <div class="row pb-1">
+                    <div class="col-sm-2">
+                        Cashier
+                    </div>
+                    <div class="col-sm-5">
+                        : Ashok
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+

@@ -4,43 +4,95 @@
     ViewData["Title"] = "Category";
 }
 
-<h2>Category</h2>
+<div class="page-wrapper">
+    <div class="page-header">
+        <div class="page-header-title">
+            <h4>@ViewData["Title"]</h4>
+            <span>List of item @ViewData["Title"]</span>
+        </div>
+        <div class="page-header-breadcrumb">
+            <ul class="breadcrumb-title">
+                <li class="breadcrumb-item">
+                    <a href="index.html">
+                        <i class="icofont icofont-home"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">Setup</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">@ViewData["Title"]</a>
+                </li>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Code)
-            </th>           
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>           
-            <th>
-                @Html.DisplayNameFor(model => model.Modified_Date)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Code)
-            </td>           
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>          
-            <td>
-                @Html.DisplayFor(modelItem => item.Modified_Date)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |               
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+            </ul>
+        </div>
+    </div>
+    <div class="page-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-block">
+                        @*Your content here*@
+                        <div id="treelist"></div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $("#treelist").kendoTreeList({
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: window.location.origin + "/ItemCategory/Get",
+                            dataType: "json"
+                        }
+                    },
+                    schema: {
+                        model: {
+                            id: "code",
+                            parentId: "parentCode",
+                            fields: {
+                                parentCode: { field: "parentCode", nullable: true },
+                               
+                            },
+                            expanded: true,
+                        },
+                        data: function (data) {
+                            _.each(data, function (x) {
+                                x.parentCode = x.parentCode === "" ? null : x.parentCode;
+                            })
+                            return data;
+                        }
+                    }
+
+                },
+                height: 540,
+                filterable: true,
+                sortable: true,
+                columns: [
+                    { field: "code", title: "code" },
+                    { field: "name", title: "name" }
+                ],
+
+            });
+            $(".k-grid-content").css("overflow-y", "hidden").mCustomScrollbar();
+            PageSlimScroll();
+        });
+    </script>
 }
-    </tbody>
-</table>
+
+
+
+
+
+
+
+
+
+

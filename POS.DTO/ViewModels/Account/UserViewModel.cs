@@ -34,6 +34,7 @@ namespace POS.DTO
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
        
+        public string RoleId { get; set; }
         public string Role { get; set; }
     }
 }

@@ -18,9 +18,11 @@ namespace POS.DTO
         public DateTime Date { get; set; }
         [Display(Name = "Date BS")]
         public string Date_BS { get; set; }
-        [Display(Name = "Debit Card")]
-        public decimal? Debit_Card { get; set; } = 0;
-        public decimal? Cheque { get; set; } = 0;
+        [Display(Name = "Card")]
+        public decimal? Card { get; set; } = 0;
+        public decimal? Credit { get; set; } = 0;
+        [Display(Name = "Credit Note")]
+        public decimal? CreditNote { get; set; } = 0;
         [Display(Name = "1000")]
         public decimal? R1000 { get; set; } = 0;
         [Display(Name = "500")]
@@ -49,7 +51,9 @@ namespace POS.DTO
         public decimal? Ric { get; set; } = 0;
         public decimal? Other { get; set; } = 0;
         [Required,Range(1, double.MaxValue, ErrorMessage = "Total Amount should be greater than zero !!")]
-        public decimal? Total { get; set; } = 0;
+        public decimal Total { get; set; } = 0;
+
+        public decimal TotalCash { get; set; } = 0;
         public string Remarks { get; set; }
 
         [ForeignKey("Terminal_Id")]

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -6,6 +7,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace POS.DTO
 {
     [Table("CREDIT_NOTE")]
+    [JsonObject(IsReference = true)]
     public partial class CreditNote
     {
         [Key]
@@ -27,6 +29,7 @@ namespace POS.DTO
         public string Terminal { get; set; }
         [Display(Name = "Bill To")]
         public string Customer_Id { get; set; }
+        public int? MemberId { get; set; }
         [Display(Name = "Name")]
         public string Customer_Name { get; set; }
         [Display(Name = "Vat")]

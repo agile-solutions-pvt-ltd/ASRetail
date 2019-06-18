@@ -1,25 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using POS.Core;
 using POS.DTO;
+using POS.UI.Sync;
 
 namespace POS.UI.Controllers
 {
-    [Authorize]
+    [RolewiseAuthorized]
     public class CustomerController : Controller
     {
         private readonly EntityCore _context;
-
-        public CustomerController(EntityCore context)
+        private readonly IMapper _mapper;
+        public CustomerController(EntityCore context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
+        
 
         // GET: Customer
         public async Task<IActionResult> Index()
@@ -51,22 +57,51 @@ namespace POS.UI.Controllers
             return View();
         }
 
-        // POST: Customer/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Create([Bind("Id,Code,Name,Address,Image,Tel1,Tel2,Mobile1,Mobile2,Email,Vat,Fax,Po_Box,Type,Credit_Limit,Credit_Day,Is_Sale_Refused,Is_Member,Member_Id,Barcode,Dob,Dob_Bs,Wedding_Date,Family_Member_Int,Occupation,Office_Name,Office_Address,Designation,Registration_Date,Validity_Period,Validity_Date,Membership_Scheme,Reference_By,Created_By,Created_Date,Remarks")] Customer customer)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        _context.Add(customer);
-        //        await _context.SaveChangesAsync();
-        //        TempData["StatusMessage"] = "Customer Created Successfully !!";
-        //        return RedirectToAction(nameof(Index));
-        //    }
-        //    return View(customer);
-        //}
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Create(Customer customer)
+        {
+            if (ModelState.IsValid)
+            {
+                if (AddCustomer(customer))
+                {
+                    NavPostData navPost = new NavPostData(_context, _mapper);
+                    BackgroundJob.Enqueue(() => navPost.PostCustomer());
+                    TempData["StatusMessage"] = "Customer Created Successfully !!";
+                }
+                else
+                    TempData["StatusMessage"] = "Error occor, try again later !!";
+                return RedirectToAction(nameof(Index));
+            }
+            return View(customer);
+        }
+
+        public bool AddCustomer(Customer customer)
+        {
+            try
+            {
+                customer.Code = Guid.NewGuid().ToString();
+                customer.Member_Id = _context.Customer.Where(x=>x.Is_Member == true && x.Member_Id != null).Select(x => x.Member_Id).DefaultIfEmpty(0).Max() + 1;
+                Store store = _context.Store.FirstOrDefault();
+                customer.Membership_Number = store.INITIAL + "-" + Convert.ToInt32(customer.Member_Id).ToString("00000");
+                customer.Created_By = User.Identity.Name;
+                customer.Registration_Date = DateTime.Now;
+                customer.CustomerDiscGroup = "CATEGORY D";
+                customer.CustomerPriceGroup = "RETAIL";
+                _context.Add(customer);
+                _context.SaveChanges();
+                return true;
+
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException.Message.Contains("idx_unique_member_id"))
+                    return AddCustomer(customer);
+                else
+                    return false;
+            }
+        }
 
         //// GET: Customer/Edit/5
         //public async Task<IActionResult> Edit(int? id)
@@ -160,29 +195,53 @@ namespace POS.UI.Controllers
 
 
 
-       
+
         public IActionResult CreateMembership()
         {
             return View();
         }
 
-       
+
         [HttpPost]
-        [ValidateAntiForgeryToken]
+
         public IActionResult CreateMembership([FromBody] Customer customer)
         {
             if (ModelState.IsValid)
             {
-                customer.Is_Member = true;
-                customer.Member_Id = _context.Customer.Select(x => x.Member_Id).DefaultIfEmpty(1000).Max() + 1;
-                _context.Add(customer);
-                 _context.SaveChangesAsync();
-                //TempData["StatusMessage"] = "Customer Created Successfully !!";
-                return Ok("Membership Created Successfully !!");
-            }
-            return StatusCode(400, "Not Valid");
-            
-        }
+                try
+                {
+                    customer.Is_Member = true;
+                    customer.Member_Id = _context.Customer.Where(x => x.Is_Member == true && x.Member_Id != null).Select(x => x.Member_Id).DefaultIfEmpty(0).Max() + 1;
+                    Store store = _context.Store.FirstOrDefault();
+                    customer.Membership_Number = store.INITIAL + "-" + Convert.ToInt32(customer.Member_Id).ToString("00000");
+                    customer.Created_By = User.Identity.Name;
+                    customer.Registration_Date = DateTime.Now;
+                    customer.CustomerDiscGroup = "CATEGORY D";
+                    customer.CustomerPriceGroup = "RETAIL";
 
+
+                    _context.Add(customer);
+                    _context.SaveChanges();
+
+                    NavPostData navPost = new NavPostData(_context, _mapper);
+                    BackgroundJob.Enqueue(() => navPost.PostCustomer());
+                    return Ok(new { StatusMessage = "Membership Created Successfully !!", Membership = customer });
+                }
+                catch (Exception ex)
+                {
+                    if (ex.Message.Contains("'UniqueMobileNumber") || ex.InnerException.Message.Contains("UniqueMobileNumber"))
+                        return StatusCode(409, new { StatusMessage = "Mobile Number Already Register !!" });
+                    else if (ex.Message.Contains("idx_unique_member_id") || ex.InnerException.Message.Contains("idx_unique_member_id"))
+                        return CreateMembership(customer);
+                    else
+                        return StatusCode(500, new { StatusMessage = ex.Message });
+
+                    //TempData["StatusMessage"] = "Customer Created Successfully !!";
+
+                }
+            }
+            return StatusCode(400, new { StatusMessage = "Not Valid" });
+
+        }
     }
 }

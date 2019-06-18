@@ -11,6 +11,13 @@ namespace POS.DTO
         Closed,
         Verified
     }
+
+    public enum SyncStatus
+    {
+        NotValid,
+        SyncInProgress,
+        SyncCompleted
+    }
 }
 
 

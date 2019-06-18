@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using POS.Core;
@@ -11,6 +13,7 @@ using POS.UI.Models;
 
 namespace POS.UI.Controllers
 {
+    [RolewiseAuthorized]
     public class SettlementController : Controller
     {
 
@@ -46,10 +49,50 @@ namespace POS.UI.Controllers
         public IActionResult GetSettlement()
         {
            
-            IEnumerable<SettlementViewModel> settlement = _context.SettlementViewModel.Where(x => x.Status == "Closed");
+            IEnumerable<SettlementViewModel> settlement = _context.SettlementViewModel.Where(x => x.Status == "Closed").ToList();
             return Ok(settlement);
         }
 
+
+        [HttpPost]
+        public IActionResult VerifySettlement([FromBody] SettlementPostViewModel data)
+        {
+            if (ModelState.IsValid)
+            {
+                IList<Settlement> settlement = _context.Settlement.Where(x => x.SessionId == data.Settlement.SessionId).ToList();
+                foreach(var item in settlement)
+                {
+                    if(item.PaymentMode == "Cash")
+                    {
+                        item.AdjustmentAmount = data.AdjustmentCashAmount;
+                        item.ShortExcessAmount = data.ShortExcessCashAmount;
+                    }
+                    else if (item.PaymentMode == "Credit")
+                    {
+                        item.AdjustmentAmount = data.AdjustmentCreditAmount;
+                        item.ShortExcessAmount = data.ShortExcessCreditAmount;
+                    }
+                    else if (item.PaymentMode == "CreditNote")
+                    {
+                        item.AdjustmentAmount = data.AdjustmentCreditNoteAmount;
+                        item.ShortExcessAmount = data.ShortExcessCreditNoteAmount;
+                    }
+                    else if (item.PaymentMode == "Card")
+                    {
+                        item.AdjustmentAmount = data.AdjustmentCardAmount;
+                        item.ShortExcessAmount = data.ShortExcessCardAmount;
+                    }
+                    item.VerifiedBy = User.Identity.Name;
+                    item.VerifiedDate = DateTime.Now;
+                    item.Status = "Verified";                   
+                    _context.Entry(item).State = EntityState.Modified;
+                }
+               
+                _context.SaveChanges();
+                return Ok();
+            }
+            return StatusCode(400);
+        }
 
     }
 }

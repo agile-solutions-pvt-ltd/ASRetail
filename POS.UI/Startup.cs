@@ -13,19 +13,23 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using POS.Core;
 using POS.DTO;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Hangfire;
+using Hangfire.SqlServer;
+using AutoMapper;
 
 namespace POS.UI
 {
     public class Startup
     {
+       
+        public IConfiguration Configuration { get; }
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+           
         }
 
-        public IConfiguration Configuration { get; }
+       
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -85,18 +89,32 @@ namespace POS.UI
                 options.SlidingExpiration = true;
             });
 
+            // Add Hangfire services.
+            services.AddHangfire(configuration => configuration
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSqlServerStorage(Configuration.GetConnectionString("DefaultConnection"), new SqlServerStorageOptions
+                {
+                    CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                    SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                    QueuePollInterval = TimeSpan.Zero,
+                    UseRecommendedIsolationLevel = true,
+                    UsePageLocksOnDequeue = true,
+                    DisableGlobalLocks = true
+                }));
+
+            services.AddHangfireServer();
+            services.AddAutoMapper();
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                 .AddJsonOptions(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore); ;
 
-            ////for global variables
-            services.Configure<AppSettings>(Configuration);
 
-            //prevent multiple login
-            services.Configure<SecurityStampValidatorOptions>(options => options.ValidationInterval = TimeSpan.FromSeconds(30));
-
-            services.AddHangfire(
-                    x => x.UseSqlServerStorage(Configuration.GetConnectionString("DefaultConnection"))
-                    );
+            services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(20);//You can set Time   
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -115,7 +133,9 @@ namespace POS.UI
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
+            app.UseCookiePolicy();
+            app.UseSession();
+            app.UseHangfireDashboard();
 
             app.UseAuthentication();
 
@@ -125,15 +145,14 @@ namespace POS.UI
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
-            app.UseCookiePolicy();
 
             Task t = CreateUserRoles(service);
             t.Wait();
 
-            app.UseHangfireDashboard();
-            app.UseHangfireServer();
 
-            // ResolveMethods();
+            //run denomination scheduler daily
+           // RecurringJob.AddOrUpdate(() => POSScheduler(), Cron.Daily);
+           
 
         }
 
@@ -170,7 +189,7 @@ namespace POS.UI
             await UserManager.AddToRoleAsync(user, "Administrator");
         }
 
-
+       
 
     }
 }

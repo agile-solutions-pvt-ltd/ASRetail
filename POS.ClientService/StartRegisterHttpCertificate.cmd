@@ -1,0 +1,1 @@
+PowerShell -NoProfile -ExecutionPolicy Unrestricted -Command "& {Start-Process PowerShell -ArgumentList '-NoProfile -ExecutionPolicy Unrestricted -File ""PS_Script_E:\Projects\POS\POS.ClientService\httpscertficate.ps1""' -Verb RunAs}";

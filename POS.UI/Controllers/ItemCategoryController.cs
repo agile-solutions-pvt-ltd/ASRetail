@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ using POS.DTO;
 
 namespace POS.UI.Controllers
 {
+    [RolewiseAuthorized]
     public class ItemCategoryController : Controller
     {
         private readonly EntityCore _context;
@@ -25,8 +27,14 @@ namespace POS.UI.Controllers
             return View(await _context.ItemCategory.ToListAsync());
         }
 
+        [HttpGet]
+        public IActionResult Get()
+        {
+            return Ok(_context.ItemCategory);
+        }
+
         // GET: ItemCategory/Details/5
-        public async Task<IActionResult> Details(Guid? id)
+        public async Task<IActionResult> Details(string id)
         {
             if (id == null)
             {
@@ -58,8 +66,8 @@ namespace POS.UI.Controllers
         {
             if (ModelState.IsValid)
             {
-                itemCategory.Id = Guid.NewGuid();
-                itemCategory.Modified_Date = DateTime.Now;
+                itemCategory.Id = Guid.NewGuid().ToString();
+                itemCategory.ModifiedDate = DateTime.Now;
                 _context.Add(itemCategory);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -88,7 +96,7 @@ namespace POS.UI.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,Code,Parent_Code,Description,Indentation,Order,Has_Child,Modified_Date")] ItemCategory itemCategory)
+        public async Task<IActionResult> Edit(string id, [Bind("Id,Code,Parent_Code,Description,Indentation,Order,Has_Child,Modified_Date")] ItemCategory itemCategory)
         {
             if (id != itemCategory.Id)
             {
@@ -99,7 +107,7 @@ namespace POS.UI.Controllers
             {
                 try
                 {
-                    itemCategory.Modified_Date = DateTime.Now;
+                    itemCategory.ModifiedDate = DateTime.Now;
                     _context.Update(itemCategory);
                     await _context.SaveChangesAsync();
                 }
@@ -120,7 +128,7 @@ namespace POS.UI.Controllers
         }
 
         // GET: ItemCategory/Delete/5
-        public async Task<IActionResult> Delete(Guid? id)
+        public async Task<IActionResult> Delete(string id)
         {
             if (id == null)
             {
@@ -148,7 +156,7 @@ namespace POS.UI.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ItemCategoryExists(Guid id)
+        private bool ItemCategoryExists(string id)
         {
             return _context.ItemCategory.Any(e => e.Id == id);
         }

@@ -1,4 +1,9 @@
-﻿.br{
+﻿
+html, body {
+    height: 100%;
+}
+
+.br{
     padding-top:5px;
 }
 

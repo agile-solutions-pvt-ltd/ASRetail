@@ -9,7 +9,7 @@ using POS.DTO;
 
 namespace POS.UI.Controllers
 {
-    [Authorize]
+    [RolewiseAuthorized]
     public class ReportsController : Controller
     {
         private readonly EntityCore _context;
@@ -24,6 +24,11 @@ namespace POS.UI.Controllers
            IQueryable<SalesInvoice> salesInvoiceList =_context.SalesInvoice.Where(x => x.Trans_Type == "Sales").OrderByDescending(x => x.Trans_Date_Ad);
             return View(salesInvoiceList);
         }
+        public IActionResult SalesInvoiceApi()
+        {
+            IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Type == "Sales").OrderByDescending(x => x.Trans_Date_Ad);
+            return Ok(salesInvoiceList);
+        }
 
         public IActionResult TaxInvoice()
         {
@@ -31,10 +36,22 @@ namespace POS.UI.Controllers
             return View(salesInvoiceList);
         }
 
+        public IActionResult TaxInvoiceApi()
+        {
+            IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Type == "Tax").OrderByDescending(x => x.Trans_Date_Ad);
+            return Ok(salesInvoiceList);
+        }
+
         public IActionResult CreditNote()
         {
             IQueryable<CreditNote> creditNoteList = _context.CreditNote.OrderByDescending(x => x.Trans_Date_Ad);
             return View(creditNoteList);
+        }
+
+        public IActionResult CreditNoteApi()
+        {
+            IQueryable<CreditNote> creditNoteList = _context.CreditNote.OrderByDescending(x => x.Trans_Date_Ad);
+            return Ok(creditNoteList);
         }
     }
 }

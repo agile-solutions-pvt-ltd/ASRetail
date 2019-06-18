@@ -13,8 +13,8 @@ namespace POS.DTO
         public Int64 Id { get; set; }
         public string SessionId { get; set; }
         public int TerminalId { get; set; }
-        public int DenominationId { get; set; }
-        public decimal DenominationAmount { get; set; }
+        public int DenominationId { get; set; }       
+       
         public string TerminalName { get; set; }
         public string UserId { get; set; }
         public string UserName { get; set; }
@@ -26,6 +26,13 @@ namespace POS.DTO
         public string Status { get; set; }
         public string Remarks { get; set; }
         public decimal SettlementCash { get; set; }
+
+        public decimal Card { get; set; }
+        public decimal Credit { get; set; }
+        public decimal CreditNote { get; set; }
+        public decimal DenominationCash { get; set; }
+
+
 
     }
 }

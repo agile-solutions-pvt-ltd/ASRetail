@@ -4,239 +4,282 @@
     ViewData["Title"] = "Denomination";
 }
 <style>
-    .mr-denomination{
-        margin-right:70px;
+   .mr-denomination {
+        margin-right: 64px;
     }
+
     .ml-button {
         margin-left: 85px;
         padding-left: 54px;
     }
+    .visibility-hidden{
+        visibility:hidden;
+    }
 </style>
 
-<div class="row">
-    <div class="col-md-12">
-        <form asp-action="Create" class="form-horizontal">
-            
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="d-none d-print-block">
-                <div class="text-center font-weight-bold text-danger">!! Not Saved !!</div>
-            </div>
-            <div class="form-row">
-                <div class="form-group-sm col-md-3">
-                    <label asp-for="Terminal_Id" class="control-label"></label>
-                    <select asp-for="Terminal_Id" class="form-control form-control-sm" asp-items="ViewBag.Terminal_Id"></select>
-                </div>
-                <div class="form-group col-md-2">
-                    <label asp-for="Date" class="control-label"></label>
-                    <input asp-for="Date" type="text" class="form-control form-control-sm" />
-                    <span asp-validation-for="Date" class="text-danger"></span>
-                </div>
-                <div class="form-group col-md-2">
-                    <label asp-for="Date_BS" class="control-label"></label>
-                    <input asp-for="Date_BS" class="form-control form-control-sm" />
-                    <span asp-validation-for="Date_BS" class="text-danger"></span>
-                </div>
+<div class="page-wrapper">
+    <div class="page-header">
+        <div class="page-header-title">
+            <h4>@ViewData["Title"]</h4>
+            <span>List of @ViewData["Title"]</span>
+        </div>
+        <div class="page-header-breadcrumb">
+            <ul class="breadcrumb-title">
+                <li class="breadcrumb-item">
+                    <a href="index.html">
+                        <i class="icofont icofont-home"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">Transaction</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">@ViewData["Title"]</a>
+                </li>
 
-            </div>
-            <div class="br"><hr /></div>
-            <div class="form-row">
-                <label asp-for="Debit_Card" class="control-label col-md-2 mr-denomination text-right"></label>
-                <div class="form-group-sm col-md-2">
-                    <input asp-for="Debit_Card" class="form-control form-control-sm text-right" />
-                    <span asp-validation-for="Debit_Card" class="text-danger"></span>
-                </div>
-            </div>
-            <div class="form-row">
-                <label asp-for="Cheque" class="control-label col-md-2 mr-denomination text-right"></label>
-                <div class="form-group-sm col-md-2">
-                    <input asp-for="Cheque" class="form-control form-control-sm text-right" />
-                    <span asp-validation-for="Cheque" class="text-danger"></span>
-                </div>
-            </div>
-            <div class="form-row">
-                <label asp-for="Other" class="control-label col-md-2 mr-denomination text-right"></label>
-                <div class="form-group-sm col-md-2">
-                    <input asp-for="Other" class="form-control form-control-sm text-right" />
-                    <span asp-validation-for="Other" class="text-danger"></span>
-                </div>
-            </div>
-            <div class="form-row">
-                <label asp-for="Ric" class="control-label col-md-1 text-right"></label>
-                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-1">
-                    <input asp-for="Ric" class="form-control form-control-sm text-right" />
-                    <span asp-validation-for="Ric" class="text-danger"></span>
-                </div>
-                <label class="control-label">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-2">
-                    <input id="RicTotal" class="form-control form-control-sm text-right" />
-                </div>
-            </div>
-            <div class="form-row">
-                <label asp-for="R1000" class="control-label col-md-1 text-right"></label>
-                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-1">
-                    <input asp-for="R1000" class="form-control form-control-sm text-right" />
-                    <span asp-validation-for="R1000" class="text-danger"></span>
-                </div>
-                <label class="control-label">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-2">
-                    <input id="R1000Total" class="form-control form-control-sm text-right" />
-                </div>
-            </div>
-            <div class="form-row">
-                <label asp-for="R500" class="control-label col-md-1 text-right"></label>
-                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-1">
-                    <input asp-for="R500" class="form-control form-control-sm text-right" />
-                    <span asp-validation-for="R500" class="text-danger"></span>
-                </div>
-                <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-2">
-                    <input id="R500Total" class="form-control form-control-sm text-right" />
-                </div>
-            </div>
-            <div class="form-row">
-                <label asp-for="R250" class="control-label col-md-1 text-right"></label>
-                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-1">
-                    <input asp-for="R250" class="form-control form-control-sm text-right" />
-                    <span asp-validation-for="R250" class="text-danger"></span>
-                </div>
-                <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-2">
-                    <input id="R250Total" class="form-control form-control-sm text-right" />
-                </div>
-            </div>
-            <div class="form-row">
-                <label asp-for="R100" class="control-label col-md-1 text-right"></label>
-                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-1">
-                    <input asp-for="R100" class="form-control form-control-sm text-right" />
-                    <span asp-validation-for="R100" class="text-danger"></span>
-                </div>
-                <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-2">
-                    <input id="R100Total" class="form-control form-control-sm text-right" />
-                </div>
-            </div>
-            <div class="form-row">
-                <label asp-for="R50" class="control-label col-md-1 text-right"></label>
-                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-1">
-                    <input asp-for="R50" class="form-control form-control-sm text-right" />
-                    <span asp-validation-for="R50" class="text-danger"></span>
-                </div>
-                <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-2">
-                    <input id="R50Total" class="form-control form-control-sm text-right" />
-                </div>
-            </div>
-            <div class="form-row">
-                <label asp-for="R25" class="control-label col-md-1 text-right"></label>
-                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-1">
-                    <input asp-for="R25" class="form-control form-control-sm text-right" />
-                    <span asp-validation-for="R25" class="text-danger"></span>
-                </div>
-                <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-2">
-                    <input id="R25Total" class="form-control form-control-sm text-right" />
-                </div>
-            </div>
-            <div class="form-row">
-                <label asp-for="R20" class="control-label col-md-1 text-right"></label>
-                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-1">
-                    <input asp-for="R20" class="form-control form-control-sm text-right" />
-                    <span asp-validation-for="R20" class="text-danger"></span>
-                </div>
-                <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-2">
-                    <input id="R20Total" class="form-control form-control-sm text-right" />
-                </div>
-            </div>
-            <div class="form-row">
-                <label asp-for="R10" class="control-label col-md-1 text-right"></label>
-                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-1">
-                    <input asp-for="R10" class="form-control form-control-sm text-right" />
-                    <span asp-validation-for="R10" class="text-danger"></span>
-                </div>
-                <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-2">
-                    <input id="R10Total" class="form-control form-control-sm text-right" />
-                </div>
-            </div>
-            <div class="form-row">
-                <label asp-for="R5" class="control-label col-md-1 text-right"></label>
-                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-1">
-                    <input asp-for="R5" class="form-control form-control-sm text-right" />
-                    <span asp-validation-for="R5" class="text-danger"></span>
-                </div>
-                <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-2">
-                    <input id="R5Total" class="form-control form-control-sm text-right" />
-                </div>
-            </div>
-            <div class="form-row">
-                <label asp-for="R2" class="control-label col-md-1 text-right"></label>
-                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-1">
-                    <input asp-for="R2" class="form-control form-control-sm text-right" />
-                    <span asp-validation-for="R2" class="text-danger"></span>
-                </div>
-                <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-2">
-                    <input id="R2Total" class="form-control form-control-sm text-right" />
-                </div>
-            </div>
-            <div class="form-row">
-                <label asp-for="R1" class="control-label col-md-1 text-right"></label>
-                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-1">
-                    <input asp-for="R1" class="form-control form-control-sm text-right" />
-                    <span asp-validation-for="R1" class="text-danger"></span>
-                </div>
-                <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-2">
-                    <input id="R1Total" class="form-control form-control-sm text-right" />
-                </div>
-            </div>
-            <div class="form-row">
-                <label asp-for="R05" class="control-label col-md-1 text-right"></label>
-                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-1">
-                    <input asp-for="R05" class="form-control form-control-sm text-right" />
-                    <span asp-validation-for="R05" class="text-danger"></span>
-                </div>
-                <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
-                <div class="form-group-sm col-md-2">
-                    <input id="R05Total" class="form-control form-control-sm text-right" />
-                </div>
-            </div>
-            <hr />
-            <div class="br"></div>
-            <div class="form-row">
-                <label asp-for="Total" class="control-label col-md-2 mr-denomination text-right"></label>
-                <div class="form-group col-md-2">
-                    <input asp-for="Total" class="form-control form-control-sm text-right" />
-                    <span asp-validation-for="Total" class="text-danger"></span>
-                </div>
-            </div>
+            </ul>
+        </div>
+    </div>
+    <div class="page-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-block">
+                        @*Your content here*@
+                        <form asp-action="Create" class="form-horizontal">
+
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                            <div class="d-none d-print-block">
+                                <div class="text-center font-weight-bold text-danger">!! Not Saved !!</div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group-sm col-md-3">
+                                    <label asp-for="Terminal_Id" class="control-label"></label>
+                                    <select asp-for="Terminal_Id" class="form-control form-control-sm" asp-items="ViewBag.Terminal_Id"></select>
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label asp-for="Date" class="control-label"></label>
+                                    <input asp-for="Date" type="text" class="form-control form-control-sm" />
+                                    <span asp-validation-for="Date" class="text-danger"></span>
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label asp-for="Date_BS" class="control-label"></label>
+                                    <input asp-for="Date_BS" class="form-control form-control-sm" />
+                                    <span asp-validation-for="Date_BS" class="text-danger"></span>
+                                </div>
+
+                            </div>
+                            <div class="br"><hr /></div>
+                            <div class="form-row">
+                                <label asp-for="Card" class="control-label col-md-2 mr-denomination text-right"></label>
+                                <div class="form-group-sm col-md-2">
+                                    <input asp-for="Card" class="form-control form-control-sm text-right" />
+                                    <span asp-validation-for="Card" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label asp-for="Credit" class="control-label col-md-2 mr-denomination text-right"></label>
+                                <div class="form-group-sm col-md-2">
+                                    <input asp-for="Credit" class="form-control form-control-sm text-right" />
+                                    <span asp-validation-for="Credit" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label asp-for="CreditNote" class="control-label col-md-2 mr-denomination text-right"></label>
+                                <div class="form-group-sm col-md-2">
+                                    <input asp-for="CreditNote" class="form-control form-control-sm text-right" />
+                                    <span asp-validation-for="CreditNote" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="form-row sr-only">
+                                <label asp-for="Other" class="control-label col-md-2 mr-denomination text-right"></label>
+                                <div class="form-group-sm col-md-2">
+                                    <input asp-for="Other" class="form-control form-control-sm text-right" />
+                                    <span asp-validation-for="Other" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label asp-for="Ric" class="control-label col-md-1 text-right"></label>
+                                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-1">
+                                    <input asp-for="Ric" class="form-control form-control-sm text-right" />
+                                    <span asp-validation-for="Ric" class="text-danger"></span>
+                                </div>
+                                <label class="control-label">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-2">
+                                    <input id="RicTotal" class="form-control form-control-sm text-right" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label asp-for="R1000" class="control-label col-md-1 text-right"></label>
+                                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-1">
+                                    <input asp-for="R1000" class="form-control form-control-sm text-right" />
+                                    <span asp-validation-for="R1000" class="text-danger"></span>
+                                </div>
+                                <label class="control-label">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-2">
+                                    <input id="R1000Total" class="form-control form-control-sm text-right" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label asp-for="R500" class="control-label col-md-1 text-right"></label>
+                                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-1">
+                                    <input asp-for="R500" class="form-control form-control-sm text-right" />
+                                    <span asp-validation-for="R500" class="text-danger"></span>
+                                </div>
+                                <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-2">
+                                    <input id="R500Total" class="form-control form-control-sm text-right" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label asp-for="R250" class="control-label col-md-1 text-right"></label>
+                                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-1">
+                                    <input asp-for="R250" class="form-control form-control-sm text-right" />
+                                    <span asp-validation-for="R250" class="text-danger"></span>
+                                </div>
+                                <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-2">
+                                    <input id="R250Total" class="form-control form-control-sm text-right" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label asp-for="R100" class="control-label col-md-1 text-right"></label>
+                                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-1">
+                                    <input asp-for="R100" class="form-control form-control-sm text-right" />
+                                    <span asp-validation-for="R100" class="text-danger"></span>
+                                </div>
+                                <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-2">
+                                    <input id="R100Total" class="form-control form-control-sm text-right" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label asp-for="R50" class="control-label col-md-1 text-right"></label>
+                                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-1">
+                                    <input asp-for="R50" class="form-control form-control-sm text-right" />
+                                    <span asp-validation-for="R50" class="text-danger"></span>
+                                </div>
+                                <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-2">
+                                    <input id="R50Total" class="form-control form-control-sm text-right" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label asp-for="R25" class="control-label col-md-1 text-right"></label>
+                                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-1">
+                                    <input asp-for="R25" class="form-control form-control-sm text-right" />
+                                    <span asp-validation-for="R25" class="text-danger"></span>
+                                </div>
+                                <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-2">
+                                    <input id="R25Total" class="form-control form-control-sm text-right" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label asp-for="R20" class="control-label col-md-1 text-right"></label>
+                                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-1">
+                                    <input asp-for="R20" class="form-control form-control-sm text-right" />
+                                    <span asp-validation-for="R20" class="text-danger"></span>
+                                </div>
+                                <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-2">
+                                    <input id="R20Total" class="form-control form-control-sm text-right" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label asp-for="R10" class="control-label col-md-1 text-right"></label>
+                                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-1">
+                                    <input asp-for="R10" class="form-control form-control-sm text-right" />
+                                    <span asp-validation-for="R10" class="text-danger"></span>
+                                </div>
+                                <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-2">
+                                    <input id="R10Total" class="form-control form-control-sm text-right" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label asp-for="R5" class="control-label col-md-1 text-right"></label>
+                                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-1">
+                                    <input asp-for="R5" class="form-control form-control-sm text-right" />
+                                    <span asp-validation-for="R5" class="text-danger"></span>
+                                </div>
+                                <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-2">
+                                    <input id="R5Total" class="form-control form-control-sm text-right" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label asp-for="R2" class="control-label col-md-1 text-right"></label>
+                                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-1">
+                                    <input asp-for="R2" class="form-control form-control-sm text-right" />
+                                    <span asp-validation-for="R2" class="text-danger"></span>
+                                </div>
+                                <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-2">
+                                    <input id="R2Total" class="form-control form-control-sm text-right" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label asp-for="R1" class="control-label col-md-1 text-right"></label>
+                                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-1">
+                                    <input asp-for="R1" class="form-control form-control-sm text-right" />
+                                    <span asp-validation-for="R1" class="text-danger"></span>
+                                </div>
+                                <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-2">
+                                    <input id="R1Total" class="form-control form-control-sm text-right" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label asp-for="R05" class="control-label col-md-1 text-right"></label>
+                                <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-1">
+                                    <input asp-for="R05" class="form-control form-control-sm text-right" />
+                                    <span asp-validation-for="R05" class="text-danger"></span>
+                                </div>
+                                <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
+                                <div class="form-group-sm col-md-2">
+                                    <input id="R05Total" class="form-control form-control-sm text-right" />
+                                </div>
+                            </div>
+                            <hr />
+                            <div class="br"></div>
+                            <div class="form-row">
+                                <label asp-for="Total" class="control-label col-md-2 mr-denomination text-right"></label>
+                                <div class="form-group col-md-2">
+                                    <input asp-for="Total" class="form-control form-control-sm text-right" />
+                                    <span asp-validation-for="Total" class="text-danger"></span>
+                                </div>
+                            </div>
 
 
-            <div class="form-group ml-button col-md-4">
-                <input type="submit" value="Save" class="btn btn-success btn-block" />
+                            <div class="form-group ml-button col-md-4">
+                                <input type="submit" value="Save" class="btn btn-success btn-block" />
+                            </div>
+                        </form>
+                        <div>
+                            <a asp-action="Index">Back to List</a>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

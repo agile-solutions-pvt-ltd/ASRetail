@@ -12,8 +12,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using POS.Core;
 using POS.DTO;
+using POS.UI.Helper;
+using static Microsoft.AspNetCore.Hosting.Internal.HostingApplication;
 
 namespace POS.UI.Controllers
 {
@@ -24,7 +27,7 @@ namespace POS.UI.Controllers
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ILogger _logger;
-        private readonly IOptions<AppSettings> _appSettings;
+
         private readonly EntityCore _context;
 
         public AccountController(
@@ -32,7 +35,7 @@ namespace POS.UI.Controllers
             SignInManager<IdentityUser> signInManager,
             RoleManager<IdentityRole> roleManager,
             ILoggerFactory loggerFactory,
-            IOptions<AppSettings> appSettings,
+
             EntityCore context)
         {
             _userManager = userManager;
@@ -40,7 +43,7 @@ namespace POS.UI.Controllers
             _roleManager = roleManager;
             _context = context;
             _logger = loggerFactory.CreateLogger<AccountController>();
-            _appSettings = appSettings;
+
         }
 
         //
@@ -60,28 +63,77 @@ namespace POS.UI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
         {
-            ViewData["ReturnUrl"] = returnUrl;
+            ViewData["ReturnUrl"] = null;
             if (ModelState.IsValid)
             {
-                // This doesn't count login failures towards account lockout
-                // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-
+                //first try to login with username
+                IdentityUser user = await _userManager.FindByNameAsync(model.Email);
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
                 if (!result.Succeeded && !result.RequiresTwoFactor && !result.IsLockedOut)
                 {
-                    var user = await _userManager.FindByEmailAsync(model.Email);
+                    //now try to login with email
+                    user = await _userManager.FindByEmailAsync(model.Email);
                     if (user != null)
                     {
-                        //check if user is in session
-                       // _context.Settlement.Any(x => x.UserId == user.Id && x.Status == "Open");
-
                         result = await _signInManager.PasswordSignInAsync(user, model.Password, model.RememberMe, lockoutOnFailure: false);
                     }
                 }
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation(1, "User logged in.");
-                    return RedirectToLocal(returnUrl);
+                   // HttpContext.User = await _signInManager.CreateUserPrincipalAsync(user);
+                    //first check username already loggedin
+                    Config config = ConfigJSON.Read();
+                    if (!User.Identity.IsAuthenticated && config.LoggedInUsers.Contains(user.UserName))
+                    {
+                        //ModelState.AddModelError(string.Empty, "You're currently logged in to another system !!");
+                        //await _signInManager.SignOutAsync();
+                        //return View(model);
+                    }
+                    else
+                    {
+                        config.LoggedInUsers.Remove(user.UserName);
+                        config.LoggedInUsers.Add(user.UserName);
+                        ConfigJSON.Write(config);
+                    }
+                    //get user role
+                    var role = _context.UserViewModel.FirstOrDefault(x => x.UserName == user.UserName);
+                    //save to session 
+                    HttpContext.Session.SetString("Menus", JsonConvert.SerializeObject(_context.RoleWiseMenuPermission.Where(x=>x.RoleId == role.Role)));
+
+                    if (model.TerminalId != 0)
+                    {
+                        HttpContext.Session.SetString("Terminal", JsonConvert.SerializeObject(model.TerminalId));
+                        ((ClaimsIdentity)User.Identity).AddClaim(new Claim("Terminal", model.TerminalId.ToString()));
+                        ((ClaimsIdentity)User.Identity).AddClaim(new Claim("TerminalName", model.TerminalName.ToString()));
+                    }
+                    else
+                    {
+                        //check if user required terminal
+                      
+                        //var roleName = User.FindFirstValue(ClaimTypes.Role);
+                        //var role = _roleManager.FindByNameAsync(roleName);
+                        var rolePermission = _context.RoleWisePermission.FirstOrDefault(x => x.RoleId == role.RoleId);
+                        bool requireTerminalToLogin = rolePermission == null ? false : rolePermission.Require_Terminal_To_Login;
+                        if (requireTerminalToLogin)
+                        {
+                            ModelState.AddModelError(string.Empty, "You can only login from Terminals");
+                            await _signInManager.SignOutAsync();
+                            return View(model);
+                        }
+                        else
+                        {
+                            //select default terminal
+                            var terminal = _context.Terminal.FirstOrDefault();
+                            HttpContext.Session.SetString("Terminal", JsonConvert.SerializeObject(terminal.Id));
+                            ((ClaimsIdentity)User.Identity).AddClaim(new Claim("Terminal", terminal.Id.ToString()));
+                            ((ClaimsIdentity)User.Identity).AddClaim(new Claim("TerminalName", terminal.Name.ToString()));
+
+                        }
+                    }
+                    if (!string.IsNullOrEmpty(returnUrl))
+                        return RedirectToLocal(returnUrl);
+                    else
+                        return RedirectToAction("Landing", "SalesInvoice");
                 }
                 if (result.RequiresTwoFactor)
                 {
@@ -104,7 +156,7 @@ namespace POS.UI.Controllers
         }
 
 
-       
+
 
         //
         // GET: /Account/Register
@@ -147,17 +199,29 @@ namespace POS.UI.Controllers
 
         //
         // POST: /Account/LogOff
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpGet]
         public async Task<IActionResult> LogOff()
         {
+            Config config = ConfigJSON.Read();
+            config.LoggedInUsers.Remove(User.Identity.Name);
+            ConfigJSON.Write(config);
             await _signInManager.SignOutAsync();
             _logger.LogInformation(4, "User logged out.");
             Response.Cookies.Append(User.Identity.Name, "", new CookieOptions()
             {
                 Expires = DateTime.Now.AddDays(-1)
             });
+
             return RedirectToAction("Login", "Account");
+        }
+
+        [HttpPost]
+        public IActionResult BrowserClose()
+        {
+            Config config = ConfigJSON.Read();
+            config.LoggedInUsers.Remove(User.Identity.Name);
+            ConfigJSON.Write(config);
+            return Ok();
         }
 
         //
@@ -487,6 +551,22 @@ namespace POS.UI.Controllers
         }
         #endregion
 
+        #region pages
+        public IActionResult PageNotFound()
+        {
+            return View("404");
+        }
+        public IActionResult Error()
+        {
+            return View("Error");
+        }
+        public IActionResult UnAuthorized()
+        {
+            return View("UnAuthorized");
+        }
+
+        #endregion
+
         #region user
         public IActionResult Users()
         {
@@ -667,7 +747,7 @@ namespace POS.UI.Controllers
             if (id != null)
             {
                 data.roleWiseUserPermission = _context.RoleWisePermission.FirstOrDefault(x => x.RoleId == id);
-                data.roleWiseMenuPermissions = _context.RoleWiseMenuPermission.Where(x => x.RoleId == id).ToList();               
+                data.roleWiseMenuPermissions = _context.RoleWiseMenuPermission.Where(x => x.RoleId == id).ToList();
             }
             return View(data);
         }
@@ -716,17 +796,17 @@ namespace POS.UI.Controllers
                  .Where(c => c.Type == ClaimTypes.Role)
                  .Select(c => c.Value).FirstOrDefault();
 
-           //Task<string> roleId =  _roleManager.GetRoleIdAsync(new IdentityRole(role));
-           // roleId.Wait();
+            //Task<string> roleId =  _roleManager.GetRoleIdAsync(new IdentityRole(role));
+            // roleId.Wait();
 
 
-            var role =_roleManager.FindByNameAsync(roleName);
+            var role = _roleManager.FindByNameAsync(roleName);
             var roleId = role.Result.Id;
             RoleWisePermissionCommon data = new RoleWisePermissionCommon();
             if (role != null)
             {
                 data.roleWiseUserPermission = _context.RoleWisePermission.FirstOrDefault(x => x.RoleId == roleId);
-               // data.roleWiseMenuPermissions = _context.RoleWiseMenuPermission.Where(x => x.RoleId == id).ToList();
+                // data.roleWiseMenuPermissions = _context.RoleWiseMenuPermission.Where(x => x.RoleId == id).ToList();
             }
             return Ok(data);
         }
@@ -738,11 +818,13 @@ namespace POS.UI.Controllers
                  .Where(c => c.Type == ClaimTypes.Role)
                  .Select(c => c.Value).FirstOrDefault();
 
-            
+
             var role = _roleManager.FindByNameAsync(roleName);
             var roleId = role.Result.Id;
-           IList<RoleWiseMenuPermission> permission = _context.RoleWiseMenuPermission.Where(x => x.RoleId == roleId).Include(x => x.Menu).ToList();
-           
+            IList<RoleWiseMenuPermission> permission = _context.RoleWiseMenuPermission.Where(x => x.RoleId == roleId).Include(x => x.Menu).ToList();
+
+
+            HttpContext.Session.SetString("Menus", JsonConvert.SerializeObject(permission));
             return Ok(permission);
         }
         #endregion

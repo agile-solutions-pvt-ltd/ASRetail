@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<POS.DTO.SettlementViewModel>
 
 @{
-    ViewData["Title"] = "Settlement";
+    ViewData["Title"] = "Cash Settlement";
 }
 
 <style>
@@ -14,66 +14,266 @@
         border-style: inset;
         border-width: 1px;
     }
+    .card-body-child{
+        background-color: rgb(233, 233, 233)
+    }
+    .form-control {
+    font-size: 10px;
+    border-radius: 2px;
+}
 </style>
-<h2>List of UnSettled Cash</h2>
-<hr />
 
-<div class="row" id="settlement-row">
-    <div class="col-md-12 pt-3 settlement-node">
-        <div class="card">
-            <div class="card-header bg-success">$Username || $terminalName</div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4">
-                        <h4>Transaction Amount</h4>
-                        <hr class="hr" />
-                        <div class="row">
-                            <div class="col-md-3 text-right">
-                                <span class="font-weight-bold">Duration :</span>
-                            </div>
-                            <div class="col-md-9">
-                                $startDate  <span class="font-weight-bold">To</span>  $endDate
-                            </div>
-                        </div>
-                        <div class="br"></div>
-                        <div id="settlement-payment-row">
-                            <div class="row" id="settlement-payment-node">
-                                <div class="col-md-3 text-right">
-                                    <span class="font-weight-bold">$paymentMode :</span>
+<div class="page-wrapper">
+    <div class="page-header">
+        <div class="page-header-title">
+            <h4>@ViewData["Title"]</h4>
+            <span>List of UnSettled Transaction</span>
+        </div>
+        <div class="page-header-breadcrumb">
+            <ul class="breadcrumb-title">
+                <li class="breadcrumb-item">
+                    <a href="index.html">
+                        <i class="icofont icofont-home"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">Transaction</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">@ViewData["Title"]</a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+    <div class="page-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-block">
+                        @*Your content here*@
+                        <div class="row" id="settlement-row">
+                            <div class="col-md-12 pt-3 settlement-node">
+                                <div class="card">
+                                    <div class="card-header bg-success">$Username || $terminalName</div>
+                                    <input type="hidden" class="Id" value="$id"/>
+                                    <div class="card-body card-body-child">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <h4>Transaction Amt</h4>
+                                                <hr class="hr" />
+                                                <div class="row">
+                                                    <div class="col-md-3 text-right p-0">
+                                                        <span class="font-weight-bold">Duration:</span>
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        $startDate  <span class="font-weight-bold">To</span>  $endDate
+                                                    </div>
+                                                </div>
+                                                <div class="br"></div>
+                                                <div class="row">
+                                                    <div class="col-md-3 text-right p-0">
+                                                        <span class="font-weight-bold">Card :</span>
+                                                    </div>
+                                                    <div class="transCardAmount col-md-5 text-right">
+                                                        $transCardAmount
+                                                    </div>
+                                                </div>
+                                                <div class="br"></div>
+                                                <div class="row">
+                                                    <div class="col-md-3 text-right p-0">
+                                                        <span class="font-weight-bold">Credit :</span>
+                                                    </div>
+                                                    <div class="transCreditAmount col-md-5 text-right">
+                                                        $transCreditAmount
+                                                    </div>
+                                                </div>
+                                                <div class="br"></div>
+                                                <div class="row">
+                                                    <div class="col-md-3 text-right p-0">
+                                                        <span class="font-weight-bold">Cr. Note :</span>
+                                                    </div>
+                                                    <div class="transCreditNoteAmount col-md-5 text-right">
+                                                        $transCreditNoteAmount
+                                                    </div>
+                                                </div>
+                                                <div class="br"></div>
+                                                <div class="row">
+                                                    <div class="col-md-3 text-right p-0">
+                                                        <span class="font-weight-bold">Cash :</span>
+                                                    </div>
+                                                    <div class="transCashAmount col-md-5 text-right">
+                                                        $transCashAmount
+                                                    </div>
+                                                </div>
+                                                <div class="br"></div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <h4>Denomination Amt</h4>
+                                                <hr class="hr" />
+
+                                                <div class="row invisible">
+                                                    <div class="col-md-3">
+                                                        <span class="font-weight-bold">Card :</span>
+                                                    </div>
+                                                    <div class="col-md-9 text-center">
+                                                        2019/4/24 2:08 PM To 2019/4/24 2:08 PM
+                                                    </div>
+                                                </div>
+                                                <div class="br"></div>
+                                                <div class="row">
+                                                    <div class="col-md-3 text-right p-0">
+                                                        <span class="font-weight-bold">Card :</span>
+                                                    </div>
+                                                    <div class="denoCardAmount col-md-5 text-right">
+                                                        $denoCardAmount
+                                                    </div>
+                                                </div>
+                                                <div class="br"></div>
+                                                <div class="row">
+                                                    <div class="col-md-3 text-right p-0">
+                                                        <span class="font-weight-bold">Credit :</span>
+                                                    </div>
+                                                    <div class="denoCreditAmount col-md-5 text-right">
+                                                        $denoCreditAmount
+                                                    </div>
+                                                </div>
+                                                <div class="br"></div>
+                                                <div class="row">
+                                                    <div class="col-md-3 text-right p-0">
+                                                        <span class="font-weight-bold">Cr. Note :</span>
+                                                    </div>
+                                                    <div class="denoCreditNoteAmount col-md-5 text-right">
+                                                        $denoCreditNoteAmount
+                                                    </div>
+                                                </div>
+                                                <div class="br"></div>
+                                                <div class="row">
+                                                    <div class="col-md-3 text-right p-0">
+                                                        <span class="font-weight-bold">Cash :</span>
+                                                    </div>
+                                                    <div class="denoCashAmount col-md-5 text-right">
+                                                        $denoCashAmount
+                                                    </div>
+                                                </div>
+                                                <div class="br"></div>
+
+                                                <a href="#" class="denomination-view" onclick="settlement.denominationView($denominationId);">view Details</a>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <h4>Adjustment Amt</h4>
+                                                <hr class="hr" />
+                                                <div class="row invisible">
+                                                    <div class="col-md-3">
+                                                        <span class="font-weight-bold">Card :</span>
+                                                    </div>
+                                                    <div class="col-md-9 text-center">
+                                                        2019/4/24 2:08 PM To 2019/4/24 2:08 PM
+                                                    </div>
+                                                </div>
+                                                <div class="br"></div>
+
+                                                <div class="row">
+                                                    <div class="col-md-3 text-right p-0">
+                                                        <span class="font-weight-bold">Card :</span>
+                                                    </div>
+                                                    <div class="col-md-7">
+                                                        <input type="text" class="adjustment adjustmentCardAmount form-control form-control-sm text-right" placeholder="+- 0.00" onkeyup="settlement.calcShortExcessAmount(this)"/>
+                                                    </div>
+                                                </div>
+                                                <div class="br"></div>
+                                                <div class="row">
+                                                    <div class="col-md-3 text-right p-0">
+                                                        <span class="font-weight-bold">Credit :</span>
+                                                    </div>
+                                                    <div class="col-md-7">
+                                                        <input type="text" class="adjustment adjustmentCreditAmount form-control form-control-sm text-right" placeholder="+- 0.00" onkeyup="settlement.calcShortExcessAmount(this)"/>
+                                                    </div>
+                                                </div>
+                                                <div class="br"></div>
+                                                <div class="row">
+                                                    <div class="col-md-3 text-right p-0">
+                                                        <span class="font-weight-bold">Cr. Note :</span>
+                                                    </div>
+                                                    <div class="col-md-7">
+                                                        <input type="text" class="adjustment adjustmentCreditNoteAmount form-control form-control-sm text-right" placeholder="+- 0.00" onkeyup="settlement.calcShortExcessAmount(this)"/>
+                                                    </div>
+                                                </div>
+                                                <div class="br"></div>
+                                                <div class="row">
+                                                    <div class="col-md-3 text-right p-0">
+                                                        <span class="font-weight-bold">Cash :</span>
+                                                    </div>
+                                                    <div class="col-md-7">
+                                                        <input type="text" class="adjustment adjustmentCashAmount form-control form-control-sm text-right" placeholder="+- 0.00" onkeyup="settlement.calcShortExcessAmount(this)"/>
+                                                    </div>
+                                                </div>
+                                                <div class="br"></div>
+
+                                            </div>
+                                            <div class="col-md-3">
+                                                <h4>Short/Excess Amt</h4>
+                                                <hr class="hr" />
+
+                                                <div class="row invisible">
+                                                    <div class="col-md-3">
+                                                        <span class="font-weight-bold">Card :</span>
+                                                    </div>
+                                                    <div class="col-md-9 text-center">
+                                                        2019/4/24 2:08 PM To 2019/4/24 2:08 PM
+                                                    </div>
+                                                </div>
+                                                <div class="br"></div>
+                                                <div class="row">
+                                                    <div class="col-md-3 text-right p-0">
+                                                        <span class="font-weight-bold">Card :</span>
+                                                    </div>
+                                                    <div class="shortAccessCardAmount col-md-5 text-right">
+                                                        $shortAccessCardAmount
+                                                    </div>
+                                                </div>
+                                                <div class="br"></div>
+                                                <div class="row">
+                                                    <div class="col-md-3 text-right p-0">
+                                                        <span class="font-weight-bold">Credit :</span>
+                                                    </div>
+                                                    <div class="shortAccessCreditAmount col-md-5 text-right">
+                                                        $shortAccessCreditAmount
+                                                    </div>
+                                                </div>
+                                                <div class="br"></div>
+                                                <div class="row">
+                                                    <div class="col-md-3 text-right p-0">
+                                                        <span class="font-weight-bold">Cr. Note :</span>
+                                                    </div>
+                                                    <div class="shortAccessCreditNoteAmount col-md-5 text-right">
+                                                        $shortAccessCreditNoteAmount
+                                                    </div>
+                                                </div>
+                                                <div class="br"></div>
+                                                <div class="row">
+                                                    <div class="col-md-3 text-right p-0">
+                                                        <span class="font-weight-bold">Cash :</span>
+                                                    </div>
+                                                    <div class="shortAccessCashAmount col-md-5 text-right">
+                                                        $shortAccessCashAmount
+                                                    </div>
+                                                </div>
+                                               
+                                            </div>
+                                        </div>
+                                        <input type="button" class=" VerifyButton btn btn-success pull-right btn-sm" value="Verify" onclick="settlement.verifySettlement(this);"/>
+                                    </div>
                                 </div>
-                                <div class="col-md-9">
-                                    $amount
-                                </div>
-                            </div>
-                            <div class="br"></div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <h4>Denomination Amount</h4>
-                        <hr class="hr" />
-                        <div class="br"></div>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <span class="font-weight-bold">Cash :</span>
-                            </div>
-                            <div class="col-md-4 text-center">
-                                $denominationAmount
                             </div>
                         </div>
-                        <div class="br"></div>
-                        <a href="#" class="denomination-view" onclick="settlement.denominationView($denominationId);">view Details</a>
-                    </div>
-                    <div class="col-md-4">
-                        <h4>Adjustment Amount</h4>
-                        <hr class="hr" />
-                        <input type="text" class="form-control form-control-sm text-right col-md-7" placeholder="+- 0.00" />
                     </div>
                 </div>
-                <input type="button" id="VerifyButton" class="btn btn-success pull-right btn-sm" value="Verify" />
             </div>
         </div>
     </div>
 </div>
+
 
 
 

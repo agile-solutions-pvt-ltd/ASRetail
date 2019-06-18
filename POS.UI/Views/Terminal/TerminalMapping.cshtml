@@ -1,0 +1,148 @@
+﻿
+
+@{
+    ViewData["Title"] = "Device Mapping";
+}
+
+<div class="page-wrapper">
+    <div class="page-header">
+        <div class="page-header-title">
+            <h4>@ViewData["Title"]</h4>
+            <span>Mapped Device To Terminal</span>
+        </div>
+        <div class="page-header-breadcrumb">
+            <ul class="breadcrumb-title">
+                <li class="breadcrumb-item">
+                    <a href="index.html">
+                        <i class="icofont icofont-home"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">Pages</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">@ViewData["Title"]</a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+    <div class="page-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-block">
+                        @*Your content here*@
+                        <div class="text-danger font-weight-bold" id="StatusMessageError"></div>
+                        <span class="text-success" id="StatusMessageSuccess"></span>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <form class="form-horizontal">
+                                    <h3 class="control-label">This Device Info</h3> <br />
+                                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                    <div class="form-row">
+                                        <label class="control-label col-md-2">Fingerprints :</label> <br />
+                                        <label class="control-label col-md-8 fingerprint font-weight-bold">Please Wait, Analysing Your Device ...</label>
+                                    </div>
+                                    <div class="form-row">
+                                        <label class="control-label col-md-2">IP Address :</label> <br />
+                                        <label class="control-label col-md-8 ipAddress font-weight-bold">Please Wait, Analysing Your Device ...</label>
+                                    </div>
+                                    <div class="form-row">
+                                        <label class="control-label col-md-2">Computer Name :</label> <br />
+                                        <label class="control-label col-md-8 computerName font-weight-bold">Please Wait, Analysing Your Device ...</label>
+                                    </div>
+                                    <div class="br"><hr /></div>
+                                    <div class="form-row">
+                                        <div class="form-group-sm col-md-12 text-center">
+                                            <label class="control-label">Mapped in Terminal</label>
+                                            <select id="Terminal_Id" class="form-control form-control" asp-items="ViewBag.Terminal_Id"></select>
+                                        </div>
+
+                                    </div>
+                                    <div class="br"><hr /></div>
+                                    <div class="form-row">
+                                        <div class="form-group-sm col-md-12 text-center">
+                                            <input type="button" value="Map" class="btn save btn-success btn-block" />
+                                        </div>
+
+                                    </div>
+
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts {
+
+    <script src="~/lib/fingerprint/fingerprint2.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var fingerPrintReport = () => {
+                Fingerprint2.get(function (components) {
+                    var murmur = Fingerprint2.x64hash128(components.map(function (pair) { return pair.value }).join(), 31);
+                    $(".fingerprint").text(murmur);
+                });
+
+            };
+            setTimeout(() => {
+                fingerPrintReport();
+            }, 100);
+
+            GetClientLocalIP(function (ip) {
+                
+                $(".ipAddress").text(ip);
+                $.ajax({
+                    url: window.location.origin + "/Terminal/GetClientComputerName?ip=" + ip,
+                    async: false,
+                    complete: function (data) {
+                        if (data.status === 200) {
+                            
+                            $(".computerName").text(data.responseJSON.pcName);
+                            if (data.responseJSON.terminalId !== undefined)
+                                $("#Terminal_Id").val(data.responseJSON.terminalId);
+                        }
+                        else {
+                            $("#StatusMessageError").html("Error: Getting Computer Name");
+                            setTimeout(function () { $("#StatusMessageError").text(''); }, 3000);
+                        }
+                    }
+                });
+
+            });
+
+
+            $(".save").on("click", function () {
+                var final = {
+                    TerminalId: $("#Terminal_Id").val(),
+                    PCName: $(".computerName").text(),
+                    IPAddress:$(".ipAddress").text(),
+                    FingerPrint:$(".fingerprint").text(),
+                }
+                $.ajax({
+                    method: "POST",
+                    url: window.location.origin + "/Terminal/TerminalMapping",
+                    data: JSON.stringify(final),
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    complete: function (result) {
+                        if (result.status === 200) {
+                             $("#StatusMessageSuccess").html("Success: Terminal Mapped Successfully");
+                            setTimeout(function () { $("#StatusMessageSuccess").text(''); }, 3000);
+                        }
+                    }
+                });
+            });
+        });
+
+
+
+    </script>
+}

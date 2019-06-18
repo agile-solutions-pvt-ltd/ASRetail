@@ -14,6 +14,8 @@ namespace POS.DTO
         public int Id { get; set; }
         public Guid? Invoice_Id { get; set; }
         public string Invoice_Number { get; set; }
+        public string InvoiceIdFromNav { get; set; }
+        public string ItemId { get; set; }
         public string Bar_Code { get; set; }
         public string Name { get; set; }
         public string Unit { get; set; }

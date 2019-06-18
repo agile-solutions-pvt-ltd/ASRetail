@@ -1,58 +1,117 @@
-﻿@{
+﻿@model  POS.DTO.Store
+@{
     ViewData["Title"] = "Landing";
 }
 <style>
     .cinfo {
         font-size: xx-large;
     }
+     .caddress {
+        font-size: large;
+    }
     /* hide the blue outline */
     .form-control:focus {
         outline: 0 !important;
-        border-color: initial;
-        box-shadow: none;
+        border-color: #e9ecef!important;
+        box-shadow: none !important;
+    }
+
+    #membership-panel, #message {
+        display: none;
     }
 
     .selected {
         background-color: rgb(128, 128, 128);
         color: #FFF;
     }
+  
 </style>
-<div class="cinfo text-center font-weight-bold p-5">Salesways Company, Satdobato</div>
-<div class="pt-3" style="        min-height: 300px">
+<div class="page-wrapper">
+    
+    <div class="page-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-block">
+                        @*Your content here*@
+                        @Html.Partial("_ResponseMessagePartial")
+                        <div class="cinfo text-center font-weight-bold">@Model.COMPANY_NAME</div>
+                        <div class="caddress text-center font-weight-bold">@Model.ADDRESS</div>
+                        <div class="pt-5" style=" min-height: 400px">
 
-    <div class="row">
-        <div class="col-md-2"></div>
-        <div class="col-md-8">
-            <div class="form-group input-group">
-                <input type="search" class="form-control form-control-lg py-2 border-right-0 border search search-input" placeholder="Search Membership" />
-                <span class="input-group-append">
-                    <button class="btn btn-outline-secondar border-left-0 border search" type="button">
-                        <i class="fa fa-search"></i>
-                    </button>
-                </span>
-            </div>
-            <div class="br"></div>
-            <div class= ="row">
-                <table id="memberTable" class="table table-sm table-bordered table-hover">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Id</th>
-                            <th>Name</th>
-                            <th>Mobile</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        
-                    </tbody>
-                </table>
+                            <div class="row">
+                                <div class="col-md-2"></div>
+                                <div class="col-md-8">
+                                    @*<div class="row">
+                        <div class="col-md-2">
+                            <input type="button" value="Add New (F2)" class="btn btn-success btn-sm" id="addNewMemberButton" />
+                        </div>
+                        <div class="col-md-2">
+                            <input type="button" value="Skip (ESC)" class="btn btn-warning btn-sm" id="skipPage" />
+                        </div>
+                    </div>*@
+
+                                    <div class="br"></div>
+                                    <div class="form-group input-group">
+                                        <input type="search" class="form-control form-control-lg py-2 border-right-0 border search search-input" placeholder="Search Membership" />
+                                        <span class="input-group-append border-left-0 border p-2">
+                                            <i class="input-group-text bg-transparent  search fa fa-search"></i>
+                                        </span>
+                                    </div>
+                                    <span class="text-danger" id="message"></span>
+                                    <div class="br"></div>
+                                    <div id="membership-panel">
+                                        <div class="form-row">
+                                            <div class="form-group col-md-3">
+                                                <label for="Customer_Name" class="control-label">Name</label>
+                                                <input id="Customer_Name" class="form-control form-control-sm" />
+                                            </div>
+                                            <div class="form-group col-md-2">
+                                                <label for="Customer_Mobile" class="control-label">Mobile</label>
+                                                <input id="Customer_Mobile" class="form-control form-control-sm" />
+                                            </div>
+                                            <div class="form-group col-md-2">
+                                                <label for="Customer_Address" class="control-label">Address</label>
+                                                <input id="Customer_Address" class="form-control form-control-sm" />
+                                            </div>
+                                            <div id="memberSaveButtonSH" class="form-group col-md-1">
+                                                <label class="control-label">&nbsp;</label>
+                                                <input type="button" id="memberSaveButton" class="form-control form-control-sm btn btn-sm btn-primary" value="Save" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="br"></div>
+                                    <div class="row">
+                                        <table id="memberTable" class="table table-sm table-bordered table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Id</th>
+                                                    <th>Name</th>
+                                                    <th>Mobile</th>
+                                                    <th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="col-md-2"></div>
+
+                            </div>
+
+
+                        </div>
+
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="col-md-2"></div>
-
     </div>
 </div>
+
+
+
 
 
 @section Scripts {

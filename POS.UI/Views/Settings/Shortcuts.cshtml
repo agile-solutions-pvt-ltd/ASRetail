@@ -3,41 +3,188 @@
     ViewData["Title"] = "Shortcuts";
 }
 
-<h2>List of shortcuts</h2>
-<hr />
+<div class="page-wrapper">
+    <div class="page-header">
+        <div class="page-header-title">
+            <h4>@ViewData["Title"]</h4>
+            <span>List of @ViewData["Title"]</span>
+        </div>
+        <div class="page-header-breadcrumb">
+            <ul class="breadcrumb-title">
+                <li class="breadcrumb-item">
+                    <a href="index.html">
+                        <i class="icofont icofont-home"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">Support</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">@ViewData["Title"]</a>
+                </li>
 
-<div class="row">
-    <div class="col-md-12">
-        <table id="shortcut-table" class="table table-sm table-bordered table-striped table-hover">
-            <thead>
-                <tr>                    
-                    <th>Name</th>
-                    <th>Shortcut key</th>                   
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td> Focus on Barcode Textbox</td>
-                    <td> Ctrl + b</td>
-                </tr>
-                <tr>
-                    <td>Save SalesInoice / TaxInvoice</td>
-                    <td>Ctrl + end</td>
-                </tr>
-                <tr>
-                    <td>Hold Current SalesInoice / TaxInvoice</td>
-                    <td>Ctrl + Alt + P</td>
-                </tr>
-                <tr>
-                    <td>Show List of Holding SalesInoice / TaxInvoice</td>
-                    <td>F2</td>
-                </tr>
-                <tr>
-                    <td>Go back from billing screen to SalesInoice / TaxInvoice</td>
-                    <td>ESC</td>
-                </tr>
-            </tbody>         
-        </table>
+            </ul>
+        </div>
+    </div>
+    <div class="page-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-block">
+                        @*Your content here*@
+                        <table id="grid" class="table table-sm table-bordered table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Page</th>
+                                    <th>Name</th>
+                                    <th>Shortcut key</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Global</td>
+                                    <td> Go Back</td>
+                                    <td> Alt + <-</td>
+                                </tr>
+                                <tr>
+                                    <td>Global</td>
+                                    <td> Go Forward</td>
+                                    <td> Alt + -></td>
+                                </tr>
+                                <tr>
+                                    <td>Global</td>
+                                    <td> Open new Sales Invoice</td>
+                                    <td> ctrl + Shift + i</td>
+                                </tr>
+                                <tr>
+                                    <td>Global</td>
+                                    <td> Open new Tax Invoice</td>
+                                    <td> ctrl + Shift + t</td>
+                                </tr>
+                                <tr>
+                                    <td>Global</td>
+                                    <td> Open new Credit Note</td>
+                                    <td> ctrl + Shift + c</td>
+                                </tr>
+                                <tr>
+                                    <td>InvoiceLanding</td>
+                                    <td> New Membership</td>
+                                    <td> F1</td>
+                                </tr>
+                                <tr>
+                                    <td>InvoiceLanding</td>
+                                    <td> Skip Membership</td>
+                                    <td> ESC</td>
+                                </tr>
+                                <tr>
+                                    <td>Sales Invoice</td>
+                                    <td> Focus on Barcode Textbox</td>
+                                    <td> Ctrl + b</td>
+                                </tr>
+                                <tr>
+                                    <td>Sales Invoice</td>
+                                    <td> Focus on recent item quantity</td>
+                                    <td> Ctrl + q</td>
+                                </tr>
+                                <tr>
+                                    <td>Sales Invoice</td>
+                                    <td> Focus on flat discount textbox</td>
+                                    <td> Ctrl + f</td>
+                                </tr>
+                                <tr>
+                                    <td>Sales Invoice</td>
+                                    <td> Select flat discount percent</td>
+                                    <td> Ctrl + f + p</td>
+                                </tr>
+                                <tr>
+                                    <td>Sales Invoice</td>
+                                    <td> Select flat discount amount</td>
+                                    <td> Ctrl + f + a</td>
+                                </tr>
+                                <tr>
+                                    <td>Sales Invoice</td>
+                                    <td> Focus on membership textbox</td>
+                                    <td> Ctrl + m</td>
+                                </tr>
+                                <tr>
+                                    <td>Sales Invoice</td>
+                                    <td>Convert invoice to Sales / Tax</td>
+                                    <td>Alt + c</td>
+                                </tr>
+                                <tr>
+                                    <td>Sales Invoice</td>
+                                    <td>Hold Current SalesInoice</td>
+                                    <td>Ctrl + Alt + P</td>
+                                </tr>
+                                <tr>
+                                    <td>Sales Invoice</td>
+                                    <td>Show List of Holding SalesInoice</td>
+                                    <td>F2</td>
+                                </tr>
+                                <tr>
+                                    <td>Sales Invoice</td>
+                                    <td>Reset SalesInoice</td>
+                                    <td>Ctrl + r</td>
+                                </tr>
+                                <tr>
+                                    <td>Sales Invoice</td>
+                                    <td>Save SalesInoice</td>
+                                    <td>Ctrl + end</td>
+                                </tr>
+                                <tr>
+                                    <td>Billing</td>
+                                    <td>Go back from billing screen to SalesInoice</td>
+                                    <td>ESC</td>
+                                </tr>
+                                <tr>
+                                    <td>Billing</td>
+                                    <td>Select payment method Cash</td>
+                                    <td>F1</td>
+                                </tr>
+                                <tr>
+                                    <td>Billing</td>
+                                    <td>Select payment method Card</td>
+                                    <td>F2</td>
+                                </tr>
+                                <tr>
+                                    <td>Billing</td>
+                                    <td>Select payment method Credit</td>
+                                    <td>F3</td>
+                                </tr>
+                                <tr>
+                                    <td>Billing</td>
+                                    <td>Select payment method CreditNote</td>
+                                    <td>F4</td>
+                                </tr>
+                                <tr>
+                                    <td>Billing</td>
+                                    <td>Save Billing</td>
+                                    <td>ctrl + end</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $("#grid").kendoGrid({
+
+            });
+            $(".k-grid-content").css("overflow-y", "hidden").mCustomScrollbar();
+            //$("#grid").data("kendoGrid").dataSource.pageSize(10);
+            var g = $("#grid").data("kendoGrid");
+            g.dataSource.group({ field: "Page" });
+            g.hideColumn(0);
+            // PageSlimScroll();
+        });
+    </script>
+}
+
+
 

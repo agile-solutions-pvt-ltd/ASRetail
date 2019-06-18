@@ -27,8 +27,11 @@ namespace POS.DTO
         public string Chalan_Number { get; set; }
         public string Division { get; set; }
         public string Terminal { get; set; }
+        //[NotMapped]
+        //public string TerminalName { get; set; }
         [Display(Name = "Bill To")]
         public string Customer_Id { get; set; }
+        public string MemberId { get; set; }
         [Display(Name = "Name")]
         public string Customer_Name { get; set; }
         [Display(Name = "Vat")]
@@ -47,19 +50,26 @@ namespace POS.DTO
         public decimal? Total_Gross_Amount { get; set; } = 0;
         [Display(Name = "Total Discount")]
         public decimal? Total_Discount { get; set; } = 0;
+        public decimal Total_Bill_Discount { get; set; } = 0;
         [Display(Name = "Total Vat")]
         public decimal? Total_Vat { get; set; } = 0;
         [Display(Name = "Total Net Amount")]
-
         public decimal TaxableAmount { get; set; }
         public decimal NonTaxableAmount { get; set; }
         public decimal? Total_Net_Amount { get; set; } = 0;
+        public decimal Total_Net_Amount_Roundup { get; set; } = 0;
+        public decimal Total_Payable_Amount { get; set; } = 0;
         [Display(Name = "Created By")]
         public string Created_By { get; set; }
         [Display(Name = "Created Date")]
         public DateTime? Created_Date { get; set; }
         public string Remarks { get; set; }
+        public decimal Tender_Amount { get; set; } = 0;
+        public decimal Change_Amount { get; set; } = 0;
 
+        public bool IsNavSync { get; set; }
+        public int SyncErrorCount { get; set; } = 0;
+        public DateTime? NavSyncDate { get; set; }
 
         public ICollection<SalesInvoiceItems> SalesInvoiceItems { get; set; }
     }

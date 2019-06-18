@@ -1,10 +1,79 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Dashboard";
 }
 
-<center>
-    <div class="well">
-        Dashboard
+    <div class="page-wrapper">
+        <div class="page-header">
+            <div class="page-header-title">
+                <h4>@ViewData["Title"]</h4>
+               
+            </div>
+            <div class="page-header-breadcrumb">
+                <ul class="breadcrumb-title">
+                    <li class="breadcrumb-item">
+                        <a href="index.html">
+                            <i class="icofont icofont-home"></i>
+                        </a>
+                    </li>
+                   
+                    <li class="breadcrumb-item">
+                        <a href="#!">@ViewData["Title"]</a>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+        <div class="page-body">
+            <div class="row">
+                <div class="col-md-6 col-xl-4">
+                    <div class="card">
+                        <div class="card-block-big card-visitor-block">
+                            <div class="row">
+                                <div class="col-sm-12  card-visitor-button">
+                                    <button class="btn btn-primary btn-icon"><i class="icofont icofont-user-alt-3"></i></button>
+                                    <div class="card-contain">
+                                        <h6>@ViewBag.TotalTransaction</h6>
+                                        <p class="text-muted f-18 m-0">Today's Transactions</p>
+                                    </div>
+                                </div>
+                               
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-4">
+                    <div class="card">
+                        <div class="card-block-big card-visitor-block">
+                            <div class="row">
+                                <div class="col-sm-12 card-visitor-button">
+                                    <button class="btn btn-warning btn-icon"><i class="icofont icofont-shopping-cart"></i></button>
+                                    <div class="card-contain">
+                                        <h6>@ViewBag.TotalQuantity</h6>
+                                        <p class="text-muted f-18 m-0">Total Item Sales</p>
+                                    </div>
+                                </div>
+                               
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12 col-xl-4">
+                    <div class="card">
+                        <div class="card-block-big card-visitor-block">
+                            <div class="row">
+                                <div class="col-sm-12 card-visitor-button">
+                                    <button class="btn btn-success btn-icon"><i class="icofont icofont-shopping-cart"></i></button>
+                                    <div class="card-contain">
+                                        <h6>@ViewBag.TotalAmount</h6>
+                                        <p class="text-muted f-18 m-0">Total Amount</p>
+                                    </div>
+                                </div>
+                               
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</center>
 

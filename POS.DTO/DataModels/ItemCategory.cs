@@ -11,16 +11,15 @@ namespace POS.DTO
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
-        public Guid Id { get; set; }                    
-        public string Code { get; set; }
-        [Display(Name ="Parent Code")]
-        public string Parent_Code { get; set; }        
-        public string Description { get; set; }
+        public string Id { get; set; }                    
+        public string Code { get; set; }  
+        public string ParentCode { get; set; }
+        public string Name { get; set; }
+        [Display(Name = "Modified Date")]
         public int Indentation { get; set; }
         public int Order { get; set; }
-        public bool Has_Child { get; set; }
-        [Display(Name = "Modified Date")]
-        public DateTime Modified_Date { get; set; }
+        public bool HasChild { get; set; }
+        public DateTime ModifiedDate { get; set; } = DateTime.Now;
        
     }
 }

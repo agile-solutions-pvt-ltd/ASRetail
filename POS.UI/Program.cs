@@ -14,7 +14,12 @@ namespace POS.UI
     {
         public static void Main(string[] args)
         {
-            CreateWebHostBuilder(args).Build().Run();
+            var webHostBuilder = CreateWebHostBuilder(args);
+
+            webHostBuilder.UseEnvironment("Developmnet");
+
+            webHostBuilder.Build().Run();
+           // CreateWebHostBuilder(args).Build().Run();
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>

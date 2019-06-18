@@ -6,6 +6,8 @@ using System.Text;
 
 namespace POS.DTO
 {
+
+    
     [Table("Item_Group")]
     public partial class ItemGroup
     {
@@ -16,6 +18,13 @@ namespace POS.DTO
         [Display(Name ="Name")]
         public string Description { get; set; }        
         [Display(Name ="Item Category Code")]
-        public string Item_Category_Code { get; set; }        
+        public string ItemCategoryCode { get; set; }
+        public DateTime LastSyncDate { get; set; } = DateTime.Now;
+
+        //private DateTime _date = DateTime.Now;
+        //public ItemGroup()
+        //{
+        //    LastSyncDate = _date;
+        //}
     }
 }

@@ -3,78 +3,102 @@
 @{
     ViewData["Title"] = "Store Info";
 }
+    <div class="page-wrapper">
+        <div class="page-header">
+            <div class="page-header-title">
+                <h4>@ViewData["Title"]</h4>
+                <span>Store Information</span>
+            </div>
+            <div class="page-header-breadcrumb">
+                <ul class="breadcrumb-title">
+                    <li class="breadcrumb-item">
+                        <a href="index.html">
+                            <i class="icofont icofont-home"></i>
+                        </a>
+                    </li>                  
+                    <li class="breadcrumb-item">
+                        <a href="#!">@ViewData["Title"]</a>
+                    </li>
 
-<h2>Store Information</h2>
+                </ul>
+            </div>
+        </div>
+        <div class="page-body">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="card">
+                        <div class="card-block">
+                            @*Your content here*@
+                            <dl class="row">
+                                <dt class="col-md-2">
+                                    @Html.DisplayNameFor(model => model.COMPANY_NAME)
+                                </dt>
+                                <dd class="col-md-10">
+                                    @Html.DisplayFor(model => model.COMPANY_NAME)
+                                </dd>
+                                <dt class="col-md-2">
+                                    @Html.DisplayNameFor(model => model.NAME)
+                                </dt>
+                                <dd class="col-md-10">
+                                    @Html.DisplayFor(model => model.NAME)
+                                </dd>
+                                <dt class="col-md-2">
+                                    @Html.DisplayNameFor(model => model.INITIAL)
+                                </dt>
+                                <dd class="col-md-10">
+                                    @Html.DisplayFor(model => model.INITIAL)
+                                </dd>
 
-<div>
-   
-    <hr />
-    <dl class="row">
-        <dt class="col-md-2">
-            @Html.DisplayNameFor(model => model.COMPANY_NAME)
-        </dt>
-        <dd class="col-md-10">
-            @Html.DisplayFor(model => model.COMPANY_NAME)
-        </dd>
-        <dt class="col-md-2">
-            @Html.DisplayNameFor(model => model.NAME)
-        </dt>
-        <dd class="col-md-10">
-            @Html.DisplayFor(model => model.NAME)
-        </dd>
-        <dt class="col-md-2">
-            @Html.DisplayNameFor(model => model.INITIAL)
-        </dt>
-        <dd class="col-md-10">
-            @Html.DisplayFor(model => model.INITIAL)
-        </dd>
+
+                                <dt class="col-md-2">
+                                    @Html.DisplayNameFor(model => model.ADDRESS)
+                                </dt>
+                                <dd class="col-md-10">
+                                    @Html.DisplayFor(model => model.ADDRESS)
+                                </dd>
+                                <dt class="col-md-2">
+                                    @Html.DisplayNameFor(model => model.PHONE)
+                                </dt>
+                                <dd class="col-md-10">
+                                    @Html.DisplayFor(model => model.PHONE), @Html.DisplayFor(model => model.PHONE_ALT)
+                                </dd>
+                                <dt class="col-md-2">
+                                    @Html.DisplayNameFor(model => model.FAX)
+                                </dt>
+                                <dd class="col-md-10">
+                                    @Html.DisplayFor(model => model.FAX)
+                                </dd>
+                                <dt class="col-md-2">
+                                    @Html.DisplayNameFor(model => model.VAT)
+                                </dt>
+                                <dd class="col-md-10">
+                                    @Html.DisplayFor(model => model.VAT)
+                                </dd>
+                                <dt class="col-md-2">
+                                    @Html.DisplayNameFor(model => model.EMAIL)
+                                </dt>
+                                <dd class="col-md-10">
+                                    @Html.DisplayFor(model => model.EMAIL)
+                                </dd>
+                                <dt class="col-md-2">
+                                    @Html.DisplayNameFor(model => model.WEBSITE)
+                                </dt>
+                                <dd class="col-md-10">
+                                    @Html.DisplayFor(model => model.WEBSITE)
+                                </dd>
+                                @*<dt class="col-md-2">
+                @Html.DisplayNameFor(model => model.FISCAL_YEAR)
+            </dt>
+            <dd class="col-md-10">
+                @Html.DisplayFor(model => model.FISCAL_YEAR)
+            </dd>*@
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
-        <dt class="col-md-2">
-            @Html.DisplayNameFor(model => model.ADDRESS)
-        </dt>
-        <dd class="col-md-10">
-            @Html.DisplayFor(model => model.ADDRESS)
-        </dd>
-        <dt class="col-md-2">
-            @Html.DisplayNameFor(model => model.PHONE)
-        </dt>
-        <dd class="col-md-10">
-            @Html.DisplayFor(model => model.PHONE), @Html.DisplayFor(model => model.PHONE_ALT)
-        </dd>              
-        <dt class="col-md-2">
-            @Html.DisplayNameFor(model => model.FAX)
-        </dt>
-        <dd class="col-md-10">
-            @Html.DisplayFor(model => model.FAX)
-        </dd>
-        <dt class="col-md-2">
-            @Html.DisplayNameFor(model => model.VAT)
-        </dt>
-        <dd class="col-md-10">
-            @Html.DisplayFor(model => model.VAT)
-        </dd>
-        <dt class="col-md-2">
-            @Html.DisplayNameFor(model => model.EMAIL)
-        </dt>
-        <dd class="col-md-10">
-            @Html.DisplayFor(model => model.EMAIL)
-        </dd>
-        <dt class="col-md-2">
-            @Html.DisplayNameFor(model => model.WEBSITE)
-        </dt>
-        <dd class="col-md-10">
-            @Html.DisplayFor(model => model.WEBSITE)
-        </dd>
-        @*<dt class="col-md-2">
-            @Html.DisplayNameFor(model => model.FISCAL_YEAR)
-        </dt>
-        <dd class="col-md-10">
-            @Html.DisplayFor(model => model.FISCAL_YEAR)
-        </dd>*@
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model.ID">Edit</a>
-   
-</div>
+

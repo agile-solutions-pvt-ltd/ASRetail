@@ -1,0 +1,226 @@
+﻿
+@{
+    ViewData["Title"] = "Scheduler Setup";
+}
+
+<div class="page-wrapper">
+    <div class="page-header">
+        <div class="page-header-title">
+            <h4>@ViewData["Title"]</h4>
+        </div>
+        <div class="page-header-breadcrumb">
+            <ul class="breadcrumb-title">
+                <li class="breadcrumb-item">
+                    <a href="index.html">
+                        <i class="icofont icofont-home"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">Settings</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">@ViewData["Title"]</a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+    <div class="page-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-block">
+                        @*Your content here*@
+                        <span id="StatusMessage" class="text-success"></span>
+                        <div class="br"></div>
+                        <div class="row">
+
+                            <label class="col-md-3">Default Sync Interval (min):</label>
+                            <div class="col-md-2"></div>
+                            <div class="col-md-1">
+                                <input type="number" class="form-control form-control-sm interval-all" value="@ViewBag.Scheduler.SchedulerDuration.Default" />
+                            </div>
+                            <div class="col-md-2"></div>
+                            <div class="col-md-4 pull-right">
+                                <span class="font-weight-bold">Scheduler Status</span> :  <span id="schedulerStatus">@ViewBag.Scheduler.SchedulerDuration.Status</span>
+                                @if (@ViewBag.Scheduler.SchedulerDuration.Status == "Not Started")
+                                {
+                                    <input type="button" value="Start Scheduler" class="btn btn-sm btn-success" onclick="SyncNow('StartAllScheduler')" />
+                                }
+                                else
+                                {
+                                    <input type="button" value="Stop Scheduler" class="btn btn-sm btn-success" onclick="SyncNow('StopAllScheduler')" />
+                                }
+                            </div>
+                        </div>
+                        <div class="br"></div>
+                        <label class="font-weight-bold">Individual Sync:</label>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <table id="schedulerTable" class="item_table table table-sm table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th width="70%">Type</th>
+                                            <th width="20%">Interval (min)</th>
+                                            <th width="10%"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Store Info</td>
+                                            <td> <input type="number" class="form-control form-control-sm interval interval-Customer" value="@ViewBag.Scheduler.SchedulerDuration.Store" /></td>
+                                            <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('StoreSync')" /></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Customer</td>
+                                            <td> <input type="number" class="form-control form-control-sm interval interval-Customer" value="@ViewBag.Scheduler.SchedulerDuration.Customer" /></td>
+                                            <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('CustomerSync')" /></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Item Category</td>
+                                            <td> <input type="number" class="form-control form-control-sm interval interval-ItemCategory" value="@ViewBag.Scheduler.SchedulerDuration.ItemCategory" /></td>
+                                            <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('ItemCategorySync')" /></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Produt Group</td>
+                                            <td> <input type="number" class="form-control form-control-sm interval interval-ProductGroup" value="@ViewBag.Scheduler.SchedulerDuration.ProductGroup" /></td>
+                                            <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('ProductGroupSync')" /></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Items</td>
+                                            <td> <input type="number" class="form-control form-control-sm interval interval-Items" value="@ViewBag.Scheduler.SchedulerDuration.Item" /></td>
+                                            <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('ItemSync')" /></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Item Price</td>
+                                            <td> <input type="number" class="form-control form-control-sm interval interval-ItemPrice" value="@ViewBag.Scheduler.SchedulerDuration.ItemPrice" /></td>
+                                            <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('ItemPriceSync')" /></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Item Discount</td>
+                                            <td> <input type="number" class="form-control form-control-sm interval interval-ItemPrice" value="@ViewBag.Scheduler.SchedulerDuration.ItemDiscount" /></td>
+                                            <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('ItemDiscountSync')" /></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Item BarCode</td>
+                                            <td> <input type="number" class="form-control form-control-sm interval interval-ItemBarCode" value="@ViewBag.Scheduler.SchedulerDuration.ItemBarCode" /></td>
+                                            <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('ItemBarCodeSync')" /></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Terminal</td>
+                                            <td> <input type="number" class="form-control form-control-sm interval interval-Terminal" value="@ViewBag.Scheduler.SchedulerDuration.Terminal" /></td>
+                                            <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('TerminalSync')" /></td>
+                                        </tr>
+                                        <tr>
+                                            <td>User</td>
+                                            <td> <input type="number" class="form-control form-control-sm interval interval-User" value="@ViewBag.Scheduler.SchedulerDuration.User" /></td>
+                                            <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('UserSync')" /></td>
+                                        </tr>
+                                        <tr>
+                                            <td>UserRoles</td>
+                                            <td> <input type="number" class="form-control form-control-sm interval interval-UserRoles" value="@ViewBag.Scheduler.SchedulerDuration.UserRole" /></td>
+                                            <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('RoleSync')" /></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Menu</td>
+                                            <td> <input type="number" class="form-control form-control-sm interval interval-UserRoles" value="@ViewBag.Scheduler.SchedulerDuration.Menu" /></td>
+                                            <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('MenuSync')" /></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Menu Permission</td>
+                                            <td> <input type="number" class="form-control form-control-sm interval interval-UserRoles" value="@ViewBag.Scheduler.SchedulerDuration.MenuPermission" /></td>
+                                            <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('MenuPermissionSync')" /></td>
+                                        </tr>
+
+                                    </tbody>
+                                </table>
+
+
+                            </div>
+                        </div>
+                        <div class="br"></div>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <input type="button" value="Save Changes" class="btn save btn-primary" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        function SyncNow(name) {
+
+            var $this = $(this.event.target);
+            $this.val("Synchronizing ...");
+            $.ajax({
+                method: "POST",
+                url: "/Settings/SchedulerStart?name=" + name,
+
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                complete: function (result) {
+
+                    if (result.status === 200) {
+                        if (name === "StartAllScheduler" || name === "StopAllScheduler") {
+                            window.location = window.location.origin + "/Settings/SchedulerSetup";
+                        } else
+                            StatusNotify("success", name + " Synchronize Successfully");
+                    } else {
+                        StatusNotify("error", "Error occur while Synchronizing " + name + ",try again later");
+                    }
+                    if (name !== "StartAllScheduler" || name !== "StopAllScheduler")
+                        $this.val("Sync Now");
+                }
+            });
+        }
+        $(document).ready(function () {
+            $(".interval-all").on("keyup", function () {
+                $(".interval").val($(".interval-all").val());
+            });
+
+
+            $(".save").on("click", function () {
+                var final = {
+                    Default: $(".interval-all").val(),
+                    Customer: $(".interval-Customer").val(),
+                    ItemCategory: $(".interval-ItemCategory").val(),
+                    ProductGroup: $(".interval-ProductGroup").val(),
+                    ItemType: $(".interval-ItemType").val(),
+                    Item: $(".interval-Items").val(),
+                    ItemPrice: $(".interval-ItemPrice").val(),
+                    ItemBarCode: $(".interval-ItemBarCode").val(),
+                    Terminal: $(".interval-Terminal").val(),
+                    User: $(".interval-User").val(),
+                    UserRole: $(".interval-UserRoles").val(),
+                    UserPermission: $(".interval-UserPermission").val(),
+                    Status: $("#schedulerStatus").text()
+                };
+
+                $.ajax({
+                    method: "POST",
+                    url: "/Settings/SchedulerSetup",
+                    data: JSON.stringify(final),
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    complete: function (result) {
+                        if (result.status === 200) {
+                            StatusNotify("success", "Saved Successfully")
+                        } else {
+                            StatusNotify("error", "Error occur, try again later")
+                        }
+                    }
+                });
+            });
+
+        });
+    </script>
+}
+

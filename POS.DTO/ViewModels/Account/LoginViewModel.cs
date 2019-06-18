@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -17,5 +18,9 @@ namespace POS.DTO
 
         [Display(Name = "Remember me?")]
         public bool RememberMe { get; set; }
+
+        [NotMapped]
+        public int TerminalId { get; set; }
+        public string TerminalName { get; set; }
     }
 }

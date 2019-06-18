@@ -2,14 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using POS.Core;
 using POS.DTO;
 
 namespace POS.UI.Controllers
 {
+  
+    [RolewiseAuthorized]
     public class StoreController : Controller
     {
         private readonly EntityCore _context;
@@ -19,15 +23,13 @@ namespace POS.UI.Controllers
             _context = context;
         }
 
-        //// GET: Store
-        //public async Task<IActionResult> Index()
-        //{
-        //    return View(await _context.Store.ToListAsync());
-        //}
-
         // GET: Store/Details/5
         public async Task<IActionResult> Index()
-        {           
+        {
+            //POS.UI.Sync.NavSync sync = new Sync.NavSync(_context);
+            //sync.CompanySync();
+
+
             var store = await _context.Store
                 .FirstOrDefaultAsync();
             if (store == null)
@@ -38,27 +40,6 @@ namespace POS.UI.Controllers
             return View(store);
         }
 
-        //// GET: Store/Create
-        //public IActionResult Create()
-        //{
-        //    return View();
-        //}
-
-        //// POST: Store/Create
-        //// To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        //// more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Create([Bind("ID,INITIAL,NAME,COMPANY_NAME,ADDRESS,PHONE,PHONE_ALT,FAX,VAT,EMAIL,WEBSITE,FISCAL_YEAR")] Store store)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        _context.Add(store);
-        //        await _context.SaveChangesAsync();
-        //        return RedirectToAction(nameof(Index));
-        //    }
-        //    return View(store);
-        //}
 
         // GET: Store/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -81,7 +62,7 @@ namespace POS.UI.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,INITIAL,NAME,COMPANY_NAME,ADDRESS,PHONE,PHONE_ALT,FAX,VAT,EMAIL,WEBSITE,FISCAL_YEAR")] Store store)
+        public async Task<IActionResult> Edit(string id, [Bind("ID,INITIAL,NAME,COMPANY_NAME,ADDRESS,PHONE,PHONE_ALT,FAX,VAT,EMAIL,WEBSITE,FISCAL_YEAR")] Store store)
         {
             if (id != store.ID)
             {
@@ -110,6 +91,46 @@ namespace POS.UI.Controllers
             }
             return View(store);
         }
+
+
+        private bool StoreExists(string id)
+        {
+            return _context.Store.Any(e => e.ID == id);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+        //// GET: Store/Create
+        //public IActionResult Create()
+        //{
+        //    return View();
+        //}
+
+        //// POST: Store/Create
+        //// To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        //// more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> Create([Bind("ID,INITIAL,NAME,COMPANY_NAME,ADDRESS,PHONE,PHONE_ALT,FAX,VAT,EMAIL,WEBSITE,FISCAL_YEAR")] Store store)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        _context.Add(store);
+        //        await _context.SaveChangesAsync();
+        //        return RedirectToAction(nameof(Index));
+        //    }
+        //    return View(store);
+        //}
+
 
         //// GET: Store/Delete/5
         //public async Task<IActionResult> Delete(int? id)
@@ -140,9 +161,6 @@ namespace POS.UI.Controllers
         //    return RedirectToAction(nameof(Index));
         //}
 
-        private bool StoreExists(int id)
-        {
-            return _context.Store.Any(e => e.ID == id);
-        }
+
     }
 }

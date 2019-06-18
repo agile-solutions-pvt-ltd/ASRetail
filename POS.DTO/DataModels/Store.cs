@@ -11,7 +11,7 @@ namespace POS.DTO
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int ID { get; set; }
+        public string ID { get; set; }
         [Required]
         [Display(Name ="Initial")]
         public string INITIAL { get; set; }
@@ -35,6 +35,7 @@ namespace POS.DTO
         public string WEBSITE { get; set; }
         [Display(Name = "Fiscal Year")]
         public string FISCAL_YEAR { get; set; }
-       
+        [Display(Name = "Customer Price Group")]
+        public string CustomerPriceGroup { get; set; }
     }
 }

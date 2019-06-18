@@ -14,6 +14,8 @@ namespace POS.DTO
         public int Id { get; set; }
         public Guid? Invoice_Id { get; set; }
         public string Invoice_Number { get; set; }
+        public string InvoiceIdFromNav { get; set; }
+        public string ItemId { get; set; }
         public string Bar_Code { get; set; }
         public string Name { get; set; }
         public string Unit { get; set; }
@@ -26,6 +28,10 @@ namespace POS.DTO
         public decimal? Net_Amount { get; set; }
         public bool? Is_Vatable { get; set; } = false;
         public string Remarks { get; set; }
+
+        public bool IsNavSync { get; set; }
+        public int SyncErrorCount { get; set; } = 0;
+        public DateTime? NavSyncDate { get; set; }
 
         [ForeignKey("Invoice_Id")]
         public SalesInvoice Invoice { get; set; }

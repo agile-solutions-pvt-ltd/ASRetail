@@ -33,6 +33,13 @@ namespace POS.Core
         public virtual DbSet<CreditNoteItems> CreditNoteItem { get; set; }
         public virtual DbSet<Customer> Customer { get; set; }
         public virtual DbSet<Item> Item { get; set; }
+        public virtual DbSet<ItemViewModel> ItemViewModel { get; set; }
+        public virtual DbSet<ItemBarCode> ItemBarCode { get; set; }
+        public virtual DbSet<ItemPrice> ItemPrice { get; set; }
+        public virtual DbSet<ItemDiscount> ItemDiscount { get; set; }
+       
+
+
 
         public virtual DbSet<Denomination> Denomination { get; set; }
         public virtual DbSet<Terminal> Terminal { get; set; }
@@ -49,9 +56,12 @@ namespace POS.Core
 
         public virtual DbSet<InvoiceMaterializedView> InvoiceMaterializedView { get; set; }
 
-        
+        public virtual DbSet<Company> Company { get; set; }
+        public virtual DbSet<NavIntegrationService> NavIntegrationService { get; set; }
 
-        
+        public virtual DbSet<TerminalMapping> TerminalMapping { get; set; }
+
+
         //protected override void OnModelCreating(ModelBuilder modelBuilder)
         //{
         //    // ignore a type that is not mapped to a database table

@@ -10,6 +10,7 @@ namespace POS.DTO
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Code { get; set; }
+        
         public string Name { get; set; }
         public string Address { get; set; }
         public string Image { get; set; }
@@ -27,6 +28,7 @@ namespace POS.DTO
         public bool? Is_Sale_Refused { get; set; }
         public bool? Is_Member { get; set; }
         public int? Member_Id { get; set; }
+        public string Membership_Number { get; set; }
         public string Barcode { get; set; }
         public DateTime? Dob { get; set; }
         public string Dob_Bs { get; set; }
@@ -36,13 +38,18 @@ namespace POS.DTO
         public string Office_Name { get; set; }
         public string Office_Address { get; set; }
         public string Designation { get; set; }
-        public DateTime? Registration_Date { get; set; }
+        public DateTime? Registration_Date { get; set; } = DateTime.Now;
         public string Validity_Period { get; set; }
         public DateTime? Validity_Date { get; set; }
         public int? Membership_Scheme { get; set; }
         public string Reference_By { get; set; }
         public string Created_By { get; set; }
-        public DateTime? Created_Date { get; set; }
+        public DateTime? Created_Date { get; set; } = DateTime.Now;
         public string Remarks { get; set; }
+        public bool IsNavSync { get; set; }
+        public DateTime? NavSyncDate { get; set; }
+
+        public string CustomerPriceGroup { get; set; }
+        public string CustomerDiscGroup { get; set; }
     }
 }

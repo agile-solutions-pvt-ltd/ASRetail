@@ -4,24 +4,40 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Hangfire;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using POS.Core;
 using POS.UI.Models;
 
 namespace POS.UI.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
+        private readonly EntityCore _context;
+
+        public HomeController(EntityCore context)
+        {
+            _context = context;
+        }
+
         public IActionResult Index()
         {
+            ViewData["TotalTransaction"] = _context.SalesInvoice.Count();
+            ViewData["TotalQuantity"] = _context.SalesInvoiceItems.Sum(x => x.Quantity);
+            ViewData["TotalAmount"] = _context.SalesInvoice.Sum(x => x.Total_Payable_Amount);
             return View();
         }
 
         public IActionResult About()
         {
-            ViewData["Message"] = "Your application description page.";
 
-            var jobId = BackgroundJob.Enqueue(
-    () => Console.WriteLine("Fire-and-forget!"));
+            ViewData["Message"] = Environment.MachineName;
+
+
+
+
 
             return View();
         }
@@ -42,6 +58,19 @@ namespace POS.UI.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+
+        public IActionResult GetFromConsole(string message)
+        {
+            return Ok();
+        }
+
+
+
+        public IActionResult SamplePage()
+        {
+            return View("_SamplePage.cshtml");
         }
     }
 }

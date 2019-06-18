@@ -3,25 +3,59 @@
     ViewData["Title"] = "Manage your account";
 }
 
-<h2>@ViewData["Title"].</h2>
-<p class="text-success">@ViewData["StatusMessage"]</p>
-<div>
-   
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>Password:</dt>
-        <dd>
-            [
-            @if (Model.HasPassword)
-            {
-                <a asp-controller="Manage" asp-action="ChangePassword">Change</a>
-            }
-            else
-            {
-                <a asp-controller="Manage" asp-action="SetPassword">Create</a>
-            }
-            ]
-        </dd>
-      
-    </dl>
-</div>
+
+    <div class="page-wrapper">
+        <div class="page-header">
+            <div class="page-header-title">
+                <h4>@ViewData["Title"]</h4>               
+            </div>
+            <div class="page-header-breadcrumb">
+                <ul class="breadcrumb-title">
+                    <li class="breadcrumb-item">
+                        <a href="index.html">
+                            <i class="icofont icofont-home"></i>
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="#!">User</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="#!">Manage</a>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+        <div class="page-body">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="card">
+                        <div class="card-block">
+                            @*Your content here*@
+                            <p class="text-success">@ViewData["StatusMessage"]</p>
+                            <dl class="dl-horizontal">
+                                <dt>Password:</dt>
+                                <dd>
+                                    [
+                                    @if (Model.HasPassword)
+                                    {
+                                        <a asp-controller="Manage" asp-action="ChangePassword">Change</a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-controller="Manage" asp-action="SetPassword">Create</a>
+                                    }
+                                    ]
+                                </dd>
+
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+

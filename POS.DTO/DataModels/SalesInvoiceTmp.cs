@@ -26,6 +26,8 @@ namespace POS.DTO
         public string Terminal { get; set; }
         [Display(Name = "Bill To")]
         public string Customer_Id { get; set; }
+        [Display(Name = "Member")]
+        public string MemberId { get; set; }
         [Display(Name = "Name")]
         public string Customer_Name { get; set; }
         [Display(Name = "Vat")]

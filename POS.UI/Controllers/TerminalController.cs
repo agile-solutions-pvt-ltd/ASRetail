@@ -1,15 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using POS.Core;
 using POS.DTO;
+using POS.UI.Helper;
 
 namespace POS.UI.Controllers
 {
+    [RolewiseAuthorized]
     public class TerminalController : Controller
     {
         private readonly EntityCore _context;
@@ -156,10 +161,62 @@ namespace POS.UI.Controllers
 
 
         [HttpGet]
-        public IActionResult DeviceMapping()
+        public IActionResult TerminalMapping()
         {
-            ViewData["Terminal_Id"] = new SelectList(_context.Terminal, "Id", "Name");
+            ViewData["Terminal_Id"] = new SelectList(_context.Terminal, "Id", "Name");           
             return View();
         }
+
+        [HttpPost]
+        public  IActionResult TerminalMapping([FromBody] TerminalMapping terminalMapping)
+        {
+            if (ModelState.IsValid)
+            {
+                //first remove if mapped to terminal
+                IEnumerable<TerminalMapping> oldMapping = _context.TerminalMapping.Where(x => x.PCName == terminalMapping.PCName);
+                _context.TerminalMapping.RemoveRange(oldMapping);
+
+
+                terminalMapping.AssignedBy = User.Identity.Name; ;
+                terminalMapping.AssignedDate = DateTime.Now;
+                _context.TerminalMapping.Add(terminalMapping);
+                _context.SaveChanges();
+                return Ok();
+            }
+            return StatusCode(400);
+        }
+
+        [AllowAnonymous]
+        public IActionResult GetClientComputerName(string ip)
+        {
+            try
+            {
+
+                Config config = ConfigJSON.Read();
+                string url = "http://" + ip + ":" + config.ClientPort + "/POSClient/GetComputerName";
+                var client = new RestSharp.RestClient(url);
+                var request = new RestSharp.RestRequest(RestSharp.Method.GET);
+
+                RestSharp.IRestResponse response = client.Execute(request);
+                string pcName = response.Content.Replace("\"", "");
+                int terminalId = 0;
+                //check if terminal is assigned
+                TerminalMapping terminalMapping = _context.TerminalMapping.FirstOrDefault(x => x.PCName == pcName);
+                Terminal terminal = new Terminal();
+                if (terminalMapping != null)
+                    terminal = _context.Terminal.FirstOrDefault(x => x.Id == terminalMapping.TerminalId);
+
+                return Ok(new { pcName = pcName, terminalId = terminalMapping.TerminalId.ToString(), terminalName = terminal.Name });
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500);
+            }
+
+
+
+        }
+
+       
     }
 }

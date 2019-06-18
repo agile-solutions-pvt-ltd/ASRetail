@@ -16,6 +16,18 @@
         if (GetUrlParameters() !== 0 && GetUrlParameters() !== "RoleWisePermission") {
             if ($("#roleWiseUserPermission_RoleId").val() === "")
                 $("#roleWiseUserPermission_RoleId").val(GetUrlParameters());
+
+            //
+            if ($('#roleWiseUserPermission_Sales_Discount_Line_Item').is(":checked") === true)
+                $("#roleWiseUserPermission_Sales_Discount_Line_Item_Limit").attr("disabled", false);
+            else
+                $("#roleWiseUserPermission_Sales_Discount_Line_Item_Limit").attr("disabled", true);
+
+            //
+            if ($('#roleWiseUserPermission_Sales_Discount_Flat_Item').is(":checked") === true)
+                $("#roleWiseUserPermission_Sales_Discount_Flat_Item_Limit").attr("disabled", false);
+            else
+                $("#roleWiseUserPermission_Sales_Discount_Flat_Item_Limit").attr("disabled", true);
         }
 
 
@@ -86,7 +98,7 @@
         else {
             var getAllNodes = menuTreeView.treeview('getUnselected', []);
             var selectedNode = _.filter(getAllNodes, function (x) {
-                return _.find(treeviewData, function (y) { return y.MenuId == x.id });
+                return _.find(treeviewData, function (y) { return y.MenuId === x.id; });
             });
             menuTreeView.treeview('selectNode', [selectedNode, { silent: true }]);
         }
@@ -111,7 +123,9 @@
                 Sales_Discount_Flat_Item_Limit: $("#roleWiseUserPermission_Sales_Discount_Flat_Item_Limit").val() || 0,
                 Sales_Discount_Line_Item_Limit: $("#roleWiseUserPermission_Sales_Discount_Line_Item_Limit").val() || 0,
                 Sales_Rate_Edit: $("#roleWiseUserPermission_Sales_Rate_Edit").is(":checked"),
-                Credit_Note_Bill_Pay: $("#roleWiseUserPermission_Credit_Note_Bill_Pay").is(":checked")
+                Credit_Bill_Pay: $("#roleWiseUserPermission_Credit_Bill_Pay").is(":checked"),
+                Credit_Note_Bill_Pay: $("#roleWiseUserPermission_Credit_Note_Bill_Pay").is(":checked"),
+                Require_Terminal_To_Login: $("#roleWiseUserPermission_Require_Terminal_To_Login").is(":checked")
             },
             roleWiseMenuPermissions: selectedNodesFinal
         };
@@ -134,17 +148,17 @@
     //********* Events ************************//
     $('#roleWiseUserPermission_Sales_Discount_Line_Item').click(function () {
 
-        if ($('#roleWiseUserPermission_Sales_Discount_Line_Item').is(":checked") == true)
+        if ($('#roleWiseUserPermission_Sales_Discount_Line_Item').is(":checked") === true)
             $("#roleWiseUserPermission_Sales_Discount_Line_Item_Limit").attr("disabled", false);
         else
-            $("#roleWiseUserPermission_Sales_Discount_Line_Item_Limit").attr("disabled", true);
+            $("#roleWiseUserPermission_Sales_Discount_Line_Item_Limit").attr("disabled", true).val(0);
     });
     $('#roleWiseUserPermission_Sales_Discount_Flat_Item').click(function () {
 
-        if ($('#roleWiseUserPermission_Sales_Discount_Flat_Item').is(":checked") == true)
+        if ($('#roleWiseUserPermission_Sales_Discount_Flat_Item').is(":checked") === true)
             $("#roleWiseUserPermission_Sales_Discount_Flat_Item_Limit").attr("disabled", false);
         else
-            $("#roleWiseUserPermission_Sales_Discount_Flat_Item_Limit").attr("disabled", true);
+            $("#roleWiseUserPermission_Sales_Discount_Flat_Item_Limit").attr("disabled", true).val(0);
     });
     $("#roleWiseUserPermission_RoleId").change(function () {
         var roleId = $("#roleWiseUserPermission_RoleId").val();

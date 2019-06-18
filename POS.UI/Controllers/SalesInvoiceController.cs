@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Management;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AutoMapper;
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -12,17 +15,19 @@ using Newtonsoft.Json;
 using POS.Core;
 using POS.Core.Helpers;
 using POS.DTO;
+using POS.UI.Sync;
 
 namespace POS.UI.Controllers
 {
-
+    [RolewiseAuthorized]
     public class SalesInvoiceController : Controller
     {
         private readonly EntityCore _context;
-
-        public SalesInvoiceController(EntityCore context)
+        private readonly IMapper _mapper;
+        public SalesInvoiceController(EntityCore context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
 
@@ -74,11 +79,10 @@ namespace POS.UI.Controllers
                 //add membership
                 if (!string.IsNullOrEmpty(customer.Name) && !string.IsNullOrEmpty(customer.Mobile1) && customer.Is_Member == true)
                 {
-                    customer.Code = Guid.NewGuid().ToString();
-                    customer.Member_Id = _context.Customer.Select(x => x.Member_Id).DefaultIfEmpty(1000).Max() + 1;
-                    _context.Add(customer);
-                    _context.SaveChanges();
-                    salesInvoiceTmp.Customer_Id = customer.Code;
+                    Customer member = AddCustomer(customer);
+                    //_context.SaveChanges();
+                    salesInvoiceTmp.Customer_Id = member.Code;
+                    salesInvoiceTmp.MemberId = member.Membership_Number;
                 }
 
 
@@ -86,9 +90,10 @@ namespace POS.UI.Controllers
                 salesInvoiceTmp.Id = Guid.NewGuid();
                 salesInvoiceTmp.Trans_Time = DateTime.Now.TimeOfDay;
                 salesInvoiceTmp.Division = "Divisioin";
-                salesInvoiceTmp.Terminal = "Terminal1";
+                salesInvoiceTmp.Terminal = HttpContext.Session.GetString("Terminal");
                 salesInvoiceTmp.Created_Date = DateTime.Now;
-                salesInvoiceTmp.Created_By = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                salesInvoiceTmp.Created_By = User.Identity.Name;
+
 
 
                 _context.Add(salesInvoiceTmp);
@@ -106,20 +111,24 @@ namespace POS.UI.Controllers
 
                 await _context.SaveChangesAsync();
 
-                //if everything goes right then delete old sales invoice
+                //if everything goes right then delete old sales invoice in background
                 if (isExistOldSalesInvoice)
                 {
                     _context.SalesInvoiceTmp.Remove(oldData);
-                    _context.SaveChanges();
+                    BackgroundJob.Enqueue(() => _context.SaveChanges());
                 }
+
+
+
                 //for serverside return
                 //if (salesInvoiceTmp.Trans_Type == "Hold")
                 //    return RedirectToAction("Index");
                 //else
                 //    return RedirectToAction("Billing", new { id = salesInvoiceTmp.Id });
                 //for api return
+                var param = HttpContext.Request.Query["M"].ToString();
                 if (salesInvoiceTmp.Trans_Type == "Hold")
-                    return Ok(new { redirectUrl = "/SalesInvoice" });
+                    return Ok(new { redirectUrl = "/SalesInvoice" + param == null ? "" : "?M=" + param });
                 else
                     return Ok(new { RedirectUrl = "/SalesInvoice/Billing/" + salesInvoiceTmp.Id });
             }
@@ -128,11 +137,13 @@ namespace POS.UI.Controllers
 
 
         [HttpGet]
-        public IActionResult Landing()
+        public IActionResult Landing(string StatusMessage)
         {
             //display only ismember data later
-            ViewData["Customer"] = _context.Customer;
-            return View();
+            ViewData["Customer"] = _context.Customer.Where(x => x.Is_Member == true);
+            TempData["StatusMessage"] = StatusMessage;
+
+            return View(_context.Store.FirstOrDefault());
         }
 
 
@@ -154,8 +165,18 @@ namespace POS.UI.Controllers
 
         public IActionResult PausedTransactionListPartial()
         {
-            var trans = _context.SalesInvoiceTmp.Where(x => x.Trans_Type == "Hold").ToList();
+            var userid = User.Identity.Name;
+            var trans = _context.SalesInvoiceTmp.Where(x => x.Trans_Type == "Hold" && x.Created_By == userid).ToList();
             return PartialView("_PausedTransactionListPartial", trans);
+        }
+
+
+        public IActionResult GetItemReferenceData(Guid id)
+        {
+            //for item Reference Data           
+            List<string> barCodeList = _context.SalesInvoiceItemsTmp.Where(x => x.Invoice_Id == id).Select(x => x.Bar_Code).ToList();
+            var temp = _context.ItemViewModel.Where(x => barCodeList.Contains(x.Bar_Code));
+            return Ok(temp);
         }
 
         [HttpGet]
@@ -167,27 +188,31 @@ namespace POS.UI.Controllers
         }
 
 
-
         [HttpPost]
-        public IActionResult Billing(Guid salesInvoiceId, [FromBody] List<SalesInvoiceBill> bill)
+        public IActionResult Billing([FromBody] SalesInvoiceBillingViewModel model)
         {
             try
             {
                 //check if billing is not available
-                if (bill.Count() == 0)
+                if (model == null || model.bill.Count() == 0)
                     return NotFound();
 
                 //Check from salesInvoiceTmp table
-                SalesInvoiceTmp salesInvoiceTmp = _context.SalesInvoiceTmp.FirstOrDefault(x => x.Id == salesInvoiceId);
+                SalesInvoiceTmp salesInvoiceTmp = _context.SalesInvoiceTmp.FirstOrDefault(x => x.Id == model.salesInvoiceId);
                 if (salesInvoiceTmp == null)
                     return NotFound();
 
                 //get store info
                 Store store = _context.Store.FirstOrDefault();
                 //convert to sales invoice and save
-                SalesInvoice salesInvoice = Cast.CastObject<SalesInvoice>(salesInvoiceTmp);
+                SalesInvoice salesInvoice = _mapper.Map<SalesInvoice>(salesInvoiceTmp);
                 salesInvoice.Invoice_Id = _context.SalesInvoice.Where(x => x.Trans_Type == salesInvoice.Trans_Type).Select(x => x.Invoice_Id).DefaultIfEmpty(0).Max() + 1;
                 salesInvoice.Invoice_Number = SalesInvoiceNumberFormat(store, salesInvoice.Invoice_Id, salesInvoice.Trans_Type);
+                salesInvoice.Total_Bill_Discount = model.billDiscount;
+                salesInvoice.Total_Payable_Amount = model.totalPayable;
+                salesInvoice.Total_Net_Amount_Roundup = model.totalNetAmountRoundUp;
+                salesInvoice.Tender_Amount = model.tenderAmount;
+                salesInvoice.Change_Amount = model.changeAmount;
                 _context.SalesInvoice.Add(salesInvoice);
 
                 //get invoice items temp convert to sales invoice item and save them
@@ -195,7 +220,7 @@ namespace POS.UI.Controllers
                 foreach (var item in itemtmp)
                 {
                     item.Invoice = null;
-                    SalesInvoiceItems salesItem = Cast.CastObject<SalesInvoiceItems>(item);
+                    SalesInvoiceItems salesItem = _mapper.Map<SalesInvoiceItems>(item);
                     salesItem.Id = 0;
                     salesItem.Invoice_Id = salesInvoice.Id;
                     salesItem.Invoice_Number = salesInvoice.Invoice_Number;
@@ -206,10 +231,12 @@ namespace POS.UI.Controllers
                 //check session
                 Settlement oldSettlement = _context.Settlement.FirstOrDefault(x => x.UserId == salesInvoice.Created_By && x.Status == "Open");
                 //save bill amount information
-                foreach (var item in bill)
+                foreach (var item in model.bill)
                 {
                     item.Invoice_Number = salesInvoice.Invoice_Number;
                     item.Invoice_Type = salesInvoice.Trans_Type;
+                    item.Terminal = HttpContext.Session.GetString("Terminal");
+
                     _context.SalesInvoiceBill.Add(item);
 
 
@@ -219,7 +246,7 @@ namespace POS.UI.Controllers
                         CreditNote creditNote = _context.CreditNote.FirstOrDefault(x => x.Credit_Note_Number == item.Account);
                         if (creditNote != null)
                         {
-                            creditNote.Created_By = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                            creditNote.Created_By = User.Identity.Name;
                             creditNote.Created_Date = DateTime.Now;
                             creditNote.Remarks = "Claimed";
                             _context.Entry(creditNote).State = EntityState.Modified;
@@ -233,7 +260,7 @@ namespace POS.UI.Controllers
                     Settlement settlement = new Settlement()
                     {
                         SessionId = sessionId,
-                        TerminalId = 5, //static for now
+
                         TransactionDate = DateTime.Now,
                         PaymentMode = item.Trans_Mode,
                         Amount = item.Amount,
@@ -284,20 +311,39 @@ namespace POS.UI.Controllers
                     SyncWithIrd = false,
                     IsRealTime = false
                 };
-                _context.InvoiceMaterializedView.Add(view);
+                NavSalesInvoice navSalesInvoice = new NavSalesInvoice()
+                {
+                    id = salesInvoice.Id.ToString(),
+                    number = salesInvoice.Invoice_Number,
+                    orderDate = salesInvoice.Trans_Date_Ad.Value.ToString("yyyy-MM-dd"),
+                    customerNumber = salesInvoice.MemberId,
+                    customerName = salesInvoice.Customer_Name,
+                    vatregistrationnumber = salesInvoice.Customer_Vat,
+                    locationcode = store.INITIAL
 
+                };
+
+
+
+                _context.InvoiceMaterializedView.Add(view);
                 _context.SaveChanges();
 
-                //background task
-                 var jobId = BackgroundJob.Enqueue(() => SendDataToIRD(salesInvoice, store));
-               // SendDataToIRD(salesInvoice, store);
+                //*********** background task
+                //Send data to IRD
+               // BackgroundJob.Enqueue(() => SendDataToIRD(salesInvoice, store));
+                //Send data to NAV
+               // NavPostData navPostData = new NavPostData(_context, _mapper);
+               // BackgroundJob.Enqueue(() => navPostData.PostSalesInvoice(navSalesInvoice));
+
 
 
                 //TempData["StatusMessage"] = "Bill Payment Successfull !!";
-                return Ok("Bill Payment Successfull !!");
+                return Ok(new { StatusMessage = "Bill Payment Successfull !!", InvoiceData = salesInvoice, StoreData = store, BillData = model.bill });
             }
             catch (Exception ex)
             {
+                if (ex.Message.Contains("UniqueInvoiceNumber") || ex.InnerException.Message.Contains("UniqueInvoiceNumber"))
+                    return Billing(model);
                 return BadRequest(ex.Message);
             }
 
@@ -315,6 +361,35 @@ namespace POS.UI.Controllers
         }
 
 
+        //add membership
+        public Customer AddCustomer(Customer customer)
+        {
+            try
+            {
+                customer.Code = Guid.NewGuid().ToString();
+                customer.Member_Id = _context.Customer.Where(x => x.Is_Member == true && x.Member_Id != null).Select(x => x.Member_Id).DefaultIfEmpty(0).Max() + 1;
+                Store store = _context.Store.FirstOrDefault();
+                customer.Membership_Number = store.INITIAL + "-" + Convert.ToInt32(customer.Member_Id).ToString("00000");
+                customer.Created_By = User.Identity.Name;
+                customer.Registration_Date = DateTime.Now;
+                customer.CustomerDiscGroup = "CATEGORY D";
+                customer.CustomerPriceGroup = "RETAIL";
+                _context.Add(customer);
+                _context.SaveChanges();
+                NavPostData navPost = new NavPostData(_context, _mapper);
+                BackgroundJob.Enqueue(() => navPost.PostCustomer());
+                return customer;
+
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException.Message.Contains("idx_unique_member_id"))
+                    return AddCustomer(customer);
+                else
+                    return new Customer();
+            }
+        }
+
         //api get salesinvoice
         public IActionResult GetInvoice(string invoiceNumber)
         {
@@ -331,18 +406,16 @@ namespace POS.UI.Controllers
         }
 
 
-
+        //background function
         public void SendDataToIRD(SalesInvoice invoice, Store storeInfo)
         {
 
             BillViewModel p = new BillViewModel
             {
-                username = "Test_CBMS",
-                password = "test@321",
                 seller_pan = storeInfo.VAT,
                 buyer_pan = invoice.Customer_Vat,
                 buyer_name = invoice.Customer_Name,
-                fiscal_year = storeInfo.FISCAL_YEAR,
+                fiscal_year = "2" + storeInfo.FISCAL_YEAR.Replace("/", "."), //format according to CBMS
                 invoice_number = invoice.Invoice_Number,
                 invoice_date = invoice.Trans_Date_Ad.Value.ToString("yyyy.MM.dd"),
                 total_sales = Convert.ToDouble(invoice.Total_Net_Amount),
@@ -362,18 +435,29 @@ namespace POS.UI.Controllers
 
             Sync.IRDPostData data = new Sync.IRDPostData();
             bool result = data.PostBill(p);
-            if (result)
+            SaveInvoiceMaterial(result, invoice.Invoice_Number);
+        }
+        public void SaveInvoiceMaterial(bool sendToIRD, string billNo)
+        {
+            InvoiceMaterializedView view = _context.InvoiceMaterializedView.FirstOrDefault(x => x.BillNo == billNo);
+            if (sendToIRD)
             {
-                InvoiceMaterializedView view = _context.InvoiceMaterializedView.FirstOrDefault(x => x.BillNo == invoice.Invoice_Number);
                 view.SyncStatus = "Sync Completed";
                 view.SyncedDate = DateTime.Now;
                 view.SyncedTime = DateTime.Now.TimeOfDay;
                 view.SyncWithIrd = true;
                 view.IsRealTime = true;
-
-                _context.Entry(view).State = EntityState.Modified;
-                _context.SaveChanges();
             }
+            else
+            {
+                view.SyncStatus = "Sync In Progress";
+                view.SyncedDate = DateTime.Now;
+                view.SyncedTime = DateTime.Now.TimeOfDay;
+                view.SyncWithIrd = false;
+                view.IsRealTime = false;
+            }
+            _context.Entry(view).State = EntityState.Modified;
+            _context.SaveChanges();
         }
     }
 }

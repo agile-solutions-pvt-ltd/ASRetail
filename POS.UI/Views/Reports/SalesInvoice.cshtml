@@ -1,120 +1,178 @@
 ﻿@model IEnumerable<POS.DTO.SalesInvoice>
 
-    @{
+@{
     ViewData["Title"] = "Sales Invoice Reports";
-    }
+}
 
-    <h2>Sales Invoice Reports</h2>
+<div class="page-wrapper">
+    <div class="page-header">
+        <div class="page-header-title">
+            <h4>@ViewData["Title"]</h4>
 
-    <table id="SalesInvoiceTable" class="table table-striped table-hover">
-        <thead>
-            <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.Invoice_Number)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Trans_Date_Ad)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Trans_Date_Bs)
-                </th>
-                <th class="text-center">
-                    @Html.DisplayName("Gross Amount")
-                </th>
-                <th class="text-center">
-                    @Html.DisplayName("Discount")
-                </th>
-                <th class="text-center">
-                    @Html.DisplayName("Net Amount")
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Invoice_Number)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Trans_Date_Ad)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Trans_Date_Bs)
-                </td>
-                <td class="gross-amount text-right pr-3">
-                    @Html.DisplayFor(modelItem => item.Total_Gross_Amount)
-                </td>
-                <td class="discount text-right pr-3">
-                    @Html.DisplayFor(modelItem => item.Total_Discount)
-                </td>
-                <td class="net-amount text-right pr-3">
-                    @Html.DisplayFor(modelItem => item.Total_Net_Amount)
-                </td>
-            </tr>}
-        </tbody>
-        <tfoot align="right">
-            <tr>
-                <th colspan="3" class="pr-3"></th>
-                <th class="pr-3"></th>
-                <th class="pr-3"></th>
-                <th class="pr-3"></th>
-            </tr>
-        </tfoot>
-    </table>
+        </div>
+        <div class="page-header-breadcrumb">
+            <ul class="breadcrumb-title">
+                <li class="breadcrumb-item">
+                    <a href="index.html">
+                        <i class="icofont icofont-home"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">Report</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">@ViewData["Title"]</a>
+                </li>
 
-    @section Scripts {
+            </ul>
+        </div>
+    </div>
+    <div class="page-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-block">
+                        @*Your content here*@
+                        <div id="grid"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+@section Scripts {
+
     <script>
-        var table = document.getElementById("SalesInvoiceTable").getElementsByTagName('tbody')[0];
-        $.each(table.rows, function (i, v) {
-            $(this).find(".gross-amount").text(CurrencyFormat($(this).find(".gross-amount").text()));
-            $(this).find(".discount").text(CurrencyFormat($(this).find(".discount").text()));
-            $(this).find(".vat").text(CurrencyFormat($(this).find(".vat").text()));
-            $(this).find(".net-amount").text(CurrencyFormat($(this).find(".net-amount").text()));
+
+        $(document).ready(function () {
+            $("#grid").kendoGrid({
+                dataSource: {
+                    type: "json",
+                    transport: {
+                        read: window.location.origin + "/Reports/SalesInvoiceApi"
+                    },
+                    schema: {
+                        model: {
+                            fields: {
+                                trans_Date_Ad: { type: "date" },
+                                total_Gross_Amount: { type: "number" },
+                                total_Discount: { type: "number" },                               
+                                total_Net_Amount: { type: "number" }
+                            }
+                        },
+                        data: function (data) {
+                            return data;
+                        }
+                    },
+                    pageSize: 100,
+                    sort: { field: "invoice_Number", dir: "desc" },
+                    group: {
+                        field: "trans_Date_Ad", aggregates: [
+                            { field: "trans_Date_Bs", aggregate: "count" },
+                            { field: "total_Gross_Amount", aggregate: "sum" },
+                            { field: "total_Discount", aggregate: "sum" },                           
+                            { field: "total_Net_Amount", aggregate: "sum" }
+                        ],
+                        dir: "desc"
+                    },
+                    aggregate: [
+                        { field: "total_Gross_Amount", aggregate: "sum" },
+                        { field: "total_Discount", aggregate: "sum" },                        
+                        { field: "total_Net_Amount", aggregate: "sum" }
+                    ],
+                },
+                height: 550,
+                filterable: true,
+                sortable: true,
+                pageable: true,
+                 resizable:true,
+                columns: [
+                    {
+                        title: "Invoice Number",
+                        field: "invoice_Number",
+                        filterable: false,
+
+                    },
+                    {
+                        field: "trans_Date_Ad",
+                        title: "Date",
+                        format: "{0:MM/dd/yyyy}",
+                    }, {
+                        field: "trans_Date_Bs",
+                        title: "BS",
+                        footerAttributes: {
+                            "class": "p-1 text-right"
+
+                        },
+                        groupFotterAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        groupFooterTemplate: "Count: #: count #",
+                        footerTemplate: "Total"
+                    },
+                    {
+                        field: "total_Gross_Amount",
+                        title: "Gross Amount",
+                        attributes: {
+                            "class": "p-1 text-right"
+                        },
+                        footerAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        groupFotterAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        template: "#: CurrencyFormat(total_Gross_Amount) #",
+                        groupFooterTemplate: "#: CurrencyFormat(sum) #",
+                        footerTemplate: "#: CurrencyFormat(sum) #",
+
+                    },
+
+                    {
+                        field: "total_Discount",
+                        title: "Discount",
+                        attributes: {
+                            "class": "p-1 text-right"
+                        },
+                        footerAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        groupFotterAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        template: "#: CurrencyFormat(total_Discount) #",
+                        groupFooterTemplate: "#: CurrencyFormat(sum) #",
+                        footerTemplate: "#: CurrencyFormat(sum) #",
+                    },                   
+                    {
+                        field: "total_Net_Amount",
+                        title: "Net Amount",
+                        attributes: {
+                            "class": "p-1 text-right"
+                        },
+                        footerAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        groupFotterAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        template: "#: CurrencyFormat(total_Net_Amount) #",
+                        groupFooterTemplate: "#: CurrencyFormat(sum) #",
+                        footerTemplate: "#: CurrencyFormat(sum) #",
+                    }
+                ]
+            });
+            $(".k-grid-content").css("overflow-y", "hidden").mCustomScrollbar();
+            //var g = $("#SalesInvoiceTable").data("kendoGrid");
+            //g.dataSource.pageSize(10);
+            //g.dataSource.group({ field: "Date" });
+            //PageSlimScroll();
         });
 
-
-        $("#SalesInvoiceTable").DataTable({
-            paging: false,
-            searching: false,
-            order: [0, "desc"],
-            "footerCallback": function (row, data, start, end, display) {
-                var api = this.api(), data;
-
-                // Remove the formatting to get integer data for summation
-                var intVal = function (i) {
-                    return typeof i === 'string' ?
-                        i.replace(/[\$,]/g, '') * 1 :
-                        typeof i === 'number' ?
-                            i : 0;
-                };
-
-                grossAmountTotal = api
-                    .column(3)
-                    .data()
-                    .reduce(function (a, b) {
-                        return intVal(a) + intVal(b);
-                    }, 0);
-
-                discounntTotal = api
-                    .column(4)
-                    .data()
-                    .reduce(function (a, b) {
-                        return intVal(a) + intVal(b);
-                    }, 0);
-                netAmountTotal = api
-                    .column(5)
-                    .data()
-                    .reduce(function (a, b) {
-                        return intVal(a) + intVal(b);
-                    }, 0);
-
-                $(api.column(0).footer()).html('Total');
-                $(api.column(3).footer()).html(CurrencyFormat(grossAmountTotal));
-                $(api.column(4).footer()).html(CurrencyFormat(discounntTotal));
-                $(api.column(5).footer()).html(CurrencyFormat(netAmountTotal));               
-            }
-        });
     </script>
-    }
+}
 

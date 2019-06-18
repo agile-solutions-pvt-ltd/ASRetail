@@ -23,7 +23,11 @@ namespace POS.DTO
         public decimal Sales_Discount_Line_Item_Limit { get; set; } = 0;
         [Display(Name = "Sales Rate Edit Right")]
         public bool Sales_Rate_Edit { get; set; } = false;
+        [Display(Name = "Credit Bill Pay Right")]
+        public bool Credit_Bill_Pay { get; set; } = false;
         [Display(Name = "Credit Note Bill Pay Right")]
         public bool Credit_Note_Bill_Pay { get; set; } = false;
+        [Display(Name = "Require Terminal To Login")]
+        public bool Require_Terminal_To_Login { get; set; }
     }
 }

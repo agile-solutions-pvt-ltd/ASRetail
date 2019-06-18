@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ using POS.DTO;
 
 namespace POS.UI.Controllers
 {
+   [Authorize]
     public class ItemController : Controller
     {
         private readonly EntityCore _context;
@@ -20,13 +22,14 @@ namespace POS.UI.Controllers
         }
 
         // GET: Item
+        [RolewiseAuthorized]
         public async Task<IActionResult> Index()
         {
             return View(await _context.Item.ToListAsync());
         }
 
         // GET: Item/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(string id)
         {
             if (id == null)
             {
@@ -86,7 +89,7 @@ namespace POS.UI.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Code,Bar_Code,Name,Parent_Code,Type,Unit,Rate,Is_Vatable,Remarks")] Item item)
+        public async Task<IActionResult> Edit(string id, [Bind("Id,Code,Bar_Code,Name,Parent_Code,Type,Unit,Rate,Is_Vatable,Remarks")] Item item)
         {
             if (id != item.Id)
             {
@@ -117,7 +120,7 @@ namespace POS.UI.Controllers
         }
 
         // GET: Item/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(string id)
         {
             if (id == null)
             {
@@ -145,15 +148,16 @@ namespace POS.UI.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ItemExists(int id)
+        private bool ItemExists(string id)
         {
             return _context.Item.Any(e => e.Id == id);
         }
 
 
-        public IQueryable<Item> GetItems(string code)
-        {
-          return  _context.Item.Where(x => x.Code == code || x.Bar_Code == code);
+        public IQueryable<ItemViewModel> GetItems(string code)
+        {           
+            var items= _context.ItemViewModel.Where(x=> x.Code == code ||  x.Bar_Code == code);
+            return items;
         }
 
     }

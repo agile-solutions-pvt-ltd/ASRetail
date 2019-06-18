@@ -3,58 +3,132 @@
 @{
     ViewData["Title"] = "Denomination";
 }
+<style>
+    /*.k-grid td:nth-child(3) {
+        text-align: right;
+        padding-right: 25px;
+    }*/
+</style>
 
-<h2>Cash Denomination</h2>
+<div class="page-wrapper">
+    <div class="page-header">
+        <div class="page-header-title">
+            <h4>@ViewData["Title"]</h4>
+            <span>List of Cash @ViewData["Title"]</span>
+        </div>
+        <div class="page-header-breadcrumb">
+            <ul class="breadcrumb-title">
+                <li class="breadcrumb-item">
+                    <a href="index.html">
+                        <i class="icofont icofont-home"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">Transaction</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">@ViewData["Title"]</a>
+                </li>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table table-hover table-striped" id="denomination-table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Terminal)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Date)
-            </th>
+            </ul>
+        </div>
+    </div>
+    <div class="page-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-block">
+                        @*Your content here*@
+                        <a asp-action="Create">Create New</a>
+                        <table class="table table-hover table-striped" id="grid">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Terminal)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Date)
+                                    </th>
 
-            <th class="text-center">
-                @Html.DisplayNameFor(model => model.Total)
-            </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.Total)
+                                    </th>
 
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Terminal.Name)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Date)
-                </td>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Terminal.Name)
+                                        </td>
+                                        <td>
+                                            @item.Date.ToString("dd MMM, yyyy")
+                                        </td>
 
-                <td class="total text-right pr-5">
-                    @Html.DisplayFor(modelItem => item.Total)
-                </td>
+                                        <td class="total text-right pr-5">
+                                            @Html.DisplayFor(modelItem => item.Total)
+                                        </td>
 
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+                                        <td>
+                                            <a asp-action="Edit" asp-route-id="@item.Id">Details</a>
+
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 @section Scripts {
     <script>
-        var table = document.getElementById("denomination-table").getElementsByTagName('tbody')[0];
-        $.each(table.rows, function (i, v) {            
+        var table = document.getElementById("grid").getElementsByTagName('tbody')[0];
+        $.each(table.rows, function (i, v) {
             $(this).find(".total").text(CurrencyFormat($(this).find(".total").text()));
+        });
+
+        $(document).ready(function () {
+            $("#grid").kendoGrid({
+                height: 500,
+                sortable: true,
+                groupable: true,
+
+                //pageable: {
+                //    messages: {
+                //        empty: "No items to display"
+                //    },
+                //    refresh: true,
+                //    pageSizes: [5, 10, 25, 50, 100],
+                //    buttonCount: 5
+                //},
+                filterable: true,
+                sortable: true,
+                dataBound: function () {
+                    //make numbers to right hand side
+                    $("td").each(function (key, value) {
+                        var $value = $(value);
+                        if ($.isNumeric(CurrencyUnFormat($value.text()))) {
+                            $value.addClass("text-right");
+                        }
+                    });
+                }
+            });
+            $(".k-grid-content").css("overflow-y", "hidden").mCustomScrollbar();
+            var g = $("#grid").data("kendoGrid");
+            g.dataSource.pageSize(10);
+            g.dataSource.group({ field: "Terminal" });
+            PageSlimScroll();
+
+
         });
     </script>
 }

@@ -1,0 +1,139 @@
+﻿@{
+    ViewData["Title"] = "Settings";
+}
+<div class="page-wrapper">
+    <div class="page-header">
+        <div class="page-header-title">
+            <h4>@ViewData["Title"]</h4>
+        </div>
+        <div class="page-header-breadcrumb">
+            <ul class="breadcrumb-title">
+                <li class="breadcrumb-item">
+                    <a href="index.html">
+                        <i class="icofont icofont-home"></i>
+                    </a>
+                </li>
+
+                <li class="breadcrumb-item">
+                    <a href="#!">@ViewData["Title"]</a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+    <div class="page-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-block">
+                        @*Your content here*@
+                        <form asp-action="RoleWisePermission">
+                            <span id="StatusMessage" class="text-success"></span>
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                            @*<div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="roleWiseUserPermission.RoleId" class="control-label">Server</label>
+                @Html.DropDownList("Server", new SelectList(ViewBag.Servers, "id", "name", ViewBag.Server), null, new { @class = "form-control form-control-sm" })
+
+            </div>
+        </div>
+        <div class="br"></div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <input type="button" id="Save" value="Save Changes" class="btn btn-block btn-primary" />
+            </div>
+        </div>
+        <div class="br"></div>*@
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <a asp-controller="Settings" asp-action="SchedulerSetup">Scheduler Setup</a>
+                                </div>
+                            </div>
+                            <div class="br"></div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <a asp-controller="Settings" asp-action="APISetup">API Setup</a>
+                                </div>
+                            </div>
+                            <div class="br"></div>
+                           
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+<script>
+    var servers = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.servers));
+</script>
+<script>
+    $(document).ready(function () {
+        $("#Save").on("click", function () {
+            
+            var companyId = $("#Server").val();
+            var selectedData = _.filter(servers, function (x) {
+                return x.id === companyId;
+            })[0];
+
+            var data = {
+                CompanyId: companyId,
+                Environment: selectedData.name.replace(" ", "_")
+            }
+            $.ajax({
+                method: "POST",
+                url: "/Settings/Index",
+                data: JSON.stringify(data),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                complete: function (result) {
+                    if (result.status === 200) {
+                        $("#StatusMessage").text("Saved Successfully");
+                    }
+                    else {
+                        $("#StatusMessage").addClass("text-danger").text("Error, Try again later");
+                    }
+                }
+            });
+        });
+
+
+        $("#printTest").on("click", function () {
+            $.ajax({
+                url: "/Settings/printPage",
+                type: 'GET',
+                complete: function (result) {
+                    if (result.status === 200) {
+                        
+                        $("#tempprint").html($(result.responseText).find("#printbody").html());
+                        printJS({
+                            printable: 'tempprint',
+                            type: 'html',
+                            targetStyles: ['*'],
+                            onLoadingEnd: function () {
+                                
+                                $("#tempprint").html('');
+                            }
+                        });
+                    }
+                }
+            });
+
+        });
+
+        $("#directPrint").on("click", function () {
+            printer.PrintSalesInvoice();
+        });
+    });
+</script>
+
+
+
+}
+
