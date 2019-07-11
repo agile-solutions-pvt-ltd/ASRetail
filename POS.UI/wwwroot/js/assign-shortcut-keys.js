@@ -1,4 +1,10 @@
-﻿
+﻿//update new keyboard
+Mousetrap.addKeycodes({
+    19: 'pause'
+});
+
+
+
 //open new sales invoice from any page
 Mousetrap.bindGlobal('ctrl+alt+i', function (e) {  
     e.preventDefault(); e.stopPropagation();
@@ -11,9 +17,15 @@ Mousetrap.bindGlobal('ctrl+alt+t', function (e) {
     window.location = window.location.origin + "/SalesInvoice/Landing?mode=tax";
 });
 //open new Credit Note from any page
-Mousetrap.bindGlobal('ctrl+shift+c', function (e) {
+Mousetrap.bindGlobal('ctrl+alt+c', function (e) {
     e.preventDefault(); e.stopPropagation();
     window.location = window.location.origin + "/CreditNote";
+});
+
+//open new Credit Note from any page
+Mousetrap.bindGlobal('ctrl+f1', function (e) {
+    e.preventDefault(); e.stopPropagation();
+    window.location = window.location.origin + "/Settings/Shortcuts";
 });
 
 

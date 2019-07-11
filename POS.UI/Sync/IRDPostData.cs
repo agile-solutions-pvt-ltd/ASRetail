@@ -3,17 +3,13 @@ using POS.DTO;
 using POS.UI.Helper;
 using RestSharp;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace POS.UI.Sync
 {
     public class IRDPostData
-    {       
-       
+    {
+
 
         public bool PostBill(BillViewModel model)
         {
@@ -42,17 +38,17 @@ namespace POS.UI.Sync
                 else
                     return false;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return false;
             }
-           
+
 
 
 
         }
 
 
-        
+
     }
 }

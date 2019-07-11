@@ -16,13 +16,17 @@ namespace POS.DTO
         public string Invoice_Number { get; set; }
         public string InvoiceIdFromNav { get; set; }
         public string ItemId { get; set; }
+        public string ItemCode { get; set; }
         public string Bar_Code { get; set; }
         public string Name { get; set; }
         public string Unit { get; set; }
         public decimal? Rate { get; set; }
+        public decimal RateExcludeVat { get; set; } = 0;
         public decimal? Quantity { get; set; }
         public decimal? Gross_Amount { get; set; }
         public decimal? Discount { get; set; }
+        public decimal PromoDiscount { get; set; } = 0;
+        public decimal MembershipDiscount { get; set; } = 0;
         public bool Is_Discountable { get; set; }
         public decimal? Tax { get; set; }
         public decimal? Net_Amount { get; set; }

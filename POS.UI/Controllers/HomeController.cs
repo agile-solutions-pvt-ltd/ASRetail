@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using Hangfire;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using POS.Core;
 using POS.UI.Models;
+using System;
+using System.Diagnostics;
+using System.Linq;
 
 namespace POS.UI.Controllers
 {
@@ -40,6 +37,12 @@ namespace POS.UI.Controllers
 
 
             return View();
+        }
+
+
+        public IActionResult RedirectAfterLogin()
+        {
+            return RedirectToAction("Landing", "SalesInvoice", new { mode = "tax" });
         }
 
         public IActionResult Contact()

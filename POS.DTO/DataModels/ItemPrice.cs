@@ -11,7 +11,7 @@ namespace POS.DTO
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
-        public int Id { get; set; }
+        public string Id { get; set; }
         public decimal UnitPrice { get; set; }                    
         public string ItemCode { get; set; }  
         public DateTime? StartDate { get; set; }       

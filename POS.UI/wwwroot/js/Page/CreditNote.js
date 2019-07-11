@@ -99,11 +99,11 @@
 
 
         //initialize customer dropdown
-        $("#Customer_Id").kendoComboBox({
-            filter: "contains",
-            suggest: true,
-            index: 1
-        });
+        //$("#Customer_Id").kendoComboBox({
+        //    filter: "contains",
+        //    suggest: true,
+        //    index: 1
+        //});
         //hide bill to customer info
         $(".bill_to_info_div").hide();
 
@@ -111,12 +111,22 @@
     };
     let loadInvoice = (invoiceNumber) => {
         if (validateInvoiceNumber(invoiceNumber)) {
-            getInvoice(invoiceNumber, function (data) {
-                if (validateInvoiceData(data)) {  
+            getInvoice(invoiceNumber, function (data) {               
+                if (validateInvoiceData(data.invoiceData)) {  
                     
-                    salesItems = data.salesInvoiceItems;
+                    salesItems = data.invoiceData.salesInvoiceItems;
                     resetTransactionData();
-                    loadPausedTransactionData(data);
+                    loadPausedTransactionData(data.invoiceData);                   
+                    $("#Customer_Id").val(data.customerData.membership_Number);
+                    $("#BillTo_Name").val(data.customerData.name);
+                    debugger;
+                    $("#Reference_Number_Id").val(data.invoiceData.id);
+                    $("#Payment_Mode").val(_.uniq(_.pluck(data.invoiceBillData, "trans_Mode")).join(', '));
+                    $("#TaxableAmount").val(data.invoiceData.taxableAmount);
+                    $("#NonTaxableAmount").val(data.invoiceData.nonTaxableAmount);
+                    $("#Total_Vat").val(data.invoiceData.total_Vat);
+                    $("#Tender_Amount").val(data.invoiceData.tender_Amount);
+                    $("#Change_Amount").val(data.invoiceData.change_Amount);
                 }
             });
         }
@@ -252,7 +262,7 @@
                 var tax = $(this).find(".Tax").val() || 0;
 
                 if (quantity !== undefined && rate !== undefined) {
-                    quantity = parseInt(quantity);
+                    quantity = parseFloat(quantity);
                     var grossAmount = quantity * parseFloat(rate);
                     discount = parseFloat(discount);
                     tax = parseFloat(tax);
@@ -313,9 +323,27 @@
             $(this).find(".sn").text((i + 1).toString());
         });
     };
+    let calcTotalPromoDiscount = () => {
+        var table = document.getElementById("item_table").getElementsByTagName('tbody')[0];
+        var total = 0;
+        $.each(table.rows, function (i, v) {
+            //calculations
+            total += parseFloat($(this).find(".Discount").data("promodiscount") || 0);
+        });
+        return total;
+    };
+    let calcTotalMembershipDiscount = () => {
+    var table = document.getElementById("item_table").getElementsByTagName('tbody')[0];
+    var total = 0;
+        $.each(table.rows, function (i, v) {
+            //calculations
+            total += parseFloat($(this).find(".Discount").data("membershipdiscount") || 0);
+});
+return total;
+    };
     let quantityChangeEvent = (that) => {
 
-        if (parseInt($(that).val()) > parseInt($(that).attr("max")))
+        if (parseFloat($(that).val()) > parseFloat($(that).attr("max")))
             $(that).val($(that).attr("max"));
     };
     let addRowGetUpdateData = (code) => {
@@ -333,7 +361,7 @@
             var barcode = $(this).find(".barcode").text();
             var quantity = $(this).find(".Quantity").val();
             if (barcode === code) {
-                $(this).find(".Quantity").val((parseInt(quantity) + 1).toString());
+                $(this).find(".Quantity").val((parseFloat(quantity) + 1).toString());
                 calcTotal();
                 checkAlreadyExistItem = true;
                 return false;
@@ -404,7 +432,9 @@
         var tax = (result.tax || result.Tax) === undefined ? 0 : (result.tax || result.Tax);
         var grossAmount = 0;
         var netAmount = 0;
-
+        var promoDiscount = result.promoDiscount || 0;
+        var membershipDiscount = result.membershipDiscount || 0;
+        ;
         
         $('<i class="sn font-weight-bold">' + table.rows.length + '</i>').appendTo(cell1);
         $("<span class='barcode'>" + barCode + "</span>").appendTo(cell2);
@@ -413,7 +443,7 @@
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Rate" type="number" onkeyup="creditNote.calcTotal()" disabled name="Rate" min="0" value=' + rate.toFixed(2) + '>').appendTo(cell5);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Quantity" type="number" onkeyup="creditNote.quantityChangeEvent(this);creditNote.calcTotal();" name="Quantity" min="1" max=' + quantity.toString() + ' value=' + quantity.toString() + '>').appendTo(cell6);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right GrossAmount" type="number" onkeyup="creditNote.calcTotal()" name="GrossAmount" disabled value=' + grossAmount.toFixed(2) + '>').appendTo(cell7);
-        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Discount" type="number" disabled onkeyup="creditNote.calcTotal()" name="Discount" min="0" value=' + discount.toFixed(2) + '>').appendTo(cell8);
+        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Discount" type="number" disabled onkeyup="creditNote.calcTotal()" name="Discount" min="0" data-promoDiscount= '+ promoDiscount+' data-membershipDiscount='+ membershipDiscount+' value=' + discount.toFixed(2) + '>').appendTo(cell8);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Tax" type="number" onkeyup="creditNote.calcTotal()" name="Tax" disabled value=' + tax.toFixed(2) + '>').appendTo(cell9);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right NetAmount" type="number" onkeyup="creditNote.calcTotal()" name="NetAmount" disabled value=' + netAmount.toFixed(2) + '>').appendTo(cell10);
 
@@ -428,9 +458,14 @@
             SaveCreditNote();
         });
 
+        Mousetrap.bindGlobal('enter', function (e) {
+            $(".bootbox-cancel").trigger("click");
+            
+        });
+
         Mousetrap.bindGlobal('shift+enter', function (e) {
             e.preventDefault(); e.stopPropagation();
-            $(".bootbox-cancel").trigger("click");
+            $(".bootbox-accept").trigger("click");
         });
 
 
@@ -440,23 +475,20 @@
             message: "Are you Sure ?",
             buttons: {
                 cancel: {
-                    label: 'Proceed',
+                    label: 'Go Back',
                     className: 'btn-warning'
                 },
                 confirm: {
-                    label: 'Go Back',
+                    label: 'Proceed',
                     className: 'btn-success'
                 }
             },
             callback: function (result) {
 
-                if (!result) {
+                if (result) {
                     window.location.href = window.location.origin + "/CreditNote";
                 }
-                else {
-                    
-                }
-
+               
             }
         });
         
@@ -488,6 +520,8 @@
                 Quantity: $(this).find('td input.Quantity').val(),
                 Gross_Amount: $(this).find('td input.GrossAmount').val(),
                 Discount: $(this).find('td input.Discount').val(),
+                PromoDiscount: $(this).find('td input.Discount').data("promodiscount") || 0,
+                MembershipDiscount: $(this).find('td input.Discount').data("membershipdiscount") || 0,
                 Tax: $(this).find('td input.Tax').val(),
                 Is_Vatable: $(this).find('td input.Tax').data("isVatable"),
                 Net_Amount: $(this).find('td input.NetAmount').val()
@@ -495,23 +529,32 @@
         });
 
 
-
         var data = $('form#Credit_Note_Form').serializeObject();
-        data.CreditNoteItems = invoiceItems;
+        debugger;
+        data.Customer_Id = $("#Customer_Id").val();
 
+        //add membership discount
+       
+        data.MembershipDiscount = calcTotalMembershipDiscount();
+        data.PromoDiscount = calcTotalPromoDiscount();
+
+        data.CreditNoteItems = invoiceItems;
+        debugger;
         $.ajax({
             method: "POST",
             url: "/CreditNote/Index",
             //dataType: "json",
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify(data),
-            complete: function (result) {
-                
+            complete: function (result) {               
                 if (result.status === 200) {
-                    StatusNotify("success", result.responseJSON.message);
-                    setTimeout(function () {
-                        window.location.href = window.location.origin + result.responseJSON.redirectUrl;
-                    }, 3000);
+                    //printer.PrintCreditNoteInvoice(result.responseJSON, function () {
+                    //    StatusNotify("success", result.responseJSON.message);
+                    //    //setTimeout(function () {
+                    //    //    window.location.href = window.location.origin + result.responseJSON.redirectUrl;
+                    //    //}, 3000);
+                    //});
+                    window.location.href = window.location.origin + result.responseJSON.redirectUrl;
                 }
                 else {
                     StatusNotify("error", "Error occur, try again later !!");
@@ -542,14 +585,15 @@
         
         if (data.salesInvoiceItems !== null) {
             //customer info   
-           
-            let customer = _.filter(customerList, (x) => { return x.Membership_Number === data.customer_Id; })[0]; //donot update double equal
-            var customerDropdown = $("#Customer_Id").data("kendoComboBox");
-            if (customer !== undefined) {
-                customerDropdown.value(customer.Membership_Number);
-                $("#Customer_Id").val(customer.Membership_Number).trigger('change');
-            }
-
+            //debugger;
+            //let customer = _.filter(customerList, (x) => { return x.Membership_Number === data.customer_Id; })[0]; //donot update double equal
+            //var customerDropdown = $("#Customer_Id").data("kendoComboBox");
+            //if (customer !== undefined) {
+            //    customerDropdown.value(customer.Membership_Number);
+            //    $("#Customer_Id").val(customer.Membership_Number).trigger('change');
+            
+            debugger;
+            $("#MemberId").val(data.memberId);
             $("#Customer_Name").val(data.customer_Name);
             $("#Customer_Vat").val(data.customer_Vat);
             $("#Customer_Mobile").val(data.customer_Mobile);

@@ -8,9 +8,10 @@ namespace POS.DTO
 {
     public partial class Item
     {     
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+       // [Key]
+        //[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
+        [Key]
         public string Code { get; set; }
         public string Bar_Code { get; set; }
         public string Name { get; set; }
@@ -20,6 +21,7 @@ namespace POS.DTO
         public decimal? Rate { get; set; } = 0;
         public decimal Discount { get; set; }
         public bool Is_Discountable { get; set; }
+        public bool No_Discount { get; set; }
         public bool? Is_Vatable { get; set; } = false;
         public bool KeyInWeight { get; set; } = false;
         public bool? Is_Active { get; set; } = true;

@@ -1,18 +1,10 @@
-﻿using System;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using POS.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Newtonsoft.Json;
-using POS.Core;
-using POS.DTO;
-using POS.UI.Helper;
-using POS.UI.Sync;
 
 namespace POS.UI.Controllers
 {
@@ -21,11 +13,11 @@ namespace POS.UI.Controllers
     {
         private readonly EntityCore _context;
 
-       
+
         public PrintController(EntityCore context, IMapper mapper)
         {
             _context = context;
-           
+
         }
 
         public IActionResult SalesInvoice()
@@ -45,6 +37,34 @@ namespace POS.UI.Controllers
         public IActionResult Denomination()
         {
             return View();
+        }
+
+        public IActionResult Settlement()
+        {
+            return View();
+        }
+
+
+
+
+        [HttpPost]
+        public IActionResult GetPrintCount(string invoiceNumber)
+        {
+            var printCount = _context.InvoicePrint.FirstOrDefault(x => x.InvoiceNumber == invoiceNumber);
+            string paymentMode = string.Join(", ", _context.SalesInvoiceBill.Where(x => x.Invoice_Number == invoiceNumber).Select(x => x.Trans_Mode).Distinct());
+            return Ok(new { printCount = printCount, paymentMode = paymentMode });
+        }
+        [HttpPost]
+        public IActionResult UpdatePrintCount(string invoiceNumber)
+        {
+            var printCount = _context.InvoicePrint.FirstOrDefault(x => x.InvoiceNumber == invoiceNumber);
+            printCount.PrintCount += 1;
+            printCount.PrintedBy = User.Identity.Name;
+            printCount.PrintedDate = DateTime.Now;
+
+            _context.Entry(printCount).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+            _context.SaveChanges();
+            return Ok();
         }
 
 

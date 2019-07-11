@@ -15,6 +15,10 @@
     .visibility-hidden{
         visibility:hidden;
     }
+    .form-row{
+        padding-top: 2px;
+    }
+    
 </style>
 
 <div class="page-wrapper">
@@ -46,7 +50,7 @@
                 <div class="card">
                     <div class="card-block">
                         @*Your content here*@
-                        <form asp-action="Create" class="form-horizontal">
+                        <form  asp-action="Create" class="form-horizontal">
 
                             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                             <div class="d-none d-print-block">
@@ -107,7 +111,7 @@
                                 </div>
                                 <label class="control-label">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
                                 <div class="form-group-sm col-md-2">
-                                    <input id="RicTotal" class="form-control form-control-sm text-right" />
+                                    <input id="RicTotal" class="form-control form-control-sm text-right total" />
                                 </div>
                             </div>
                             <div class="form-row">
@@ -119,7 +123,7 @@
                                 </div>
                                 <label class="control-label">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
                                 <div class="form-group-sm col-md-2">
-                                    <input id="R1000Total" class="form-control form-control-sm text-right" />
+                                    <input id="R1000Total" class="form-control form-control-sm text-right total" />
                                 </div>
                             </div>
                             <div class="form-row">
@@ -131,7 +135,7 @@
                                 </div>
                                 <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
                                 <div class="form-group-sm col-md-2">
-                                    <input id="R500Total" class="form-control form-control-sm text-right" />
+                                    <input id="R500Total" class="form-control form-control-sm text-right total" />
                                 </div>
                             </div>
                             <div class="form-row">
@@ -143,7 +147,7 @@
                                 </div>
                                 <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
                                 <div class="form-group-sm col-md-2">
-                                    <input id="R250Total" class="form-control form-control-sm text-right" />
+                                    <input id="R250Total" class="form-control form-control-sm text-right total" />
                                 </div>
                             </div>
                             <div class="form-row">
@@ -155,7 +159,7 @@
                                 </div>
                                 <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
                                 <div class="form-group-sm col-md-2">
-                                    <input id="R100Total" class="form-control form-control-sm text-right" />
+                                    <input id="R100Total" class="form-control form-control-sm text-right total" />
                                 </div>
                             </div>
                             <div class="form-row">
@@ -167,7 +171,7 @@
                                 </div>
                                 <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
                                 <div class="form-group-sm col-md-2">
-                                    <input id="R50Total" class="form-control form-control-sm text-right" />
+                                    <input id="R50Total" class="form-control form-control-sm text-right total" />
                                 </div>
                             </div>
                             <div class="form-row">
@@ -179,7 +183,7 @@
                                 </div>
                                 <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
                                 <div class="form-group-sm col-md-2">
-                                    <input id="R25Total" class="form-control form-control-sm text-right" />
+                                    <input id="R25Total" class="form-control form-control-sm text-right total" />
                                 </div>
                             </div>
                             <div class="form-row">
@@ -191,7 +195,7 @@
                                 </div>
                                 <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
                                 <div class="form-group-sm col-md-2">
-                                    <input id="R20Total" class="form-control form-control-sm text-right" />
+                                    <input id="R20Total" class="form-control form-control-sm text-right total" />
                                 </div>
                             </div>
                             <div class="form-row">
@@ -203,7 +207,7 @@
                                 </div>
                                 <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
                                 <div class="form-group-sm col-md-2">
-                                    <input id="R10Total" class="form-control form-control-sm text-right" />
+                                    <input id="R10Total" class="form-control form-control-sm text-right total" />
                                 </div>
                             </div>
                             <div class="form-row">
@@ -215,7 +219,7 @@
                                 </div>
                                 <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
                                 <div class="form-group-sm col-md-2">
-                                    <input id="R5Total" class="form-control form-control-sm text-right" />
+                                    <input id="R5Total" class="form-control form-control-sm text-right total" />
                                 </div>
                             </div>
                             <div class="form-row">
@@ -227,7 +231,7 @@
                                 </div>
                                 <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
                                 <div class="form-group-sm col-md-2">
-                                    <input id="R2Total" class="form-control form-control-sm text-right" />
+                                    <input id="R2Total" class="form-control form-control-sm text-right total" />
                                 </div>
                             </div>
                             <div class="form-row">
@@ -239,7 +243,7 @@
                                 </div>
                                 <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
                                 <div class="form-group-sm col-md-2">
-                                    <input id="R1Total" class="form-control form-control-sm text-right" />
+                                    <input id="R1Total" class="form-control form-control-sm text-right total" />
                                 </div>
                             </div>
                             <div class="form-row">
@@ -251,7 +255,7 @@
                                 </div>
                                 <label class="control-label m-0">&nbsp;&nbsp; = &nbsp;&nbsp; </label>
                                 <div class="form-group-sm col-md-2">
-                                    <input id="R05Total" class="form-control form-control-sm text-right" />
+                                    <input id="R05Total" class="form-control form-control-sm text-right total" />
                                 </div>
                             </div>
                             <hr />
@@ -259,7 +263,7 @@
                             <div class="form-row">
                                 <label asp-for="Total" class="control-label col-md-2 mr-denomination text-right"></label>
                                 <div class="form-group col-md-2">
-                                    <input asp-for="Total" class="form-control form-control-sm text-right" />
+                                    <input asp-for="Total" class="form-control form-control-sm text-right total" />
                                     <span asp-validation-for="Total" class="text-danger"></span>
                                 </div>
                             </div>

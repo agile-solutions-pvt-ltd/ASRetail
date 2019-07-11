@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using POS.Core;
 using POS.DTO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace POS.UI.Controllers
 {
-  
+
     [RolewiseAuthorized]
     public class StoreController : Controller
     {

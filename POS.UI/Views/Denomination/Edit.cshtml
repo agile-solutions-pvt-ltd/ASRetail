@@ -15,6 +15,9 @@
     .visibility-hidden{
         visibility:hidden;
     }
+    .form-row{
+        padding-top: 2px;
+    }
 </style>
 
 <div class="page-wrapper">
@@ -46,7 +49,7 @@
                 <div class="card">
                     <div class="card-block">
                         @*Your content here*@
-                        <form asp-action="Edit" class="form-horizontal">
+                        <form id="detail-form" asp-action="Edit" class="form-horizontal">
                             @Html.Partial("_ResponseMessagePartial")
                             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                             <input type="hidden" asp-for="Id" />
@@ -67,7 +70,7 @@
                                 </div>
                                 <div class="form-group col-md-1 d-print-none">
                                     <label for="print" class="control-label"></label>
-                                    <input type="button" id="print" value="Print" class="form-control form-control-sm btn btn-primary py-1 pb-2" onclick="window.print();" />
+                                    <input type="button" id="print" value="Print" class="form-control form-control-sm btn btn-primary py-1 pb-2" />
                                 </div>
                             </div>
                             <div class="br"><hr /></div>
@@ -94,7 +97,7 @@
                                 </div>
                             </div>
                            
-                            <div class="form-row pb-1">
+                            <div class="form-row pb-1 sr-only">
                                 <label asp-for="Other" class="control-label col-md-2 mr-denomination text-right"></label>
                                 <div class="form-group-sm col-md-2">
                                     <input asp-for="Other" class="form-control form-control-sm text-right" />
@@ -289,5 +292,9 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+<script>
+    var denominationData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+    var store = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Store));
+</script>
     <script src="~/js/Page/Denomination.js"></script>
 }

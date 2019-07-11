@@ -1,20 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using POS.Core;
 using POS.DTO;
 using POS.UI.Helper;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace POS.UI.Controllers
 {
-    [RolewiseAuthorized]
+    [Authorize]
     public class TerminalController : Controller
     {
         private readonly EntityCore _context;
@@ -163,12 +161,12 @@ namespace POS.UI.Controllers
         [HttpGet]
         public IActionResult TerminalMapping()
         {
-            ViewData["Terminal_Id"] = new SelectList(_context.Terminal, "Id", "Name");           
+            ViewData["Terminal_Id"] = new SelectList(_context.Terminal, "Id", "Name");
             return View();
         }
 
         [HttpPost]
-        public  IActionResult TerminalMapping([FromBody] TerminalMapping terminalMapping)
+        public IActionResult TerminalMapping([FromBody] TerminalMapping terminalMapping)
         {
             if (ModelState.IsValid)
             {
@@ -206,9 +204,9 @@ namespace POS.UI.Controllers
                 if (terminalMapping != null)
                     terminal = _context.Terminal.FirstOrDefault(x => x.Id == terminalMapping.TerminalId);
 
-                return Ok(new { pcName = pcName, terminalId = terminalMapping.TerminalId.ToString(), terminalName = terminal.Name });
+                return Ok(new { pcName = pcName, terminalId = terminalMapping.TerminalId.ToString(), terminalName = terminal?.Name });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return StatusCode(500);
             }
@@ -217,6 +215,6 @@ namespace POS.UI.Controllers
 
         }
 
-       
+
     }
 }

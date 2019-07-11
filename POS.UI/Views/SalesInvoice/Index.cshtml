@@ -5,7 +5,7 @@
 }
 
 <style>
-    .bill_to_info_div, .invoice-id {
+    .bill_to_info_div, .invoice-id, .membership-id, .commissionPercentHide{
         display: none;
     }
 
@@ -63,6 +63,9 @@
         width: 30%;
     }
 
+    .btn-small{
+        height:30px;
+    }
 
     .btn-convert-to-tax {
         margin-top: 21px;
@@ -223,6 +226,7 @@
                                     <input type="hidden" asp-for="Flat_Discount_Percent" />
                                     <input type="hidden" asp-for="Trans_Type" value="Sales" />
                                     <input type="hidden" asp-for="Total_Discount" />
+                                    <input type="hidden" asp-for="TOTAL_DISCOUNT_EXC_VAT" />
                                     <input type="hidden" asp-for="Total_Gross_Amount" />
                                     <input type="hidden" asp-for="Total_Net_Amount" />
                                     <input type="hidden" asp-for="Total_Quantity" />
@@ -230,6 +234,7 @@
                                     <input type="hidden" asp-for="Remarks" />
                                     <input type="hidden" asp-for="NonTaxableAmount" />
                                     <input type="hidden" asp-for="TaxableAmount" />
+
 
                                     <input type="hidden" id="isNewMember" value="false" />
 
@@ -270,17 +275,18 @@
                                             </div>
                                             <label class="control-label col-md-1 text-right pr-1">Bill To</label>
                                             <div class="form-group col-md-2">
-                                                @Html.DropDownList("Customer_Id", new SelectList(ViewBag.Customer, "Membership_Number", "Name"), "", new { @class = "form-control form-control-sm" })
+                                                @*@Html.DropDownList("Customer_Id", new SelectList(@ViewBag.Customer, "Membership_Number", "Name"), "", new { @class = "form-control form-control-sm" })*@
+                                                <select id="Customer_Id" class="form-control form-control-sm"></select>
                                             </div>
                                             <div class="form-group ml-2">
                                                 <span class="fa fa-chevron-right" id="customer_icon_toggle"></span>
                                             </div>
 
-                                            <label class="control-label flatDiscountHide col-md-2 text-center">Flat Discount:</label>
+                                            <label class="control-label flatDiscountHide col-md-1 pr-2 text-center">Flat Disc:</label>
                                             <div class="form-group col-md-1 flatDiscountHide">
                                                 <input name="flat_discount" id="flat_discount" class="form-control form-control-sm text-right" />
                                             </div>
-                                            <div class="form-group col-md-3 pl-4 flatDiscountHide">
+                                            <div class="form-group col-md-1 pl-4 mr-3 flatDiscountHide">
                                                 <div class="form-check form-check-inline pr-3">
                                                     <input class="form-check-input" type="radio" name="flatDiscount" id="percentRadio" value="percent">
                                                     <label class="form-check-label" for="percentRadio">%</label>
@@ -290,6 +296,12 @@
                                                     <label class="form-check-label" for="amountRadio">Rs</label>
                                                 </div>
                                             </div>
+
+                                            <label class="control-label commissionPercentHide col-md-1 text-center">Com. %:</label>
+                                            <div class="form-group col-md-1 commissionPercentHide">
+                                                <input type="number" name="commissionPercent" id="commissionPercent" min="0" max="5" class="form-control form-control-sm text-right" />
+                                            </div>
+                                            <input type="button" class="btn btn-success btn-sm btn-small commissionPercentHide" value="calc" id="CalculateCommission" />
 
                                         </div>
 
@@ -349,7 +361,7 @@
                                                         <col style="width:8%" />
                                                         <col style="width:8%" />
                                                         <col style="width:10%" />
-                                                        <col style="width:3%" />                                                        
+                                                        <col style="width:3%" />
                                                     </colgroup>
                                                     <thead>
                                                         <tr>
@@ -363,7 +375,7 @@
                                                             <th>Discount</th>
                                                             <th class="tax-show-hide">Tax</th>
                                                             <th>Net Amount</th>
-                                                            <th></th>                                                            
+                                                            <th></th>
                                                         </tr>
                                                     </thead>
                                                     <tbody></tbody>
@@ -408,7 +420,7 @@
 
     <script>
 
-        var customerList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Customer));
+       // var customerList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Customer));
     var salesInvoiceTmpData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
     </script>
     <script src="~/js/Page/SalesInvoice.js"></script>

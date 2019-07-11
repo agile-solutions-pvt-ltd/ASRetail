@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using POS.Core;
 using POS.DTO;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace POS.UI.Controllers
 {
@@ -26,7 +24,8 @@ namespace POS.UI.Controllers
         // GET: Denomination
         public async Task<IActionResult> Index()
         {
-            var entityCore = _context.Denomination.Include(d => d.Terminal);
+            string userName = User.Identity.Name;
+            var entityCore = _context.Denomination.Include(d => d.Terminal).Where(x => x.User_Id == userName).OrderByDescending(x => x.Date).Take(100);
             return View(await entityCore.ToListAsync());
         }
 
@@ -51,8 +50,9 @@ namespace POS.UI.Controllers
         // GET: Denomination/Create
         public IActionResult Create()
         {
-            var terminal = HttpContext.Session.GetString("Terminal");
+            var terminal = HttpContext.Session.GetString("TerminalId");
             ViewData["Terminal_Id"] = new SelectList(_context.Terminal, "Id", "Name", terminal);
+
             return View();
         }
 
@@ -89,7 +89,7 @@ namespace POS.UI.Controllers
                     foreach (var item in newSettlementData)
                     {
                         item.Status = "Closed";
-                        item.DenominationId = denomination.Id;                        
+                        item.DenominationId = denomination.Id;
                         _context.Entry(item).State = EntityState.Modified;
                     }
                     await _context.SaveChangesAsync();
@@ -117,6 +117,7 @@ namespace POS.UI.Controllers
             }
             // TempData["StatusMessage"] = TempData["StatusMessage"];
             ViewData["Terminal_Id"] = new SelectList(_context.Terminal, "Id", "Name", denomination.Terminal_Id);
+            ViewData["Store"] = _context.Store.FirstOrDefault();
             return View(denomination);
         }
 

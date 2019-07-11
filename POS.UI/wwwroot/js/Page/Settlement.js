@@ -60,15 +60,13 @@
     };
     let calcShortExcessAmount = (e) => {
 
-
-
         //for first time
         if (e === undefined) {            
             let shortExcessAmount = {
-                card: denominationAmount[0].card - parseFloat(CurrencyUnFormat(transAmount.cardAmount.toString())),
-                credit: denominationAmount[0].credit - parseFloat(CurrencyUnFormat(transAmount.creditAmount.toString())),
-                creditNote: denominationAmount[0].creditNote - parseFloat(CurrencyUnFormat(transAmount.creditNoteAmount.toString())),
-                cash: denominationAmount[0].denominationCash - parseFloat(CurrencyUnFormat(transAmount.cashAmount.toString()))
+                card: CurrencyFormat(denominationAmount[0].card - parseFloat(CurrencyUnFormat(transAmount.cardAmount.toString()))),
+                credit: CurrencyFormat(denominationAmount[0].credit - parseFloat(CurrencyUnFormat(transAmount.creditAmount.toString()))),
+                creditNote: CurrencyFormat(denominationAmount[0].creditNote - parseFloat(CurrencyUnFormat(transAmount.creditNoteAmount.toString()))),
+                cash: CurrencyFormat(denominationAmount[0].denominationCash - parseFloat(CurrencyUnFormat(transAmount.cashAmount.toString())))
             };
             return shortExcessAmount;
         }
@@ -128,7 +126,7 @@
             cashAmount: 0
         };
         denominationAmount = data;
-
+       
         _.each(data, function (x) {
             if (x.paymentMode === "Card") {
                 x.paymentMode = "Card";
@@ -169,11 +167,11 @@
         html = html.replace("$transCreditNoteAmount", transAmount.creditNoteAmount);
         html = html.replace("$transCashAmount", transAmount.cashAmount);
 
-        html = html.replace("$denoCardAmount", data[0].card);
-        html = html.replace("$denoCreditAmount", data[0].credit);
-        html = html.replace("$denoCreditNoteAmount", data[0].creditNote);
-        html = html.replace("$denoCashAmount", data[0].denominationCash);
-        html = html.replace("$denominationId", data[0].denominationId);
+        html = html.replace("$denoCardAmount", CurrencyFormat(data[0].card));
+        html = html.replace("$denoCreditAmount", CurrencyFormat(data[0].credit));
+        html = html.replace("$denoCreditNoteAmount", CurrencyFormat(data[0].creditNote));
+        html = html.replace("$denoCashAmount", CurrencyFormat(data[0].denominationCash));
+        html = html.replace("$denominationId", CurrencyFormat(data[0].denominationId));
 
         html = html.replace("$shortAccessCardAmount", shortExcessAmount.card);
         html = html.replace("$shortAccessCreditAmount", shortExcessAmount.credit);
@@ -183,9 +181,19 @@
 
         return html;
     };
-    let getSettlementData = (callback) => {
+    let getSettlementData = (callback) => {        
+        var url = window.location.origin + "/Settlement/GetSettlement";
+        if (GetUrlParameters("status") !== undefined && GetUrlParameters("status").toLowerCase() === "verified") {
+            url += "?status=Verified";
+            $(".VerifyButton").hide();
+
+        }
+        else {
+            $(".PrintButton").hide();
+        }
+       
         $.ajax({
-            url: window.location.origin + "/Settlement/GetSettlement",
+            url: url,
             type: "GET",
             complete: function (result) {
                 if (result.status === 200) {
@@ -201,16 +209,17 @@
             message: "Do you want to verify ?",
             buttons: {
                 cancel: {
-                    label: 'Proceed',
+                    label: 'Go Back',
                     className: 'btn-warning'
                 },
                 confirm: {
-                    label: 'Go Back',
+                    label: 'Proceed',
                     className: 'btn-success'
                 }
             },
-            callback: function (result) {               
-                if (!result) {
+            callback: function (result) {   
+               
+                if (result) {
                     var final = {
                         Settlement: {
                             SessionId: $parent.find(".Id").val(),
@@ -221,10 +230,10 @@
                         AdjustmentCreditNoteAmount: parseFloat($parent.find(".adjustmentCreditNoteAmount").val() || 0),
                         AdjustmentCashAmount: parseFloat($parent.find(".adjustmentCashAmount").val() || 0),
 
-                        ShortExcessCardAmount: CurrencyUnFormat($(".shortAccessCardAmount").text()),
-                        ShortExcessCreditAmount: CurrencyUnFormat($(".shortAccessCreditAmount").text()),
-                        ShortExcessCreditNoteAmount: CurrencyUnFormat($(".shortAccessCreditNoteAmount").text()),
-                        ShortExcessCashAmount: CurrencyUnFormat($(".shortAccessCashAmount").text())
+                        ShortExcessCardAmount: CurrencyUnFormat($parent.find(".shortAccessCardAmount").text()),
+                        ShortExcessCreditAmount: CurrencyUnFormat($parent.find(".shortAccessCreditAmount").text()),
+                        ShortExcessCreditNoteAmount: CurrencyUnFormat($parent.find(".shortAccessCreditNoteAmount").text()),
+                        ShortExcessCashAmount: CurrencyUnFormat($parent.find(".shortAccessCashAmount").text())
                     };
                     $.ajax({
                         method: "POST",
@@ -236,9 +245,15 @@
                             if (result.status === 200) {
                                 $parent.parent().remove();
                                 StatusNotify("success", "Verified");
+
+                               
+                                //print
+                                printer.PrintSettlement(result.responseJSON);
+
                             } else {
                                 StatusNotify("error", "Error occur, try again later");
                             }
+                            
                         }
                     });
                 }
@@ -256,15 +271,38 @@
         //    e.preventDefault(); e.stopPropagation();
         //    SaveCreditNote();
         //});
-
+        Mousetrap.bindGlobal('enter', function (e) {
+            $(".bootbox-cancel").trigger("click");
+        });
         Mousetrap.bindGlobal('shift+enter', function (e) {
             e.preventDefault(); e.stopPropagation();
-            $(".bootbox-cancel").trigger("click");
+            $(".bootbox-accept").trigger("click");
+        });
+        Mousetrap.bindGlobal('shift+enter', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            $(".bootbox-accept").trigger("click");
         });
 
 
     };
 
+    let printSettlement = (evt) => {
+        $this = $(this.event.target);
+        $parent = $(this.event.target).parent().parent();
+        var session = $parent.find(".Id").val();
+        $.ajax({
+            method: "GET",
+            url: "/Settlement/GetSettlementById?session=" + session,
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            complete: function (result) {
+                if (result.status === 200) {
+                    //print
+                    printer.PrintSettlement(result.responseJSON);
+                }
+            }           
+    });
+    };
 
     //********* Events ************************//
     //$(".adjustment").on("key", function (e) {
@@ -279,7 +317,8 @@
         init,
         denominationView,
         verifySettlement,
-        calcShortExcessAmount
+        calcShortExcessAmount,
+        printSettlement
     };
 
 })();

@@ -18,14 +18,17 @@ namespace POS.DTO
         public string TerminalName { get; set; }
         public string UserId { get; set; }
         public string UserName { get; set; }
-        
+        public string VerifiedBy { get; set; }
+        public DateTime VerifiedDate { get; set; }
+
         public DateTime StartTransaction { get; set; }
         public DateTime EndTransaction { get; set; }
         public string PaymentMode { get; set; }
         public decimal TotalAmount { get; set; } = 0;
         public string Status { get; set; }
         public string Remarks { get; set; }
-        public decimal SettlementCash { get; set; }
+        public decimal AdjustmentAmount { get; set; }
+        public decimal ShortExcessAmount { get; set; }
 
         public decimal Card { get; set; }
         public decimal Credit { get; set; }

@@ -1,16 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
+﻿using AutoMapper;
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using POS.Core;
 using POS.DTO;
+using POS.UI.Sync;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace POS.UI.Controllers
 {
@@ -18,15 +17,16 @@ namespace POS.UI.Controllers
     public class CreditNoteController : Controller
     {
         private readonly EntityCore _context;
-
-        public CreditNoteController(EntityCore context)
+        private readonly IMapper _mapper;
+        public CreditNoteController(EntityCore context, IMapper mapper)
         {
+            _mapper = mapper;
             _context = context;
         }
 
         public IActionResult Index()
         {
-            ViewData["Customer"] = _context.Customer;
+            // ViewData["Customer"] = new List<Customer>();//_context.Customer;
             return View();
         }
 
@@ -43,7 +43,7 @@ namespace POS.UI.Controllers
                     creditNote.Credit_Note_Number = "CN-" + creditNote.Credit_Note_Id.ToString("0000") + "-" + store.FISCAL_YEAR;
                     creditNote.Trans_Time = DateTime.Now.TimeOfDay;
                     creditNote.Division = "Divisioin";
-                    creditNote.Terminal = HttpContext.Session.GetString("Terminal") ?? "Terminal";
+                    creditNote.Terminal = HttpContext.Session.GetString("Terminal");
                     creditNote.Created_Date = DateTime.Now;
                     creditNote.Created_By = User.Identity.Name;
                     _context.Add(creditNote);
@@ -54,10 +54,22 @@ namespace POS.UI.Controllers
                         item.Credit_Note_Number = creditNote.Credit_Note_Number;
                         _context.CreditNoteItem.Add(item);
                     }
+
+                    //save to print table
+                    InvoicePrint print = new InvoicePrint()
+                    {
+                        InvoiceNumber = creditNote.Credit_Note_Number,
+                        Type = "CreditNote",
+                        FirstPrintedDate = DateTime.Now,
+                        FirstPrintedBy = User.Identity.Name,
+                        PrintCount = 1
+                    };
+                    _context.InvoicePrint.Add(print);
+
                     await _context.SaveChangesAsync();
 
                     //now update invoice remarks also
-                    SalesInvoice invoice = _context.SalesInvoice.FirstOrDefault(x => x.Invoice_Number == creditNote.Reference_Number);
+                    SalesInvoice invoice = _context.SalesInvoice.FirstOrDefault(x => x.Invoice_Number == creditNote.Reference_Number.Trim());
                     invoice.Remarks = "Return";
                     _context.Entry(invoice).State = EntityState.Modified;
 
@@ -91,16 +103,35 @@ namespace POS.UI.Controllers
                         SyncWithIrd = false,
                         IsRealTime = false
                     };
+
+                    NavCreditMemo navCreditMemo = new NavCreditMemo()
+                    {
+                        id = creditNote.Id.ToString(),
+                        number = creditNote.Credit_Note_Number,
+                        postingno = creditNote.Credit_Note_Number,
+                        creditMemoDate = creditNote.Trans_Date_Ad.Value.ToString("yyyy-MM-dd"),
+                        customerNumber = creditNote.MemberId,
+                        customerName = creditNote.Customer_Name,
+                        vatregistrationnumber = creditNote.Customer_Vat,
+                        locationcode = store.INITIAL,
+                        accountabilitycenter = store.INITIAL,
+                        assigneduserid = creditNote.Created_By,
+                        invoiceId = creditNote.Reference_Number_Id
+
+                    };
                     _context.InvoiceMaterializedView.Add(view);
                     _context.SaveChanges();
 
                     //post to ird
                     //background task
                     var jobId = BackgroundJob.Enqueue(() => SendDataToIRD(creditNote, store));
+                    //Send data to NAV
+                    NavPostData navPostData = new NavPostData(_context, _mapper);
+                    BackgroundJob.Enqueue(() => navPostData.PostCreditNote(navCreditMemo));
 
                     //for api return
                     TempData["StatusMessage"] = "Credit Note Added Successfully";
-                    return Ok(new { redirectUrl = "/CreditNote", Message = "Credit Note Added Successfully" });
+                    return Ok(new { redirectUrl = "/CreditNote", Message = "Credit Note Added Successfully", InvoiceData = creditNote, StoreData = store });
                 }
                 catch (Exception ex)
                 {

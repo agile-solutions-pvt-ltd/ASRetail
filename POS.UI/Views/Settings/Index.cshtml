@@ -56,7 +56,13 @@
                                 </div>
                             </div>
                             <div class="br"></div>
-                           
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <a asp-controller="Settings" asp-action="DatabaseBackupRestore">Database Backup / Restore</a>
+                                </div>
+                            </div>
+                            <div class="br"></div>
+                          
 
                         </form>
                     </div>
@@ -103,7 +109,25 @@
             });
         });
 
-
+          $.ajax({
+                url: "/Settings/printPage",
+                type: 'GET',
+                complete: function (result) {
+                    if (result.status === 200) {
+                        
+                        $("#tempprint").html($(result.responseText).find("#printbody").html());
+                        printJS({
+                            printable: 'tempprint',
+                            type: 'html',
+                            targetStyles: ['*'],
+                            onLoadingEnd: function () {
+                                
+                                $("#tempprint").html('');
+                            }
+                        });
+                    }
+                }
+            });
         $("#printTest").on("click", function () {
             $.ajax({
                 url: "/Settings/printPage",

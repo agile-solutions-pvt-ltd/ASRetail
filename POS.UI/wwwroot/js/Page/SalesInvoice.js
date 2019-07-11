@@ -1,5 +1,7 @@
-﻿const invoice = (function () {
-    //*********Private Variables **************//
+﻿
+
+const invoice = (function () {
+    // #region PRIVATE VARIABLES **************//
 
     let table = document.getElementById("item_table").getElementsByTagName('tbody')[0];
     let taxPercent = 13;
@@ -10,16 +12,17 @@
         salesRateEditRight: false
     };
     var selectedItems = [];
+    var customerList = [];
 
     let transType = $("#Trans_Type"),
         totalNetAmount = $("#Total_Net_Amount");
 
+    // #endregion PRIVATE VARIABLES **************//
 
 
+    // #region PRIVATE METHODS **************//
 
-    //*********Private Methos **************//
     let init = () => {
-
 
         //focus on barcode
         $("#item_code").focus();
@@ -126,46 +129,23 @@
         });
 
 
-        //initialize customer dropdown
-        $("#Customer_Id").kendoComboBox({
-            filter: "contains",
-            suggest: true,
-            index: 1
-        });
+
+
+
         updateSalesTax();
 
         //update page respect to permission //loadPausedTransaction after permission data loaded
-        updatePageWithRespectToPermission(loadPausedTransactionData);
+        updatePageWithRespectToPermission(loadCustomer(loadPausedTransactionData));
 
         //if membership in url load membership
         if (GetUrlParameters("M") !== undefined) {
             var membershipId = GetUrlParameters("M");
-            $("#membershipId").val(membershipId).trigger('change');
+            $("#membershipId").val(membershipId);//.trigger('change');
         }
 
     };
-    let updateSalesTax = () => {
-        
-        if (GetUrlParameters("mode") !== undefined && GetUrlParameters("mode") === "tax") {
-            //convert to tax invoice
-            $("#Trans_Type").val("Sales");
-            convertSalesTax();
-        }
-        else {
-            //convert to sales invoice
-            $("#Trans_Type").val("Tax");
-            convertSalesTax();
-        }
 
-
-    };
-    let calcAll = () => {
-        calculateSN();
-        calcTotal();
-        updateFlatDiscount();
-        updateSalesTax();
-        adjustTableWidth();
-    };
+    // #region GetData
     let GetItems = (code, callback) => {
         $.ajax({
             url: window.location.origin + "/item/GetItems/?code=" + code,
@@ -173,10 +153,10 @@
             success: function (data) {
                 if (data.length === 0) {
                     $("#itemNotFoundLabel").show();
-                    setTimeout(function () { $("#itemNotFoundLabel").hide(); }, 9000);
+                    setTimeout(function () { $("#itemNotFoundLabel").hide(); }, 2000);
 
                 } else {
-                    
+
                     _.each(data, function (x) { selectedItems.push(x); });
                     callback(data);
                 }
@@ -188,10 +168,10 @@
     };
     let getItemReferenceData = (callback) => {
         $.ajax({
-            url: window.location.origin + "/SalesInvoice/GetItemReferenceData/?id=" + GetUrlParameters(),
+            url: window.location.origin + "/SalesInvoice/GetItemReferenceData/?id=" + getUrlParameters(),
             type: "GET",
             success: function (data) {
-                
+
                 if (data.length > 0) {
                     _.each(data, function (x) { selectedItems.push(x); });
                     callback();
@@ -203,306 +183,55 @@
             }
         });
     };
-    let calcDiscount = (itemCode, quantity, customerGroupCode) => {
-        //Get Selected Item First       
-        var todayDate = new Date();
-        var membershipNumber = $("#membershipId").val();
-        var selectedItem = _.filter(selectedItems, function (x) {
-            return x.code === itemCode;
-        });
-        
-        //1) filter by date
-        var filterByDate = _.filter(selectedItem, function (x) {
-            var conditions = (todayDate >= new Date(x.discountStartDate) && todayDate <= new Date(x.discountEndDate)) ||
-                (x.discountStartDate === null && todayDate <= new Date(x.discountEndDate)) ||
-                (todayDate >= new Date(x.discountStartDate) && x.discountEndDate === null);
-            return conditions;
-        });
-        //2) filter by time
-        var filterByTime = _.filter(filterByDate, function (x) {
-            var conditions = (moment(todayDate).format("HH:mm:ss") >= moment(x.discountStartTime)._i && moment(todayDate).format("HH:mm:ss") <= moment(x.discountEndTime)._i) ||
-                (x.discountStartTime === null || x.discountEndTime === null);
-            return conditions;
-        });
-        //3) check customer group filter
-        var filterByCustomerGroup = filterByTime;
-        ////**** get selected membership
-        
-        let customer = _.filter(customerList, (x) => { return x.Membership_Number === membershipNumber; })[0];
-        if (customer !== undefined && filterByTime.length !== 0) {
-            if (filterByTime[0].discountType === "Customer Disc. Group" && filterByTime[0].discountSalesGroupCode !== undefined) {
-                filterByCustomerGroup = _.filter(filterByTime, function (x) {
-                    return x.discountSalesGroupCode === customer.CustomerDiscGroup;
-                });
-            }
-           
+    let getUrlParameters = () => {
+
+        var sPageURL = window.location.href;
+        var indexOfLastSlash = sPageURL.lastIndexOf("/");
+
+        if (indexOfLastSlash > 0 && sPageURL.length - 1 !== indexOfLastSlash) {
+            var totalUrl = sPageURL.substring(indexOfLastSlash + 1);
+            var onlyId = totalUrl.substring(0, totalUrl.indexOf("?"));
+            return onlyId;
         }
-
-
-
-
-        var discount = _.filter(filterByCustomerGroup, function (x) {
-            return x.discountMinimumQuantity === 0;
-        })[0];
-        discount = discount === undefined ? 0 : discount.discount;
-        _.each(filterByCustomerGroup, function (x) {
-            if (x.discountMinimumQuantity > 0 && quantity >= x.discountMinimumQuantity)
-                discount = x.discount;
-        });
-
-        if (discount <= 0) {
-
-            //update isdiscountable
-            $.each(table.rows, function (i, v) {
-                if ($(this).find(".itemName").data("item-code") === itemCode) {
-                    $(this).find(".Discount").data("isdiscountable", true);
-                    $(this).find(".Discount").attr("readonly", false);
+        else
+            return 0;
+    };
+    let getPermissions = (Callback) => {
+        $.ajax({
+            url: window.location.origin + "/Account/RoleWiseUserPermission",
+            type: "GET",
+            complete: function (result) {
+                if (result.status === 200) {
+                    Callback(result.responseJSON);
                 }
+            }
+        });
+    };
+    let getFOCItem = (itemCode, callback) => {
+        $.ajax({
+            url: window.location.origin + "/SalesInvoice/GetFOCItem",
+            type: "GET",
+            complete: function (result) {
+                if (result.status === 200) {
+                    Callback(result.responseJSON);
+                }
+            }
+        });
+    };
+    // #endregion
 
-            });
-            discount = calcFlatDiscount();
+    let updateSalesTax = () => {
+
+        if (GetUrlParameters("mode") !== undefined && GetUrlParameters("mode") === "tax") {
+            //convert to tax invoice
+            $("#Trans_Type").val("Sales");
+            convertSalesTax();
         }
         else {
-            //update isdiscountable
-            $.each(table.rows, function (i, v) {
-                if ($(this).find(".itemName").data("item-code") === itemCode) {
-                    $(this).find(".Discount").data("isdiscountable", false);
-                    $(this).find(".Discount").attr("readonly", true);
-                }
-
-            });
+            //convert to sales invoice
+            $("#Trans_Type").val("Tax");
+            convertSalesTax();
         }
-
-        return discount;
-    };
-    let calcRate = (itemCode, quantity,row) => {
-
-        //Get Selected Item First       
-        var todayDate = new Date();
-        var membershipNumber = $("#membershipId").val();
-       
-
-        var selectedItem = _.filter(selectedItems, function (x) {
-            return x.code === itemCode;
-        });
-
-        var filterByDate = _.filter(selectedItem, function (x) {
-            var conditions = (todayDate >= new Date(x.rateStartDate) && todayDate <= new Date(x.rateEndDate)) ||
-                (x.rateStartDate === null && todayDate <= new Date(x.rateEndDate)) ||
-                (todayDate >= new Date(x.rateStartDate) && x.rateEndDate === null);
-            return conditions;
-        });
-
-        //3) check customer group filter
-        var filterByCustomerGroup = filterByDate;
-
-
-       
-        ////**** get selected membership
-        let customer = _.filter(customerList, (x) => { return x.Membership_Number === membershipNumber; })[0];
-        if (customer !== undefined && filterByDate.length !== 0) {
-            //check if location has mrp value
-            if (filterByDate[0].locationwisePriceGroup === "MRP")
-                if (customer.CustomerPriceGroup !== "WHOLESALE") //if customer is not wholesale then convert into mrp customer
-                    customer.CustomerPriceGroup = "MRP";
-
-            if (filterByDate[0].salesType === "Customer Price Group" && filterByDate[0].salesCode !== undefined) {
-                filterByCustomerGroup = _.filter(filterByDate, function (x) {
-                    return x.salesCode === customer.CustomerPriceGroup;
-                });
-            }
-        }
-
-        var rate = _.filter(filterByCustomerGroup, function (x) {
-            return x.rateMinimumQuantity === 0;
-        });
-        //check if multiple open rate
-        var distinctRate = _.uniq(_.pluck(rate, "rate"));
-       
-        if (distinctRate.length > 1 && row.find(".Rate").data("original-rate") === undefined && row.find(".Rate").data("rate-selected") === undefined) {
-            row.find(".Rate").data("rate-selected", true);
-            var options = "<select id='rateDropdown' class='form-control'>";
-            _.each(distinctRate, function (x) {
-                options += "<option>" + x + "</option>";
-            });
-            options += "</select>";
-            var dialog = bootbox.dialog({
-                title: 'Please select correct price',
-                message: options,
-                size: 'small',
-                buttons: {
-
-                    ok: {
-                        label: "Select",
-                        className: 'btn-info',
-                        callback: function () {
-                            rate = $("#rateDropdown :selected").val();
-                            row.find(".Rate").data("original-rate", rate);
-                            calcTotal();
-                        }
-                    }
-                }
-            });
-        }
-
-        rate = rate[0];
-        rate = rate === undefined ? 0 : rate.rate;
-        _.each(filterByDate, function (x) {
-            if (x.rateMinimumQuantity > 0 && quantity >= x.rateMinimumQuantity)
-                rate = x.rate;
-        });
-        return rate;
-
-    };
-    let calcTotal = (from) => {
-
-        var totalGrossAmount = 0;
-        var totalNetAmount = 0;
-        var totalQuantity = 0;
-        var totalDiscount = 0;
-        var totalTax = 0;
-        var totalTaxableAmount = 0, totalNonTaxableAmount = 0;
-
-        if (table.rows.length > 0) {
-            $.each(table.rows, function (i, v) {
-
-                //calculations               
-                var quantity = parseInt($(this).find(".Quantity").val());
-                var rate = parseFloat($(this).find(".Rate").data("original-rate"));
-                var transType = $("#Trans_Type").val();
-
-                
-                
-                if (isNaN(rate))
-                    rate = calcRate($(this).find(".itemName").data("item-code"), quantity, $(this));
-                var discoutPercent = calcDiscount($(this).find(".itemName").data("item-code"), quantity);
-                var discount = rate * discoutPercent / 100;
-                if ($(this).find(".Discount").data("isdiscountable")) {
-                    $(this).find(".Discount").data("original-value", discount.toFixed(2));
-
-                    //if flat_discount percent is zero then enable individual discount  
-                    $(this).find(".Discount").attr("readonly", discoutPercent !== 0);
-                }
-
-                
-                //calculation unit tax
-                if (transType === "Tax" && $(this).find(".Tax").data("isvatable") === true)
-                    tax = calculateTax(rate, taxPercent);
-                else if (transType === "Tax")
-                    tax = parseFloat($(this).find(".Tax").val() || 0);
-                else
-                    tax = 0;
-
-
-                //calc unit rate
-                rate = rate - tax; //exclude tax from rate
-                //calc gross amount
-                var grossAmount = quantity * rate;
-                //calc gross tax
-                tax = tax * quantity; //gross tax
-
-
-
-
-
-                //calc gross discount
-                //if inline discount then calculate direct
-                if (!$(this).find(".Discount").data("isdiscountable"))
-                    discount = discount * quantity;
-
-
-                else if ($("input[name='flatDiscount']:checked").val() === "percent") {
-                    // updateFlatDiscount(false);
-                    discount = discount * quantity;
-                }
-                else {
-                    //updateFlatDiscount(false);
-                }
-                //    discount = discount * quantity;
-                //var condition = ($("input[name='flatDiscount']:checked").val() === undefined || parseFloat($("#flat_discount").val()) <= 0);
-                //if (!condition && $("input[name='flatDiscount']:checked").val() === "percent") {
-                //    updateFlatDiscount(false);
-                //    discount = discount * quantity;
-                //}
-
-                var netAmount = grossAmount - discount + tax;
-
-
-
-                //assign value
-                $(this).find(".Rate").val(rate.toFixed(2));
-                $(this).find(".GrossAmount").val(grossAmount.toFixed(2));
-                $(this).find(".Tax").val(tax.toFixed(2));
-                $(this).find(".NetAmount").val(netAmount.toFixed(2));
-
-
-                if (from === undefined || from.name !== "Discount") {
-                    $(this).find(".Discount").val(discount.toFixed(2));
-                }
-
-
-                //calc total
-                totalQuantity += quantity;
-                totalDiscount += discount;
-                totalTax += tax;
-                totalGrossAmount += grossAmount;
-                totalNetAmount += netAmount;
-
-                //calc taxable and non taxable
-
-                if ($(this).find(".Tax").data("isvatable"))
-                    totalTaxableAmount += parseFloat($(this).find(".GrossAmount").val());
-                else {
-                    totalNonTaxableAmount += parseFloat($(this).find(".GrossAmount").val());
-                }
-                //if flat discount percent is used then update flat discount as well
-
-
-
-            });
-            //assign total
-            $("#totalQuantity").text(NumberFormat(totalQuantity));
-            $("#totalGrossAmount").text(CurrencyFormat(totalGrossAmount));
-            $("#totalDiscount").text(CurrencyFormat(totalDiscount));
-            $("#totalTax").text(CurrencyFormat(totalTax));
-            $("#totalNetAmount").text(CurrencyFormat(totalNetAmount));
-
-
-            $("#NonTaxableAmount").val(totalTaxableAmount.toFixed(2));
-            $("#TaxableAmount").val(CurrencyFormat(totalNonTaxableAmount.toFixed(2)));
-        }
-        else {
-            //assign total
-            $("#totalQuantity").text("0");
-            $("#totalGrossAmount").text("0.00");
-            $("#totalDiscount").text("0.00");
-            $("#totalTax").text("0.00");
-            $("#totalNetAmount").text("0.00");
-        }
-
-
-
-    };
-    let calcNetTotalsOnly = () => {
-        let totalQuantity = 0, totalGrossAmount = 0, totalDiscount = 0, totalTax, totalNetAmount = 0;
-        $.each(table.rows, function (i, v) {
-            totalQuantity += parseFloat($(this).find(".Quantity").val());
-            totalGrossAmount += parseFloat($(this).find(".GrossAmount").val());
-            totalDiscount += parseFloat($(this).find(".Discount").val());
-            totalTax += parseFloat($(this).find(".Tax").val());
-
-
-            ///update netamount first
-            $(this).find(".NetAmount").val(parseFloat($(this).find(".GrossAmount").val()) - parseFloat($(this).find(".Discount").val()) + parseFloat($(this).find(".Tax").val()));
-            totalNetAmount += parseFloat($(this).find(".NetAmount").val());
-        });
-        //assign total
-        $("#totalQuantity").text(NumberFormat(totalQuantity));
-        $("#totalGrossAmount").text(CurrencyFormat(totalGrossAmount));
-        $("#totalDiscount").text(CurrencyFormat(totalDiscount));
-        $("#totalTax").text(CurrencyFormat(totalTax));
-        $("#totalNetAmount").text(CurrencyFormat(totalNetAmount));
-
 
 
     };
@@ -517,39 +246,6 @@
 
 
 
-    };
-    let calcFlatDiscount = () => {
-        var type = $("input[name='flatDiscount']:checked").val();
-        var value = $("#flat_discount").val() || 0;
-        var percent = 0;
-        if (_.isEmpty(type))
-            return 0;
-        if (type === "percent") {
-            percent = parseFloat(value);
-        } else {
-            discountAmount = parseFloat(value);
-            totalGrossAmountWithoutLineDiscountItem = 0.0;
-            $.each(table.rows, function (i, v) {
-                var grossAmount = parseFloat($(this).find(".GrossAmount").val());
-                if (type === "amount")
-                    grossAmount = parseFloat($(this).find(".Rate").val());
-                var lineDiscountAmount = parseFloat($(this).find(".Discount").val());
-                if ($(this).find(".Discount").data("isdiscountable")) {
-                    totalGrossAmountWithoutLineDiscountItem += grossAmount;
-                }
-            });
-
-            percent = totalGrossAmountWithoutLineDiscountItem === 0 ? 0 : (discountAmount * 100 / totalGrossAmountWithoutLineDiscountItem);
-        }
-
-        //check if exceed the max percent
-        var maxPercent = parseFloat($("#flat_discount").data("data-max"));
-        if (percent > maxPercent) {
-            percent = maxPercent; //no need to show error message// just set max percentage that is allowed.
-            $("#flat_discount").val(maxPercent);
-        }
-
-        return percent;
     };
     let updateFlatDiscount = (calcTotalFlag) => {
         var type = $("input[name='flatDiscount']:checked").val();
@@ -596,23 +292,13 @@
             }
 
 
+
         });
         calcNetTotalsOnly();
         return percent;
     };
-    let calculateSN = () => {
-        $.each(table.rows, function (i, v) {
-            $(this).find(".sn").text((table.rows.length - i).toString());
-        });
-    };
-    let calculateTax = (grossAmount, taxPercent) => {
-        //tax deduction formula
-        let tax = (taxPercent * grossAmount) / (taxPercent + 100);
-        return tax;
-
-    };
     let convertSalesTax = () => {
-        
+
         let salesInvoiceNumber = "";
         if (!_.isEmpty($("#Invoice_Number").val()))
             salesInvoiceNumber = $("#Invoice_Number").val();
@@ -649,17 +335,28 @@
         calcTotal();
 
     };
-    let addRowGetUpdateData = (code) => {
+
+    // #region itemTable
+    let addRowGetUpdateData = (code, key) => {
         var t1 = table.rows.length;
         //first check there alreay item in pos  
+
         var checkAlreadyExistItem = false;
         $.each(table.rows, function (i, v) {
             var barcode = $(this).find(".barcode").text();
-            var itemCode = $(this).find(".itemName").data("item-code");
+            var itemCode = $(this).find(".itemName").attr("data-item-code");
             var quantity = $(this).find(".Quantity").val();
             if (barcode === code || itemCode === code) {
-                //increase quantity               
-                $(this).find(".Quantity").val((parseInt(quantity) + 1).toString());
+                if (key === 13) //enter key event
+                {
+                    //increase quantity               
+                    $(this).find(".Quantity").val((parseFloat(quantity) + 1).toString());
+                }
+                if (key === 10 && parseFloat(quantity) > 1) //ctrl + enter key event
+                {
+                    //increase quantity               
+                    $(this).find(".Quantity").val((parseFloat(quantity) - 1).toString());
+                }
                 //highlight row
                 makeRowAtTopAndHightlight($(this));
                 calcTotal();
@@ -676,6 +373,7 @@
             });
         }
     };
+
     let addRowWithData = (result) => {
         var row = table.insertRow(0);
         var cell1 = row.insertCell(0); //SN
@@ -713,11 +411,10 @@
         cell9.className = "tax-width-item p-1 pr-3 tax-show-hide";
         cell10.className = "netAmount-width-item p-1 pr-3";
         cell11.className = "action-width-item p-1";
-        
-        
+
+
         var barCode = result.Bar_Code || result[0].bar_Code;
-        var itemCode = result.Remarks || result[0].code; //temporary update code to remarks field :)
-        console.log(itemCode);
+        var itemCode = result.Remarks || result[0].code; //temporary update code to remarks field :)       
         var itemName = result.Name || result[0].name;
         var itemId = result.ItemId || result[0].itemId;
         var unit = result.Unit || result[0].unit;
@@ -726,7 +423,7 @@
         //var discount = (result.Discount || result.discount) === undefined ? 0 : (result.Discount || result.discount);
         var isDiscountable = result.Is_Discountable || (result[0] === undefined ? false : result[0].is_Discountable);
         //var tax = result.Tax === undefined ? 0 : result.Tax;
-       
+
         var isVatable = result.Is_Vatable || (result[0] === undefined ? false : result[0].is_Vatable);
         //if ($("#Trans_Type").val() === "Tax" && isVatable !== undefined && isVatable && tax === 0) {
         //    tax = (grossAmount - discount) * taxPercent / 100;
@@ -741,6 +438,7 @@
         //invoiceItems[0].sn
         //highlight row
         makeRowAtTopAndHightlight(row);
+
 
         //discount make disable with respect to permission
         var discountDisabled = permission.salesDiscountItemwise === false ? "disabled" : isDiscountable === false ? "disabled" : "";
@@ -762,14 +460,40 @@
 
         $('<botton onclick="invoice.delete_row(this);" class="btn btn-sm btn-danger"><i class="fa fa-times fa-sm"></i></botton>').appendTo(cell11);
 
-       
+
         //check keyinweight
-        if (result[0].keyInWeight) {
+        if (result.keyInWeight || (result.length > 0 && result[0].keyInWeight)) {
             $(row).find(".Quantity").val("0");
             $(row).find(".Quantity").focus();
             $(row).find(".Quantity").select();
             $(row).find(".Quantity").attr("min", 0);
+
+
+            //again select because barcode device used late selecttion
+            setTimeout(function () {
+                $(row).find(".Quantity").focus();
+                $(row).find(".Quantity").select();
+            }, 20);
         }
+        //bind quantity enter event handler
+        $(row).find(".Quantity").bind("keypress", function (e) {
+            if (e.keyCode === 13 && $(this).val() !== "") {
+                $('#item_code').val('');
+                $('#item_code').focus();
+                e.preventDefault();
+            }
+
+        });
+        //bind discount enter event handler
+        $(row).find(".Discount").bind("keypress", function (e) {
+            if (e.keyCode === 13 && $(this).val() !== "") {
+                $('#item_code').val('');
+                $('#item_code').focus();
+                e.preventDefault();
+            }
+
+        });
+
         calcAll();
     };
     let makeRowAtTopAndHightlight = (row) => {
@@ -785,7 +509,7 @@
             row.className = "active";
             // setTimeout(() => { row.className = ""; }, 300);
         }
-       
+
         ////test logic
         //// Change the selector if needed
         //var $table = $('#item_table'),
@@ -806,8 +530,32 @@
         //});
 
     };
+    //let addFOCItem = (itemCode) => {
+    //    getFOCItem(itemCode, function (data) {
+    //        //
+    //        if (data.length > 0) {
+    //            debugger;
+    //            _.each(data, function (value) {
+    //                addRowWithData(data);
+    //            });
+
+
+    //        }
+    //    });
+    //};
     let delete_row = (evt) => {
         evt.parentElement.parentElement.remove();
+        calcAll();
+    };
+    let deleteCurrentItemEntry = () => {
+        var activeRow = $("#item_table").find("tr.active");
+        if (activeRow[0] === $("#item_table").find("tr:last")[0]) {
+            activeRow.prev().addClass("active");
+        }
+        else {
+            activeRow.next().addClass("active");
+        }
+        activeRow.remove();
         calcAll();
     };
     let deleteInvoice = (row, id) => {
@@ -823,23 +571,31 @@
             }
         });
     };
-    //let calculation = {
+    let changeSelectedRow = (selection) => {
+        $.each(table.rows, function (i, v) {
 
-    //    itemCode: "",
+            if (selection === "down") {
+                if ($(this).hasClass("active") && $(this)[0] !== $(table).find("tr:last")[0]) {
+                    $(this).removeClass("active");
+                    $(this).next().addClass("active");
+                    $(this).next().find(".Quantity").focus();
+                    $(this).next().find(".Quantity").select();
+                    return false;
+                }
+            }
+            if (selection === "up") {
+                if ($(this).hasClass("active") && $(this)[0] !== $(table).find("tr:first")[0]) {
+                    $(this).removeClass("active");
+                    $(this).prev().addClass("active");
+                    $(this).prev().find(".Quantity").focus();
+                    $(this).prev().find(".Quantity").select();
+                    return false;
+                }
+            }
 
-    //    init: (itemCode) => {
-    //        getRate(itemCode);
-    //    },
-    //    rate: getRate(itemCode),
-
-    //    getRate: (itemCode) => {
-
-    //    },
-    //    getGrossAmount: () => {
-
-    //    }
-
-    //};
+        });
+    };
+    // #endregion
 
     let holdTransaction = () => {
         $("#Remarks").val($("#Trans_Type").val());
@@ -851,21 +607,13 @@
     };
     let loadPausedTransaction = (row) => {
         var invoiceId = row.closest("tr").find('td.invoice-id').text();
-        window.location.href = window.location.origin + "/SalesInvoice/Index/" + invoiceId.trim();
+        var membershipId = row.closest("tr").find('td.membership-id').text();
+        window.location.href = window.location.origin + "/SalesInvoice/Index/" + invoiceId.trim() + "?M=" + membershipId.trim();
     };
     let loadPausedTransactionData = (data) => {
         if (getUrlParameters() !== 0 && salesInvoiceTmpData.SalesInvoiceItems !== null) {
             getItemReferenceData(function () {
 
-                $("#Customer_Id").val();
-                //update membership            
-                var selectedItem = _.filter(customerList, function (x) {
-                    return x.Membership_Number === salesInvoiceTmpData.MemberId;
-                })[0];
-                if (selectedItem) {
-
-                    $("#membershipId").val(selectedItem.membership_Number);
-                }
                 //flat discount
                 if (salesInvoiceTmpData.Flat_Discount_Amount !== null) {
                     $("#amountRadio").prop("checked", true);
@@ -904,16 +652,16 @@
             message: "Are you sure ?",
             buttons: {
                 cancel: {
-                    label: 'Sure',
+                    label: 'Go Back',
                     className: 'btn-warning'
                 },
                 confirm: {
-                    label: 'Go Back',
+                    label: 'Sure',
                     className: 'btn-success'
                 }
             },
             callback: function (result) {
-                if (!result) {
+                if (result) {
                     var url = window.location.origin + "/SalesInvoice";
                     if (GetUrlParameters("mode") !== undefined && GetUrlParameters("mode") === "tax")
                         url = SetUrlParameters(url, ["Mode=tax"]);
@@ -928,21 +676,13 @@
 
 
     };
-    let getUrlParameters = () => {
-        var sPageURL = window.location.href;
-        var indexOfLastSlash = sPageURL.lastIndexOf("/");
-
-        if (indexOfLastSlash > 0 && sPageURL.length - 1 !== indexOfLastSlash)
-            return sPageURL.substring(indexOfLastSlash + 1);
-        else
-            return 0;
-    };
     let barCodeKeyPressEvent = (e) => {
 
         var $this = $(e.currentTarget);
-        if (e.keyCode === 13 && $this.val() !== "" && $this.val().length > 1) {
-            
-            addRowGetUpdateData($this.val());
+        if ((e.keyCode === 13 || e.keyCode === 10) && $this.val() !== "" && $this.val().length > 1) {
+
+
+            addRowGetUpdateData($this.val(), e.keyCode);
             //highlight the selected code
             $this.focus();
             $this.select();
@@ -968,6 +708,632 @@
         }
     };
 
+
+
+    // #region CALCULATIONS
+    let calcDiscount = (itemCode, quantity, customerGroupCode) => {
+        //variables
+        var todayDate = new Date();
+        var membershipNumber = $("#membershipId").val();
+
+
+        //Get Selected Item First   
+        var selectedItem = _.filter(selectedItems, function (x) {
+            return x.code === itemCode;
+        });
+
+        ////check location
+        //if location is MRP or WholeSale then set discount equal zero
+        //if (selectedItem[0].locationwisePriceGroup === "WSP")
+        //    return 0;
+
+        ///if no discount tag is enable then return no discount
+        if (selectedItem[0].no_Discount === true) {
+            $.each(table.rows, function (i, v) {
+                if ($(this).find(".itemName").attr("data-item-code") === itemCode) {
+                    $(this).find(".Discount").data("isdiscountable", false);
+                    $(this).find(".Discount").data("noDiscount", true);
+                    $(this).find(".Discount").attr("readonly", true);
+                }
+
+            });
+
+
+            return 0;
+        }
+
+        var discount = calcDiscountLine(selectedItem, quantity, itemCode);
+
+        /////****** Check if membership discount is available 
+        if (discount === 0) {
+            discount = calcDiscountMembership(selectedItem, quantity, itemCode);
+            if (discount > 0)
+                isMembershipDiscount = true;
+        }
+
+        if (discount > 0) {
+            //update isdiscountable
+            $.each(table.rows, function (i, v) {
+                if ($(this).find(".itemName").attr("data-item-code") === itemCode) {
+                    $(this).find(".Discount").data("isdiscountable", false);
+                    $(this).find(".Discount").attr("readonly", true);
+                }
+            });
+        }
+        else if (discount === 0) {
+            //update isdiscountable
+            $.each(table.rows, function (i, v) {
+                if ($(this).find(".itemName").attr("data-item-code") === itemCode) {
+                    $(this).find(".Discount").data("isdiscountable", true);
+                    $(this).find(".Discount").attr("readonly", false);
+                }
+
+            });
+            discount = calcFlatDiscount();
+        }
+
+
+        return discount;
+    };
+    let calcDiscountLine = (selectedItem, quantity, itemCode) => {
+        debugger;
+        //variables
+        var todayDate = new Date();
+        var membershipNumber = $("#membershipId").val();
+        var discount = 0;
+        let customer = _.filter(customerList, (x) => { return x.membership_Number === membershipNumber; })[0];
+
+        ///*** if location is MRP then only check mrp discount
+        var lineDiscountRows = [];
+        if ((selectedItem[0].locationwisePriceGroup === "MRP" && customer.customerDiscGroup !== "WSP") || selectedItem[0].locationwisePriceGroup === "WSP") {
+            lineDiscountRows = _.filter(selectedItem, function (x) {
+                return x.discountType === "Customer Disc. Group" && x.discountSalesGroupCode === selectedItem[0].locationwisePriceGroup;
+            });
+        }
+        else {
+            ////***** exclude all membership rows
+            lineDiscountRows = _.filter(selectedItem, function (x) {
+                return x.discountType === "Customer Disc. Group" && x.discountSalesGroupCode === customer.customerDiscGroup;
+            });
+        }
+
+
+
+
+        //1) filter by date
+        var filterByDate = _.filter(lineDiscountRows, function (x) {
+            var conditions = (todayDate >= new Date(x.discountStartDate) && todayDate <= new Date(x.discountEndDate)) ||
+                (x.discountStartDate === null && todayDate <= new Date(x.discountEndDate)) ||
+                (todayDate >= new Date(x.discountStartDate) && x.discountEndDate === null);
+            return conditions;
+        });
+
+
+
+        //2) filter by time
+        var filterByTime = _.filter(filterByDate, function (x) {
+            var conditions = (moment(todayDate).format("HH:mm:ss") >= moment(x.discountStartTime)._i && moment(todayDate).format("HH:mm:ss") <= moment(x.discountEndTime)._i) ||
+                (x.discountStartTime === null || x.discountEndTime === null);
+            return conditions;
+        });
+
+        //3) By time is priority
+        var filterByTimePriority = _.filter(filterByDate, function (x) {
+            var conditions = moment(todayDate).format("HH:mm:ss") >= moment(x.discountStartTime)._i && moment(todayDate).format("HH:mm:ss") <= moment(x.discountEndTime)._i;
+            return conditions;
+        });
+        if (filterByTimePriority.length > 0) {
+            discount = _.filter(filterByTimePriority, function (x) {
+                return x.discountMinimumQuantity === 0;
+            })[0];
+            discount = discount === undefined ? 0 : discount.discount;
+            _.each(filterByTimePriority, function (x) {
+                if (x.discountMinimumQuantity > 0 && quantity >= x.discountMinimumQuantity)
+                    discount = x.discount;
+            });
+        }
+        //3) By time is priority 
+        if (discount <= 0) {
+            //check if location is present
+            var filterByLoc = _.filter(filterByTime, function (x) {
+                return x.location === x.discountLocation;
+            });
+            var filterByItemCategory = [];
+            if (filterByLoc.length > 0)
+                filterByItemCategory = filterByLoc;
+            else
+                filterByItemCategory = filterByTime;
+
+
+            //check item level discount           
+            let filterByItem = _.filter(filterByItemCategory, function (x) {
+                return x.discountItemType === "Item";
+            });
+            if (filterByItem.length > 0) {
+                discount = _.filter(filterByItem, function (x) {
+                    return x.discountMinimumQuantity === 0;
+                })[0];
+                discount = discount === undefined ? 0 : discount.discount;
+                _.each(filterByTime, function (x) {
+                    if (x.discountMinimumQuantity > 0 && quantity >= x.discountMinimumQuantity)
+                        discount = x.discount;
+                });
+            }
+            else {
+                discount = _.filter(filterByItemCategory, function (x) {
+                    return x.discountMinimumQuantity === 0;
+                })[0];
+                discount = discount === undefined ? 0 : discount.discount;
+                _.each(filterByTime, function (x) {
+                    if (x.discountMinimumQuantity > 0 && quantity >= x.discountMinimumQuantity)
+                        discount = x.discount;
+                });
+            }
+        }
+
+        if (discount > 0) {
+            //update type promodiscount
+            $.each(table.rows, function (i, v) {
+                if ($(this).find(".itemName").attr("data-item-code") === itemCode) {
+                    $(this).find(".Discount").data("discountType", "PromoDiscount");
+                }
+
+            });
+        }
+
+        return discount;
+
+    };
+    let calcDiscountMembership = (selectedItem, quantity, itemCode) => {
+
+        //variables
+        var todayDate = new Date();
+        var membershipNumber = $("#membershipId").val();
+        let customer = _.filter(customerList, (x) => { return x.membership_Number === membershipNumber; })[0];
+
+        ////***** Get all membership rows
+        var lineDiscountRows = _.filter(selectedItem, function (x) {
+            return x.discountType === "Member Disc. Group";
+        });
+
+        //1) filter by date
+        var filterByDate = _.filter(lineDiscountRows, function (x) {
+            var conditions = (todayDate >= new Date(x.discountStartDate) && todayDate <= new Date(x.discountEndDate)) ||
+                (x.discountStartDate === null && todayDate <= new Date(x.discountEndDate)) ||
+                (todayDate >= new Date(x.discountStartDate) && x.discountEndDate === null);
+            return conditions;
+        });
+        //2) filter by time
+        var filterByTime = _.filter(filterByDate, function (x) {
+            var conditions = (moment(todayDate).format("HH:mm:ss") >= moment(x.discountStartTime)._i && moment(todayDate).format("HH:mm:ss") <= moment(x.discountEndTime)._i) ||
+                (x.discountStartTime === null || x.discountEndTime === null);
+            return conditions;
+        });
+
+        // check customer group filter
+        var filterByCustomerGroup = filterByTime;
+        ////**** get selected membership
+
+
+        if (customer !== undefined && filterByTime.length !== 0) {
+            filterByCustomerGroup = _.filter(filterByTime, function (x) {
+                return x.discountSalesGroupCode === customer.membershipDiscGroup;
+            });
+        }
+
+        var discount = _.filter(filterByCustomerGroup, function (x) {
+            return x.discountMinimumQuantity === 0;
+        })[0];
+        discount = discount === undefined ? 0 : discount.discount;
+        _.each(filterByCustomerGroup, function (x) {
+            if (x.discountMinimumQuantity > 0 && quantity >= x.discountMinimumQuantity)
+                discount = x.discount;
+        });
+        if (discount > 0) {
+            //update discount type
+            $.each(table.rows, function (i, v) {
+                if ($(this).find(".itemName").attr("data-item-code") === itemCode) {
+                    $(this).find(".Discount").data("discountType", "MembershipDiscount");
+                }
+
+            });
+        }
+
+        return discount;
+    };
+    let calcRate = (itemCode, quantity, row) => {
+
+        //Get Selected Item First       
+        var todayDate = new Date();
+        todayDate = new Date(todayDate.toDateString()); //remove timespan
+        var membershipNumber = $("#membershipId").val();
+
+
+        var selectedItem = _.filter(selectedItems, function (x) {
+            return x.code === itemCode;
+        });
+
+        var filterByDate = _.filter(selectedItem, function (x) {
+            var conditions = (todayDate >= new Date(x.rateStartDate) && todayDate <= new Date(x.rateEndDate)) ||
+                (x.rateStartDate === null && todayDate <= new Date(x.rateEndDate)) ||
+                (todayDate >= new Date(x.rateStartDate) && x.rateEndDate === null);
+            return conditions;
+        });
+
+        //3) check customer group filter
+        var filterByCustomerGroup = [];
+
+
+        ////**** get selected membership
+        let customer = _.filter(customerList, (x) => { return x.membership_Number === membershipNumber; })[0];
+        if (filterByDate.length !== 0) {
+            //check if location has mrp value
+            if (filterByDate[0].locationwisePriceGroup === "MRP")
+                if (customer.customerPriceGroup !== "WSP") //if customer is not wholesale then convert into mrp customer
+                    customer.customerPriceGroup = "MRP";
+
+            if (filterByDate[0].salesType === "Customer Price Group" && filterByDate[0].salesCode !== undefined) {
+                filterByCustomerGroup = _.filter(filterByDate, function (x) {
+                    return x.salesCode === customer.customerPriceGroup;
+                });
+            }
+        }
+
+        var rate = _.filter(filterByCustomerGroup, function (x) {
+            return x.rateMinimumQuantity === 0;
+        });
+
+        //check if multiple open rate
+        var selectedRate = parseFloat($(row).find(".Rate").data("original-rate"));
+        if (!isNaN(selectedRate)) {
+            rate = selectedRate;
+        } else {
+            var distinctRate = _.uniq(_.pluck(rate, "rate"));
+
+            if (distinctRate.length > 1 && row.find(".Rate").data("original-rate") === undefined && row.find(".Rate").data("rate-selected") === undefined) {
+                row.find(".Rate").data("rate-selected", true);
+                var options = "<select id='rateDropdown' class='form-control'>";
+                _.each(distinctRate, function (x) {
+                    options += "<option>" + x + "</option>";
+                });
+                options += "</select>";
+                var dialog = bootbox.dialog({
+                    title: 'Please select correct price',
+                    message: options,
+                    size: 'small',
+                    buttons: {
+                        ok: {
+                            label: "Select",
+                            className: 'btn-info',
+                            callback: function () {
+                                rate = $("#rateDropdown :selected").val();
+                                row.find(".Rate").data("original-rate", rate);
+                                calcTotal();
+                                $("#item_code").focus();
+                                $("#item_code").select();
+                            }
+                        }
+                    }
+
+                }).one("shown.bs.modal", function () {
+                    //temporary paused the shortcut events
+                    Mousetrap.pause();
+                    $('#rateDropdown').focus();
+                    $('#rateDropdown').on("keypress", function (e) {
+                        //debugger;
+                        if (e.keyCode === 13) {
+                            e.preventDefault(); e.stopPropagation();
+                            $(".bootbox-accept").trigger("click");
+                        }
+                    });
+                    //Mousetrap.bindGlobal('enter', function (e) {
+                    //    e.preventDefault(); e.stopPropagation();
+                    //    $(".bootbox-accept").trigger("click");
+                    //});
+
+                }).one("hide.bs.modal", function () {
+                    // allow Mousetrap events to fire again
+                    Mousetrap.unpause();
+                    Mousetrap.unbind('enter');
+                    setTimeout(() => {
+                        $("#item_code").focus();
+                        $("#item_code").select();
+                    }, 20);
+
+                });
+
+                var myDropDown = $("#rateDropdown");
+                var length = $('#rateDropdown> option').length + 1;
+                myDropDown.attr('size', length);
+                $('#rateDropdown> option').first().attr("select", "select");
+
+
+
+            }
+
+
+            rate = rate[0];
+            rate = rate === undefined ? 0 : rate.rate;
+        }
+        _.each(filterByCustomerGroup, function (x) {
+            if (x.rateMinimumQuantity > 0 && quantity >= x.rateMinimumQuantity)
+                rate = x.rate;
+        });
+        return rate;
+
+    };
+    let calcTotal = (from) => {
+
+        var totalGrossAmount = 0, totalNetAmount = 0, totalQuantity = 0, totalDiscount = 0, totalTax = 0, totalTaxableAmount = 0, totalNonTaxableAmount = 0, totalDiscountExcVat = 0;
+
+        if (table.rows.length > 0) {
+            $.each(table.rows, function (i, v) {
+
+                //variables
+                let transType = $("#Trans_Type").val();
+                let itemCode = $(this).find(".itemName").attr("data-item-code").toString();
+                let taxable = $(this).find(".Tax").data("isvatable");
+                let discountable = $(this).find(".Discount").data("isdiscountable");
+                let discountType = $(this).find(".Discount").data("discountType");
+                let netAmount = 0;
+
+                //calculations     
+                // 1. calc quantity
+                var quantity = parseFloat($(this).find(".Quantity").val());
+                // 2. calc tax include Rate
+                var rateIncludeTax = calcRate(itemCode, quantity, $(this));
+                // 3. calc unit tax
+                var tax = calculateReverseTax(rateIncludeTax, taxPercent, taxable);
+                // 4. calc tax exclude rate
+                var rateExcludeTax = rateIncludeTax - tax;
+                // 5. calc rate
+                var rate = transType === "Tax" ? rateExcludeTax : rateIncludeTax;
+                // 5. calc discount
+                var discountPercent = calcDiscount(itemCode, quantity);
+                var discount = rate * discountPercent / 100;
+                var discountExcVat = rateExcludeTax * discountPercent / 100;
+                // 6. calc gross amount;
+                var grossAmount = quantity * rate;
+                // 7. calc gross tax
+                tax = calculateTax((rateExcludeTax - discountExcVat), taxPercent, taxable) * quantity;
+
+
+                ///*** Discount logic start
+                if (from !== undefined && from.name === "Discount") {
+                    $(this).find(".Discount").data("discountType", "InlineManualDiscount");
+                    discount = parseFloat($(this).find(".Discount").val()) / quantity;
+                    $(this).find(".Discount").data("original-value", discount.toFixed(2));
+                }
+
+
+                if (discountPercent > 0) {
+                    $(this).find(".Discount").data("isdiscountable", false);
+                    $(this).find(".Discount").attr("readonly", true);
+                }
+
+                if ($(this).find(".Discount").data("isdiscountable")) {
+                    // $(this).find(".Discount").data("original-value", discount.toFixed(2));
+
+                    //if flat_discount percent is zero then enable individual discount  
+                    $(this).find(".Discount").attr("readonly", discountPercent !== 0);
+                }
+
+                //if inline discount then calculate direct
+                if (discountType === "MembershipDiscount" || discountType === "PromoDiscount")
+                    discount = discount * quantity;
+                else if ($("input[name='flatDiscount']:checked").val() === "percent") {
+                    discount = discount * quantity;
+                }
+                else if ($("input[name='flatDiscount']:checked").val() === "amount") {
+                    //if it flat discount with amount then donot update discount
+                }
+                else if (discountType === "InlineManualDiscount") {
+                    discount = parseFloat($(this).find(".Discount").data("original-value"));
+                    discount = discount * quantity;
+                }
+
+                //    discount = discount * quantity;
+                //var condition = ($("input[name='flatDiscount']:checked").val() === undefined || parseFloat($("#flat_discount").val()) <= 0);
+                //if (!condition && $("input[name='flatDiscount']:checked").val() === "percent") {
+                //    updateFlatDiscount(false);
+                //    discount = discount * quantity;
+                //}
+
+                //calc netAmount
+                if (transType === "Tax")
+                    netAmount = (rate * quantity) - (isNaN(discount) ? 0 : discount) + tax;
+                else
+                    netAmount = (rate * quantity) - (isNaN(discount) ? 0 : discount);
+
+
+
+                //assign value
+                $(this).find(".Rate").val(rate.toFixed(2));
+                $(this).find(".Rate").data("RateExcludedVat", rateExcludeTax.toFixed(2));
+                $(this).find(".GrossAmount").val(grossAmount.toFixed(2));
+                $(this).find(".Tax").val(tax.toFixed(2));
+                $(this).find(".NetAmount").val(netAmount.toFixed(2));
+
+
+                if (from === undefined || from.name !== "Discount") {
+                    $(this).find(".Discount").val(discount.toFixed(2));
+                }
+
+
+                //calc total
+                totalQuantity += quantity;
+                totalDiscount += discount;
+                totalDiscountExcVat += discountExcVat;
+                totalTax += tax;
+                totalGrossAmount += grossAmount;
+                totalNetAmount += netAmount;
+                debugger;
+                //calc taxable and non taxable
+                if (taxable)
+                    totalTaxableAmount += rateExcludeTax * quantity - discountExcVat;
+                else {
+                    totalNonTaxableAmount += rateExcludeTax * quantity;
+                }
+
+            });
+        }
+        //assign total
+        $("#totalQuantity").text(CurrencyFormat(totalQuantity));
+        $("#totalGrossAmount").text(CurrencyFormat(totalGrossAmount));
+        $("#totalDiscount").text(CurrencyFormat(totalDiscount));
+        $("#TOTAL_DISCOUNT_EXC_VAT").val(totalDiscountExcVat.toFixed(2));
+        $("#totalTax").text(CurrencyFormat(totalTax));
+        $("#totalNetAmount").text(CurrencyFormat(totalNetAmount));
+        $("#NonTaxableAmount").val(totalNonTaxableAmount.toFixed(2));
+        $("#TaxableAmount").val(CurrencyFormat(totalTaxableAmount.toFixed(2)));
+    };
+    let calcNetTotalsOnly = () => {
+        let totalQuantity = 0, totalGrossAmount = 0, totalDiscount = 0, totalTax, totalNetAmount = 0;
+        $.each(table.rows, function (i, v) {
+            let quantity = parseFloat($(this).find(".Quantity").val()),
+                grossAmount = parseFloat($(this).find(".GrossAmount").val()),
+                discount = parseFloat($(this).find(".Discount").val()),
+                tax = parseFloat($(this).find(".Tax").val());
+            let netAmount = grossAmount - discount + tax;
+            totalQuantity += quantity;
+            totalGrossAmount += grossAmount;
+            totalDiscount += discount;
+            totalTax += tax;
+            totalNetAmount += netAmount;
+
+            ///update netamount first    
+
+            $(this).find(".NetAmount").val(netAmount.toFixed(2));
+
+        });
+        //assign total
+        $("#totalQuantity").text(CurrencyFormat(totalQuantity));
+        $("#totalGrossAmount").text(CurrencyFormat(totalGrossAmount));
+        $("#totalDiscount").text(CurrencyFormat(totalDiscount));
+        $("#totalTax").text(CurrencyFormat(totalTax));
+        $("#totalNetAmount").text(CurrencyFormat(totalNetAmount));
+
+
+
+    };
+    let calculateSN = () => {
+        $.each(table.rows, function (i, v) {
+            $(this).find(".sn").text((table.rows.length - i).toString());
+        });
+    };
+    let calcFlatDiscount = () => {
+        var type = $("input[name='flatDiscount']:checked").val();
+        var value = $("#flat_discount").val() || 0;
+        var percent = 0;
+        if (_.isEmpty(type))
+            return 0;
+        if (type === "percent") {
+            percent = parseFloat(value);
+        } else {
+            discountAmount = parseFloat(value);
+            totalGrossAmountWithoutOtherDiscountItem = 0.0;
+            $.each(table.rows, function (i, v) {
+                var grossAmount = parseFloat($(this).find(".GrossAmount").val());
+                let discountable = $(this).find(".Discount").data("isdiscountable");
+                let noDiscount = $(this).find(".Discount").data("noDiscount") || false;;
+                let discountType = $(this).find(".Discount").data("discountType");
+
+                if (type === "amount")
+                    grossAmount = parseFloat($(this).find(".Rate").val());
+
+                if (noDiscount === false && discountType !== "MembershipDiscount" && discountType !== "PromoDiscount") {
+                    totalGrossAmountWithoutOtherDiscountItem += grossAmount;
+                }
+            });
+
+            percent = totalGrossAmountWithoutOtherDiscountItem === 0 ? 0 : (discountAmount * 100 / totalGrossAmountWithoutOtherDiscountItem);
+        }
+
+        //check if exceed the max percent
+        var maxPercent = parseFloat($("#flat_discount").data("data-max"));
+        if (percent > maxPercent) {
+            percent = maxPercent; //no need to show error message// just set max percentage that is allowed.
+            $("#flat_discount").val(maxPercent);
+        }
+
+        return percent;
+    };
+    let calculateReverseTax = (amount, taxPercent, taxable) => {
+        let tax = 0;
+        if (taxable) {
+            //tax deduction formula
+            tax = (taxPercent * amount) / (taxPercent + 100);
+        }
+        return tax;
+
+    };
+    let calculateTax = (amount, taxPercent, taxable) => {
+        let tax = 0;
+        if (taxable) {
+            //tax calc formula
+            tax = amount * taxPercent / 100;
+        }
+        return tax;
+    };
+
+    let calcTotalMembershipDiscount = () => {
+
+        var totalAmount = 0;
+        $.each(table.rows, function (i, v) {
+            if ($(this).find(".Discount").data("discountType") === "MembershipDiscount") {
+                //totalAmount += parseFloat($(this).find(".Discount").data("membership-discount"));
+                totalAmount += parseFloat($(this).find(".Discount").val());
+            }
+        });
+        return totalAmount;
+    };
+    let calcTotalPromoDiscount = () => {
+
+        var totalAmount = 0;
+        $.each(table.rows, function (i, v) {
+            var discountType = $(this).find(".Discount").data("discountType");
+            if (discountType === undefined || discountType !== "MembershipDiscount") {
+                //totalAmount += parseFloat($(this).find(".Discount").data("membership-discount"));
+                totalAmount += parseFloat($(this).find(".Discount").val());
+            }
+        });
+        return totalAmount;
+    };
+    let calcCommission = (e) => {
+        var commissionPercent = $("#commissionPercent").val() || "0";
+        if (parseFloat(commissionPercent) > 5)
+            $("#commissionPercent").val(5);
+        if (parseFloat(commissionPercent) < 0)
+            $("#commissionPercent").val(0);
+        if (table.rows.length > 0) {
+            $.each(table.rows, function (i, v) {
+                //calculations 
+                var rate = 0;
+                commissionPercent = parseFloat($("#commissionPercent").val());
+                if ($(this).find(".Rate").data("rate-before-commission") !== undefined)
+                    rate = parseFloat($(this).find(".Rate").data("rate-before-commission"));
+                else
+                    rate = parseFloat($(this).find(".Rate").val());
+                var commissionedRate = rate + rate * commissionPercent / 100;
+                $(this).find(".Rate").val(commissionedRate.toFixed(2));
+                $(this).find(".Rate").data("original-rate", commissionedRate.toFixed(2));
+                $(this).find(".Rate").data("rate-before-commission", rate);
+
+            });
+            calcTotal();
+        }
+        e.preventDefault(); e.stopPropagation();
+    };
+    let calcAll = () => {
+        calculateSN();
+        calcTotal();
+        updateFlatDiscount();
+        updateSalesTax();
+        adjustTableWidth();
+    };
+
+    // #endregion
+
     let customerPanelToggle = (evt) => {
         if (evt !== undefined) {
             evt.preventDefault(); evt.stopPropagation();
@@ -977,14 +1343,78 @@
             $("#customer_icon_toggle").toggleClass("fa-chevron-down");
         });
     };
-    let getPermissions = (Callback) => {
-        $.ajax({
-            url: window.location.origin + "/Account/RoleWiseUserPermission",
-            type: "GET",
-            complete: function (result) {
-                if (result.status === 200) {
-                    Callback(result.responseJSON);
+    let loadCustomer = (callback) => {
+        //initialize customer dropdown
+        // var customerList = localStorage.getItem("customerList");
+        $(".theme-loader").show();
+        $("#item_code").attr("disabled", true);
+        var membershipNumber = GetUrlParameters("M");
+        var getMembershipUrlBase = window.location.origin + "/Customer/";
+        var getMembershipUrl = getMembershipUrlBase + "GetMembershipByNumber?MembershipNumber=" + membershipNumber;
+        var loadedAll = false;
+        var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: function (options) {
+
+
+                    if (options.data !== undefined && options.data.filter !== undefined && options.data.filter.filters.length > 0) {
+                        getMembershipUrl = getMembershipUrlBase + "GetMembership?text=" + options.data.filter.filters[0].value;
+                    }
+                    else if (loadedAll) {
+                        getMembershipUrl = getMembershipUrlBase + "GetMembership";
+                    }
+                    $.ajax({
+                        type: 'GET',
+                        url: getMembershipUrl + "",
+                        contentType: 'application/json; charset=utf-8',
+                        dataType: 'json',
+                        complete: function (data) {
+
+                            if (data.status === 200) {
+                                customerList = data.responseJSON;
+
+                                options.success(data.responseJSON);
+
+                                if (loadedAll === false) {
+                                    loadedAll = true;
+
+                                    getMembershipUrl = getMembershipUrlBase + "/GetMembership";
+                                    //dataSource.fetch();
+                                    var customerMultiselect = $("#Customer_Id").data("kendoComboBox");
+                                    customerMultiselect.input.attr("readonly", true);
+                                    //customerMultiselect.input.attr("disabled", "disabled");
+                                    $(".k-icon").remove();
+                                    customerMultiselect.setDataSource(dataSource);
+                                    customerMultiselect.dataSource.options.serverFiltering = true;
+                                    // customerMultiselect.dataSource.read();
+
+
+                                    callback();
+                                }
+                            }
+                            else {
+                                options.error(data.responseJSON);
+                            }
+
+                        }
+                    });
                 }
+            },
+            //serverFiltering:true
+        });
+        $("#Customer_Id").kendoComboBox({
+            dataSource: dataSource,
+            dataTextField: "name",
+            dataValueField: "membership_Number",
+            filter: "contains",
+            suggest: true,
+            index: 1,
+            dataBound: function () {
+                $(".theme-loader").hide();
+                $("#item_code").attr("disabled", false);
+                $("#membershipId").trigger("change");
+
+
             }
         });
     };
@@ -997,6 +1427,14 @@
             }
             else {
                 $(".flatDiscountHide").remove();
+            }
+
+            //for commission Right
+            if (data.roleWiseUserPermission.sales_Rate_Commission_Right) {
+                $(".commissionPercentHide").show();
+            }
+            else {
+                $(".commissionPercentHide").remove();
             }
             permission.salesDiscountItemwise = data.roleWiseUserPermission.sales_Discount_Line_Item;
             permission.salesDiscountItemLimit = data.roleWiseUserPermission.sales_Discount_Flat_Item_Limit;
@@ -1013,12 +1451,12 @@
         if (_.isEmpty($mId) && $mId.length < 4)
             return false;
         //search through customer       
-        let customer = _.filter(customerList, (x) => { return x.Membership_Number === $mId; })[0]; //donot update double equal
+        let customer = _.filter(customerList, (x) => { return x.membership_Number === $mId; })[0]; //donot update double equal
         var customerDropdown = $("#Customer_Id").data("kendoComboBox");
 
         if (customer !== undefined) {
-            customerDropdown.value(customer.Membership_Number);
-            $("#Customer_Id").val(customer.Membership_Number).trigger('change');
+            customerDropdown.value(customer.membership_Number);
+            $("#Customer_Id").val(customer.membership_Number).trigger('change');
         }
         else {
             customerDropdown.value('');
@@ -1039,13 +1477,16 @@
     };
     let AssignKeyEvent = () => {
         //for barcode textbox focus
-        Mousetrap.bindGlobal('ctrl+b', function () {
+        Mousetrap.bindGlobal(['ctrl+b', 'home'], function (e) {
+            e.preventDefault(); e.stopPropagation();
             $("#item_code").focus();
+            $("#item_code").select();
         });
 
         //for quantity textbox focus
         Mousetrap.bindGlobal('ctrl+q', function () {
-            $(".Quantity:first").focus();
+            $("tr.active td > .Quantity").focus();
+            $("tr.active td > .Quantity").select();
         });
 
         //for flatdiscount textbox focus
@@ -1071,13 +1512,8 @@
         });
 
 
-
-
-
-
-
         //for save sales invoice
-        Mousetrap.bindGlobal('ctrl+end', function () {
+        Mousetrap.bindGlobal(['ctrl+end', 'end'], function () {
             let saveButton = $("#NextButton");
             saveButton.trigger('click');
         });
@@ -1089,9 +1525,10 @@
         });
 
         //for hold transaction 
-        Mousetrap.bindGlobal('ctrl+alt+p', function () {
+        Mousetrap.bindGlobal(['ctrl+alt+p', 'pause'], function () {
             holdTransaction();
         });
+
 
         //for display hold transactions
         Mousetrap.bindGlobal('f2', function () {
@@ -1103,10 +1540,32 @@
             convertSalesTax();
         });
 
+        Mousetrap.bindGlobal('enter', function (e) {
+            $(".bootbox-cancel").trigger("click");
+
+        });
+
         Mousetrap.bindGlobal('shift+enter', function (e) {
             e.preventDefault(); e.stopPropagation();
-            $(".bootbox-cancel").trigger("click");
+            $(".bootbox-accept").trigger("click");
         });
+
+
+        Mousetrap.bindGlobal('ctrl+f11', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            deleteCurrentItemEntry();
+        });
+
+        Mousetrap.bindGlobal('down', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            changeSelectedRow("down");
+        });
+        Mousetrap.bindGlobal('up', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            changeSelectedRow("up");
+        });
+
+
 
     };
     let saveNewMemberClickEvent = (evt) => {
@@ -1160,11 +1619,10 @@
             });
         }
     };
-
     let SaveSalesInvoice = () => {
+        //variable
+        let tableRows = document.getElementById("item_table").getElementsByTagName('tbody')[0];
 
-        //final calculation if someone update through browser
-        // calcAll();
 
         //save field data first
         $("#Total_Quantity").val(CurrencyUnFormat($("#totalQuantity").text()));
@@ -1172,10 +1630,35 @@
         $("#Total_Discount").val(CurrencyUnFormat($("#totalDiscount").text()));
         $("#Total_Vat").val(CurrencyUnFormat($("#totalTax").text()));
         $("#Total_Net_Amount").val(CurrencyUnFormat($("#totalNetAmount").text()));
+        //$("#NonTaxableAmount").val(totalTaxableAmount.toFixed(2));
+        //$("#TaxableAmount").val(CurrencyFormat(totalNonTaxableAmount.toFixed(2)));
+
 
         //validate
-        if (!$('form#Sales_Invoice_Form').valid())
+        if (!$('form#Sales_Invoice_Form').valid()) {
+            bootbox.alert("Something wrong, please check all values !!");
             return false;
+        }
+        if (tableRows === undefined || tableRows.rows.length === 0) {
+            bootbox.alert("No Item selected !!");
+            return false;
+        }
+        let checkQuantityAndRateZeroValue = false;
+        $.each(tableRows.rows, function (i, v) {
+
+            //variables           
+            let rate = parseFloat($(this).find(".Rate").val());
+            let quantity = parseFloat($(this).find(".Quantity").val());
+            if (rate === 0 || quantity === 0) {
+                checkQuantityAndRateZeroValue = true;
+                return false;
+            }
+        });
+        if (checkQuantityAndRateZeroValue) {
+            bootbox.alert("Item price or quantity must be greater than zero !!");
+            return false;
+        }
+
 
 
 
@@ -1193,15 +1676,22 @@
         var invoiceItems = [];
         table.find('tbody > tr').each(function (i, el) {
             var $tds = $(this).find('td');
+            let discountType = $(this).find('td input.Discount').data("discountType");
+            let promoDiscount = discountType === undefined || discountType !== "MembershipDiscount" ? $(this).find('td input.Discount').val() : 0;
+            let membershipDiscount = discountType === "MembershipDiscount" ? $(this).find('td input.Discount').val() : 0;
             invoiceItems.push({
                 Bar_Code: $tds.eq(1).text(),
+                ItemCode: $(this).find('td .itemName').data("item-code"),
                 ItemId: $(this).find('td .itemName').data("item-id"),
                 Name: $tds.eq(2).text(),
                 Unit: $tds.eq(3).text(),
                 Rate: $(this).find('td input.Rate').val(),
+                RateExcludeVat: $(this).find('td input.Rate').data("RateExcludedVat"),
                 Quantity: $(this).find('td input.Quantity').val(),
                 Gross_Amount: $(this).find('td input.GrossAmount').val(),
                 Discount: $(this).find('td input.Discount').val(),
+                PromoDiscount: promoDiscount,
+                MembershipDiscount: membershipDiscount,
                 Tax: $(this).find('td input.Tax').val(),
                 Is_Vatable: $(this).find('td input.Tax').attr("data-isVatable") === "true",
                 Is_Discountable: $(this).find('td input.Discount').attr("data-isDiscountable") === "true",
@@ -1210,14 +1700,26 @@
             });
         });
 
+
+
         //call ajaxnow       
         var data = $('form#Sales_Invoice_Form').serializeObject();
 
+        //assign customer id
+        data.Customer_Id = $("#membershipId").val();
 
         if ($("input[name='flatDiscount']:checked").val() === "percent")
             data.Flat_Discount_Percent = $("#flat_discount").val();
         else
             data.Flat_Discount_Amount = $("#flat_discount").val();
+
+        debugger;
+
+        //add membership discount
+        data.MembershipDiscount = calcTotalMembershipDiscount();
+        data.PromoDiscount = calcTotalPromoDiscount();
+
+
 
         data.SalesInvoiceItems = invoiceItems;
         data.MemberId = $("#membershipId").val();
@@ -1230,9 +1732,10 @@
                 Address: membership.data("address"),
                 Vat: membership.data("vat"),
                 Mobile1: membership.data("mobile"),
-                Is_Member: $("#isNewMember").val(),
+                Is_Member: $("#isNewMember").val()
             }
         };
+
 
         $.ajax({
             method: "POST",
@@ -1242,14 +1745,14 @@
             contentType: "application/json; charset=utf-8",
             complete: function (result) {
                 if (result.status === 200) {
-                    if ($("#Trans_Type").val() === "Hold") {
-                        let m = GetUrlParameters("M") === undefined ? "" : "M=" + GetUrlParameters("M");
-                        let mode = GetUrlParameters("Mode") === undefined ? "" : "Mode=" + GetUrlParameters("Mode");
-                        let url = SetUrlParameters(window.location.origin + "/SalesInvoice", [m, mode]);
-                        window.location.href = url;
-                    }
-                    else
-                        window.location.href = window.location.origin + result.responseJSON.redirectUrl;
+                    //if ($("#Trans_Type").val() === "Hold") {
+                    //    let m = GetUrlParameters("M") === undefined ? "" : "M=" + GetUrlParameters("M");
+                    //    let mode = GetUrlParameters("Mode") === undefined ? "" : "Mode=" + GetUrlParameters("Mode");
+                    //    let url = SetUrlParameters(window.location.origin + "/SalesInvoice", [m, mode]);
+                    //    window.location.href = url;
+                    //}
+                    //else
+                    window.location.href = window.location.origin + result.responseJSON.redirectUrl;
                 }
             }
         });
@@ -1261,16 +1764,11 @@
     };
 
 
-    //events
+    // #endregion PRIVATE METHODS **************//
+
+    // #region ALL EVENTS **************//
     $("#NextButton").on('click', SaveSalesInvoice);
     $('#item_code').on("keypress", barCodeKeyPressEvent);
-    // $("#trans_date_ad").datepicker();
-    //$('#trans_date_bs').nepaliDatePicker({
-    //    onChange: function () {
-    //        $('#trans_date_ad').val(FormatForDisplay(BS2AD($('#trans_date_bs').val())));
-
-    //    }
-    //});
     $('#trans_date_ad').change(function () {
         $('#trans_date_bs').val(AD2BS(FormatForInput($('#trans_date_ad').val())));
     });
@@ -1283,15 +1781,15 @@
         e.preventDefault(); e.stopPropagation();
         var selectedValue = $("#Customer_Id").data("kendoComboBox").value();
         var selectedItem = _.filter(customerList, function (x) {
-            return x.Membership_Number === selectedValue;
+            return x.membership_Number === selectedValue;
         })[0];
         if (selectedItem) {
 
-            $("#Customer_Name").val(selectedItem.Name);
-            $("#Customer_Address").val(selectedItem.Address);
-            $("#Customer_Vat").val(selectedItem.Vat);
-            $("#Customer_Mobile").val(selectedItem.Mobile1);
-            $("#membershipId").val(selectedItem.Membership_Number);
+            $("#Customer_Name").val(selectedItem.name);
+            $("#Customer_Address").val(selectedItem.address);
+            $("#Customer_Vat").val(selectedItem.vat);
+            $("#Customer_Mobile").val(selectedItem.mobile1);
+            $("#membershipId").val(selectedItem.membership_Number);
         } else {
             $("#Customer_Name").val("");
             $("#Customer_Address").val("");
@@ -1301,16 +1799,27 @@
         $("#memberSaveButtonSH").hide();
 
     });
-    $("input[name='flatDiscount'],#flat_discount").on('change', updateFlatDiscount);
+    $("input[name='flatDiscount'],#flat_discount").on('change', calcTotal);
     $("input[name='flatDiscount'],#flat_discount").on('keypress', function (e) {
         var $this = $(e.currentTarget);
-        if (e.keyCode === 13 && $this.val() !== "" && $this.val().length > 1) {
+        if (e.keyCode === 13 && $this.val() !== "" && $this.val().length > 0) {
             $this.trigger("change");
             e.preventDefault();
         }
+        else if (e.keyCode === 13 && $this.val() === "")
+            e.preventDefault();
 
     });
-
+    $("#commissionPercent").on('keypress', function (e) {
+        var $this = $(e.currentTarget);
+        if (e.keyCode === 13 && $this.val() !== "" && $this.val().length > 0) {
+            $("#CalculateCommission").trigger("click");
+            e.preventDefault();
+        }
+        else if (e.keyCode === 13 && $this.val() === "")
+            e.preventDefault();
+    });
+    $("#CalculateCommission").on("click", calcCommission);
     $("#convert-sales-tax").on('click', function (e) {
         e.preventDefault();
         convertSalesTax();
@@ -1325,11 +1834,19 @@
     });
     $("#membershipId").on('change', membershipIdChangeEvent);
     $("#memberAddButton").on('click', addNewMemberClickEvent);
+
+
+
     $("#memberSaveButton").on("click", saveNewMemberClickEvent);
     //$(window).resize(function () {
     //    adjustTableWidth();
     //});
-    //Public Output
+
+    // #endregion ALL EVENTS **************//
+
+
+
+    //********* PUBLIC OUTPUT **************//
     return {
         init: init,
         delete_row: delete_row,
@@ -1340,4 +1857,5 @@
 
 
 })();
+
 invoice.init();

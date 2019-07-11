@@ -102,7 +102,16 @@
                             <input type="hidden" asp-for="Total_Net_Amount" />
                             <input type="hidden" asp-for="Total_Quantity" />
                             <input type="hidden" asp-for="Total_Vat" />
+                            <input type="hidden" asp-for="TaxableAmount" />
+                            <input type="hidden" asp-for="NonTaxableAmount" />
+                            <input type="hidden" asp-for="Tender_Amount" />
+                            <input type="hidden" asp-for="Change_Amount" />
                             <input type="hidden" asp-for="Remarks" />
+                            <input type="hidden" asp-for="MemberId" />
+                            <input type="hidden" id="Customer_Id" />
+                            <input type="hidden" asp-for="Reference_Number_Id" />
+                            <input type="hidden" asp-for="Payment_Mode" />
+
 
                             <div class="br"></div>
                             <label id="errorMessage" class="text-danger"></label>
@@ -135,7 +144,8 @@
                                 <div class="form-row">
                                     <label class="control-label col-md-1">Bill To</label>
                                     <div class="form-group col-md-2">
-                                        @Html.DropDownList("Customer_Id", new SelectList(ViewBag.Customer, "Membership_Number", "Name"), "", new { @class = "form-control form-control-sm" })
+                                        @*@Html.DropDownList("Customer_Id", new SelectList(ViewBag.Customer, "Membership_Number", "Name"), "", new { @class = "form-control form-control-sm" })*@
+                                        <input id="BillTo_Name" class="form-control form-control-sm" readonly />
                                     </div>
                                     <div class="horizontal-form-padding">
 
@@ -250,7 +260,7 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
 
-        var customerList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Customer));
+        @*var customerList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Customer));*@
         var salesInvoiceTmpData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
     </script>
 

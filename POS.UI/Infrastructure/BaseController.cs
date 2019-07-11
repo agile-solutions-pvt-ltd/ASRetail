@@ -1,13 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using POS.Core;
 using POS.DTO;
 using POS.UI.Helper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -16,21 +11,21 @@ namespace Microsoft.AspNetCore.Mvc
 
         public EntityCore _context;
         public IConfiguration Configuration { get; }
-       
+
         //public BaseController()
         //{
 
         //}
         public BaseController(EntityCore Context, IConfiguration configuration)
         {
-            Configuration = configuration;           
+            Configuration = configuration;
             _context = Context;
             setContext();
         }
 
         public void setContext()
         {
-            
+
             Config config = ConfigJSON.Read();
             if (!string.IsNullOrEmpty(config.Environment))
             {
@@ -41,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc
                     options.UseSqlServer(con);
                     _context = new EntityCore(options.Options);
                 }
-               
+
             }
         }
     }

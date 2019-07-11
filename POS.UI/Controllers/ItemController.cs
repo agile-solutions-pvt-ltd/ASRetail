@@ -1,24 +1,27 @@
-﻿using System;
+﻿using Hangfire;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using POS.Core;
+using POS.DTO;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using POS.Core;
-using POS.DTO;
 
 namespace POS.UI.Controllers
 {
-   [Authorize]
+    [Authorize]
     public class ItemController : Controller
     {
         private readonly EntityCore _context;
-
-        public ItemController(EntityCore context)
+        private IMemoryCache _cache;
+        public ItemController(EntityCore context, IMemoryCache memoryCache)
         {
             _context = context;
+            _cache = memoryCache;
         }
 
         // GET: Item
@@ -154,11 +157,88 @@ namespace POS.UI.Controllers
         }
 
 
-        public IQueryable<ItemViewModel> GetItems(string code)
-        {           
-            var items= _context.ItemViewModel.Where(x=> x.Code == code ||  x.Bar_Code == code);
-            return items;
+        public IEnumerable<ItemViewModel> GetItems(string code)
+        {
+            
+            IList<ItemViewModel> items;
+            _cache.TryGetValue("ItemViewModel", out items);
+            if (items == null)
+            {
+                //update cache
+                BackgroundJob.Enqueue(() => UpdateCacheItemViewModel());
+                items = GetItemsRawData(code).ToList();
+            }
+
+            var result = items.Where(x => x.Code == code || x.Bar_Code == code);
+            return result;
         }
 
+
+        public IEnumerable<ItemViewModel> GetItemsRawData(string code)
+        {
+
+            string query = @"SELECT 
+        cast(1 as bigint) as SN,
+       i.Code,i.Id as ItemId,i.Name,i.KeyInWeight,
+       ISNULL(b.BarCode,0) as Bar_Code,b.Unit,  
+       ISNULL(q.Quantity,0) as Quantity, 
+	   ISNULL(d.DiscountPercent,0) as Discount,d.MinimumQuantity as DiscountMinimumQuantity, d.StartDate as DiscountStartDate, d.EndDate as DiscountEndDate, d.StartTime as DiscountStartTime, d.EndTime as DiscountEndTime,d.SalesType as DiscountType,d.SalesCode as DiscountSalesGroupCode,d.ItemType as DiscountItemType, d.Location as DiscountLocation,ISNULL(p.AllowLineDiscount,1) as Is_Discountable,i.No_Discount,
+	   ISNULL(p.UnitPrice,0) as Rate,p.MinimumQuantity as RateMinimumQuantity, p.StartDate as RateStartDate, p.EndDate as RateEndDate, p.SalesType, p.SalesCode,
+	   i.Is_Vatable,
+	   s.INITIAL as Location, s.CustomerPriceGroup as LocationwisePriceGroup
+FROM ITEM i
+left join ITEM_BARCODE b on i.Code = b.ItemCode
+left join ITEM_QUANTITY q on i.Code = q.ItemCode
+left join ITEM_PRICE p on i.Code = p.ItemCode
+left join ITEM_DISCOUNT d on i.Code = d.ItemCode Or (d.ItemType = 'Item Disc. Group' and  d.ItemCode =  i.DiscountGroup)
+cross join STORE s
+where b.BarCode = {0} or i.Code = {0}";
+
+            IEnumerable<ItemViewModel> data = _context.ItemViewModel.FromSql(query, code).ToList();
+            return data;
+
+        }
+
+
+        public void UpdateCacheItemViewModel()
+        {
+            bool IsItemCacheInProcess = false;
+            IList<ItemViewModel> itemsTotal = new List<ItemViewModel>();
+            IList<ItemViewModel> itemsTemp = new List<ItemViewModel>();
+            _cache.TryGetValue("IsItemCacheInProcess", out IsItemCacheInProcess);
+
+            if (!IsItemCacheInProcess)
+            {
+                _cache.Set("IsItemCacheInProcess", true);
+                //update cache
+
+                //split data to 1lakh and save to cache
+                int count = 1000, skip = 0;
+                _context.ChangeTracker.AutoDetectChangesEnabled = false;
+                for (; ; )
+                {
+                    try
+                    {
+                        itemsTemp = _context.ItemViewModel.AsNoTracking().Skip(skip).Take(count).ToList();
+                        if (itemsTemp.Count() == 0 && itemsTotal.Count() > 0)
+                        {
+                            _cache.Set("ItemViewModel", itemsTotal);
+                            break;
+                        }
+
+                        itemsTotal = itemsTotal.Concat(itemsTemp).ToList();
+                        skip = skip + count;
+
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+                }
+
+            }
+
+
+        }
     }
 }

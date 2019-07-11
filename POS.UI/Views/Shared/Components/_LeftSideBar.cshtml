@@ -1,4 +1,12 @@
-﻿<nav class="pcoded-navbar">
+﻿
+<style>
+    /* for menu permission */
+/*.role-menu{
+    display:none;
+}*/
+</style>
+
+<nav class="pcoded-navbar">
     <div class="sidebar_toggle"><a href="#"><i class="icon-close icons"></i></a></div>
     <div class="pcoded-inner-navbar main-menu">
         <ul class="pcoded-item pcoded-left-item">
@@ -16,15 +24,23 @@
                 <a asp-controller="SalesInvoice" asp-action="Landing" asp-route-id="">
                     <span class="pcoded-micon"><i class="ti-home"></i></span>
                     <span class="pcoded-mtext" data-i18n="nav.dash.main">Sales Invoice</span>
-                    <span class="pcoded-badge label label-primary">Ctrl+Alt+i</span>
-                   
+                    <span class="pcoded-badge label label-primary">Ctrl+Alt+I</span>
+
                 </a>
             </li>
             <li class="pcoded role-menu Tax_Invoice">
                 <a asp-controller="SalesInvoice" asp-action="Landing" asp-route-mode="tax">
                     <span class="pcoded-micon"><i class="ti-layout"></i></span>
                     <span class="pcoded-mtext" data-i18n="nav.page_layout.main">Tax Invoice</span>
-                    <span class="pcoded-badge label label-primary">Ctrl+Alt+t</span>
+                    <span class="pcoded-badge label label-primary">Ctrl+Alt+T</span>
+                    <span class="pcoded-mcaret"></span>
+                </a>
+            </li>
+            <li class="pcoded role-menu Credit_Landing">
+                <a asp-controller="SalesInvoice" asp-action="CrLanding">
+                    <span class="pcoded-micon"><i class="ti-layout-cta-right"></i></span>
+                    <span class="pcoded-mtext" data-i18n="nav.navigate.main">Credit Invoice</span>
+
                     <span class="pcoded-mcaret"></span>
                 </a>
             </li>
@@ -32,9 +48,11 @@
                 <a asp-controller="CreditNote" asp-action="Index">
                     <span class="pcoded-micon"><i class="ti-layout-cta-right"></i></span>
                     <span class="pcoded-mtext" data-i18n="nav.navigate.main">Credit Note</span>
+                    <span class="pcoded-badge label label-primary">Ctrl+Alt+C</span>
                     <span class="pcoded-mcaret"></span>
                 </a>
             </li>
+
             <li class="pcoded role-menu Cash_Denomination">
                 <a asp-controller="Denomination" asp-action="Index">
                     <span class="pcoded-micon"><i class="ti-layout-cta-right"></i></span>
@@ -133,7 +151,7 @@
                     </li>
                 </ul>
             </li>
-            <li class="pcoded-hasmenu role-menu Report">
+            <li class="pcoded-hasmenu role-menu Reports">
                 <a href="javascript:void(0)">
                     <span class="pcoded-micon"><i class="ti-email"></i></span>
                     <span class="pcoded-mtext" data-i18n="nav.email.main">Reports</span>
@@ -161,7 +179,21 @@
                             <span class="pcoded-mcaret"></span>
                         </a>
                     </li>
-                  
+                    <li class="role-menu Sales_VAT_Book">
+                        <a asp-controller="Reports" asp-action="salesvatbook">
+                            <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                            <span class="pcoded-mtext">Sales Vat Book</span>
+                            <span class="pcoded-mcaret"></span>
+                        </a>
+                    </li>
+                    <li class="role-menu Invoice_Material_View">
+                        <a asp-controller="Reports" asp-action="invoicematerial">
+                            <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                            <span class="pcoded-mtext">Invoice Material</span>
+                            <span class="pcoded-mcaret"></span>
+                        </a>
+                    </li>
+
                 </ul>
             </li>
         </ul>
@@ -175,10 +207,11 @@
                     <span class="pcoded-mcaret"></span>
                 </a>
             </li>*@
-            <li class="role-menu Help">
+            <li class="role-menu Shortcuts">
                 <a asp-controller="Settings" asp-action="Shortcuts">
                     <span class="pcoded-micon"><i class="ti-layout-list-post"></i></span>
                     <span class="pcoded-mtext" data-i18n="nav.submit-issue.main">ShortCuts</span>
+                    <span class="pcoded-badge label label-primary">Ctrl+F1</span>
                     <span class="pcoded-mcaret"></span>
                 </a>
             </li>

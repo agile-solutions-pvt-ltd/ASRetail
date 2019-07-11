@@ -22150,7 +22150,7 @@ body.dark-layout {
 }
 
     .pcoded .pcoded-navbar .pcoded-item > li {
-        display: block;
+        /*display: block;*/
         list-style: outside none none;
         margin: 0;
         padding: 0;
@@ -22171,8 +22171,7 @@ body.dark-layout {
         padding: 0;
     }
 
-        .pcoded .pcoded-navbar .pcoded-item .pcoded-hasmenu .pcoded-submenu li {
-            display: block;
+        .pcoded .pcoded-navbar .pcoded-item .pcoded-hasmenu .pcoded-submenu li {            
             list-style: outside none none;
             margin: 0;
             padding: 0;

@@ -1,7 +1,7 @@
 ﻿const invoiceLanding = (() => {
     //********* Private Variables **************//
-
-
+    let defaultMembershipId = "POS";
+    let searchLocal = false;
 
     //********* Private Methos *****************//
     let init = () => {
@@ -19,20 +19,75 @@
                 if (GetUrlParameters("mode") === undefined)
                     history.pushState({}, null, window.location.origin + "/SalesInvoice/Landing");
                 else
-                    history.pushState({}, null, window.location.origin + "/SalesInvoice/Landing?Mode=")+ GetUrlParameters("mode");
-                
+                    history.pushState({}, null, window.location.origin + "/SalesInvoice/Landing?Mode=") + GetUrlParameters("mode");
+
         }, 3000);
 
         $('#memberTable').hide();
+
+        //initialize table to kendo grid
+        //grid = $("#memberTable").kendoGrid({
+        //    height: CalcGridHeight() - 160,
+        //    editable: true,
+        //    sortable: false,
+        //    scrollable: true,
+
+        //});
+
+        //new logic
+        // debugger;
+
+        //var customerListString = JSON.stringify(customerList);
+        //var customerListChunkArry = customerListString.match(/(.{1,500000})/g);
+        //localStorage.setItem("customerListCount", customerListChunkArry.length);
+        //_.each(customerListChunkArry, function (v, k) {
+
+        //    localStorage.setItem("customerList_" + (k + 1), v);
+        //});
+
+
+        ////now get item
+        //var customerFinalDataString = "";
+        //for (i = 0; i <= localStorage.getItem("customerListCount"); i++) {
+        //    customerFinalDataString += localStorage.getItem("customerList_" + i);
+        //}
+        ////localStorage.getItem("customerList", JSON.stringify(customerList));
+        //var cus = JSON.parse(customerFinalDataString);
     };
-    let SearchMember = (info) => {       
-        let members = _.filter(customerList, (x) => {
-            let checkMemberId = x.Membership_Number === info;
-            let checkMemberName = x.Name.toLowerCase().indexOf(info) > -1;
-            let checkPhone = x.Mobile1.toLowerCase().indexOf(info) > -1;
-            return checkMemberId || checkMemberName || checkPhone;
+    let SearchMember = (info) => {
+        info = info.toLowerCase();
+        if (searchLocal === false) {
+            SearchMemberServer(info);
+        }
+        else {
+            let members = _.filter(customerList, (x) => {
+                let checkMemberId = !_.isEmpty(x.Membership_Number) && x.Membership_Number.toLowerCase() === info;
+                let checkMemberName = !_.isEmpty(x.Name) && x.Name.toLowerCase().indexOf(info) > -1;
+                let checkPhone = !_.isEmpty(x.Mobile1) && x.Mobile1.toLowerCase().indexOf(info) > -1;
+                let checkOldMemberId = !_.isEmpty(x.Membership_Number_Old) && x.Membership_Number_Old.toLowerCase() === info;
+                let checkBarCode = !_.isEmpty() && x.Barcode.toLowerCase() === info;
+                return checkMemberId || checkMemberName || checkPhone || checkOldMemberId || checkBarCode;
+            });
+            DisplayMember(members);
+        }
+    };
+    let SearchMemberServer = (info) => {
+       
+        var page = GetUrlParameters();
+        var url = window.location.origin + "/Customer/SearchMembership?text=" + info;
+        if (page === "CrLanding")
+            url += "&customer=Credit";
+        $.ajax({
+            method: "POST",
+            url: url,
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            complete: function (result) {
+                if (result.status === 200) {
+                    DisplayMember(result.responseJSON);
+                }
+            }
         });
-        DisplayMember(members);
     };
     let DisplayMember = (list) => {
         $('#memberTable tbody').html('');
@@ -45,10 +100,10 @@
             var selected = k === 0 ? "class='selected'" : "";
             var html = '<tr ' + selected + '>' +
                 '<td>' + (k + 1).toString() + '</td>' +
-                '<td class="membership-id">' + v.Membership_Number + '</td>' +
-                '<td>' + v.Name + '</td>' +
-                '<td>' + v.Mobile1 + '</td>' +
-                '<td><input type="button" class="btn btn-success btn-sm" onclick="invoiceLanding.SelectMember(' + v.Membership_Number + ');" value="Select" /></td>' +
+                '<td class="membership-id">' + v.membership_Number + '</td>' +
+                '<td>' + v.name + '</td>' +
+                '<td>' + v.mobile1 + '</td>' +
+                '<td><input type="button" class="btn btn-success btn-sm" onclick="invoiceLanding.SelectMember(\'' + v.membership_Number + '\');" value="Select" /></td>' +
                 '</tr>';
             $('#memberTable').append(html);
         });
@@ -80,7 +135,7 @@
         $("#membership-panel").toggle();
         if ($("#membership-panel").is(":visible"))
             $("#Customer_Name").focus();
-        else 
+        else
             $(".search-input").focus();
     };
     let SaveMember = () => {
@@ -97,8 +152,9 @@
                 data: JSON.stringify(membership),
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",
-                complete: function (result) {                
+                complete: function (result) {
                     if (result.status === 200) {
+                        debugger;
                         SelectMember(result.responseJSON.membership.membership_Number);
                     }
                     else if (result.status === 409) {
@@ -119,32 +175,35 @@
             message: "Are you sure our customer doesn't want membership ?",
             buttons: {
                 cancel: {
-                    label: 'Sure',
+                    label: 'Go Back',
                     className: 'btn-warning'
                 },
                 confirm: {
-                    label: 'Go Back',
+                    label: 'Sure',
                     className: 'btn-success'
                 }
             },
             callback: function (result) {
-                
-                if (!result) {
+
+                if (result) {
                     var url = window.location.origin;
                     if (GetUrlParameters("mode") === undefined)
-                        url += "/SalesInvoice";
+                        url += "/SalesInvoice?M=" + defaultMembershipId;
                     else
-                        url += "/SalesInvoice?Mode=" + GetUrlParameters("mode");
+                        url += "/SalesInvoice?M= " + defaultMembershipId + "&Mode=" + GetUrlParameters("mode");
                     window.location.href = url;
                 }
-               
+                else {
+                    $(".search").focus();
+                }
+
             }
         });
 
 
 
 
-       
+
     };
     let AssignKeyEvent = () => {
         Mousetrap.bindGlobal('enter', function () {
@@ -152,13 +211,21 @@
                 var membershipId = $('#memberTable tbody tr.selected').find(".membership-id").text();
                 SelectMember(membershipId);
             }
+            $(".bootbox-cancel").trigger("click");
+            $(".search").focus();
         });
         Mousetrap.bindGlobal('up', function () {
             if ($('#memberTable tbody tr').length > 0) {
                 var selectedRow = $('#memberTable tbody tr.selected');
                 if ($('#memberTable tbody tr:first.selected')[0] === undefined) {
                     selectedRow.removeClass("selected");
+                    selectedRow.removeClass("active");
                     selectedRow.prev().addClass("selected");
+                    selectedRow.prev().addClass("active");
+
+                    //var y = $(window).scrollTop();  //your current y position on the page
+                    //if (y < 500)
+                    //    $(window).scrollTop(y - 20);
                 }
                 return false;
 
@@ -169,7 +236,16 @@
                 var selectedRow = $('#memberTable tbody tr.selected');
                 if ($('#memberTable tbody tr:last.selected')[0] === undefined) {
                     selectedRow.removeClass("selected");
+                    selectedRow.removeClass("active");
                     selectedRow.next().addClass("selected");
+                    selectedRow.next().addClass("active");
+                    selectedRow.next().find(".membership-id").select();
+
+                    //make little bit scroll
+                    //debugger;
+                    //var y = $(window).scrollTop();  //your current y position on the page
+                    //if (y > 500)
+                    //    $(window).scrollTop(y + 20);
                 }
                 return false;
             }
@@ -179,7 +255,7 @@
 
         Mousetrap.bindGlobal('shift+enter', function (e) {
             e.preventDefault(); e.stopPropagation();
-            $(".bootbox-cancel").trigger("click");
+            $(".bootbox-accept").trigger("click");
         });
 
     };

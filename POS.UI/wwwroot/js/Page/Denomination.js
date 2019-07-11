@@ -30,6 +30,12 @@
         $("#Date").trigger('change');
 
         calcAmount();
+
+        //make edit denomination uneditable
+        
+        $('#detail-form :input').attr('readonly', 'readonly');
+        $("#print").removeAttr('readonly');
+        $(".total").attr("readonly", "readonly");
     };
 
     let calcAmount = () => {
@@ -130,6 +136,15 @@
     });
 
 
+    $("#print").on('click', function () {
+        var data = {
+            DenominationData: denominationData,
+            Store: store
+        };
+        printer.PrintDenomination(data, function () {
+
+        });
+    });
 
     //output
     return {

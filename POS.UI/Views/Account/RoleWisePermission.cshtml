@@ -109,6 +109,13 @@
                                             <div class="form-group">
                                                 <div class="checkbox">
                                                     <label>
+                                                        <input asp-for="roleWiseUserPermission.Sales_Rate_Commission_Right" /> @Html.DisplayNameFor(model => model.roleWiseUserPermission.Sales_Rate_Commission_Right)
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="checkbox">
+                                                    <label>
                                                         <input asp-for="roleWiseUserPermission.Credit_Bill_Pay" /> @Html.DisplayNameFor(model => model.roleWiseUserPermission.Credit_Bill_Pay)
                                                     </label>
                                                 </div>
@@ -137,7 +144,7 @@
 
                                     </div>
                                     <div class="br"></div>
-                                    <div class="form-row">
+                                    <div class="form-row sr-only">
                                         <div class="form-group col-md-12">
                                             <input type="button" id="Save" value="Save Changes" class="btn btn-block btn-primary" />
                                         </div>

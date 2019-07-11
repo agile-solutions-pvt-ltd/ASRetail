@@ -45,36 +45,45 @@
         }
 
 
-        /*for item table */
+          /*for item table */
         .col-sm-sn {
             max-width: 5%;
             flex: 0 0 5%;
             padding-left: 15px;
+            display:none;
         }
 
         .col-sm-particulars {
-            max-width: 16%;
-            flex: 0 0 16%;
+             padding-left: 15px;
+            max-width: 15%;
+            flex: 0 0 15%;
         }
 
         .col-sm-qty {
-            max-width: 7%;
-            flex: 0 0 7%;
+            max-width: 6%;
+            flex: 0 0 6%;
         }
 
         .col-sm-rate {
-            max-width: 10%;
-            flex: 0 0 10%;
+            max-width: 9%;
+            flex: 0 0 9%;
+        }
+        .col-sm-promo-disc{
+            max-width: 9%;
+            flex: 0 0 9%;
         }
 
         .col-sm-total {
-            max-width: 10%;
-            flex: 0 0 10%;
+            max-width: 9%;
+            flex: 0 0 9%;
         }
 
         .total-quantity {
             margin-top: -15px;
             margin-bottom: -6px;
+        }
+        .display-none{
+            display:none;
         }
     </style>
 
@@ -127,7 +136,7 @@
                     : {dateBS} ({dateAD})
                 </div>
             </div>
-            <div class="row pb-1">
+            <div class="row pb-1 {customerhide}">
                 <div class="col-sm-2">
                     Bill To
                 </div>
@@ -135,7 +144,7 @@
                     : {billToName}
                 </div>
             </div>
-            <div class="row pb-1">
+            <div class="row pb-1 {customerhide}">
                 <div class="col-sm-2">
                     Address
                 </div>
@@ -143,7 +152,7 @@
                     : {billToAddress}
                 </div>
             </div>
-            <div class="row pb-1">
+            <div class="row pb-1 {customerhide}">
                 <div class="col-sm-2">
                     Mobile
                 </div>
@@ -184,6 +193,9 @@
                 <div class="col-sm-rate text-right">
                     Rate
                 </div>
+                <div class="col-sm-promo-disc text-right">
+                    P.Dis
+                </div>
                 <div class="col-sm-total text-right">
                     Amount
                 </div>
@@ -209,6 +221,9 @@
                 </div>
                 <div class="col-sm-rate text-right">
                     {ItemRate}
+                </div>
+                <div class="col-sm-promo-disc text-right">
+                    {ItemPromoDiscount}
                 </div>
                 <div class="col-sm-total text-right">
                     {ItemTotal}
@@ -236,6 +251,7 @@
                     {totalQuantity}
                 </div>
                 <div class="col-sm-rate text-right"></div>
+                <div class="col-sm-promo-disc text-right"></div>
                 <div class="col-sm-total text-right"></div>
             </div>
 
@@ -347,7 +363,7 @@
             <div class="row pb-1">
                 @*<div class="col-sm-1"></div>*@
                 <div class="col-sm-6 text-justify">
-                    Total Saving in the bill: <strong>Rs. {totalSaving}</strong>
+                    Saving in this bill: <strong>Rs. {totalSaving}</strong>
                 </div>
             </div>
         </div>

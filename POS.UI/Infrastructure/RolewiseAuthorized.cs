@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json;
 using POS.DTO;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -25,15 +24,28 @@ namespace Microsoft.AspNetCore.Authorization
                     new RouteValueDictionary { { "controller", "Account" }, { "action", "Login" } });
                 return;
             }
-            var menus = JsonConvert.DeserializeObject<List<RoleWiseMenuPermission>>(filterContext.HttpContext.Session.GetString("Menus"));
-            var controllerName = filterContext.RouteData.Values["controller"].ToString();
-            var actionName = filterContext.RouteData.Values["action"].ToString();
-           // string url = "/" + controllerName + "/" + actionName;
-            if (!menus.Where(s => s.Menu.Controller == controllerName).Any())
+            
+            if (!filterContext.HttpContext.User.IsInRole("Administrator"))
             {
-                filterContext.Result = new RedirectToRouteResult(
-                    new RouteValueDictionary { { "controller", "Account" }, { "action", "Unauthorized" } });
-                return;
+                if (filterContext.HttpContext.Session.GetString("Menus") != null)
+                {
+                    var menus = JsonConvert.DeserializeObject<List<RoleWiseMenuPermission>>(filterContext.HttpContext.Session.GetString("Menus"));
+                    var controllerName = filterContext.RouteData.Values["controller"].ToString();
+                    var actionName = filterContext.RouteData.Values["action"].ToString();
+                    // string url = "/" + controllerName + "/" + actionName;
+                    if (!menus.Where(s => s.Menu.Controller == controllerName).Any())
+                    {
+                        filterContext.Result = new RedirectToRouteResult(
+                            new RouteValueDictionary { { "controller", "Account" }, { "action", "Unauthorized" } });
+                        return;
+                    }
+                }
+                else
+                {
+                    filterContext.Result = new RedirectToRouteResult(
+                        new RouteValueDictionary { { "controller", "Account" }, { "action", "Login" } });
+                    return;
+                }
             }
         }
     }

@@ -1,0 +1,366 @@
+﻿@{
+    ViewData["Title"] = "Denomination";
+}
+
+
+
+<div id="printbody">
+    <style>
+        *, html, body {
+            background-color: #fff;
+            font-family: "FontA11", FontB21, SaxMono,Consolas;
+            font-size: 16px;
+            color: #999;
+        }
+
+        .font-store {
+            font-size: 20px;
+        }
+
+        .items {
+            font-size: 15px;
+        }
+
+        hr.style {
+            border-top: 1px dotted #8c8b8b;
+            margin-top: 2px;
+            margin-bottom: 2px;
+        }
+
+        hr.style-mt {
+            border-top: 1px dotted #8c8b8b;
+            margin-top: 2px;
+        }
+
+        hr.style-mb {
+            border-top: 1px dotted #8c8b8b;
+            margin-bottom: 2px;
+        }
+
+
+
+        /*for header*/
+        .header {
+            margin-left: -10px;
+        }
+
+
+        /*for item table */
+        .col-sm-sn {
+            max-width: 5%;
+            flex: 0 0 5%;
+            padding-left: 15px;
+            display:none;
+        }
+
+        .col-sm-particulars {
+             padding-left: 15px;
+            max-width: 15%;
+            flex: 0 0 15%;
+        }
+
+        .col-sm-qty {
+            max-width: 6%;
+            flex: 0 0 6%;
+        }
+
+        .col-sm-rate {
+            max-width: 9%;
+            flex: 0 0 9%;
+        }
+        .col-sm-promo-disc{
+            max-width: 9%;
+            flex: 0 0 9%;
+        }
+
+        .col-sm-total {
+            max-width: 9%;
+            flex: 0 0 9%;
+        }
+
+        .total-quantity {
+            margin-top: -15px;
+            margin-bottom: -6px;
+        }
+        .display-none{
+            display:none;
+        }
+
+        .col-sm-1{
+              max-width: 10%;
+            flex: 0 0 10%;
+        }
+    </style>
+
+    @* fonts *@
+    @*<basefont face="arial, verdana, sans-serif">*@
+
+    @* Store Info *@
+    <center class="header">
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="make-center font-store">
+                    {companyName}
+                </div>
+                <div class="make-center">
+                    {storeLocation}
+                </div>
+                <div class="make-center">
+                    VAT No: {vatNumber}
+                </div>
+                <div class="make-center">
+                    {invoiceType}
+                </div>
+                <div class="make-center">
+                    {copyName}
+                </div>
+            </div>
+        </div>
+    </center>
+    <div class="clearfix"><br /></div>
+
+
+    @* Billing Info *@
+    <div class="row">
+        <div class="col-sm-12">
+
+
+            <div class="row pb-1">
+                <div class="col-sm-2">
+                    Date
+                </div>
+                <div class="col-sm-9">
+                    : {dateBS} ({dateAD})
+                </div>
+            </div>
+            <div class="row pb-1">
+                <div class="col-sm-2">
+                    Terminal
+                </div>
+                <div class="col-sm-9">
+                    : {terminalName}
+                </div>
+            </div>
+            <div class="row pb-1">
+                <div class="col-sm-2">
+                    User
+                </div>
+                <div class="col-sm-9">
+                    : {cashierName}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <hr class="style-4 style-mb" />
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+   
+    @* Total Calculation *@
+    <div class="row">
+        <div class="col-sm-11">
+            <div class="row pb-1 {cardHide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; C-Card
+                </div>
+                <div class="col-sm-1 text-right">
+                    =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {card}
+                </div>
+            </div>
+            <div class="row pb-1 {creditHide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; Credit
+                </div>
+                <div class="col-sm-1 text-right">
+                    =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {credit}
+                </div>
+            </div>
+            <div class="row pb-1 {creditNoteHide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; Credit Note
+                </div>
+                <div class="col-sm-1 text-right">
+                    =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {creditNote}
+                </div>
+            </div>
+            <div class="row pb-1 {ICHide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; IC X
+                </div>
+                <div class="col-sm-1 text-right">
+                    {IC} =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {ICTotal}
+                </div>
+            </div>
+            <div class="row pb-1 {RS1000Hide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; 1000 X
+                </div>
+                <div class="col-sm-1 text-right">
+                    {RS1000} =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {RS1000Total}
+                </div>
+            </div>
+            <div class="row pb-1 {RS500Hide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; 500 X
+                </div>
+                <div class="col-sm-1 text-right">
+                    {RS500} =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {RS500Total}
+                </div>
+            </div>
+            <div class="row pb-1 {RS250Hide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; 250 X
+                </div>
+                <div class="col-sm-1 text-right">
+                    {RS250} =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {RS250Total}
+                </div>
+            </div>
+            <div class="row pb-1 {RS100Hide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; 100 X
+                </div>
+                <div class="col-sm-1 text-right">
+                    {RS100} =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {RS100Total}
+                </div>
+            </div>
+            <div class="row pb-1 {RS50Hide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; 50 X
+                </div>
+                <div class="col-sm-1 text-right">
+                    {RS50} =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {RS50Total}
+                </div>
+            </div>
+            <div class="row pb-1 {RS25Hide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; 25 X
+                </div>
+                <div class="col-sm-1 text-right">
+                    {RS25} =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {RS25Total}
+                </div>
+            </div>
+            <div class="row pb-1 {RS20Hide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; 20 X
+                </div>
+                <div class="col-sm-1 text-right">
+                    {RS20} =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {RS20Total}
+                </div>
+            </div>
+            <div class="row pb-1 {RS10Hide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; 10 X
+                </div>
+                <div class="col-sm-1 text-right">
+                    {RS10} =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {RS10Total}
+                </div>
+            </div>
+            <div class="row pb-1 {RS5Hide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; 5 X
+                </div>
+                <div class="col-sm-1 text-right">
+                    {RS5} =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {RS5Total}
+                </div>
+            </div>
+            <div class="row pb-1 {RS2Hide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; 2 X
+                </div>
+                <div class="col-sm-1 text-right">
+                    {RS2} =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {RS2Total}
+                </div>
+            </div>
+            <div class="row pb-1 {RS1Hide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; 1 X
+                </div>
+                <div class="col-sm-1 text-right">
+                    {RS1} =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {RS1Total}
+                </div>
+            </div>
+            <div class="row pb-1 {RS05Hide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; 0.5 X
+                </div>
+                <div class="col-sm-1 text-right">
+                    {RS05} =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {RS05Total}
+                </div>
+            </div>
+
+            <div class="row pb-1">
+                <div class="col-sm-1"></div>
+                <div class="col-sm-5">
+                    <hr class="style" />
+                </div>
+            </div>
+            <div class="row pb-1">
+                <div class="col-sm-3 text-right">
+                    &nbsp; Total
+                </div>
+                <div class="col-sm-1 text-right">
+                    =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {GrandTotal}
+                </div>
+            </div>
+        </div>
+    </div>
+
+   
+</div>
+
+

@@ -34,6 +34,18 @@
                     <div class="card-block">
                         @*Your content here*@
                         <div id="grid"></div>
+                        <script type="x/kendo-template" id="page-template">
+                            <div class="page-template">
+                                <div class="header">
+                                    <div style="float: right">Page #: pageNum # of #: totalPages #</div>
+
+                                </div>
+                                @*<div class="watermark">KENDO UI</div>*@
+                                <div class="footer">
+                                    Page #: pageNum # of #: totalPages #
+                                </div>
+                            </div>
+                        </script>
                     </div>
                 </div>
             </div>
@@ -45,12 +57,62 @@
 
 
 @section Scripts {
-
     <script>
 
+         var store = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Store));
+        /*
+            This demo renders the grid in "DejaVu Sans" font family, which is
+            declared in kendo.common.css. It also declares the paths to the
+            fonts below using <tt>kendo.pdf.defineFont</tt>, because the
+            stylesheet is hosted on a different domain.
+        */
+        kendo.pdf.defineFont({
+            "DejaVu Sans": "https://kendo.cdn.telerik.com/2016.2.607/styles/fonts/DejaVu/DejaVuSans.ttf",
+            "DejaVu Sans|Bold": "https://kendo.cdn.telerik.com/2016.2.607/styles/fonts/DejaVu/DejaVuSans-Bold.ttf",
+            "DejaVu Sans|Bold|Italic": "https://kendo.cdn.telerik.com/2016.2.607/styles/fonts/DejaVu/DejaVuSans-Oblique.ttf",
+            "DejaVu Sans|Italic": "https://kendo.cdn.telerik.com/2016.2.607/styles/fonts/DejaVu/DejaVuSans-Oblique.ttf",
+            "WebComponentsIcons": "https://kendo.cdn.telerik.com/2017.1.223/styles/fonts/glyphs/WebComponentsIcons.ttf"
+        });
+    </script>
+    <script>
+        function printInvoice(evt) {
+            var invoiceData = $("#grid").data("kendoGrid").dataItem(evt.closest("tr"));
+            var data = {
+                invoiceData: invoiceData,
+                storeData: store,
+                copy: true,
+                paymentMode :  ""
+            };
+            printer.PrintCreditNoteInvoice(data, function () {
+                //update printcount
+                //debugger;
+                //$.ajax({
+                //    url: window.location.origin + "/Print/UpdatePrintCount?invoiceNumber=" + data.invoiceData.credit_Note_Number,
+                //    type: 'POST',
+                //    complete: function (result) {
+                //    }
+                //});
+            });
+        }
         $(document).ready(function () {
-           
+
             $("#grid").kendoGrid({
+                toolbar: ["pdf", "excel"],
+                pdf: {
+                    allPages: true,
+                    avoidLinks: true,
+                    paperSize: "A4",
+                    margin: { top: "2cm", left: "1cm", right: "1cm", bottom: "1cm" },
+                    landscape: true,
+                    repeatHeaders: true,
+                    template: $("#page-template").html(),
+                    scale: 0.8
+                },
+                excel: {
+                    fileName: "CREDIT MEMO Report.xlsx",
+                    proxyURL: window.location.origin + "/Reports/Excel_Export_Save",
+                    filterable: true
+                },
                 dataSource: {
                     type: "json",
                     transport: {
@@ -61,11 +123,11 @@
                             fields: {
                                 trans_Date_Ad: { type: "date" },
                                 total_Gross_Amount: { type: "number" },
-                                total_Discount: { type: "number" },                               
+                                total_Discount: { type: "number" },
                                 total_Net_Amount: { type: "number" }
                             }
                         },
-                        data: function (data) {                           
+                        data: function (data) {
                             return data;
                         }
                     },
@@ -75,14 +137,14 @@
                     //    field: "trans_Date_Ad", aggregates: [
                     //        { field: "trans_Date_Bs", aggregate: "count" },
                     //        { field: "total_Gross_Amount", aggregate: "sum" },
-                    //        { field: "total_Discount", aggregate: "sum" },                           
+                    //        { field: "total_Discount", aggregate: "sum" },
                     //        { field: "total_Net_Amount", aggregate: "sum" }
                     //    ],
                     //    dir: "desc"
                     //},
                     aggregate: [
                         { field: "total_Gross_Amount", aggregate: "sum" },
-                        { field: "total_Discount", aggregate: "sum" },                        
+                        { field: "total_Discount", aggregate: "sum" },
                         { field: "total_Net_Amount", aggregate: "sum" }
                     ],
                 },
@@ -90,7 +152,7 @@
                 filterable: true,
                 sortable: true,
                 pageable: true,
-                resizable:true,
+                resizable: true,
 
                 columns: [
                     {
@@ -99,7 +161,7 @@
                         filterable: false,
 
                     },
-                     {
+                    {
                         title: "Ref Number",
                         field: "reference_Number",
                         filterable: false,
@@ -155,7 +217,7 @@
                         template: "#: CurrencyFormat(total_Discount) #",
                         groupFooterTemplate: "#: CurrencyFormat(sum) #",
                         footerTemplate: "#: CurrencyFormat(sum) #",
-                    },                   
+                    },
                     {
                         field: "total_Net_Amount",
                         title: "Net Amount",
@@ -172,18 +234,27 @@
                         groupFooterTemplate: "#: CurrencyFormat(sum) #",
                         footerTemplate: "#: CurrencyFormat(sum) #",
                     },
-                     {
+                    {
                         title: "Credit Note",
                         field: "credit_Note",
                         filterable: false,
 
                     },
-                      {
+                    {
                         title: "Status",
                         field: "remarks",
                         filterable: false,
 
                     },
+                    {
+
+                        title: "Action",
+                        attributes: {
+                            "class": "p-1 text-right"
+                        },
+                        template: '<a href="javascript:void(0)" class="print" onclick="printInvoice(this)">Print</a>'
+
+                    }
                 ]
             });
             $(".k-grid-content").css("overflow-y", "hidden").mCustomScrollbar();

@@ -50,6 +50,9 @@ namespace POS.DTO
         public decimal? Total_Gross_Amount { get; set; } = 0;
         [Display(Name = "Total Discount")]
         public decimal? Total_Discount { get; set; } = 0;
+        public decimal TOTAL_DISCOUNT_EXC_VAT { get; set; }
+        public decimal MembershipDiscount { get; set; } = 0;
+        public decimal PromoDiscount { get; set; } = 0;
         public decimal Total_Bill_Discount { get; set; } = 0;
         [Display(Name = "Total Vat")]
         public decimal? Total_Vat { get; set; } = 0;

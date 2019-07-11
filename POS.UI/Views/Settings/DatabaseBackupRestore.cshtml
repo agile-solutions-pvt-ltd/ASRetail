@@ -1,0 +1,134 @@
+﻿
+@{
+    ViewData["Title"] = "Database Backup Restore";
+}
+
+<div class="page-wrapper">
+    <div class="page-header">
+        <div class="page-header-title">
+            <h4>@ViewData["Title"]</h4>
+           
+        </div>
+        <div class="page-header-breadcrumb">
+            <ul class="breadcrumb-title">
+                <li class="breadcrumb-item">
+                    <a href="index.html">
+                        <i class="icofont icofont-home"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">Settings</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">@ViewData["Title"]</a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+    <div class="page-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-block">
+                        @*Your content here*@
+                        <pre>//***** Database Backup ********//</pre>
+                        <div class="row">
+                            <label class="col-md-2">Backup Path</label>
+                            <div class="col-md-4">
+                                <input type="text" id="backupPath" class="form-control form-control-sm" value="D:\POSBackup.bak" />
+                            </div>
+                        </div>
+                        <div class="br"></div>
+                        <div class="row">
+                            <label class="col-md-2"></label>
+                            <div class="col-md-4 ">
+                                <input type="button" id="BackupDatabase" class="btn btn-block btn-success" value="Backup" />
+
+                            </div>
+                        </div>
+
+
+
+
+
+                        <div class="br pt-5"></div>
+                        <pre>//***** Restore Database ********//</pre>
+                        <div class="row">
+                            <label class="col-md-2">Restore Path</label>
+                            <div class="col-md-4">
+                                <input type="text" id="RestorePath" class="form-control form-control-sm" value="D:\POSBackup.bak" />
+                            </div>
+                        </div>
+                        <div class="br"></div>
+                        <div class="row">
+                            <label class="col-md-2">New Database Name</label>
+                            <div class="col-md-4">
+                                <input type="text" id="DatabaseName" class="form-control form-control-sm" />
+                            </div>
+                        </div>
+                        <div class="br"></div>
+                        <div class="row">
+                            <label class="col-md-2"></label>
+                            <div class="col-md-4 ">
+                                <input type="button" id="RestoreDatabase" class="btn btn-block btn-success" value="Restore" />
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section scripts{
+    <script>
+      
+
+
+        $("#BackupDatabase").on("click", function () {
+            $("#BackupDatabase").attr("disabled", true);
+            $.ajax({
+                method: "POST",
+                url: "/Settings/DataBaseBackUp?path=" + $("#backupPath").val(),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                complete: function (result) {
+                    $("#BackupDatabase").attr("disabled", false);
+                    if (result.status === 200) {
+                        StatusNotify("success", "Database Backup Successfully !!")
+                    }
+                    else
+                         StatusNotify("error", "Error occur, try again later")
+                }
+            });
+        });
+
+        $("#RestoreDatabase").on("click", function () {
+            if ($("#DatabaseName").val() === "") {
+                $("#DatabaseName").focus();
+                return false;
+            }
+            $("#BackupDatabase").attr("disabled", true);
+            $.ajax({
+                method: "POST",
+                url: "/Settings/DataBaseRestore?path=" + $("#RestorePath").val() + "&dbName=" + $("#DatabaseName").val(),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                complete: function (result) {
+                    $("#BackupDatabase").attr("disabled", false);
+                    if (result.status === 200) {
+                        StatusNotify("success", "Database Restored Successfully !!")
+                    }
+                    else
+                         StatusNotify("error", "Error occur, try again later")
+                }
+            });
+        });
+    </script>
+
+}

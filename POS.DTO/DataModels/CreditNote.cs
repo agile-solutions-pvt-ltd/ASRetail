@@ -18,6 +18,7 @@ namespace POS.DTO
         public string Credit_Note_Number { get; set; }
         [Display(Name ="Ref No.")]
         public string Reference_Number { get; set; }
+        public string Reference_Number_Id { get; set; }
         [Display(Name = "Date")]
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:MM/dd/yyyy}")]
         public DateTime? Trans_Date_Ad { get; set; }
@@ -29,7 +30,7 @@ namespace POS.DTO
         public string Terminal { get; set; }
         [Display(Name = "Bill To")]
         public string Customer_Id { get; set; }
-        public int? MemberId { get; set; }
+        public string MemberId { get; set; }
         [Display(Name = "Name")]
         public string Customer_Name { get; set; }
         [Display(Name = "Vat")]
@@ -46,6 +47,8 @@ namespace POS.DTO
         public int? Total_Quantity { get; set; }
         public decimal? Total_Gross_Amount { get; set; }
         public decimal? Total_Discount { get; set; }
+        public decimal MembershipDiscount { get; set; } = 0;
+        public decimal PromoDiscount { get; set; } = 0;
         public decimal? Total_Vat { get; set; }
         public decimal TaxableAmount { get; set; }
         public decimal NonTaxableAmount { get; set; }
@@ -55,6 +58,15 @@ namespace POS.DTO
         [Required,Display(Name ="Credit Note Remarks")]
         public string Credit_Note { get; set; }
         public string Remarks { get; set; }
+        public string Payment_Mode { get; set; }
+        public decimal Tender_Amount { get; set; }
+        public decimal Change_Amount { get; set; }
+
+
+        public bool IsNavSync { get; set; }
+        public int SyncErrorCount { get; set; } = 0;
+        public DateTime? NavSyncDate { get; set; }
+
 
         public ICollection<CreditNoteItems> CreditNoteItems { get; set; }
 

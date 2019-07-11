@@ -1,15 +1,11 @@
 ﻿using POS.DTO;
-using POS.UI.Helper;
 using RestSharp;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 
 namespace POS.UI.Sync
 {
-  
+
     public static class NAV
     {
         public static RestClient NAVClient(string url, Config config)
@@ -26,6 +22,7 @@ namespace POS.UI.Sync
             {
                 Authenticator = new RestSharp.Authenticators.NtlmAuthenticator(credential)
             };
+            client.Timeout = 1200000; //20 minute
             return client;
         }
 

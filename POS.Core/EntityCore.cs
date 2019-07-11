@@ -24,6 +24,7 @@ namespace POS.Core
         public virtual DbSet<ItemCategory> ItemCategory { get; set; }
         public virtual DbSet<ItemGroup> ItemGroup { get; set; }
         public virtual DbSet<ItemType> ItemType { get; set; }
+        public virtual DbSet<ItemFOC> ItemFOC { get; set; }
         public virtual DbSet<SalesInvoice> SalesInvoice { get; set; }
         public virtual DbSet<SalesInvoiceItems> SalesInvoiceItems { get; set; }
         public virtual DbSet<SalesInvoiceTmp> SalesInvoiceTmp { get; set; }
@@ -60,7 +61,7 @@ namespace POS.Core
         public virtual DbSet<NavIntegrationService> NavIntegrationService { get; set; }
 
         public virtual DbSet<TerminalMapping> TerminalMapping { get; set; }
-
+        public virtual DbSet<InvoicePrint> InvoicePrint { get; set; }
 
         //protected override void OnModelCreating(ModelBuilder modelBuilder)
         //{

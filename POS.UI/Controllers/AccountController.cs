@@ -1,22 +1,19 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using POS.Core;
 using POS.DTO;
 using POS.UI.Helper;
-using static Microsoft.AspNetCore.Hosting.Internal.HostingApplication;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace POS.UI.Controllers
 {
@@ -64,6 +61,7 @@ namespace POS.UI.Controllers
         public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
         {
             ViewData["ReturnUrl"] = null;
+            _logger.LogInformation("access login page");
             if (ModelState.IsValid)
             {
                 //first try to login with username
@@ -80,9 +78,11 @@ namespace POS.UI.Controllers
                 }
                 if (result.Succeeded)
                 {
-                   // HttpContext.User = await _signInManager.CreateUserPrincipalAsync(user);
+                    // HttpContext.User = await _signInManager.CreateUserPrincipalAsync(user);
                     //first check username already loggedin
                     Config config = ConfigJSON.Read();
+                    config.Environment = "1 success";
+                    ConfigJSON.Write(config);
                     if (!User.Identity.IsAuthenticated && config.LoggedInUsers.Contains(user.UserName))
                     {
                         //ModelState.AddModelError(string.Empty, "You're currently logged in to another system !!");
@@ -98,18 +98,20 @@ namespace POS.UI.Controllers
                     //get user role
                     var role = _context.UserViewModel.FirstOrDefault(x => x.UserName == user.UserName);
                     //save to session 
-                    HttpContext.Session.SetString("Menus", JsonConvert.SerializeObject(_context.RoleWiseMenuPermission.Where(x=>x.RoleId == role.Role)));
+                    HttpContext.Session.SetString("Menus", JsonConvert.SerializeObject(_context.RoleWiseMenuPermission.Where(x => x.RoleId == role.Role).Include(x => x.Menu)));
 
                     if (model.TerminalId != 0)
                     {
-                        HttpContext.Session.SetString("Terminal", JsonConvert.SerializeObject(model.TerminalId));
-                        ((ClaimsIdentity)User.Identity).AddClaim(new Claim("Terminal", model.TerminalId.ToString()));
-                        ((ClaimsIdentity)User.Identity).AddClaim(new Claim("TerminalName", model.TerminalName.ToString()));
+                        HttpContext.Session.SetString("TerminalId", model.TerminalId.ToString());
+                        HttpContext.Session.SetString("Terminal", model.TerminalName);
+                        await _userManager.AddClaimAsync(user, new Claim("Terminal", model.TerminalId.ToString()));
+                        await _userManager.AddClaimAsync(user, new Claim("TerminalName", model.TerminalName.ToString()));
+
                     }
                     else
                     {
                         //check if user required terminal
-                      
+
                         //var roleName = User.FindFirstValue(ClaimTypes.Role);
                         //var role = _roleManager.FindByNameAsync(roleName);
                         var rolePermission = _context.RoleWisePermission.FirstOrDefault(x => x.RoleId == role.RoleId);
@@ -124,16 +126,22 @@ namespace POS.UI.Controllers
                         {
                             //select default terminal
                             var terminal = _context.Terminal.FirstOrDefault();
-                            HttpContext.Session.SetString("Terminal", JsonConvert.SerializeObject(terminal.Id));
-                            ((ClaimsIdentity)User.Identity).AddClaim(new Claim("Terminal", terminal.Id.ToString()));
-                            ((ClaimsIdentity)User.Identity).AddClaim(new Claim("TerminalName", terminal.Name.ToString()));
+                            if (terminal != null)
+                            {
+                                HttpContext.Session.SetString("TerminalId", terminal.Id.ToString());
+                                HttpContext.Session.SetString("Terminal", terminal.Name.ToString());
+                                await _userManager.AddClaimAsync(user, new Claim("Terminal", terminal.Id.ToString()));
+                                await _userManager.AddClaimAsync(user, new Claim("TerminalName", terminal.Name.ToString()));
+                            }
 
                         }
                     }
-                    if (!string.IsNullOrEmpty(returnUrl))
+                    config.Environment = "successfully login";
+                    ConfigJSON.Write(config);
+                    if (!string.IsNullOrEmpty(returnUrl) && returnUrl != "/")
                         return RedirectToLocal(returnUrl);
                     else
-                        return RedirectToAction("Landing", "SalesInvoice");
+                        return RedirectToAction("Landing", "SalesInvoice", new { mode = "tax" });
                 }
                 if (result.RequiresTwoFactor)
                 {
@@ -821,7 +829,7 @@ namespace POS.UI.Controllers
 
             var role = _roleManager.FindByNameAsync(roleName);
             var roleId = role.Result.Id;
-            IList<RoleWiseMenuPermission> permission = _context.RoleWiseMenuPermission.Where(x => x.RoleId == roleId).Include(x => x.Menu).ToList();
+            IList<RoleWiseMenuPermission> permission = _context.RoleWiseMenuPermission.Where(x => x.RoleId == roleId || x.RoleId == roleName).Include(x => x.Menu).ToList();
 
 
             HttpContext.Session.SetString("Menus", JsonConvert.SerializeObject(permission));

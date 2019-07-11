@@ -29,6 +29,7 @@ namespace POS.DTO
         public bool? Is_Member { get; set; }
         public int? Member_Id { get; set; }
         public string Membership_Number { get; set; }
+        public string Membership_Number_Old { get; set; }
         public string Barcode { get; set; }
         public DateTime? Dob { get; set; }
         public string Dob_Bs { get; set; }
@@ -40,8 +41,7 @@ namespace POS.DTO
         public string Designation { get; set; }
         public DateTime? Registration_Date { get; set; } = DateTime.Now;
         public string Validity_Period { get; set; }
-        public DateTime? Validity_Date { get; set; }
-        public int? Membership_Scheme { get; set; }
+        public DateTime? Validity_Date { get; set; }        
         public string Reference_By { get; set; }
         public string Created_By { get; set; }
         public DateTime? Created_Date { get; set; } = DateTime.Now;
@@ -51,5 +51,6 @@ namespace POS.DTO
 
         public string CustomerPriceGroup { get; set; }
         public string CustomerDiscGroup { get; set; }
+        public string MembershipDiscGroup { get; set; }
     }
 }

@@ -17,11 +17,96 @@
         //update total net amount format
         calcVat();
 
+        //var getCustomerBaseUrl = window.location.origin + "/Customer/";
+        //var getCustomerUrl = getCustomerBaseUrl + "GetCustomer?MembershipNumber=" + membershipNumber;
+        //var dataSource = new kendo.data.DataSource({
+        //    transport: {
+        //        read: function (options) {
+        //            if (options.data !== undefined && options.data.filter !== undefined && options.data.filter.filters.length > 0) {
+        //                getMembershipUrl = getMembershipUrlBase + "GetMembership?text=" + options.data.filter.filters[0].value;
+        //            }
+        //            else if (loadedAll) {
+        //                getMembershipUrl = getMembershipUrlBase + "GetMembership";
+        //            }
+        //            $.ajax({
+        //                type: 'GET',
+        //                url: getMembershipUrl + "",
+        //                contentType: 'application/json; charset=utf-8',
+        //                dataType: 'json',
+        //                complete: function (data) {
+
+        //                    if (data.status === 200) {
+        //                        customerList = data.responseJSON;
+
+        //                        options.success(data.responseJSON);
+
+        //                        if (loadedAll === false) {
+        //                            loadedAll = true;
+
+        //                            getMembershipUrl = getMembershipUrlBase + "/GetMembership";
+        //                            //dataSource.fetch();
+        //                            var customerMultiselect = $("#Customer_Id").data("kendoComboBox");
+        //                            customerMultiselect.input.attr("readonly", true);
+        //                            //customerMultiselect.input.attr("disabled", "disabled");
+        //                            $(".k-icon").remove();
+        //                            customerMultiselect.setDataSource(dataSource);
+        //                            customerMultiselect.dataSource.options.serverFiltering = true;
+        //                            // customerMultiselect.dataSource.read();
+        //                        }
+        //                    }
+        //                    else {
+        //                        options.error(data.responseJSON);
+        //                    }
+
+        //                }
+        //            });
+        //        }
+        //    },
+        //    //serverFiltering:true
+        //});
+        //$("#Customer_Id").kendoComboBox({
+        //    dataSource: dataSource,
+        //    dataTextField: "name",
+        //    dataValueField: "membership_Number",
+        //    filter: "contains",
+        //    suggest: true,
+        //    index: 1,
+        //    dataBound: function () {
+
+        //        $("#membershipId").trigger("change");
+        //    }
+
+        //});
+
+        $("#customer").kendoComboBox({
+            placeholder: "Select customer",
+            dataTextField: "name",
+            dataValueField: "membership_Number",
+            filter: "contains",
+            autoBind: false,
+            minLength: 3,
+            dataSource: {
+                type: "json",
+                serverFiltering: true,
+                transport: {
+                    read: {
+                        url: window.location.origin + "/Customer/GetCreditCustomerr"
+                    }
+                }
+            }
+        });
+
+
+
+
+        //select cash textbox bydefault
+        $("#cashAmount").focus();
+
     };
     let roundUpTotalAmount = (mode) => {
         //roundup concept
         // $("#totalNetAmountSpan").text(parseFloat($("#totalNetAmountSpan").text()).toFixed(0));
-       
+
         let amount = 0;
         if (mode !== undefined && mode === "cash")
             amount = parseFloat(CurrencyUnFormat($("#totalPayableAmount").text())).toFixed(0);
@@ -31,19 +116,35 @@
 
     };
     let calcDiscount = () => {
+
         var totalGrossAmount = parseFloat(CurrencyUnFormat($("#totalNetAmountSpan").text()));
         var promoDiscount = parseFloat(CurrencyUnFormat($("#promoDiscountSpan").text()));
-        var loyaltyDiscount = 0, vat = 0;
+        var loyaltyDiscount = parseFloat(CurrencyUnFormat($("#loyaltyDiscountSpan").text()));
+        var vat = 0;
         if (promoDiscount === 0) {
-            loyaltyDiscount = totalGrossAmount * loyaltyDiscountPercent / 100;
-
             $("#promoDiscount").hide();
-            $("#loyaltyDiscount").show();
         } else {
             $("#promoDiscount").show();
-            $("#loyaltyDiscount").hide();
         }
+
+        if (loyaltyDiscount === 0) {
+            $("#loyaltyDiscount").hide();
+        } else {
+            $("#loyaltyDiscount").show();
+        }
+
+        //if (promoDiscount === 0) {
+        //    loyaltyDiscount = totalGrossAmount * loyaltyDiscountPercent / 100;
+
+        //    $("#promoDiscount").hide();
+        //    $("#loyaltyDiscount").show();
+        //} else {
+        //    $("#promoDiscount").show();
+        //    $("#loyaltyDiscount").hide();
+        //}
         vat = parseFloat(CurrencyUnFormat($("#vatSpan").text()));
+        if ($("#Trans_Mode").val() !== "Tax")
+            vat = 0;
         var totalPayableAmount = totalGrossAmount - promoDiscount - loyaltyDiscount + vat;
 
 
@@ -98,7 +199,7 @@
             $(this).find(".sn").text((i + 1).toString());
         });
     };
-    let calcVat = () => {       
+    let calcVat = () => {
         if ($("#Trans_Mode").val() === "Tax") {
             $("#vatSpan").text(CurrencyFormat($("#vatSpan").text()));
             $("#Vat13").show();
@@ -179,27 +280,36 @@
     };
     let handleBackButtonEvent = () => {
         if (!_.isEmpty(getUrlParameters())) {
+
             var id = getUrlParameters();
-            window.location.href = window.location.origin + "/SalesInvoice/Index/" + id;
+            var member = GetUrlParameters("M");
+            window.location.href = window.location.origin + "/SalesInvoice/Index/" + id + "?M=" + member;
         }
     };
     let getUrlParameters = () => {
+
         var sPageURL = window.location.href;
         var indexOfLastSlash = sPageURL.lastIndexOf("/");
 
-        if (indexOfLastSlash > 0 && sPageURL.length - 1 !== indexOfLastSlash)
-            return sPageURL.substring(indexOfLastSlash + 1);
+        if (indexOfLastSlash > 0 && sPageURL.length - 1 !== indexOfLastSlash) {
+            var totalUrl = sPageURL.substring(indexOfLastSlash + 1);
+            var onlyId = totalUrl.substring(0, totalUrl.indexOf("?"));
+            return onlyId;
+        }
         else
             return 0;
     };
     let customerChangeEvent = () => {
-        var selectedValue = $('#customer').find(":selected").val();
-        var selectedItem = _.filter(customerList, function (x) {
-            return x.Code === selectedValue;
-        })[0];
+        var customerDropdown = $("#customer").data("kendoComboBox");
+        var selectedItem = customerDropdown.dataItem();
+        debugger;
+        //var selectedValue = $('#customer').find(":selected").val();
+        //var selectedItem = _.filter(customerList, function (x) {
+        //    return x.Code === selectedValue;
+        //})[0];
         if (selectedItem) {
-            $("#customerPan").text(selectedItem.Vat);
-            $("#customerAddress").text(selectedItem.Address);
+            $("#customerPan").text(selectedItem.vat);
+            $("#customerAddress").text(selectedItem.address);
         } else {
             $("#customerPan").text("");
             $("#customerAddress").text("");
@@ -230,15 +340,38 @@
             else {
                 $("#credit").remove();
             }
+
+            paymentMethodForWholesaleCustomer();
+
         });
+    };
+
+    let paymentMethodForWholesaleCustomer = () => {
+        debugger;
+        if (customerList[0].CustomerPriceGroup === "WSP" || customerList[0].Type === "Credit") {
+            $("#cash").remove();
+            $("#card").remove();
+            $("#creditNote").remove();
+
+            //trigger credit
+            $(".payment-mode-panel").hide();
+            $("#credit-panel").show();
+
+            //select default customer           
+            //make readonly
+            var customerMultiselect = $("#customer").data("kendoComboBox");
+            customerMultiselect.value(customerList[0].Membership_Number);
+            customerMultiselect.input.attr("readonly", true);
+            $(".k-icon.k-clear-value.k-i-close").remove();
+        }
     };
     let PaymentMethodClickEvent = (evt) => {
         evt.preventDefault();
         $this = $(evt.currentTarget);
         let selectedMode = $this.data("mode");
-        
+
         calcAll(selectedMode);
-            
+
         $(".payment-mode-panel").hide();
         $("#" + selectedMode + "-panel").show();
 
@@ -307,21 +440,26 @@
             $("#cashAmount").focus();
         });
 
-        Mousetrap.bindGlobal('ctrl+end', function (e) {
+        Mousetrap.bindGlobal(['ctrl+end', 'end'], function (e) {
             e.preventDefault(); e.stopPropagation();
             SaveBill();
         });
 
+        Mousetrap.bindGlobal('enter', function (e) {
+            $(".bootbox-cancel").trigger("click");
+
+        });
+
         Mousetrap.bindGlobal('shift+enter', function (e) {
             e.preventDefault(); e.stopPropagation();
-            $(".bootbox-cancel").trigger("click");
+            $(".bootbox-accept").trigger("click");
         });
 
 
     };
     let SaveBill = () => {
         //some validation
-       
+
         if (parseFloat(CurrencyUnFormat($("#changeAmount").text())) < 0) {
             bootbox.alert("Tender amount is less then bill amount !!");
             return false;
@@ -333,14 +471,13 @@
 
 
         let invoiceId = $("#Invoice_Id").val();
+        debugger;
         let data = [];
-
-
         $.each(table.rows, function (i, v) {
             let mode = $(this).find(".trans_mode").text();
             let account = $(this).find(".account").data("account");
-            // let amount = CurrencyUnFormat($(this).find(".table-amount").text());
-            let amount = $("#TotalNetAmount").val();
+            let amount = CurrencyUnFormat($(this).find(".table-amount").text());
+            //let amount = $("#TotalNetAmount").val();
 
             data.push({
                 Invoice_Id: invoiceId,
@@ -369,9 +506,10 @@
             contentType: "application/json; charset=utf-8",
             complete: function (result) {
                 if (result.status === 200) {
-                    printer.PrintInvoice(result.responseJSON, function () {
-                        window.location.href = "/SalesInvoice/Landing?StatusMessage=" + result.responseJSON.statusMessage;
-                    });
+                    //printer.PrintInvoice(result.responseJSON, function () {                       
+                    //   window.location.href = "/SalesInvoice/Landing?StatusMessage=" + result.responseJSON.statusMessage;
+                    //});
+                    window.location.href = "/SalesInvoice/Landing?StatusMessage=" + result.responseJSON.statusMessage;
 
 
                 }
@@ -415,17 +553,17 @@
                     message: "Your Credit Amount is greater than this Transaction Amount, Do you really want to proceed ?",
                     buttons: {
                         cancel: {
-                            label: 'Proceed',
+                            label: 'Go Back',
                             className: 'btn-warning'
                         },
                         confirm: {
-                            label: 'Go Back',
+                            label: 'Proceed',
                             className: 'btn-success'
                         }
                     },
                     callback: function (result) {
 
-                        if (!result) {
+                        if (result) {
                             addRow("Credit Note", "Credit Note", $("#creditNoteAmount").val());
                             $("#creditNoteAmount").val("0.00");
                             $("#creditNoteAmount").focus();

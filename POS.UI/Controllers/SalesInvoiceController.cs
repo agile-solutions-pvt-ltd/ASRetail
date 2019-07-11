@@ -1,33 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Management;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using POS.Core;
-using POS.Core.Helpers;
 using POS.DTO;
 using POS.UI.Sync;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace POS.UI.Controllers
 {
-    [RolewiseAuthorized]
+    [Authorize]
     public class SalesInvoiceController : Controller
     {
         private readonly EntityCore _context;
         private readonly IMapper _mapper;
-        public SalesInvoiceController(EntityCore context, IMapper mapper)
+        private IMemoryCache _cache;
+        public SalesInvoiceController(EntityCore context, IMapper mapper, IMemoryCache memoryCache)
         {
             _context = context;
             _mapper = mapper;
+            _cache = memoryCache;
         }
 
 
@@ -56,7 +55,20 @@ namespace POS.UI.Controllers
                 };
             }
             TempData["StatusMessage"] = StatusMessage;
-            ViewData["Customer"] = _context.Customer;
+
+
+            //for customer
+            //display only ismember data later
+            IList<Customer> customers;
+            if (!_cache.TryGetValue("Customer", out customers))
+            {
+                // Key not in cache, so get data.
+                customers = _context.Customer.Where(x => x.Is_Member == true).ToList();
+
+                _cache.Set("Customer", customers);
+            }
+            //ViewData["Customer"] = customers;
+
             return View(tmp);
         }
 
@@ -115,7 +127,7 @@ namespace POS.UI.Controllers
                 if (isExistOldSalesInvoice)
                 {
                     _context.SalesInvoiceTmp.Remove(oldData);
-                    BackgroundJob.Enqueue(() => _context.SaveChanges());
+                    _context.SaveChanges();
                 }
 
 
@@ -126,11 +138,11 @@ namespace POS.UI.Controllers
                 //else
                 //    return RedirectToAction("Billing", new { id = salesInvoiceTmp.Id });
                 //for api return
-                var param = HttpContext.Request.Query["M"].ToString();
+
                 if (salesInvoiceTmp.Trans_Type == "Hold")
-                    return Ok(new { redirectUrl = "/SalesInvoice" + param == null ? "" : "?M=" + param });
+                    return Ok(new { redirectUrl = "/SalesInvoice/Landing" });
                 else
-                    return Ok(new { RedirectUrl = "/SalesInvoice/Billing/" + salesInvoiceTmp.Id });
+                    return Ok(new { RedirectUrl = "/SalesInvoice/Billing/" + salesInvoiceTmp.Id + "?M=" + salesInvoiceTmp.MemberId });
             }
             return View(salesInvoiceTmp);
         }
@@ -139,13 +151,28 @@ namespace POS.UI.Controllers
         [HttpGet]
         public IActionResult Landing(string StatusMessage)
         {
-            //display only ismember data later
-            ViewData["Customer"] = _context.Customer.Where(x => x.Is_Member == true);
+            ////display only ismember data later
+            //IList<Customer> customers;
+            //if (!_cache.TryGetValue("Customer", out customers))
+            //{
+            //    // Key not in cache, so get data.
+            //    customers = _context.Customer.Where(x => x.Is_Member == true).ToList();
+
+            //    _cache.Set("Customer", customers);
+            //}
+            //ViewData["Customer"] = customers;
             TempData["StatusMessage"] = StatusMessage;
 
             return View(_context.Store.FirstOrDefault());
         }
 
+
+        [HttpGet]
+        public IActionResult CrLanding(string StatusMessage)
+        {
+            TempData["StatusMessage"] = StatusMessage;
+            return View(_context.Store.FirstOrDefault());
+        }
 
         [HttpPost]
         public async Task<IActionResult> Delete(Guid? id)
@@ -175,15 +202,24 @@ namespace POS.UI.Controllers
         {
             //for item Reference Data           
             List<string> barCodeList = _context.SalesInvoiceItemsTmp.Where(x => x.Invoice_Id == id).Select(x => x.Bar_Code).ToList();
-            var temp = _context.ItemViewModel.Where(x => barCodeList.Contains(x.Bar_Code));
+            IList<ItemViewModel> items;
+            if (!_cache.TryGetValue("ItemViewModel", out items))
+            {
+                // Key not in cache, so get data.
+                items = _context.ItemViewModel.ToList();
+
+                _cache.Set("ItemViewModel", items);
+            }
+            var temp = items.Where(x => barCodeList.Contains(x.Bar_Code));
             return Ok(temp);
         }
 
         [HttpGet]
         public IActionResult Billing(Guid id)
         {
-            ViewBag.SalesInvoiceTemp = _context.SalesInvoiceTmp.FirstOrDefault(x => x.Id == id);
-            ViewData["Customer"] = _context.Customer;
+            var salesInvoiceTMP = _context.SalesInvoiceTmp.FirstOrDefault(x => x.Id == id);
+            ViewBag.SalesInvoiceTemp = salesInvoiceTMP;
+            ViewData["Customer"] = _context.Customer.Where(x => x.Membership_Number == salesInvoiceTMP.MemberId);
             return View();
         }
 
@@ -269,11 +305,23 @@ namespace POS.UI.Controllers
                         VerifiedDate = DateTime.Now,
                         TransactionNumber = salesInvoice.Invoice_Number,
                         Remarks = "",
+                        TerminalId = Convert.ToInt32(HttpContext.Session.GetString("TerminalId")),
                         UserId = salesInvoice.Created_By
 
                     };
                     _context.Settlement.Add(settlement);
                 }
+
+                //save to print table
+                InvoicePrint print = new InvoicePrint()
+                {
+                    InvoiceNumber = salesInvoice.Invoice_Number,
+                    Type = salesInvoice.Trans_Type,
+                    FirstPrintedDate = DateTime.Now,
+                    FirstPrintedBy = User.Identity.Name,
+                    PrintCount = 1
+                };
+                _context.InvoicePrint.Add(print);
 
 
 
@@ -281,6 +329,14 @@ namespace POS.UI.Controllers
 
                 //if everything seems good, then delete salesInvoiceTmp
                 _context.Remove(salesInvoiceTmp);
+
+                //total amount excludevat
+                decimal totalRateExcludeVat = 0;
+                foreach (var i in salesInvoice.SalesInvoiceItems)
+                {
+                    totalRateExcludeVat += i.RateExcludeVat * i.Quantity.Value;
+                }
+                // salesInvoice.SalesInvoiceItems.Select(x => x.RateExcludeVat).Sum();
 
                 //save to invoiceMaterialview
                 InvoiceMaterializedView view = new InvoiceMaterializedView()
@@ -294,16 +350,16 @@ namespace POS.UI.Controllers
                     CustomerCode = salesInvoice.Customer_Id,
                     CustomerName = salesInvoice.Customer_Name,
                     Vatno = salesInvoice.Customer_Vat,
-                    Amount = salesInvoice.Total_Gross_Amount.Value,
-                    Discount = salesInvoice.Total_Discount.Value,
+                    Amount = totalRateExcludeVat,
+                    Discount = salesInvoice.TOTAL_DISCOUNT_EXC_VAT,
                     TaxableAmount = salesInvoice.TaxableAmount,
                     NonTaxableAmount = salesInvoice.NonTaxableAmount,
                     TaxAmount = salesInvoice.Total_Vat.Value,
                     TotalAmount = salesInvoice.Total_Net_Amount.Value,
                     IsBillActive = true,
-                    IsBillPrinted = false,
+                    IsBillPrinted = true,
+                    PrintedBy = User.Identity.Name,
                     PrintedTime = DateTime.Now,
-                    PrintedBy = "",
                     EnteredBy = salesInvoice.Created_By,
                     SyncStatus = "Not Started",
                     SyncedDate = DateTime.Now,
@@ -315,11 +371,14 @@ namespace POS.UI.Controllers
                 {
                     id = salesInvoice.Id.ToString(),
                     number = salesInvoice.Invoice_Number,
+                    postingno = salesInvoice.Invoice_Number,
                     orderDate = salesInvoice.Trans_Date_Ad.Value.ToString("yyyy-MM-dd"),
                     customerNumber = salesInvoice.MemberId,
                     customerName = salesInvoice.Customer_Name,
                     vatregistrationnumber = salesInvoice.Customer_Vat,
-                    locationcode = store.INITIAL
+                    locationcode = store.INITIAL,
+                    accountabilitycenter = store.INITIAL,
+                    assigneduserid = salesInvoice.Created_By
 
                 };
 
@@ -330,10 +389,10 @@ namespace POS.UI.Controllers
 
                 //*********** background task
                 //Send data to IRD
-               // BackgroundJob.Enqueue(() => SendDataToIRD(salesInvoice, store));
+                BackgroundJob.Enqueue(() => SendDataToIRD(salesInvoice, store));
                 //Send data to NAV
-               // NavPostData navPostData = new NavPostData(_context, _mapper);
-               // BackgroundJob.Enqueue(() => navPostData.PostSalesInvoice(navSalesInvoice));
+                NavPostData navPostData = new NavPostData(_context, _mapper);
+                BackgroundJob.Enqueue(() => navPostData.PostSalesInvoice(navSalesInvoice));
 
 
 
@@ -369,11 +428,12 @@ namespace POS.UI.Controllers
                 customer.Code = Guid.NewGuid().ToString();
                 customer.Member_Id = _context.Customer.Where(x => x.Is_Member == true && x.Member_Id != null).Select(x => x.Member_Id).DefaultIfEmpty(0).Max() + 1;
                 Store store = _context.Store.FirstOrDefault();
-                customer.Membership_Number = store.INITIAL + "-" + Convert.ToInt32(customer.Member_Id).ToString("00000");
+                customer.Membership_Number = store.INITIAL + "-" + Convert.ToInt32(customer.Member_Id).ToString("000000");
                 customer.Created_By = User.Identity.Name;
                 customer.Registration_Date = DateTime.Now;
-                customer.CustomerDiscGroup = "CATEGORY D";
-                customer.CustomerPriceGroup = "RETAIL";
+                customer.MembershipDiscGroup = "CATEGORY D";
+                customer.CustomerPriceGroup = "RSP";
+                customer.CustomerDiscGroup = "RSP";
                 _context.Add(customer);
                 _context.SaveChanges();
                 NavPostData navPost = new NavPostData(_context, _mapper);
@@ -393,7 +453,7 @@ namespace POS.UI.Controllers
         //api get salesinvoice
         public IActionResult GetInvoice(string invoiceNumber)
         {
-            SalesInvoice tmp = _context.SalesInvoice.Include(x => x.SalesInvoiceItems).FirstOrDefault(x => x.Invoice_Number == invoiceNumber);
+            SalesInvoice tmp = _context.SalesInvoice.Include(x => x.SalesInvoiceItems).FirstOrDefault(x => x.Invoice_Number == invoiceNumber || x.Invoice_Id.ToString("0000") == invoiceNumber);
             if (tmp == null)
                 return NotFound();
             //remove self reference object
@@ -402,9 +462,19 @@ namespace POS.UI.Controllers
                 {
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                 }));
-            return Ok(tmp);
+            var customer = _context.Customer.FirstOrDefault(x => x.Membership_Number == tmp.MemberId);
+            var invoiceBill = _context.SalesInvoiceBill.Where(x => x.Invoice_Number == invoiceNumber);
+
+            return Ok(new { invoiceData = tmp, customerData = customer, invoiceBillData = invoiceBill });
+
         }
 
+
+        public IActionResult GetFOCItem(string itemCode)
+        {
+            var focItem = _context.ItemFOC.Where(x => x.ItemForFOC == itemCode);
+            return Ok(focItem);
+        }
 
         //background function
         public void SendDataToIRD(SalesInvoice invoice, Store storeInfo)

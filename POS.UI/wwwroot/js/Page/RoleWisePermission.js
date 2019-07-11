@@ -54,7 +54,7 @@
         }
         for (i = 0; i < list.length; i += 1) {
             node = list[i];
-            if (node.parentId === "0" || node.parentId === null || node.parentId === undefined) {
+            if (node.parentId === 0 || node.parentId === null || node.parentId === undefined) {
                 roots.push(node);
             } else {
                 // if you have dangling branches check that map[node.parentId] exists
@@ -122,6 +122,7 @@
                 Sales_Discount_Line_Item: $("#roleWiseUserPermission_Sales_Discount_Line_Item").is(":checked"),
                 Sales_Discount_Flat_Item_Limit: $("#roleWiseUserPermission_Sales_Discount_Flat_Item_Limit").val() || 0,
                 Sales_Discount_Line_Item_Limit: $("#roleWiseUserPermission_Sales_Discount_Line_Item_Limit").val() || 0,
+                Sales_Rate_Commission_Right: $("#roleWiseUserPermission_Sales_Rate_Commission_Right").is(":checked"),
                 Sales_Rate_Edit: $("#roleWiseUserPermission_Sales_Rate_Edit").is(":checked"),
                 Credit_Bill_Pay: $("#roleWiseUserPermission_Credit_Bill_Pay").is(":checked"),
                 Credit_Note_Bill_Pay: $("#roleWiseUserPermission_Credit_Note_Bill_Pay").is(":checked"),

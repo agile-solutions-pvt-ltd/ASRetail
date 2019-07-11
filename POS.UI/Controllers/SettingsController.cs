@@ -1,44 +1,45 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Newtonsoft.Json;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using POS.Core;
 using POS.DTO;
 using POS.UI.Helper;
 using POS.UI.Sync;
+using System;
+using System.Linq;
+using System.Reflection;
 
 namespace POS.UI.Controllers
 {
-    [RolewiseAuthorized]
+    [Authorize]
     public class SettingsController : Controller
     {
         private readonly EntityCore _context;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IMapper _mapper;
-        public SettingsController(EntityCore context, IMapper mapper, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
+        private IMemoryCache _cache;
+        public IConfiguration Configuration { get; }
+        public SettingsController(EntityCore context, IConfiguration configuration, IMapper mapper, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, IMemoryCache memoryCache)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _context = context;
             _mapper = mapper;
+            _cache = memoryCache;
+            Configuration = configuration;
         }
 
         [HttpGet]
         public IActionResult Index()
         {
-          //  NavSync navSync = new NavSync(_context,_mapper);
-          //  Config config = ConfigJSON.Read();
-           // ViewData["Servers"] = _context.Company; // navSync.GetCompanySync();
-           // ViewData["Server"] = config.Environment;
+            //  NavSync navSync = new NavSync(_context,_mapper);
+            //  Config config = ConfigJSON.Read();
+            // ViewData["Servers"] = _context.Company; // navSync.GetCompanySync();
+            // ViewData["Server"] = config.Environment;
             return View();
         }
         [HttpPost]
@@ -56,7 +57,7 @@ namespace POS.UI.Controllers
 
         public IActionResult GetMenu()
         {
-            
+
             return Ok(_context.Menu.ToList());
         }
 
@@ -70,7 +71,7 @@ namespace POS.UI.Controllers
 
 
         public IActionResult PrintPage()
-        { 
+        {
             return View("InvoicePrint");
         }
 
@@ -83,7 +84,7 @@ namespace POS.UI.Controllers
         [HttpGet]
         public IActionResult SchedulerSetup()
         {
-            ViewData["Scheduler"] = ConfigJSON.Read();              
+            ViewData["Scheduler"] = ConfigJSON.Read();
             return View();
         }
 
@@ -101,7 +102,7 @@ namespace POS.UI.Controllers
         {
             if (!string.IsNullOrEmpty(name))
             {
-                NavSync sync = new NavSync(_context,_mapper, _userManager, _roleManager);
+                NavSync sync = new NavSync(_context, _mapper, _userManager, _roleManager, _cache);
                 Type t = sync.GetType();
                 MethodInfo method = t.GetMethod(name);
                 var result = (bool)method.Invoke(sync, null);
@@ -138,5 +139,29 @@ namespace POS.UI.Controllers
         }
 
 
+        public IActionResult DatabaseBackupRestore()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult DataBaseBackUp(string path)
+        {
+            string conStr = Configuration.GetConnectionString("DefaultConnection");
+            bool result = DatabaseHelper.BackupDatabase(path, conStr);
+            if (result)
+                return Ok();
+            else
+                return StatusCode(500);
+        }
+        public IActionResult DataBaseRestore(string dbName, string path)
+        {
+            string conStr = Configuration.GetConnectionString("DefaultConnection");
+            bool result = DatabaseHelper.RestoreDatabase(dbName, path, conStr);
+            if (result)
+                return Ok();
+            else
+                return StatusCode(500);
+        }
     }
 }

@@ -1,55 +1,127 @@
 ﻿@model IEnumerable<POS.DTO.SalesInvoice>
 
-    @{
+@{
     ViewData["Title"] = "Tax Invoice Reports";
-    }
+}
 
-    <div class="page-wrapper">
-        <div class="page-header">
-            <div class="page-header-title">
-                <h4>@ViewData["Title"]</h4>
+<div class="page-wrapper">
+    <div class="page-header">
+        <div class="page-header-title">
+            <h4>@ViewData["Title"]</h4>
 
-            </div>
-            <div class="page-header-breadcrumb">
-                <ul class="breadcrumb-title">
-                    <li class="breadcrumb-item">
-                        <a href="index.html">
-                            <i class="icofont icofont-home"></i>
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="#!">Report</a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="#!">@ViewData["Title"]</a>
-                    </li>
-
-                </ul>
-            </div>
         </div>
-        <div class="page-body">
-            <div class="row">
-                <div class="col-sm-12">
-                    <div class="card">
-                        <div class="card-block">
-                            @*Your content here*@
-                            <div id="grid"></div>
-                        </div>
+        <div class="page-header-breadcrumb">
+            <ul class="breadcrumb-title">
+                <li class="breadcrumb-item">
+                    <a href="index.html">
+                        <i class="icofont icofont-home"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">Report</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">@ViewData["Title"]</a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+    <div class="page-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-block">
+                        @*Your content here*@
+                        <div id="grid"></div>
+                        <script type="x/kendo-template" id="page-template">
+                            <div class="page-template">
+                                <div class="header">
+                                    <div style="float: right">Page #: pageNum # of #: totalPages #</div>
+
+                                </div>
+                                @*<div class="watermark">KENDO UI</div>*@
+                                <div class="footer">
+                                    Page #: pageNum # of #: totalPages #
+                                </div>
+                            </div>
+                        </script>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
 
 
 
-    @section Scripts {
-
+@section Scripts {
     <script>
-        
+
+         var store = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Store));
+        /*
+            This demo renders the grid in "DejaVu Sans" font family, which is
+            declared in kendo.common.css. It also declares the paths to the
+            fonts below using <tt>kendo.pdf.defineFont</tt>, because the
+            stylesheet is hosted on a different domain.
+        */
+        kendo.pdf.defineFont({
+            "DejaVu Sans": "https://kendo.cdn.telerik.com/2016.2.607/styles/fonts/DejaVu/DejaVuSans.ttf",
+            "DejaVu Sans|Bold": "https://kendo.cdn.telerik.com/2016.2.607/styles/fonts/DejaVu/DejaVuSans-Bold.ttf",
+            "DejaVu Sans|Bold|Italic": "https://kendo.cdn.telerik.com/2016.2.607/styles/fonts/DejaVu/DejaVuSans-Oblique.ttf",
+            "DejaVu Sans|Italic": "https://kendo.cdn.telerik.com/2016.2.607/styles/fonts/DejaVu/DejaVuSans-Oblique.ttf",
+            "WebComponentsIcons": "https://kendo.cdn.telerik.com/2017.1.223/styles/fonts/glyphs/WebComponentsIcons.ttf"
+        });
+    </script>
+    <script>
+        function printInvoice(evt) {
+            var invoiceData = $("#grid").data("kendoGrid").dataItem(evt.closest("tr"));
+            $.ajax({
+                url: window.location.origin + "/Print/GetPrintCount?invoiceNumber=" + invoiceData.invoice_Number,
+                type: 'POST',
+                complete: function (result) {
+                    debugger;
+                    if (result.status === 200)
+
+                        var data = {
+                            invoiceData: invoiceData,
+                            storeData: store,
+                            copy: result.responseJSON.printCount,
+                            paymentMode :  result.responseJSON.paymentMode
+                        };
+                    printer.PrintInvoice(data, function () {
+                        ////update printcount
+                        //$.ajax({
+                        //    url: window.location.origin + "/Print/UpdatePrintCount?invoiceNumber=" + data.invoiceData.invoice_Number,
+                        //    type: 'POST',
+                        //    complete: function (result) {
+                        //    }
+                        //});
+                    });
+                }
+            });
+
+
+        }
         $(document).ready(function () {
             $("#grid").kendoGrid({
+                 toolbar: ["pdf", "excel"],
+                pdf: {
+                    allPages: true,
+                    avoidLinks: true,
+                    paperSize: "A4",
+                    margin: { top: "2cm", left: "1cm", right: "1cm", bottom: "1cm" },
+                    landscape: true,
+                    repeatHeaders: true,
+                    template: $("#page-template").html(),
+                    scale: 0.8
+                },
+                excel: {
+                    fileName: "TAX INVOICE Report.xlsx",
+                    proxyURL: window.location.origin + "/Reports/Excel_Export_Save",
+                    filterable: true
+                },
                 dataSource: {
                     type: "json",
                     transport: {
@@ -92,18 +164,18 @@
                 filterable: true,
                 sortable: true,
                 pageable: true,
-                resizable:true,
+                resizable: true,
                 columns: [
                     {
                         title: "Invoice Number",
                         field: "invoice_Number",
-                        filterable: false,
+                        //filterable: false,
 
                     },
                     {
                         field: "trans_Date_Ad",
                         title: "Date",
-                        format: "{0:MM/dd/yyyy}",                       
+                        format: "{0:MM/dd/yyyy}",
                     }, {
                         field: "trans_Date_Bs",
                         title: "BS",
@@ -111,7 +183,7 @@
                             "class": "p-1 text-right"
 
                         },
-                         groupFotterAttributes: {
+                        groupFotterAttributes: {
                             "class": "p-1 text-right"
                         },
                         groupFooterTemplate: "Count: #: count #",
@@ -182,6 +254,15 @@
                         template: "#: CurrencyFormat(total_Net_Amount) #",
                         groupFooterTemplate: "#: CurrencyFormat(sum) #",
                         footerTemplate: "#: CurrencyFormat(sum) #",
+                    },
+                     {
+
+                        title: "Action",
+                        attributes: {
+                            "class": "p-1 text-right"
+                        },
+                        template: '<a href="javascript:void(0)" class="print" onclick="printInvoice(this)">Print</a>'
+
                     }
                 ]
             });
@@ -193,5 +274,5 @@
         });
 
     </script>
-    }
+}
 

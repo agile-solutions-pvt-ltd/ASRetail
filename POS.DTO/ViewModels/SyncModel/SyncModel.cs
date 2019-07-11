@@ -52,7 +52,11 @@ namespace POS.DTO
         public string VAT_Bus_Posting_Group { get; set; }
         public string generalbuspostinggrp { get; set; }
         public string Customer_Posting_Group { get; set; }
-       
+        public string Member_Disc_Group { get; set; }
+        public int SNo { get; set; }
+        public string Member_Barcode { get; set; }
+        public string Membership_ID { get; set; }
+
 
         public int Update_No { get; set; }
 
@@ -61,6 +65,25 @@ namespace POS.DTO
             address = new Address();
         }
     }
+
+    public class NavCustomerPOST{
+        public string id { get; set; }
+        public string number { get; set; }
+        public string displayName { get; set; }
+        public string phoneNumber { get; set; }
+        public string taxRegistrationNumber { get; set; }
+        public string Address { get; set; }
+        public string Customer_Disc_Group { get; set; }
+        public string Customer_Price_Group { get; set; }
+        public bool Is_Member { get; set; } = false;
+        public string Registration_Date { get; set; }
+        public string VAT_Bus_Posting_Group { get; set; }
+        public string generalbuspostinggrp { get; set; }
+        public string Customer_Posting_Group { get; set; }
+        public string Member_Disc_Group { get; set; }          
+        public string Membership_ID { get; set; }
+    }
+
 
 
     public class Address
@@ -82,6 +105,7 @@ namespace POS.DTO
         public int Update_No { get; set; }
         public bool Taxable { get; set; }
         public bool Key_In_Weight { get; set; }
+        public bool No_Discount { get; set; }
         public string itemdiscountgroup { get; set; }
 
 
@@ -100,6 +124,7 @@ namespace POS.DTO
 
     public class NavItemPrice
     {
+        public string Id { get; set; }
         public string Item_No { get; set; }
         public decimal Unit_Price { get; set; }
         public DateTime? Starting_Date { get; set; }
@@ -114,9 +139,11 @@ namespace POS.DTO
     }
     public class NavItemDiscount
     {
+        public string Id { get; set; }
         public string Type { get; set; }
         public string Code { get; set; }
         public decimal linediscountpercentage { get; set; } = 0;
+        public string Location_Code { get; set; }
         public DateTime? Starting_Date { get; set; }
         public DateTime? Ending_Date { get; set; }
         public TimeSpan? Starting_Time { get; set; }
@@ -134,6 +161,7 @@ namespace POS.DTO
     {
         public string User_ID { get; set; }
         public int Update_No { get; set; }
+        public string Role_ID { get; set; }
     }
     public class NavRole
     {
@@ -149,6 +177,7 @@ namespace POS.DTO
         public bool Require_Terminal_To_Login { get; set; }
         public bool Credit_Note_Bill_Pay { get; set; }
         public int Update_No { get; set; }
+        public bool Commission_Right { get; set; }
     }
 
    
@@ -166,18 +195,53 @@ namespace POS.DTO
     {
         public string id { get; set; }
         public string number { get; set; }
+        public string postingno { get; set; }
         public string orderDate { get; set; }       
         public string customerNumber { get; set; }
         public string customerName { get; set; }
         public string vatregistrationnumber { get; set; }
         public string locationcode { get; set; }
-        
-       
+        public string accountabilitycenter { get; set; }
+        public string assigneduserid { get; set; }
+
+
+    }
+    public class NavCreditMemo
+    {
+        public string id { get; set; }
+        public string number { get; set; }
+        public string postingno { get; set; }
+        public string creditMemoDate { get; set; }
+        public string customerNumber { get; set; }
+        public string customerName { get; set; }
+        public string vatregistrationnumber { get; set; }
+        public string locationcode { get; set; }
+        public string accountabilitycenter { get; set; }
+        public string assigneduserid { get; set; }
+        public string invoiceId { get; set; }
+
+
     }
 
     public class NavSalesItems
     {
       
+        public string itemId { get; set; }
+        public decimal quantity { get; set; }
+        public decimal unitPrice { get; set; }
+        public decimal discountAmount { get; set; }
+        public decimal totalTaxAmount { get; set; }
+        //public decimal netAmount { get; set; }
+        //public string itemId { get; set; }
+        //public string quantity { get; set; }
+        //public string unitPrice { get; set; }
+        //public string discountAmount { get; set; }
+
+    }
+
+    public class NavCreditItems
+    {
+
         public string itemId { get; set; }
         public decimal quantity { get; set; }
         public decimal unitPrice { get; set; }
@@ -233,8 +297,8 @@ namespace POS.DTO
     public class NavMenuPermission
     {      
         public string Role_Name { get; set; }
-        public string Menu_Code { get; set; }       
-        public int Update_No { get; set; }
+        public int? Menu_Code { get; set; }       
+        public int Update_No { get; set; }       
     }
 
 
@@ -248,6 +312,17 @@ namespace POS.DTO
         public int Update_No { get; set; }
 
     }
+
+    public class NavItemFOC {
+        public string Item_No_FOC { get; set; }
+        public string Item_Description { get; set; }
+        public decimal Amount { get; set; }
+        public DateTime Start_Date { get; set; }
+        public DateTime End_Date { get; set; }
+        public bool Blocked { get; set; }
+        public int Update_No { get; set; }
+    }
+
 
 
 

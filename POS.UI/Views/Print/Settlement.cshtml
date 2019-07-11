@@ -1,0 +1,351 @@
+﻿@{
+    ViewData["Title"] = "Settlement";
+}
+
+
+
+<div id="printbody">
+    <style>
+
+        @@media print {
+        }
+
+
+
+            *, html, body {
+                background-color: #fff;
+                font-family: "FontA11", FontB21, SaxMono,Consolas;
+                font-size: 16px;
+                color: #999;
+            }
+
+            .font-store {
+                font-size: 20px;
+            }
+
+            .items {
+                font-size: 15px;
+            }
+
+            hr.style {
+                border-top: 1px dotted #8c8b8b;
+                margin-top: 2px;
+                margin-bottom: 2px;
+            }
+
+            hr.style-mt {
+                border-top: 1px dotted #8c8b8b;
+                margin-top: 2px;
+            }
+
+            hr.style-mb {
+                border-top: 1px dotted #8c8b8b;
+                margin-bottom: 2px;
+            }
+            /*for header*/
+            .header {
+                margin-left: -10px;
+            }
+            /*for item table */
+            .col-sm-sn {
+                max-width: 5%;
+                flex: 0 0 5%;
+                padding-left: 15px;
+                display: none;
+            }
+
+            .col-sm-particulars {
+                padding-left: 15px;
+                max-width: 15%;
+                flex: 0 0 15%;
+            }
+
+            .col-sm-qty {
+                max-width: 6%;
+                flex: 0 0 6%;
+            }
+
+            .col-sm-rate {
+                max-width: 9%;
+                flex: 0 0 9%;
+            }
+
+            .col-sm-promo-disc {
+                max-width: 9%;
+                flex: 0 0 9%;
+            }
+
+            .col-sm-total {
+                max-width: 9%;
+                flex: 0 0 9%;
+            }
+
+            .total-quantity {
+                margin-top: -15px;
+                margin-bottom: -6px;
+            }
+
+            .display-none {
+                display: none;
+            }
+
+            .col-sm-1 {
+                max-width: 10%;
+                flex: 0 0 10%;
+            }
+        
+        
+    </style>
+
+    @* fonts *@
+    @*<basefont face="arial, verdana, sans-serif">*@
+
+    @* Store Info *@
+    <center class="header">
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="make-center font-store">
+                    {companyName}
+                </div>
+                <div class="make-center">
+                    {storeLocation}
+                </div>
+                <div class="make-center">
+                    VAT No: {vatNumber}
+                </div>
+                <div class="make-center">
+                    {invoiceType}
+                </div>
+                <div class="make-center">
+                    {copyName}
+                </div>
+            </div>
+        </div>
+    </center>
+    <div class="clearfix"><br /></div>
+
+
+    @* Billing Info *@
+    <div class="row">
+        <div class="col-sm-12">
+
+
+            <div class="row pb-1">
+                <div class="col-sm-2">
+                    Date
+                </div>
+                <div class="col-sm-9">
+                    : {dateBS} ({dateAD})
+                </div>
+            </div>
+            <div class="row pb-1">
+                <div class="col-sm-2">
+                    Terminal
+                </div>
+                <div class="col-sm-9">
+                    : {terminalName}
+                </div>
+            </div>
+            <div class="row pb-1">
+                <div class="col-sm-2">
+                    User
+                </div>
+                <div class="col-sm-9">
+                    : {cashierName}
+                </div>
+            </div>
+            <div class="row pb-1">
+                <div class="col-sm-2">
+                    Verified By
+                </div>
+                <div class="col-sm-9">
+                    : {verifyBy}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <hr class="style-4 style-mb" />
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    @* Total Calculation *@
+    <div class="row">
+        <div class="col-sm-11">
+            <div class="row pb-1">
+                <div class="col-sm-3 text-right">
+                    &nbsp; Counter Opening
+                </div>
+                <div class="col-sm-1 text-right">
+                    =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {openingBalance}
+                </div>
+            </div>
+            <div class="row pb-1">
+                <div class="col-sm-1"></div>
+                <div class="col-sm-5">
+                    <hr class="style" />
+                </div>
+            </div>
+            <div class="row pb-1 {cashHide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; Cash Sales
+                </div>
+                <div class="col-sm-1 text-right">
+                    =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {cash}
+                </div>
+            </div>
+            <div class="row pb-1 {cardHide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; Card Sales
+                </div>
+                <div class="col-sm-1 text-right">
+                    =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {card}
+                </div>
+            </div>
+            <div class="row pb-1 {creditHide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; Credit Sales
+                </div>
+                <div class="col-sm-1 text-right">
+                    =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {credit}
+                </div>
+            </div>
+            <div class="row pb-1 {creditNoteHide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; Cr. Note Sales
+                </div>
+                <div class="col-sm-1 text-right">
+                    =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {creditNote}
+                </div>
+            </div>
+
+
+            <div class="row pb-2">
+
+            </div>
+
+
+
+
+
+            <div class="row pb-1 {cashAdjHide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; Cash Adj.
+                </div>
+                <div class="col-sm-1 text-right">
+                    =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {cashAdj}
+                </div>
+            </div>
+            <div class="row pb-1 {cardAdjHide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; Card Adj.
+                </div>
+                <div class="col-sm-1 text-right">
+                    =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {cardAdj}
+                </div>
+            </div>
+            <div class="row pb-1 {creditAdjHide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; Credit Adj.
+                </div>
+                <div class="col-sm-1 text-right">
+                    =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {creditAdj}
+                </div>
+            </div>
+            <div class="row pb-1 {creditNoteAdjHide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; Cr. Note Adj.
+                </div>
+                <div class="col-sm-1 text-right">
+                    =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {creditNoteAdj}
+                </div>
+            </div>
+
+            <div class="row pb-2">
+
+            </div>
+
+
+            <div class="row pb-1 {cashSEHide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; Cash S/E
+                </div>
+                <div class="col-sm-1 text-right">
+                    =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {cashShortExcess}
+                </div>
+            </div>
+            <div class="row pb-1 {cardSEHide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; Card S/E
+                </div>
+                <div class="col-sm-1 text-right">
+                    =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {cardShortExcess}
+                </div>
+            </div>
+            <div class="row pb-1 {creditSEHide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; Credit S/E
+                </div>
+                <div class="col-sm-1 text-right">
+                    =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {creditShortExcess}
+                </div>
+            </div>
+            <div class="row pb-1 {creditNoteSEHide}">
+                <div class="col-sm-3 text-right">
+                    &nbsp; Cr. Note S/E
+                </div>
+                <div class="col-sm-1 text-right">
+                    =
+                </div>
+                <div class="col-sm-2 text-right">
+                    {creditNoteShortExcess}
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+</div>
+
+

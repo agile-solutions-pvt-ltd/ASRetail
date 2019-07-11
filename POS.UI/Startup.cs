@@ -1,35 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using AutoMapper;
+using Hangfire;
+using Hangfire.Dashboard;
+using Hangfire.SqlServer;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using POS.Core;
 using POS.DTO;
-using Hangfire;
-using Hangfire.SqlServer;
-using AutoMapper;
+using POS.UI.Models;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace POS.UI
 {
     public class Startup
     {
-       
+
         public IConfiguration Configuration { get; }
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-           
+
         }
 
-       
+
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -56,11 +57,11 @@ namespace POS.UI
             {
                 // Password settings
                 options.Password.RequireDigit = true;
-                options.Password.RequiredLength = 6;
+                options.Password.RequiredLength = 4;
                 options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireUppercase = true;
+                options.Password.RequireUppercase = false;
                 options.Password.RequireLowercase = false;
-                options.Password.RequiredUniqueChars = 4;
+                options.Password.RequiredUniqueChars = 2;
 
                 // Lockout settings
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
@@ -76,7 +77,8 @@ namespace POS.UI
             {
                 // Cookie settings
                 options.Cookie.HttpOnly = true;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+                options.ExpireTimeSpan = TimeSpan.FromDays(5);
+                options.Cookie.Expiration = TimeSpan.FromDays(5);
                 options.LoginPath = "/Account/Login"; // If the LoginPath is not set here,
                                                       // ASP.NET Core will default to /Account/Login
                 options.LogoutPath = "/Account/Logout"; // If the LogoutPath is not set here,
@@ -87,17 +89,37 @@ namespace POS.UI
                                                                     // /Account/AccessDenied
 
                 options.SlidingExpiration = true;
+
             });
+
+
+            services.AddAutoMapper();
+
+
+            services.AddMemoryCache();
+
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
+                .AddJsonOptions(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore); ;
+
+
+            services.AddSingleton<InMemoryCache>();
+
+            services.AddSession(options =>
+            {
+                options.Cookie.IsEssential = true; // make the session cookie Essential
+                options.IdleTimeout = TimeSpan.FromDays(5);//You can set Time   
+            });
+
 
             // Add Hangfire services.
             services.AddHangfire(configuration => configuration
-                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
-                .UseSimpleAssemblyNameTypeSerializer()
-                .UseRecommendedSerializerSettings()
+                //.setdatacompatibilitylevel(compatibilitylevel.version_170)
+                //.usesimpleassemblynametypeserializer()
+                //.userecommendedserializersettings()
                 .UseSqlServerStorage(Configuration.GetConnectionString("DefaultConnection"), new SqlServerStorageOptions
                 {
-                    CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-                    SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                    CommandBatchMaxTimeout = TimeSpan.FromDays(2),
+                    SlidingInvisibilityTimeout = TimeSpan.FromMinutes(20),
                     QueuePollInterval = TimeSpan.Zero,
                     UseRecommendedIsolationLevel = true,
                     UsePageLocksOnDequeue = true,
@@ -105,16 +127,6 @@ namespace POS.UI
                 }));
 
             services.AddHangfireServer();
-            services.AddAutoMapper();
-
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
-                .AddJsonOptions(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore); ;
-
-
-            services.AddSession(options =>
-            {
-                options.IdleTimeout = TimeSpan.FromMinutes(20);//You can set Time   
-            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -133,12 +145,24 @@ namespace POS.UI
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseCookiePolicy();
             app.UseSession();
-            app.UseHangfireDashboard();
+            app.UseCookiePolicy();
+
+
+
+
 
             app.UseAuthentication();
 
+            app.UseHangfireDashboard(options: new DashboardOptions()
+            {
+                Authorization = new IDashboardAuthorizationFilter[]
+           {
+                new Helper.HangFireAuthorizationFilter()
+           }
+            });
+
+            app.UseHangfireServer();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
@@ -150,9 +174,10 @@ namespace POS.UI
             t.Wait();
 
 
+
             //run denomination scheduler daily
-           // RecurringJob.AddOrUpdate(() => POSScheduler(), Cron.Daily);
-           
+            // RecurringJob.AddOrUpdate(() => POSScheduler(), Cron.Daily);
+
 
         }
 
@@ -189,7 +214,7 @@ namespace POS.UI
             await UserManager.AddToRoleAsync(user, "Administrator");
         }
 
-       
+
 
     }
 }

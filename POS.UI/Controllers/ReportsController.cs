@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using POS.Core;
 using POS.DTO;
+using System;
+using System.Linq;
 
 namespace POS.UI.Controllers
 {
-    [RolewiseAuthorized]
+    [Authorize]
     public class ReportsController : Controller
     {
         private readonly EntityCore _context;
@@ -21,37 +20,74 @@ namespace POS.UI.Controllers
 
         public IActionResult SalesInvoice()
         {
-           IQueryable<SalesInvoice> salesInvoiceList =_context.SalesInvoice.Where(x => x.Trans_Type == "Sales").OrderByDescending(x => x.Trans_Date_Ad);
-            return View(salesInvoiceList);
+            //IQueryable<SalesInvoice> salesInvoiceList =_context.SalesInvoice.Where(x => x.Trans_Type == "Sales").OrderByDescending(x => x.Trans_Date_Ad);
+            ViewData["Store"] = _context.Store.FirstOrDefault();
+            return View();
         }
         public IActionResult SalesInvoiceApi()
         {
-            IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Type == "Sales").OrderByDescending(x => x.Trans_Date_Ad);
+            IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Type == "Sales").Include(x => x.SalesInvoiceItems).OrderByDescending(x => x.Trans_Date_Ad);
             return Ok(salesInvoiceList);
         }
 
         public IActionResult TaxInvoice()
         {
-            IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Type == "Tax").OrderByDescending(x => x.Trans_Date_Ad);
-            return View(salesInvoiceList);
+            //IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Type == "Tax").OrderByDescending(x => x.Trans_Date_Ad);
+            ViewData["Store"] = _context.Store.FirstOrDefault();
+            return View();
         }
 
         public IActionResult TaxInvoiceApi()
         {
-            IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Type == "Tax").OrderByDescending(x => x.Trans_Date_Ad);
+            IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Type == "Tax").Include(x => x.SalesInvoiceItems).OrderByDescending(x => x.Trans_Date_Ad);
             return Ok(salesInvoiceList);
         }
 
         public IActionResult CreditNote()
         {
-            IQueryable<CreditNote> creditNoteList = _context.CreditNote.OrderByDescending(x => x.Trans_Date_Ad);
-            return View(creditNoteList);
+            // IQueryable<CreditNote> creditNoteList = _context.CreditNote.OrderByDescending(x => x.Trans_Date_Ad);
+            ViewData["Store"] = _context.Store.FirstOrDefault();
+            return View();
         }
 
         public IActionResult CreditNoteApi()
         {
-            IQueryable<CreditNote> creditNoteList = _context.CreditNote.OrderByDescending(x => x.Trans_Date_Ad);
+            IQueryable<CreditNote> creditNoteList = _context.CreditNote.Include(x => x.CreditNoteItems).OrderByDescending(x => x.Trans_Date_Ad);
             return Ok(creditNoteList);
+        }
+
+
+        public IActionResult SalesVatBook(DateTime? StartDate = null, DateTime? EndDate = null)
+        {
+            ViewData["Store"] = _context.Store.FirstOrDefault();
+            IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.OrderByDescending(x => x.Trans_Date_Ad);
+            if (StartDate != null)
+                salesInvoiceList = salesInvoiceList.Where(x => x.Trans_Date_Ad >= StartDate);
+            if (EndDate != null)
+                salesInvoiceList = salesInvoiceList.Where(x => x.Trans_Date_Ad <= EndDate);
+            return View(salesInvoiceList);
+        }
+
+        public IActionResult InvoiceMaterial(DateTime? StartDate = null, DateTime? EndDate = null)
+        {
+            ViewData["Store"] = _context.Store.FirstOrDefault();
+            IQueryable<InvoiceMaterializedView> salesInvoiceList = _context.InvoiceMaterializedView.OrderByDescending(x => x.BillNo);
+            if (StartDate != null)
+                salesInvoiceList = salesInvoiceList.Where(x => x.BillDate >= StartDate);
+            if (EndDate != null)
+                salesInvoiceList = salesInvoiceList.Where(x => x.BillDate <= EndDate);
+            return View(salesInvoiceList);
+        }
+
+
+
+
+        [HttpPost]
+        public ActionResult Excel_Export_Save(string contentType, string base64, string fileName)
+        {
+            var fileContents = Convert.FromBase64String(base64);
+
+            return File(fileContents, contentType, fileName);
         }
     }
 }

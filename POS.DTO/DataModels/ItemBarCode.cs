@@ -9,7 +9,7 @@ namespace POS.DTO
     [Table("ITEM_BARCODE")]
     public partial class ItemBarCode
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        //[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
         public string BarCode { get; set; }                    
         public string ItemCode { get; set; }  

@@ -86,9 +86,9 @@
 
                             <div class="row">
 
-                                <button class="col-md-3 mr-1 btn payment-mode" data-mode="cash" data-shortcut="f1"><span class="fa fa-money fa-4x text-primary text-success"></span><br />Cash (F1)</button>
+                                <button class="col-md-3 mr-1 btn payment-mode" id="cash" data-mode="cash" data-shortcut="f1"><span class="fa fa-money fa-4x text-primary text-success"></span><br />Cash (F1)</button>
 
-                                <button class="col-md-2 mr-1 btn payment-mode" data-mode="debitCard" data-shortcut="f2"><span class="fa fa-credit-card fa-4x text-primary"></span><br />Card (F2)</button>
+                                <button class="col-md-2 mr-1 btn payment-mode" id="card" data-mode="debitCard" data-shortcut="f2"><span class="fa fa-credit-card fa-4x text-primary"></span><br />Card (F2)</button>
 
                                 <button class="col-md-3 mr-1 btn payment-mode" id="credit" data-mode="credit" data-shortcut="f3"><span class="fa fa-id-card  fa-4x text-primary"></span><br />Credit (F3)</button>
 
@@ -141,7 +141,9 @@
                                                 <div class="card-header bg-success">Credit Account</div>
                                                 <div class="card-body">
                                                     Credit Customer :
-                                                    @Html.DropDownList("customer", new SelectList(ViewBag.Customer, "Code", "Name"), "--Select Customer--", new { @class = "form-control form-control-sm" })
+                                                    @*@Html.DropDownList("customer", new SelectList(ViewBag.Customer, "Code", "Name"), "--Select Customer--", new { @class = "form-control form-control-sm" })*@
+                                                    <input id="customer" class="form-control form-control-sm" style="width: 100%;"/>
+                                                   
                                                     <div class="br"></div>
                                                     <div class="br"></div>
                                                     <div class="row form-horizontal">
@@ -198,45 +200,45 @@
 
                                 <div class="col-md-6 pt-5">
                                     <div class="row">
-                                        <div class="col-sm-7 font-weight-bold font-amount text-right">Total Gross Amount :</div>
-                                        <div class="col-sm-5 font-weight-bold font-amount text-right">Rs. <span id="totalNetAmountSpan">@salesInvoice.Total_Gross_Amount </span></div>
+                                        <div class="col-sm-6 font-weight-bold font-amount text-right">Total Gross Amount :</div>
+                                        <div class="col-sm-6 font-weight-bold font-amount text-right">Rs. <span id="totalNetAmountSpan">@salesInvoice.Total_Gross_Amount </span></div>
                                     </div>
                                     <div class="br"></div>
                                     <div id="promoDiscount">
                                         <div class="row">
-                                            <div class="col-sm-7 font-weight-bold font-amount text-right">Promo Discount :</div>
-                                            <div class="col-sm-5 font-weight-bold font-amount text-right">Rs. <span id="promoDiscountSpan">@salesInvoice.Total_Discount </span></div>
+                                            <div class="col-sm-6 font-weight-bold font-amount text-right">Promo Discount :</div>
+                                            <div class="col-sm-6 font-weight-bold font-amount text-right">Rs. <span id="promoDiscountSpan">@salesInvoice.PromoDiscount </span></div>
                                         </div>
                                     </div>
                                     <div class="br"></div>
                                     <div id="loyaltyDiscount">
                                         <div class="row">
-                                            <div class="col-sm-7 font-weight-bold font-amount text-right">Loyalty Discount :</div>
-                                            <div class="col-sm-5 font-weight-bold font-amount text-right">Rs. <span id="loyaltyDiscountSpan"></span></div>
+                                            <div class="col-sm-6 font-weight-bold font-amount text-right">Loyalty Discount :</div>
+                                            <div class="col-sm-6 font-weight-bold font-amount text-right">Rs. <span id="loyaltyDiscountSpan">@salesInvoice.MembershipDiscount</span></div>
                                         </div>
                                     </div>
                                     <div class="br"></div>
                                     <div id="Vat13">
                                         <div class="row">
-                                            <div class="col-sm-7 font-weight-bold font-amount text-right">Vat (13%) :</div>
-                                            <div class="col-sm-5 font-weight-bold font-amount text-right">Rs. <span id="vatSpan">@salesInvoice.Total_Vat</span></div>
+                                            <div class="col-sm-6 font-weight-bold font-amount text-right">Vat (13%) :</div>
+                                            <div class="col-sm-6 font-weight-bold font-amount text-right">Rs. <span id="vatSpan">@salesInvoice.Total_Vat</span></div>
                                         </div>
                                     </div>
                                     <div class="br"></div>
                                     <div class="row">
-                                        <div class="col-sm-7 font-weight-bold font-amount net-amount-color  text-right">Payable Amount :</div>
-                                        <div class="col-sm-5 font-weight-bold font-amount-lg net-amount-color text-right">Rs. <span id="totalPayableAmount"> </span></div>
+                                        <div class="col-sm-6 font-weight-bold font-amount net-amount-color  text-right">Payable Amount :</div>
+                                        <div class="col-sm-6 font-weight-bold font-amount-lg net-amount-color text-right">Rs. <span id="totalPayableAmount"> </span></div>
                                     </div>
                                     <div class="br"></div>
 
                                     <div class="row pt-1">
-                                        <div class="col-sm-7 font-weight-bold font-amount text-right">Tender Amount :</div>
-                                        <div class="col-sm-5 font-weight-bold font-amount text-right">Rs. <span id="tenderAmount"> </span></div>
+                                        <div class="col-sm-6 font-weight-bold font-amount text-right">Tender Amount :</div>
+                                        <div class="col-sm-6 font-weight-bold font-amount text-right">Rs. <span id="tenderAmount"> </span></div>
                                     </div>
                                     <div class="br"></div>
                                     <div class="row pt-1">
-                                        <div class="col-sm-7 font-weight-bold font-amount change-amount-color text-right">Change Amount :</div>
-                                        <div class="col-sm-5 font-weight-bold font-amount-lg change-amount-color text-right">Rs. <span id="changeAmount"> </span></div>
+                                        <div class="col-sm-6 font-weight-bold font-amount change-amount-color text-right">Change Amount :</div>
+                                        <div class="col-sm-6 font-weight-bold font-amount-lg change-amount-color text-right">Rs. <span id="changeAmount"> </span></div>
                                     </div>
                                     <div class="br"></div>
                                     <div class="row pt-3">

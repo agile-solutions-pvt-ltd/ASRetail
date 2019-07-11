@@ -46,6 +46,9 @@ namespace POS.DTO
         public int? Total_Quantity { get; set; } 
         public decimal? Total_Gross_Amount { get; set; }
         public decimal? Total_Discount { get; set; }
+        public decimal TOTAL_DISCOUNT_EXC_VAT { get; set; } = 0;
+        public decimal MembershipDiscount { get; set; } = 0;
+        public decimal PromoDiscount { get; set; } = 0;
         public decimal? Total_Vat { get; set; }
         public decimal TaxableAmount { get; set; }
         public decimal NonTaxableAmount { get; set; }

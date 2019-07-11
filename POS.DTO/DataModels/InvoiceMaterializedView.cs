@@ -25,7 +25,7 @@ namespace POS.DTO
         public decimal TotalAmount { get; set; }
         public bool IsBillActive { get; set; }
         public bool IsBillPrinted { get; set; }
-        public DateTime PrintedTime { get; set; }
+        public DateTime? PrintedTime { get; set; }
         public string PrintedBy { get; set; }
         public string EnteredBy { get; set; }
         public string SyncStatus { get; set; }

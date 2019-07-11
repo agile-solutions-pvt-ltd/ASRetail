@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using POS.Core;
 using POS.DTO;
-using POS.UI.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace POS.UI.Controllers
 {
@@ -46,11 +42,20 @@ namespace POS.UI.Controllers
 
 
         [HttpGet]
-        public IActionResult GetSettlement()
+        public IActionResult GetSettlement(string status = "Closed")
         {
-           
-            IEnumerable<SettlementViewModel> settlement = _context.SettlementViewModel.Where(x => x.Status == "Closed").ToList();
+
+            IEnumerable<SettlementViewModel> settlement = _context.SettlementViewModel.Where(x => x.Status == status).ToList();
             return Ok(settlement);
+        }
+
+        [HttpGet]
+        public IActionResult GetSettlementById(string session)
+        {
+
+            IEnumerable<SettlementViewModel> settlementData = _context.SettlementViewModel.Where(x => x.SessionId == session).ToList();
+            var store = _context.Store.FirstOrDefault();
+            return Ok(new { SettlementData = settlementData, Store = store });
         }
 
 
@@ -60,9 +65,10 @@ namespace POS.UI.Controllers
             if (ModelState.IsValid)
             {
                 IList<Settlement> settlement = _context.Settlement.Where(x => x.SessionId == data.Settlement.SessionId).ToList();
-                foreach(var item in settlement)
+                var store = _context.Store.FirstOrDefault();
+                foreach (var item in settlement)
                 {
-                    if(item.PaymentMode == "Cash")
+                    if (item.PaymentMode == "Cash")
                     {
                         item.AdjustmentAmount = data.AdjustmentCashAmount;
                         item.ShortExcessAmount = data.ShortExcessCashAmount;
@@ -84,12 +90,13 @@ namespace POS.UI.Controllers
                     }
                     item.VerifiedBy = User.Identity.Name;
                     item.VerifiedDate = DateTime.Now;
-                    item.Status = "Verified";                   
+                    item.Status = "Verified";
                     _context.Entry(item).State = EntityState.Modified;
                 }
-               
+
                 _context.SaveChanges();
-                return Ok();
+                var settlementData = _context.SettlementViewModel.Where(x => x.SessionId == settlement.FirstOrDefault().SessionId).ToList();
+                return Ok(new { SettlementData = settlementData, Store = store });
             }
             return StatusCode(400);
         }

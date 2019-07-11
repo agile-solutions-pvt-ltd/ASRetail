@@ -1,5 +1,3 @@
-using System;
-
 namespace POS.UI.Models
 {
     public class ErrorViewModel

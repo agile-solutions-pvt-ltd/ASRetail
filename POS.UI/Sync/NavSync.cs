@@ -1,23 +1,17 @@
 ﻿using AutoMapper;
 using Hangfire;
-using Hangfire.SqlServer;
 using Hangfire.Storage;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Nito.AsyncEx;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using POS.Core;
 using POS.DTO;
 using POS.UI.Helper;
 using RestSharp;
-using RestSharp.Authenticators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace POS.UI.Sync
 {
@@ -28,12 +22,17 @@ namespace POS.UI.Sync
         private readonly IMapper _mapper;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        public NavSync(EntityCore context, IMapper mapper, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
+        private IMemoryCache _cache;
+
+
+        
+        public NavSync(EntityCore context, IMapper mapper, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, IMemoryCache memoryCache)
         {
             _context = context;
             _mapper = mapper;
             _userManager = userManager;
             _roleManager = roleManager;
+            _cache = memoryCache;
         }
 
 
@@ -133,38 +132,13 @@ namespace POS.UI.Sync
             else
                 return new List<Company>();
         }
-        //public bool PostIntegrationServiceSync()
-        //{
-        //    Config config = ConfigJSON.Read();
-        //    string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/posintegrationservices";
-        //    var client = NAV.NAVClient(url, config);
-        //    var request = new RestRequest(Method.GET);
-
-
-
-
-        //    IRestResponse response = client.Execute(request);
-        //    IRestResponse<PostIntegrationApiModel> response = client.Execute<PostIntegrationApiModel>(request);
-
-
-        //    if (response.StatusCode == HttpStatusCode.OK)
-        //    {
-        //        _context.NavIntegrationService.AddRange(response.Data.value);
-        //        _context.SaveChanges();
-        //        return true;
-        //    }
-        //    else
-        //        return false;
-        //}
-
         public bool StoreSync()
         {
             Config config = ConfigJSON.Read();
             NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Store");
             string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
             //access update number data only
-            url += "?$filter=Update_No gt " + services.LastUpdateNumber;
-            url += " and Code eq '" + config.Location + "'";
+            url += "?$filter=Code eq '" + config.Location + "'";
             var client = NAV.NAVClient(url, config);
             var request = new RestRequest(Method.GET);
 
@@ -210,7 +184,7 @@ namespace POS.UI.Sync
             Config config = ConfigJSON.Read();
             NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "CompanyInfo");
             string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
-           
+
             var client = NAV.NAVClient(url, config);
             var request = new RestRequest(Method.GET);
 
@@ -330,198 +304,279 @@ namespace POS.UI.Sync
         }
         public bool ItemSync()
         {
-            Config config = ConfigJSON.Read();
-            NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Item");
-            string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
-            //access update number data only
-            url += "?$filter=Update_No gt " + services.LastUpdateNumber;
-            var client = NAV.NAVClient(url, config);
-            var request = new RestRequest(Method.GET);
 
-            // IRestResponse response = client.Execute(request);
-            IRestResponse<SyncModel<NavItem>> response = client.Execute<SyncModel<NavItem>>(request);
-
-
-            if (response.StatusCode == HttpStatusCode.OK)
+            try
             {
-                List<Item> item = _mapper.Map<List<Item>>(response.Data.value);
-                _context.Item.RemoveRange(_context.Item.Where(x => item.Any(y => y.Code == x.Code)));
-                _context.SaveChanges();
-                _context.Item.AddRange(item);
+                Config config = ConfigJSON.Read();
+                NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Item");
+                string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
+                //access update number data only
+                url += "?$top=1000&$filter=Update_No gt " + services.LastUpdateNumber;
+                var client = NAV.NAVClient(url, config);
+                var request = new RestRequest(Method.GET);
+
+                // IRestResponse response = client.Execute(request);
+                IRestResponse<SyncModel<NavItem>> response = client.Execute<SyncModel<NavItem>>(request);
 
 
-                //update update number
-                if (response.Data.value.Count() > 0)
+                if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
-                    services.LastSyncDate = DateTime.Now;
+                    List<Item> item = _mapper.Map<List<Item>>(response.Data.value);
+                    _context.Item.RemoveRange(_context.Item.Where(x => item.Any(y => y.Code == x.Code)));
+                    _context.SaveChanges();
+                    _context.Item.AddRange(item);
+
+                    ////using new extension
+                    //_context.Item.AddOrUpdate(ref item, x => new { x.Code });
+
+                    //update update number
+                    if (response.Data.value.Count() > 0)
+                    {
+                        services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
+                        services.LastSyncDate = DateTime.Now;
+                    }
+                    _context.SaveChanges();
+
+                    if (response.Data.value.Count() > 0 && response.Data.value.Count() < 1000)
+                    {
+                        //update cache
+                        _cache.Set("IsItemCacheInProcess", false);
+                        BackgroundJob.Enqueue(() => UpdateCacheItemViewModel());
+                    }
+
+                    if (response.Data.value.Count() >= 1000)
+                        return ItemSync();
+
+                    //also sync itemfoc
+                    // ItemFOCSync();
+                    return true;
                 }
-                _context.SaveChanges();
-                return true;
+                else
+                    return false;
+            }catch(Exception ex)
+            {
+                return ItemSync();
             }
-            else
-                return false;
         }
         public bool CustomerSync()
         {
-            Config config = ConfigJSON.Read();
-            NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Customer");
-            string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
-            //access update number data only
-            url += "?$filter=Update_No gt " + services.LastUpdateNumber;
-            var client = NAV.NAVClient(url, config);
-            var request = new RestRequest(Method.GET);
-
-            // IRestResponse response = client.Execute(request);
-            IRestResponse<SyncModel<NavCustomer>> response = client.Execute<SyncModel<NavCustomer>>(request);
-
-
-            if (response.StatusCode == HttpStatusCode.OK)
+            try
             {
+                Config config = ConfigJSON.Read();
+                NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Customer");
+                string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
+                //access update number data only
+                url += "?$top=100&$filter=Update_No gt " + services.LastUpdateNumber;
 
-                List<Customer> item = _mapper.Map<List<Customer>>(response.Data.value);
-                _context.Customer.RemoveRange(_context.Customer.Where(x => item.Any(y => y.Membership_Number == x.Membership_Number)));
-                _context.SaveChanges();
-                foreach(var i in item)
+                var client = NAV.NAVClient(url, config);
+                var request = new RestRequest(Method.GET);
+
+                // IRestResponse response = client.Execute(request);
+                IRestResponse<SyncModel<NavCustomer>> response = client.Execute<SyncModel<NavCustomer>>(request);
+
+
+                if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    i.IsNavSync = true;
-                    i.NavSyncDate = DateTime.Now;
-                    i.Registration_Date = i.Registration_Date.Value.Year == 1 ? DateTime.Now : i.Registration_Date;
-                }
-                _context.Customer.AddRange(item);
-               
 
-                //update update number
-                if (response.Data.value.Count() > 0)
-                {
-                    services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
-                    services.LastSyncDate = DateTime.Now;
-                }
-                _context.SaveChanges();
-                return true;
+                    List<Customer> item = _mapper.Map<List<Customer>>(response.Data.value);
+                    _context.Customer.RemoveRange(_context.Customer.Where(x => item.Any(y => y.Membership_Number == x.Membership_Number)));
+                    _context.SaveChanges();                   
+                    _context.Customer.AddRange(item);
 
+
+                    //update update number
+                    if (response.Data.value.Count() > 0)
+                    {
+                        services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
+                        services.LastSyncDate = DateTime.Now;
+                    }
+                    _context.SaveChanges();
+
+                    if (response.Data.value.Count() > 0 && response.Data.value.Count() < 100)
+                    {
+                        //update cache
+                        _cache.Set("IsCustomerCacheInProcess", true);
+                        BackgroundJob.Enqueue(() => UpdateCacheCustomer());
+                    }
+
+                    if (response.Data.value.Count() >= 100)
+                        return CustomerSync();
+
+                    return true;
+
+                }
+                else
+                    return false;
             }
-            else
-                return false;
+            catch
+            {
+                return CustomerSync();
+            }
 
         }
         public bool ItemBarCodeSync()
         {
-            Config config = ConfigJSON.Read();
-            NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Barcode");
-            string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
-            //access update number data only
-            url += "?$filter=Update_No gt " + services.LastUpdateNumber;
-            var client = NAV.NAVClient(url, config);
-            var request = new RestRequest(Method.GET);
-
-            // IRestResponse response = client.Execute(request);
-            IRestResponse<SyncModel<NavBarCode>> response = client.Execute<SyncModel<NavBarCode>>(request);
-
-
-            if (response.StatusCode == HttpStatusCode.OK)
+            try
             {
+                Config config = ConfigJSON.Read();
+                NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Barcode");
+                string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
+                //access update number data only
+                url += "?$top=1000&$filter=Update_No gt " + services.LastUpdateNumber;
+                var client = NAV.NAVClient(url, config);
+                var request = new RestRequest(Method.GET);
 
-                List<ItemBarCode> item = _mapper.Map<List<ItemBarCode>>(response.Data.value);
-                _context.ItemBarCode.RemoveRange(_context.ItemBarCode.Where(x => item.Any(y => y.BarCode == x.BarCode)));
-                _context.SaveChanges();
-                _context.ItemBarCode.AddRange(item);
-               
-                //update update number
-                if (response.Data.value.Count() > 0)
+                // IRestResponse response = client.Execute(request);
+                IRestResponse<SyncModel<NavBarCode>> response = client.Execute<SyncModel<NavBarCode>>(request);
+
+
+                if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
-                    services.LastSyncDate = DateTime.Now;
-                }
-                _context.SaveChanges();
-                return true;
 
+                    List<ItemBarCode> item = _mapper.Map<List<ItemBarCode>>(response.Data.value);
+                    _context.ItemBarCode.RemoveRange(_context.ItemBarCode.Where(x => item.Any(y => y.BarCode == x.BarCode && x.ItemCode == y.ItemCode)));
+                    _context.SaveChanges();
+                    List<ItemBarCode> newItem = _mapper.Map<List<ItemBarCode>>(response.Data.value);
+                    _context.ItemBarCode.AddRange(newItem);
+
+                    //update update number
+                    if (response.Data.value.Count() > 0)
+                    {
+                        services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
+                        services.LastSyncDate = DateTime.Now;
+
+
+                    }
+                    _context.SaveChanges();
+                    //update cache
+                    List<string> itemCodes = newItem.Select(x => x.ItemCode).ToList();
+                    BackgroundJob.Enqueue(() => UpdateCacheItemViewModel());
+                    if (response.Data.value.Count() >= 1000)
+                        return ItemBarCodeSync();
+                    return true;
+
+                }
+                else
+                    return false;
             }
-            else
-                return false;
+            catch
+            {
+                return ItemBarCodeSync();
+            }
 
         }
         public bool ItemPriceSync()
         {
-            Config config = ConfigJSON.Read();
-            NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Item Price");
-            string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
-            //access update number data only
-            url += "?$filter=Update_No gt " + services.LastUpdateNumber;
-            var client = NAV.NAVClient(url, config);
-            var request = new RestRequest(Method.GET);
-
-            // IRestResponse response = client.Execute(request);
-            IRestResponse<SyncModel<NavItemPrice>> response = client.Execute<SyncModel<NavItemPrice>>(request);
-
-
-            if (response.StatusCode == HttpStatusCode.OK)
+            try
             {
+                Config config = ConfigJSON.Read();
+                NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Item Price");
+                string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
+                //access update number data only
+                url += "?$top=1000&$filter=Update_No gt " + services.LastUpdateNumber;
+                url += " and Available_for_Import eq true";
+                var client = NAV.NAVClient(url, config);
+                var request = new RestRequest(Method.GET);
 
-                List<ItemPrice> item = _mapper.Map<List<ItemPrice>>(response.Data.value);
-                _context.ItemPrice.RemoveRange(_context.ItemPrice.Where(x => item.Any(y => y.ItemCode == x.ItemCode)));
-                _context.SaveChanges();
-                foreach (var i in item)
-                {
-                    i.StartDate = i.StartDate.Value.ToShortDateString() == "01/01/01" ? i.StartDate = null : i.StartDate.Value;
-                    i.EndDate = i.EndDate.Value.ToShortDateString() == "01/01/01" ? i.EndDate = null : i.EndDate.Value;
-                }
-                _context.ItemPrice.AddRange(item);
-               
-                //update update number
-                if (response.Data.value.Count() > 0)
-                {
-                    services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
-                    services.LastSyncDate = DateTime.Now;
-                }
-                _context.SaveChanges();
-                return true;
+                // IRestResponse response = client.Execute(request);
+                IRestResponse<SyncModel<NavItemPrice>> response = client.Execute<SyncModel<NavItemPrice>>(request);
 
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    List<ItemPrice> item = _mapper.Map<List<ItemPrice>>(response.Data.value);
+                    _context.ItemPrice.RemoveRange(_context.ItemPrice.Where(x => item.Any(y => y.Id == x.Id)));
+                    _context.SaveChanges();
+
+                    _context.ItemPrice.AddRange(item);
+
+                    //update update number
+                    if (response.Data.value.Count() > 0)
+                    {
+                        services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
+                        services.LastSyncDate = DateTime.Now;
+
+
+                    }
+                    _context.SaveChanges();
+
+
+                    if (response.Data.value.Count() > 0 && response.Data.value.Count() < 1000)
+                    {
+                        //update cache
+                        _cache.Set("IsItemCacheInProcess", false);
+                        BackgroundJob.Enqueue(() => UpdateCacheItemViewModel());
+                    }
+
+                    if (response.Data.value.Count() >= 1000)
+                        return ItemPriceSync();
+
+                    return true;
+
+                }
+                else
+                    return false;
             }
-            else
-                return false;
+            catch
+            {
+                return ItemPriceSync();
+            }
 
         }
         public bool ItemDiscountSync()
         {
-            Config config = ConfigJSON.Read();
-            NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "ItemDiscount");
-            string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
-            //access update number data only
-            url += "?$filter=Update_No gt " + services.LastUpdateNumber;
-            var client = NAV.NAVClient(url, config);
-            var request = new RestRequest(Method.GET);
-
-            // IRestResponse response = client.Execute(request);
-            IRestResponse<SyncModel<NavItemDiscount>> response = client.Execute<SyncModel<NavItemDiscount>>(request);
-
-
-            if (response.StatusCode == HttpStatusCode.OK)
+            try
             {
+                Config config = ConfigJSON.Read();
+                NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "ItemDiscount");
+                string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
+                //access update number data only
+                url += "?$top=1000&$filter=Update_No gt " + services.LastUpdateNumber;
+                url += " and Available_for_Import eq true";
+                url += $" and (Location_Code eq '' or Location_Code eq '{config.Location}')";
+                var client = NAV.NAVClient(url, config);
+                var request = new RestRequest(Method.GET);
 
-                List<ItemDiscount> item = _mapper.Map<List<ItemDiscount>>(response.Data.value);
-                _context.ItemDiscount.RemoveRange(_context.ItemDiscount.Where(x => item.Any(y => y.ItemCode == x.ItemCode)));
-                _context.SaveChanges();
-                foreach (var i in item)
+                // IRestResponse response = client.Execute(request);
+                IRestResponse<SyncModel<NavItemDiscount>> response = client.Execute<SyncModel<NavItemDiscount>>(request);
+
+
+                if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    i.StartDate = i.StartDate.Value.ToShortDateString() == "01/01/01" ? i.StartDate = null : i.StartDate.Value;
-                    i.EndDate = i.EndDate.Value.ToShortDateString() == "01/01/01" ? i.EndDate = null : i.EndDate.Value;
+
+                    List<ItemDiscount> item = _mapper.Map<List<ItemDiscount>>(response.Data.value);
+                    _context.ItemDiscount.RemoveRange(_context.ItemDiscount.Where(x => item.Any(y => y.Id == x.Id)));
+                    _context.SaveChanges();
+
+                    _context.ItemDiscount.AddRange(item);
+                    //update update number
+                    if (response.Data.value.Count() > 0)
+                    {
+                        services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
+                        services.LastSyncDate = DateTime.Now;                       
+                    }
+                    _context.SaveChanges();
+
+                    if (response.Data.value.Count() > 0 && response.Data.value.Count() < 1000)
+                    {
+                        //update cache
+                        _cache.Set("IsItemCacheInProcess", false);
+                        BackgroundJob.Enqueue(() => UpdateCacheItemViewModel());
+                    }
+
+                    if (response.Data.value.Count() >= 1000)
+                        return ItemDiscountSync();
+                    return true;
                 }
-                _context.ItemDiscount.AddRange(item);
-                //update update number
-                if (response.Data.value.Count() > 0)
-                {
-                    services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
-                    services.LastSyncDate = DateTime.Now;
-                }
-                _context.SaveChanges();
-                return true;
+                else
+                    return false;
             }
-            else
-                return false;
+            catch
+            {
+                return ItemDiscountSync();
+            }
 
         }
-       
         public bool TerminalSync()
         {
             Config config = ConfigJSON.Read();
@@ -543,9 +598,9 @@ namespace POS.UI.Sync
                 List<Terminal> item = _mapper.Map<List<Terminal>>(response.Data.value);
                 _context.Terminal.RemoveRange(_context.Terminal.Where(x => item.Any(y => y.Initial == x.Initial)));
                 _context.SaveChanges();
-               
+
                 _context.Terminal.AddRange(item);
-              
+
                 //update update number
                 if (response.Data.value.Count() > 0)
                 {
@@ -560,8 +615,6 @@ namespace POS.UI.Sync
                 return false;
 
         }
-
-
         public bool UserSync()
         {
             Config config = ConfigJSON.Read();
@@ -582,19 +635,33 @@ namespace POS.UI.Sync
                 foreach (var ur in response.Data.value)
                 {
                     ur.User_ID = ur.User_ID.Substring(ur.User_ID.IndexOf("\\") + 1);
-                    var user = new ApplicationUser { UserName = ur.User_ID, Email = ur.User_ID + "@saleways.com" };                    
-                    var task = _userManager.CreateAsync(user, ur.User_ID + "@123");
-                    var result = task.Result;
-                    if (result.Succeeded)
+                    var user = new ApplicationUser { UserName = ur.User_ID, Email = ur.User_ID + "@saleways.com" };
+                    var checkUserExist = _userManager.FindByNameAsync(ur.User_ID);
+                    if (checkUserExist.Result== null)
                     {
-                        //update update number
-                        if (response.Data.value.Count() > 0)
+                        var task = _userManager.CreateAsync(user, "1234");
+                        var result = task.Result;
+                        if (result.Succeeded)
                         {
-                            services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
-                            services.LastSyncDate = DateTime.Now;
+                            //update update number
+                            if (response.Data.value.Count() > 0)
+                            {
+                                services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
+                                services.LastSyncDate = DateTime.Now;
+                            }
+
                         }
-                       
                     }
+                    IdentityUser user1 = _userManager.FindByNameAsync(ur.User_ID).Result;
+                    if (user1 != null && !string.IsNullOrEmpty(ur.Role_ID)) {
+                        var roles = _userManager.GetRolesAsync(user1).Result;
+                       var userRoles = _userManager.RemoveFromRolesAsync(user1, roles.ToArray());
+                        userRoles.Wait();
+                        var userNewRoles =_userManager.AddToRoleAsync(user1, ur.Role_ID);
+                        userNewRoles.Wait();
+
+                    }
+                   
                 }
                 _context.SaveChanges();
                 return true;
@@ -604,7 +671,6 @@ namespace POS.UI.Sync
                 return false;
 
         }
-
         public bool RoleSync()
         {
             Config config = ConfigJSON.Read();
@@ -621,7 +687,7 @@ namespace POS.UI.Sync
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
-               // _roleManager.Create(new IdentityRole("Administrator"));
+                // _roleManager.Create(new IdentityRole("Administrator"));
                 //List<AspNetRoles> item = _mapper.Map<List<AspNetRoles>>(response.Data.value);
                 //_context.AspNetRole.RemoveRange(_context.AspNetRole.Where(x => item.Any(y => y.Id == x.Id)));
                 //_context.SaveChanges();
@@ -635,15 +701,15 @@ namespace POS.UI.Sync
                     {
                         //create the roles and seed them to the database
                         var roleCreate = _roleManager.CreateAsync(new IdentityRole(ro.Name));
-                       var result = roleCreate.Result;
+                        var result = roleCreate.Result;
                     }
-                  
-                   
+
+
                     RoleWisePermission permission = _mapper.Map<RoleWisePermission>(ro);
                     _context.RoleWisePermission.RemoveRange(_context.RoleWisePermission.Where(x => x.RoleId == ro.Name));
                     permission.RoleId = ro.Name;
                     _context.RoleWisePermission.Add(permission);
-                   
+
                 }
                 //update update number
                 if (response.Data.value.Count() > 0)
@@ -659,8 +725,6 @@ namespace POS.UI.Sync
                 return false;
 
         }
-
-
         public bool MenuSync()
         {
             Config config = ConfigJSON.Read();
@@ -695,7 +759,6 @@ namespace POS.UI.Sync
             else
                 return false;
         }
-
         public bool MenuPermissionSync()
         {
             Config config = ConfigJSON.Read();
@@ -716,6 +779,40 @@ namespace POS.UI.Sync
                 _context.RoleWiseMenuPermission.RemoveRange(_context.RoleWiseMenuPermission.Where(x => item.Any(y => y.RoleId == x.RoleId)));
                 _context.SaveChanges();
                 _context.RoleWiseMenuPermission.AddRange(item);
+
+
+                //update update number
+                if (response.Data.value.Count() > 0)
+                {
+                    services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
+                    services.LastSyncDate = DateTime.Now;
+                }
+                _context.SaveChanges();
+                return true;
+            }
+            else
+                return false;
+        }
+        public bool ItemFOCSync()
+        {
+            Config config = ConfigJSON.Read();
+            NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "ItemFOC");
+            string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
+            //access update number data only
+            //url += "?$filter=Update_No gt " + services.LastUpdateNumber;
+            var client = NAV.NAVClient(url, config);
+            var request = new RestRequest(Method.GET);
+
+            // IRestResponse response = client.Execute(request);
+            IRestResponse<SyncModel<NavItemFOC>> response = client.Execute<SyncModel<NavItemFOC>>(request);
+
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                List<ItemFOC> item = _mapper.Map<List<ItemFOC>>(response.Data.value);
+                _context.ItemFOC.RemoveRange(_context.ItemFOC.Where(x => item.Any(y => y.ItemForFOC == x.ItemForFOC)));
+                _context.SaveChanges();
+                _context.ItemFOC.AddRange(item);
 
 
                 //update update number
@@ -776,5 +873,85 @@ namespace POS.UI.Sync
             allUnPostedSettlement.ForEach(x => x.Status = "Closed");
             _context.SaveChanges();
         }
+
+        public void UpdateCacheItemViewModel()
+        {
+            bool IsItemCacheInProcess = false;
+            IList<ItemViewModel> itemsTotal = new List<ItemViewModel>();
+            IList<ItemViewModel> itemsTemp = new List<ItemViewModel>();
+            _cache.TryGetValue("IsItemCacheInProcess", out IsItemCacheInProcess);
+
+            if (!IsItemCacheInProcess)
+            {
+                _cache.Set("IsItemCacheInProcess", true);
+                //update cache
+
+                //split data to 1lakh and save to cache
+                int count = 20000, skip = 0;
+                _context.ChangeTracker.AutoDetectChangesEnabled = false;
+                for (; ; )
+                {
+                    try
+                    {
+                        itemsTemp = _context.ItemViewModel.AsNoTracking().Skip(skip).Take(count).ToList();
+                        if (itemsTemp.Count() == 0 && itemsTotal.Count() > 0)
+                        {
+                            _cache.Set("ItemViewModel", itemsTotal);
+                            break;
+                        }
+
+                        itemsTotal = itemsTotal.Concat(itemsTemp).ToList();
+                        skip = skip + count;
+                    }
+                    catch
+                    {
+
+                    }
+                }
+
+            }
+
+
+        }
+        public void UpdateCacheCustomer()
+        {
+            bool IsCustomerCacheInProcess = false;
+            IList<Customer> itemsTotal = new List<Customer>();
+            IList<Customer> itemsTemp = new List<Customer>();
+            _cache.TryGetValue("IsCustomerCacheInProcess", out IsCustomerCacheInProcess);
+
+            if (!IsCustomerCacheInProcess)
+            {
+                _cache.Set("IsCustomerCacheInProcess", true);
+                //update cache
+
+                //split data to 1lakh and save to cache
+                int count = 100000, skip = 0;
+                _context.ChangeTracker.AutoDetectChangesEnabled = false;
+                for (; ; )
+                {
+                    try
+                    {
+                        itemsTemp = _context.Customer.AsNoTracking().Skip(skip).Take(count).ToList();
+                        if (itemsTemp.Count() == 0 && itemsTotal.Count() > 0)
+                        {
+                            _cache.Set("Customer", itemsTotal);
+                            break;
+                        }
+
+                        itemsTotal = itemsTotal.Concat(itemsTemp).ToList();
+                        skip = skip + count;
+                    }
+                    catch
+                    {
+
+                    }
+                }
+
+            }
+
+
+        }
+       
     }
 }

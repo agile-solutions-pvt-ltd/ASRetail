@@ -1,31 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using POS.Core;
 using POS.DTO;
 using POS.UI.Sync;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace POS.UI.Controllers
 {
-    [RolewiseAuthorized]
+    [Authorize]
     public class CustomerController : Controller
     {
         private readonly EntityCore _context;
         private readonly IMapper _mapper;
-        public CustomerController(EntityCore context, IMapper mapper)
+        private IMemoryCache _cache;
+        public CustomerController(EntityCore context, IMapper mapper, IMemoryCache memoryCache)
         {
             _context = context;
             _mapper = mapper;
+            _cache = memoryCache;
         }
-        
+
 
         // GET: Customer
         public async Task<IActionResult> Index()
@@ -82,15 +83,29 @@ namespace POS.UI.Controllers
             try
             {
                 customer.Code = Guid.NewGuid().ToString();
-                customer.Member_Id = _context.Customer.Where(x=>x.Is_Member == true && x.Member_Id != null).Select(x => x.Member_Id).DefaultIfEmpty(0).Max() + 1;
+                customer.Member_Id = _context.Customer.Where(x => x.Is_Member == true && x.Member_Id != null).Select(x => x.Member_Id).DefaultIfEmpty(0).Max() + 1;
                 Store store = _context.Store.FirstOrDefault();
-                customer.Membership_Number = store.INITIAL + "-" + Convert.ToInt32(customer.Member_Id).ToString("00000");
+                customer.Membership_Number = store.INITIAL + "-" + Convert.ToInt32(customer.Member_Id).ToString("000000");
                 customer.Created_By = User.Identity.Name;
                 customer.Registration_Date = DateTime.Now;
-                customer.CustomerDiscGroup = "CATEGORY D";
-                customer.CustomerPriceGroup = "RETAIL";
+                customer.MembershipDiscGroup = "CATEGORY D";
+                customer.CustomerPriceGroup = "RSP";
+                customer.CustomerDiscGroup = "RSP";
                 _context.Add(customer);
                 _context.SaveChanges();
+
+
+                //update cache
+                IEnumerable<Customer> customers;
+                if (!_cache.TryGetValue("Customers", out customers))
+                {
+                    // Key not in cache, so get data.
+                    customers = _context.Customer.ToList();
+
+                    _cache.Set("Customers", customers);
+                }
+                customers.ToList().Add(customer);
+                _cache.Set("Customer", customers);
                 return true;
 
             }
@@ -191,7 +206,52 @@ namespace POS.UI.Controllers
         }
 
 
+        public IActionResult GetMembership()
+        {
+            var value = (Request.Query["filter[filters][0][value]"]).ToString();
 
+            IEnumerable<Customer> customers;
+            if (!_cache.TryGetValue("Customers", out customers))
+            {
+                // Key not in cache, so get data.
+                customers = _context.Customer.ToList();
+
+                _cache.Set("Customers", customers);
+            }
+            if (value != "")
+                customers = customers.Where(x => x.Is_Member == true && x.Name.Contains(value));
+            return Ok(customers);
+        }
+
+        public IActionResult SearchMembership(string text, string customer = "")
+        {
+            IEnumerable<Customer> customers;
+            if (!_cache.TryGetValue("Customers", out customers))
+            {
+                // Key not in cache, so get data.
+                customers = _context.Customer.ToList();
+
+                _cache.Set("Customers", customers);
+            }
+            if (customer == "")
+                customers = customers.Where(x => x.Is_Member == true);
+            else if (customer == "Credit")
+                customers = customers.Where(x => x.Type == "Credit");
+            customers = customers.Where(x =>
+            (!string.IsNullOrEmpty(x.Name) && x.Name.ToLower().Contains(text)) ||
+            (!string.IsNullOrEmpty(x.Membership_Number) && x.Membership_Number.ToLower().Contains(text)) ||
+            (!string.IsNullOrEmpty(x.Membership_Number_Old) && x.Membership_Number_Old.ToLower().Contains(text)) ||
+            (!string.IsNullOrEmpty(x.Barcode) && x.Barcode.ToLower().Contains(text)) ||
+            (!string.IsNullOrEmpty(x.Mobile1) && x.Mobile1.ToLower().Contains(text)));
+            return Ok(customers);
+        }
+
+        public IActionResult GetMembershipByNumber(string MembershipNumber)
+        {
+            IEnumerable<Customer> customers = customers = _context.Customer.Where(x => x.Is_Member == true && x.Membership_Number == MembershipNumber);
+
+            return Ok(customers);
+        }
 
 
 
@@ -213,15 +273,28 @@ namespace POS.UI.Controllers
                     customer.Is_Member = true;
                     customer.Member_Id = _context.Customer.Where(x => x.Is_Member == true && x.Member_Id != null).Select(x => x.Member_Id).DefaultIfEmpty(0).Max() + 1;
                     Store store = _context.Store.FirstOrDefault();
-                    customer.Membership_Number = store.INITIAL + "-" + Convert.ToInt32(customer.Member_Id).ToString("00000");
+                    customer.Membership_Number = store.INITIAL + "-" + Convert.ToInt32(customer.Member_Id).ToString("000000");
                     customer.Created_By = User.Identity.Name;
                     customer.Registration_Date = DateTime.Now;
-                    customer.CustomerDiscGroup = "CATEGORY D";
-                    customer.CustomerPriceGroup = "RETAIL";
+                    customer.CustomerDiscGroup = "RSP";
+                    customer.CustomerPriceGroup = "RSP";
+                    customer.MembershipDiscGroup = "CATEGORY D";
 
 
                     _context.Add(customer);
                     _context.SaveChanges();
+
+                    //update cache
+                    IEnumerable<Customer> customers;
+                    if (!_cache.TryGetValue("Customers", out customers))
+                    {
+                        // Key not in cache, so get data.
+                        customers = _context.Customer.ToList();
+
+                        _cache.Set("Customers", customers);
+                    }
+                    customers.ToList().Add(customer);
+                    _cache.Set("Customer", customers);
 
                     NavPostData navPost = new NavPostData(_context, _mapper);
                     BackgroundJob.Enqueue(() => navPost.PostCustomer());
@@ -242,6 +315,25 @@ namespace POS.UI.Controllers
             }
             return StatusCode(400, new { StatusMessage = "Not Valid" });
 
+        }
+
+
+
+        public IActionResult GetCreditCustomerr()
+        {
+            var value = (Request.Query["filter[filters][0][value]"]).ToString();
+
+            IEnumerable<Customer> customers;
+            if (!_cache.TryGetValue("Customers", out customers))
+            {
+                // Key not in cache, so get data.
+                customers = _context.Customer.ToList();
+
+                _cache.Set("Customers", customers);
+            }
+            if (value != "")
+                customers = customers.Where(x => x.Name.Contains(value));
+            return Ok(customers);
         }
     }
 }

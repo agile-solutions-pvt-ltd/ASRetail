@@ -1,0 +1,30 @@
+[
+
+  {
+    "outputFileName": "wwwroot/js/main.min.js",
+    "inputFiles": [
+      "wwwroot/js/lib/jquery/dist/jquery.js",
+      "wwwroot/js/lib/jquery-ui/jquery-ui.js",
+      "wwwroot/js/lib/popper.js/js/popper.min.js",
+      "wwwroot/js/lib/bootstrap/js/bootstrap.min.js",
+      "wwwroot/js/lib/bootstrap-treeview/js/bootstrap-treeview.js",
+      "wwwroot/js/lib/nepali.datepicker/nepali.datepicker.v2.2.min.js",
+      "wwwroot/js/lib/jquery-slimscroll/js/jquery.slimscroll.js",
+      "wwwroot/js/lib/jquery.mCustomScrollbar.concat/jquery.mCustomScrollbar.js",
+
+      "wwwroot/js/lib/moment/js/moment.min.js",
+      "wwwroot/js/lib/kendo-ui/jszip.min.js",
+      "wwwroot/js/lib/kendo-ui/kendo.all.min.js",
+      "wwwroot/js/lib/modernizr/js/modernizr.js",
+      "wwwroot/js/lib/underscore/underscore-min.js",
+      "wwwroot/js/lib/underscore/underscoreAddon.js",
+      "wwwroot/js/lib/bootbox/bootbox.min.js",
+      "wwwroot/js/lib/datatable/datatables.min.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    "sourceMap": false
+  }
+]

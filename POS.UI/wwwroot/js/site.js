@@ -147,11 +147,18 @@ function NumberFormat(num) {
 
 
 function GetClientLocalIP(callback) {
+    debugger;
     window.RTCPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;//compatibility for Firefox and chrome
     var pc = new RTCPeerConnection({ iceServers: [] }), noop = function () { };
     pc.createDataChannel('');//create a bogus data channel
-    pc.createOffer(pc.setLocalDescription.bind(pc), noop);// create offer and set local description
+    //pc.createOffer(pc.setLocalDescription.bind(pc), noop);// create offer and set local description
+   
+    pc.createOffer().then(function (offer) {
+        return pc.setLocalDescription(offer);
+    });
+
     pc.onicecandidate = function (ice) {
+        debugger;
         if (ice && ice.candidate && ice.candidate.candidate) {
             var myIP = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/.exec(ice.candidate.candidate)[1];
             callback(myIP);
@@ -169,10 +176,39 @@ function StatusNotify(type, message) {
             nonblock: true
         },
         type: type,
-        addclass: type === 'success' ? 'bg-success' : 'bg-danger'
+        addclass: type === 'success' ? 'bg-success' : 'bg-danger',
+        closer: true,
+        closer_hover: true,
+        sticker: true,
+        sticker_hover : true
     });
 }
 
+
+function toCamel(o) {
+    var newO, origKey, newKey, value
+    if (o instanceof Array) {
+        return o.map(function (value) {
+            if (typeof value === "object") {
+                value = toCamel(value)
+            }
+            return value
+        })
+    } else {
+        newO = {}
+        for (origKey in o) {
+            if (o.hasOwnProperty(origKey)) {
+                newKey = (origKey.charAt(0).toLowerCase() + origKey.slice(1) || origKey).toString()
+                value = o[origKey]
+                if (value instanceof Array || (value !== null && value.constructor === Object)) {
+                    value = toCamel(value)
+                }
+                newO[newKey] = value
+            }
+        }
+    }
+    return newO
+}
 //menu permission restriction
 (() => {
     $.ajax({
@@ -182,7 +218,9 @@ function StatusNotify(type, message) {
         contentType: "application/json; charset=utf-8",
         complete: function (result) {
             if (result.status === 200) {
+                
                 _.each(result.responseJSON, function (val) {
+                    $("." + val.menu.name.replace(/ /g, "_")).css("display", "block !important");
                     $("." + val.menu.name.replace(/ /g, "_")).show();
                 });
             }
