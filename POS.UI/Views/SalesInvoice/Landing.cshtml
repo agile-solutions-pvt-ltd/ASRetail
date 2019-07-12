@@ -35,6 +35,14 @@
         color: #fff;
         cursor: pointer;
     }
+    /* Styles starts Niroj*/
+    #over img {
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+    }
+
+    /* Styles end Niroj*/
 </style>
 <div class="page-wrapper">
 
@@ -45,24 +53,33 @@
                     <div class="card-block">
                         @*Your content here*@
                         @Html.Partial("_ResponseMessagePartial")
-                        <div class="cinfo text-center font-weight-bold">@Model.COMPANY_NAME</div>
-                        <div class="caddress text-center font-weight-bold">@Model.ADDRESS</div>
+                        @*<div class="cinfo text-center font-weight-bold">@Model.COMPANY_NAME</div>
+        <div class="caddress text-center font-weight-bold">@Model.ADDRESS</div>*@
+                        <!-- Niroj Humagain Logo starts -->
+                        <div id="over" style="position:absolute; width:100%; height:100%">
+                            <img src="~/images/Logo.jpg">
+                            @* <div class="caddress text-center font-weight-bold">SATDOBATO, LALITPUR, NEPAL</div>*@
+                            <div class="caddress text-center font-weight-bold">@Model.ADDRESS</div>
+
+                        </div>
+
+                        <!-- Niroj Humagain Logo end -->
                         <div class="pt-5" style=" min-height: 400px">
 
                             <div class="row">
                                 <div class="col-md-2"></div>
                                 <div class="col-md-9">
                                     @*<div class="row">
-                                            <div class="col-md-2">
-                                                <input type="button" value="Add New (F2)" class="btn btn-success btn-sm" id="addNewMemberButton" />
-                                            </div>
-                                            <div class="col-md-2">
-                                                <input type="button" value="Skip (ESC)" class="btn btn-warning btn-sm" id="skipPage" />
-                                            </div>
-                                        </div>*@
+                        <div class="col-md-2">
+                            <input type="button" value="Add New (F2)" class="btn btn-success btn-sm" id="addNewMemberButton" />
+                        </div>
+                        <div class="col-md-2">
+                            <input type="button" value="Skip (ESC)" class="btn btn-warning btn-sm" id="skipPage" />
+                        </div>
+                    </div>*@
 
                                     <div class="br"></div>
-                                    <div class="form-group input-group">
+                                    <div class="form-group input-group"style="margin-top:110px;">
                                         <input type="search" class="form-control form-control-lg py-2 border-right-0 border search search-input" placeholder="Search Membership" />
                                         <span class="input-group-append border-left-0 border p-2">
                                             <i class="input-group-text bg-transparent  search fa fa-search"></i>
@@ -92,7 +109,7 @@
                                     </div>
                                     <div class="br"></div>
                                     <div class="row">
-                                        <div class="table-wrapper-scroll-y my-custom-scrollbar">
+                                        <div class="table-wrapper-scroll-y my-custom-scrollbar" style="width:100%;">
                                             <table id="memberTable" class="table table-sm table-bordered table-hover">
                                                 <thead>
                                                     <tr>

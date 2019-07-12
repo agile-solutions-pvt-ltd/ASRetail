@@ -143,7 +143,10 @@ namespace POS.UI.Controllers
         {
             return View();
         }
-
+        public IActionResult StoreInformation()
+        {
+            return View();
+        }
         [HttpPost]
         public IActionResult DataBaseBackUp(string path)
         {

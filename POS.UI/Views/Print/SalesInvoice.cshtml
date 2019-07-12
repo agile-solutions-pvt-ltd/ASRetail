@@ -6,14 +6,7 @@
 
 <div id="printbody">
     <style>
-        *, html, body {
-            background-color: #fff;
-            font-family: "FontA11[255]", "FontA11", "FontB21", "SaxMono","Consolas";
-            font-size: 16px;
-            color: #999;
-        }
-
-        .font-store {
+    *, html, body { background-color: #fff; font-family: "Calibri (Body)","FontA11", "Bahnschrift Light", "FontB21", "SaxMono","Consolas"; font-size: 16px; color: #999; } .font-store {
             font-size: 20px;
         }
 
@@ -144,7 +137,7 @@
                     : {billToName}
                 </div>
             </div>
-            <div class="row pb-1 {customerhide}">
+            <div class="row pb-1 {customerhide} {addresshide}">
                 <div class="col-sm-2">
                     Address
                 </div>
@@ -152,7 +145,7 @@
                     : {billToAddress}
                 </div>
             </div>
-            <div class="row pb-1 {customerhide}">
+            <div class="row pb-1 {customerhide}{mobilehide}">
                 <div class="col-sm-2">
                     Mobile
                 </div>

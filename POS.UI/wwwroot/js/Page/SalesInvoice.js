@@ -222,7 +222,8 @@ const invoice = (function () {
             }
         });
     };
-    // #endregion
+    // #endregion
+
 
     let updateSalesTax = () => {
 

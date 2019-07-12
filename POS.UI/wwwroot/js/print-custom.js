@@ -1,6 +1,6 @@
 ﻿const printer = (() => {
     //********* Private Variables **************//
-    let maximumCharAllowInItemName = 10;
+    let maximumCharAllowInItemName = 8;
 
 
     //********* Private Methos *****************//
@@ -50,6 +50,8 @@
                     printText = printText.replace("{dateAD}", FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)));
                     printText = printText.replace("{dateBS}", data.invoiceData.trans_Date_Bs);
                     printText = printText.replace(/{customerhide}/g, data.invoiceData.memberId === "POS" ? "display-none" : "");
+                    printText = printText.replace(/{addresshide}/g, data.invoiceData.customer_Address === "" ? "display-none" : "");
+                    printText = printText.replace(/{mobilehide}/g, data.invoiceData.customer_Mobile === "" ? "display-none" : "");
                     printText = printText.replace("{billToName}", data.invoiceData.customer_Name);
                     printText = printText.replace("{billToAddress}", data.invoiceData.customer_Address);
                     printText = printText.replace("{billToMobile}", data.invoiceData.customer_Mobile);
@@ -123,6 +125,8 @@
                     printText = printText.replace("{dateAD}", FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)));
                     printText = printText.replace("{dateBS}", data.invoiceData.trans_Date_Bs);
                     printText = printText.replace(/{customerhide}/g, data.invoiceData.memberId === "POS" ? "display-none" : "");
+                    printText = printText.replace(/{addresshide}/g, data.invoiceData.customer_Address === "" ? "display-none" : "");
+                    printText = printText.replace(/{mobilehide}/g, data.invoiceData.customer_Mobile === "" ? "display-none" : "");
                     printText = printText.replace("{billToName}", data.invoiceData.customer_Name);
                     printText = printText.replace("{billToAddress}", data.invoiceData.customer_Address);
                     printText = printText.replace("{billToMobile}", data.invoiceData.customer_Mobile);
@@ -209,6 +213,8 @@
                     printText = printText.replace("{dateAD}", FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)));
                     printText = printText.replace("{dateBS}", data.invoiceData.trans_Date_Bs);
                     printText = printText.replace(/{customerhide}/g, data.invoiceData.memberId === "POS" ? "display-none" : "");
+                    printText = printText.replace(/{addresshide}/g, data.invoiceData.customer_Address === "" ? "display-none" : "");
+                    printText = printText.replace(/{mobilehide}/g, data.invoiceData.customer_Mobile === "" ? "display-none" : "");
                     printText = printText.replace("{billToName}", data.invoiceData.customer_Name);
                     printText = printText.replace("{billToAddress}", data.invoiceData.customer_Address);
                     printText = printText.replace("{billToMobile}", data.invoiceData.customer_Mobile);
