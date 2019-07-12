@@ -118,8 +118,7 @@
                     resetTransactionData();
                     loadPausedTransactionData(data.invoiceData);                   
                     $("#Customer_Id").val(data.customerData.membership_Number);
-                    $("#BillTo_Name").val(data.customerData.name);
-                    debugger;
+                    $("#BillTo_Name").val(data.customerData.name);                   
                     $("#Reference_Number_Id").val(data.invoiceData.id);
                     $("#Payment_Mode").val(_.uniq(_.pluck(data.invoiceBillData, "trans_Mode")).join(', '));
                     $("#TaxableAmount").val(data.invoiceData.taxableAmount);
@@ -530,7 +529,7 @@ return total;
 
 
         var data = $('form#Credit_Note_Form').serializeObject();
-        debugger;
+       
         data.Customer_Id = $("#Customer_Id").val();
 
         //add membership discount
@@ -539,7 +538,7 @@ return total;
         data.PromoDiscount = calcTotalPromoDiscount();
 
         data.CreditNoteItems = invoiceItems;
-        debugger;
+        
         $.ajax({
             method: "POST",
             url: "/CreditNote/Index",
@@ -585,14 +584,14 @@ return total;
         
         if (data.salesInvoiceItems !== null) {
             //customer info   
-            //debugger;
+            //
             //let customer = _.filter(customerList, (x) => { return x.Membership_Number === data.customer_Id; })[0]; //donot update double equal
             //var customerDropdown = $("#Customer_Id").data("kendoComboBox");
             //if (customer !== undefined) {
             //    customerDropdown.value(customer.Membership_Number);
             //    $("#Customer_Id").val(customer.Membership_Number).trigger('change');
             
-            debugger;
+           
             $("#MemberId").val(data.memberId);
             $("#Customer_Name").val(data.customer_Name);
             $("#Customer_Vat").val(data.customer_Vat);

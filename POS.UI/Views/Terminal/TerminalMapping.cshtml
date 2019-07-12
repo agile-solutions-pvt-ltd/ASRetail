@@ -104,7 +104,24 @@
                     async: false,
                     complete: function (data) {
                         if (data.status === 200) {
-                            debugger;
+                            
+                            $(".computerName").text(data.responseJSON.pcName);
+                            if (data.responseJSON.terminalId !== undefined)
+                                $("#Terminal_Id").val(data.responseJSON.terminalId);
+                        }
+                        else {
+                            $("#StatusMessageError").html("Error: Getting Computer Name");
+                            setTimeout(function () { $("#StatusMessageError").text(''); }, 3000);
+                        }
+                    }
+                });
+
+                 $.ajax({
+                    url: window.location.origin + "/Terminal/GetClientComputerName?ip=" + ip,
+                    async: false,
+                    complete: function (data) {
+                        if (data.status === 200) {
+                            
                             $(".computerName").text(data.responseJSON.pcName);
                             if (data.responseJSON.terminalId !== undefined)
                                 $("#Terminal_Id").val(data.responseJSON.terminalId);

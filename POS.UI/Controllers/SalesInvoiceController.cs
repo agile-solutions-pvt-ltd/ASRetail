@@ -206,9 +206,10 @@ namespace POS.UI.Controllers
             if (!_cache.TryGetValue("ItemViewModel", out items))
             {
                 // Key not in cache, so get data.
-                items = _context.ItemViewModel.ToList();
+               
+                items = GetItemsRawDataByBarcodeList(barCodeList).ToList();
 
-                _cache.Set("ItemViewModel", items);
+               
             }
             var temp = items.Where(x => barCodeList.Contains(x.Bar_Code));
             return Ok(temp);
@@ -528,6 +529,33 @@ namespace POS.UI.Controllers
             }
             _context.Entry(view).State = EntityState.Modified;
             _context.SaveChanges();
+        }
+
+
+        public IEnumerable<ItemViewModel> GetItemsRawDataByBarcodeList(List<string> barcodes)
+        {
+
+            string query = @"SELECT 
+        ROW_NUMBER() OVER(PARTITION BY Bar_Code order by Rate) AS SN ,
+       i.Code,i.Id as ItemId,i.Name,i.KeyInWeight,
+       ISNULL(b.BarCode,0) as Bar_Code,b.Unit,  
+       ISNULL(q.Quantity,0) as Quantity, 
+	   ISNULL(d.DiscountPercent,0) as Discount,d.MinimumQuantity as DiscountMinimumQuantity, d.StartDate as DiscountStartDate, d.EndDate as DiscountEndDate, d.StartTime as DiscountStartTime, d.EndTime as DiscountEndTime,d.SalesType as DiscountType,d.SalesCode as DiscountSalesGroupCode,d.ItemType as DiscountItemType, d.Location as DiscountLocation,ISNULL(p.AllowLineDiscount,1) as Is_Discountable,i.No_Discount,
+	   ISNULL(p.UnitPrice,0) as Rate,p.MinimumQuantity as RateMinimumQuantity, p.StartDate as RateStartDate, p.EndDate as RateEndDate, p.SalesType, p.SalesCode,
+	   i.Is_Vatable,
+	   s.INITIAL as Location, s.CustomerPriceGroup as LocationwisePriceGroup
+FROM ITEM i
+left join ITEM_BARCODE b on i.Code = b.ItemCode
+left join ITEM_QUANTITY q on i.Code = q.ItemCode
+left join ITEM_PRICE p on i.Code = p.ItemCode
+left join ITEM_DISCOUNT d on i.Code = d.ItemCode Or (d.ItemType = 'Item Disc. Group' and  d.ItemCode =  i.DiscountGroup)
+cross join STORE s
+where b.BarCode in ({0})";
+
+            string barcodeListString = string.Join(",",barcodes);
+            IEnumerable<ItemViewModel> data = _context.ItemViewModel.FromSql(query, barcodeListString).ToList();
+            return data;
+
         }
     }
 }

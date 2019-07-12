@@ -2,6 +2,7 @@
     //********* Private Variables **************//
     let defaultMembershipId = "POS";
     let searchLocal = false;
+    var grid;
 
     //********* Private Methos *****************//
     let init = () => {
@@ -24,18 +25,20 @@
         }, 3000);
 
         $('#memberTable').hide();
+        $('.k-grid.k-widget.k-display-block.k-editable').addClass("display-none");
 
         //initialize table to kendo grid
-        //grid = $("#memberTable").kendoGrid({
-        //    height: CalcGridHeight() - 160,
-        //    editable: true,
-        //    sortable: false,
-        //    scrollable: true,
+        grid = $("#memberTable").kendoGrid({
+            height: CalcGridHeight() -100,
+            editable: true,
+            sortable: false,
+            scrollable: true
+           
 
-        //});
-
+        });
+        $('.k-grid.k-widget.k-display-block.k-editable').addClass("display-none");
         //new logic
-        // debugger;
+        // 
 
         //var customerListString = JSON.stringify(customerList);
         //var customerListChunkArry = customerListString.match(/(.{1,500000})/g);
@@ -90,11 +93,16 @@
         });
     };
     let DisplayMember = (list) => {
+        debugger;
         $('#memberTable tbody').html('');
-        if (list.length > 0)
+        if (list.length > 0) {
             $('#memberTable').show();
-        else
+            $('.k-grid.k-widget.k-display-block.k-editable').removeClass("display-none");
+        }
+        else {
             $('#memberTable').hide();
+            $('.k-grid.k-widget.k-display-block.k-editable').addClass("display-none");
+        }
         _.each(list, function (v, k) {
             //add row
             var selected = k === 0 ? "class='selected'" : "";
@@ -128,6 +136,7 @@
             else {
                 $('#memberTable tbody').html('');
                 $('#memberTable').hide();
+                $('.k-grid.k-widget.k-display-block.k-editable').addClass("display-none");
             }
         }
     };
@@ -154,7 +163,7 @@
                 contentType: "application/json; charset=utf-8",
                 complete: function (result) {
                     if (result.status === 200) {
-                        debugger;
+                       
                         SelectMember(result.responseJSON.membership.membership_Number);
                     }
                     else if (result.status === 409) {
@@ -222,10 +231,10 @@
                     selectedRow.removeClass("active");
                     selectedRow.prev().addClass("selected");
                     selectedRow.prev().addClass("active");
-
-                    //var y = $(window).scrollTop();  //your current y position on the page
-                    //if (y < 500)
-                    //    $(window).scrollTop(y - 20);
+                  
+                    let gridUp = $("#memberTable").data("kendoGrid");
+                   // gridUp.select(selectedRow.prev());
+                    gridUp.content.scrollTop(selectedRow.prev().position().top);
                 }
                 return false;
 
@@ -241,11 +250,9 @@
                     selectedRow.next().addClass("active");
                     selectedRow.next().find(".membership-id").select();
 
-                    //make little bit scroll
-                    //debugger;
-                    //var y = $(window).scrollTop();  //your current y position on the page
-                    //if (y > 500)
-                    //    $(window).scrollTop(y + 20);
+                    let gridDown = $("#memberTable").data("kendoGrid");
+                    //gridDown.select(selectedRow.next());
+                    gridDown.content.scrollTop(selectedRow.next().position().top -200);
                 }
                 return false;
             }
@@ -265,6 +272,11 @@
     $(".search").on("click, keyup", SearchChangeEvent);
     $("#addNewMemberButton").on("click", AddMember);
     $("#memberSaveButton").on("click", SaveMember);
+    $("#memberSaveButton").on("keydown", function (e) {
+        debugger;
+        if (e.keyCode === 13)
+            SaveMember();
+    });
     $("#skipPage").on("click", SkipPage);
 
     //********* Public Output ****************//

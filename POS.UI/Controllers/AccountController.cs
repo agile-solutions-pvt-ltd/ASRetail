@@ -822,14 +822,14 @@ namespace POS.UI.Controllers
         [HttpGet]
         public IActionResult RoleWiseMenuPermission()
         {
-            var roleName = ((ClaimsIdentity)User.Identity).Claims
-                 .Where(c => c.Type == ClaimTypes.Role)
-                 .Select(c => c.Value).FirstOrDefault();
-
-
-            var role = _roleManager.FindByNameAsync(roleName);
-            var roleId = role.Result.Id;
-            IList<RoleWiseMenuPermission> permission = _context.RoleWiseMenuPermission.Where(x => x.RoleId == roleId || x.RoleId == roleName).Include(x => x.Menu).ToList();
+            //var roleName = ((ClaimsIdentity)User.Identity).Claims
+            //     .Where(c => c.Type == ClaimTypes.Role)
+            //     .Select(c => c.Value).FirstOrDefault();
+            var userName = User.Identity.Name;
+            var role = _context.UserViewModel.FirstOrDefault(x => x.UserName == User.Identity.Name);
+            //var role = _roleManager.FindByNameAsync(roleName);
+            //var roleId = role.Result.Id;
+            IList<RoleWiseMenuPermission> permission = _context.RoleWiseMenuPermission.Where(x => x.RoleId == role.RoleId || x.RoleId == role.Role).Include(x => x.Menu).ToList();
 
 
             HttpContext.Session.SetString("Menus", JsonConvert.SerializeObject(permission));

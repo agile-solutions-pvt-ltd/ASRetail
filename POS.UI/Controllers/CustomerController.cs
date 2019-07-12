@@ -243,6 +243,7 @@ namespace POS.UI.Controllers
             (!string.IsNullOrEmpty(x.Membership_Number_Old) && x.Membership_Number_Old.ToLower().Contains(text)) ||
             (!string.IsNullOrEmpty(x.Barcode) && x.Barcode.ToLower().Contains(text)) ||
             (!string.IsNullOrEmpty(x.Mobile1) && x.Mobile1.ToLower().Contains(text)));
+            customer.Take(50);
             return Ok(customers);
         }
 
@@ -285,7 +286,7 @@ namespace POS.UI.Controllers
                     _context.SaveChanges();
 
                     //update cache
-                    IEnumerable<Customer> customers;
+                    IList<Customer> customers;
                     if (!_cache.TryGetValue("Customers", out customers))
                     {
                         // Key not in cache, so get data.
@@ -293,7 +294,7 @@ namespace POS.UI.Controllers
 
                         _cache.Set("Customers", customers);
                     }
-                    customers.ToList().Add(customer);
+                    customers.Add(customer);
                     _cache.Set("Customer", customers);
 
                     NavPostData navPost = new NavPostData(_context, _mapper);

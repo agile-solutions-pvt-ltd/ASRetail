@@ -93,7 +93,7 @@
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 <script>
     GetClientLocalIP(function (ip) {
-        debugger;
+        
                 $(".ipAddress").text(ip);
                 $.ajax({
                     url: window.location.origin + "/Terminal/GetClientComputerName?ip=" + ip,

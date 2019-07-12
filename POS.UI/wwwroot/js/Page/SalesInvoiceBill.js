@@ -302,7 +302,7 @@
     let customerChangeEvent = () => {
         var customerDropdown = $("#customer").data("kendoComboBox");
         var selectedItem = customerDropdown.dataItem();
-        debugger;
+        
         //var selectedValue = $('#customer').find(":selected").val();
         //var selectedItem = _.filter(customerList, function (x) {
         //    return x.Code === selectedValue;
@@ -347,7 +347,7 @@
     };
 
     let paymentMethodForWholesaleCustomer = () => {
-        debugger;
+       
         if (customerList[0].CustomerPriceGroup === "WSP" || customerList[0].Type === "Credit") {
             $("#cash").remove();
             $("#card").remove();
@@ -471,7 +471,7 @@
 
 
         let invoiceId = $("#Invoice_Id").val();
-        debugger;
+       
         let data = [];
         $.each(table.rows, function (i, v) {
             let mode = $(this).find(".trans_mode").text();

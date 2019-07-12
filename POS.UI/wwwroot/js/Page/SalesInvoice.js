@@ -5,6 +5,7 @@ const invoice = (function () {
 
     let table = document.getElementById("item_table").getElementsByTagName('tbody')[0];
     let taxPercent = 13;
+    let isBarCodePressed = false;
     let salesTransactionLimit = 5000;
     let permission = {
         salesDiscountItemwise: false,
@@ -160,8 +161,11 @@ const invoice = (function () {
                     _.each(data, function (x) { selectedItems.push(x); });
                     callback(data);
                 }
+                isBarCodePressed = false;
             },
             error: function (x) {
+
+                isBarCodePressed = false;
                 console.log(x);
             }
         });
@@ -367,10 +371,12 @@ const invoice = (function () {
         });
 
         if (!checkAlreadyExistItem) {
-
             GetItems(code, function (result) {
                 addRowWithData(result);
             });
+        }
+        else {
+            isBarCodePressed = false;
         }
     };
 
@@ -510,6 +516,15 @@ const invoice = (function () {
             // setTimeout(() => { row.className = ""; }, 300);
         }
 
+
+        //make this row at top and scroll to top
+        $(".k-grid-content.k-auto-scrollable").scrollTop(0);
+       
+
+
+
+
+
         ////test logic
         //// Change the selector if needed
         //var $table = $('#item_table'),
@@ -534,7 +549,7 @@ const invoice = (function () {
     //    getFOCItem(itemCode, function (data) {
     //        //
     //        if (data.length > 0) {
-    //            debugger;
+    //            
     //            _.each(data, function (value) {
     //                addRowWithData(data);
     //            });
@@ -679,9 +694,10 @@ const invoice = (function () {
     let barCodeKeyPressEvent = (e) => {
 
         var $this = $(e.currentTarget);
-        if ((e.keyCode === 13 || e.keyCode === 10) && $this.val() !== "" && $this.val().length > 1) {
+        if ((e.keyCode === 13 || e.keyCode === 10) && $this.val() !== "" && $this.val().length > 1 && !isBarCodePressed) {
 
-
+            //disable for another barcode
+            isBarCodePressed = true;
             addRowGetUpdateData($this.val(), e.keyCode);
             //highlight the selected code
             $this.focus();
@@ -713,6 +729,7 @@ const invoice = (function () {
     // #region CALCULATIONS
     let calcDiscount = (itemCode, quantity, customerGroupCode) => {
         //variables
+        debugger;
         var todayDate = new Date();
         var membershipNumber = $("#membershipId").val();
 
@@ -776,7 +793,7 @@ const invoice = (function () {
         return discount;
     };
     let calcDiscountLine = (selectedItem, quantity, itemCode) => {
-        debugger;
+        
         //variables
         var todayDate = new Date();
         var membershipNumber = $("#membershipId").val();
@@ -943,6 +960,7 @@ const invoice = (function () {
     };
     let calcRate = (itemCode, quantity, row) => {
 
+        debugger;
         //Get Selected Item First       
         var todayDate = new Date();
         todayDate = new Date(todayDate.toDateString()); //remove timespan
@@ -1020,7 +1038,7 @@ const invoice = (function () {
                     Mousetrap.pause();
                     $('#rateDropdown').focus();
                     $('#rateDropdown').on("keypress", function (e) {
-                        //debugger;
+                        //
                         if (e.keyCode === 13) {
                             e.preventDefault(); e.stopPropagation();
                             $(".bootbox-accept").trigger("click");
@@ -1167,7 +1185,7 @@ const invoice = (function () {
                 totalTax += tax;
                 totalGrossAmount += grossAmount;
                 totalNetAmount += netAmount;
-                debugger;
+                
                 //calc taxable and non taxable
                 if (taxable)
                     totalTaxableAmount += rateExcludeTax * quantity - discountExcVat;
@@ -1334,6 +1352,17 @@ const invoice = (function () {
 
     // #endregion
 
+    let handleBackButtonEvent = () => {
+        if (!_.isEmpty(getUrlParameters())) {
+
+            var id = getUrlParameters();
+            var mode = GetUrlParameters("mode");
+            if (mode === "tax")
+                window.location.href = window.location.origin + "/SalesInvoice/Landing?mode=tax";
+            else
+                window.location.href = window.location.origin + "/SalesInvoice/Landing";
+        }
+    };
     let customerPanelToggle = (evt) => {
         if (evt !== undefined) {
             evt.preventDefault(); evt.stopPropagation();
@@ -1564,7 +1593,9 @@ const invoice = (function () {
             e.preventDefault(); e.stopPropagation();
             changeSelectedRow("up");
         });
-
+        Mousetrap.bindGlobal('esc', function () {
+            handleBackButtonEvent();
+        });
 
 
     };
@@ -1713,7 +1744,7 @@ const invoice = (function () {
         else
             data.Flat_Discount_Amount = $("#flat_discount").val();
 
-        debugger;
+        
 
         //add membership discount
         data.MembershipDiscount = calcTotalMembershipDiscount();

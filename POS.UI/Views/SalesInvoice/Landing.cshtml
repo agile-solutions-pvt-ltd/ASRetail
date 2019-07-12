@@ -6,6 +6,9 @@
     .cinfo {
         font-size: xx-large;
     }
+    .display-none{
+        display:none;
+    }
 
     .caddress {
         font-size: large;
@@ -24,6 +27,13 @@
     .selected {
         background-color: rgb(128, 128, 128);
         color: #FFF;
+    }
+
+    #memberSaveButton:hover, #memberSaveButton:focus {
+        background-color: #011a25;
+        border-color: #011a25;
+        color: #fff;
+        cursor: pointer;
     }
 </style>
 <div class="page-wrapper">
@@ -76,7 +86,7 @@
                                             </div>
                                             <div id="memberSaveButtonSH" class="form-group col-md-1">
                                                 <label class="control-label">&nbsp;</label>
-                                                <input type="button" id="memberSaveButton" class="form-control form-control-sm btn btn-sm btn-primary" value="Save" />
+                                                <button id="memberSaveButton" class="form-control form-control-sm btn btn-sm btn-primary">Save</button>
                                             </div>
                                         </div>
                                     </div>
@@ -95,9 +105,9 @@
                                                 </thead>
                                                 <tbody></tbody>
                                             </table>
-                                            </div>
                                         </div>
                                     </div>
+                                </div>
                                 <div class="col-md-1"></div>
 
                             </div>
@@ -121,7 +131,7 @@
     <script>
      // var customerList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Customer));
     </script>
-   
+
     <script src="~/js/Page/InvoiceLanding.js"></script>
 
 

@@ -13,7 +13,7 @@
         if (data.invoiceData.trans_Type === "Sales")
             PrintSalesInvoice(data, callback);
         else {
-            debugger;
+           
             if (data.copy !== undefined) {
                 //print double
                 PrintTaxInvoice(data, callback);
@@ -40,7 +40,7 @@
                     if (paymentMode === "") {
                         paymentMode = data.paymentMode;
                     }
-                    debugger;
+                    
                     printText = printText.replace("{companyName}", data.storeData.companY_NAME || data.storeData.COMPANY_NAME);
                     printText = printText.replace("{storeLocation}", data.storeData.address || data.storeData.ADDRESS);
                     printText = printText.replace("{vatNumber}", data.storeData.vat || data.storeData.VAT);
@@ -113,7 +113,7 @@
                     if (paymentMode === "") {
                         paymentMode = data.paymentMode;
                     }
-                    debugger;
+                    
                     printText = printText.replace("{companyName}", data.storeData.companY_NAME || data.storeData.COMPANY_NAME);
                     printText = printText.replace("{storeLocation}", data.storeData.address || data.storeData.ADDRESS);
                     printText = printText.replace("{vatNumber}", data.storeData.vat || data.storeData.VAT);
@@ -193,12 +193,12 @@
                 if (result.status === 200) {
                     let printText = $(result.responseText).find("#printbody").html();
                     //replace all variables
-                    debugger;
+                    
                     var paymentMode = _.pluck(data.billData, "trans_Mode").join(", ");
                     if (paymentMode === "") {
                         paymentMode = data.paymentMode;
                     }
-                    debugger;
+                    
                     printText = printText.replace("{companyName}", data.storeData.companY_NAME || data.storeData.COMPANY_NAME);
                     printText = printText.replace("{storeLocation}", data.storeData.address || data.storeData.ADDRESS);
                     printText = printText.replace("{vatNumber}", data.storeData.vat || data.storeData.VAT);
@@ -283,7 +283,7 @@
                 if (result.status === 200) {
                     let printText = $(result.responseText).find("#printbody").html();
                     //replace all variables
-                    debugger;
+                    
                     printText = printText.replace("{companyName}", data.Store.COMPANY_NAME);
                     printText = printText.replace("{storeLocation}", data.Store.ADDRESS);
                     printText = printText.replace("{vatNumber}", data.Store.VAT);
@@ -374,7 +374,7 @@
                 if (result.status === 200) {
                     let printText = $(result.responseText).find("#printbody").html();
                     //replace all variables
-                    debugger;
+                    
                     printText = printText.replace("{companyName}", data.store.companY_NAME);
                     printText = printText.replace("{storeLocation}", data.store.address);
                     printText = printText.replace("{vatNumber}", data.store.vat);

@@ -178,7 +178,7 @@ namespace POS.UI.Controllers
         {
 
             string query = @"SELECT 
-        cast(1 as bigint) as SN,
+        ROW_NUMBER() OVER(PARTITION BY Bar_Code order by Rate) AS SN ,
        i.Code,i.Id as ItemId,i.Name,i.KeyInWeight,
        ISNULL(b.BarCode,0) as Bar_Code,b.Unit,  
        ISNULL(q.Quantity,0) as Quantity, 
