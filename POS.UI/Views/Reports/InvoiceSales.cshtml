@@ -1,0 +1,414 @@
+﻿@model IEnumerable<POS.DTO.SalesInvoice>
+
+@{
+    ViewData["Title"] = "Sales Invoice Terminalwise";
+}
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<link rel="stylesheet" href="/resources/demos/style.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+<style>
+    .k-grid {
+        font-family: "DejaVu Sans", "Arial", sans-serif;
+    }
+</style>
+<style>
+    /* Page Template for the exported PDF */
+    .page-template {
+        font-family: "DejaVu Sans", "Arial", sans-serif;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+    }
+
+        .page-template .header {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            right: 30px;
+            border-bottom: 1px solid #888;
+            color: #888;
+        }
+
+        .page-template .footer {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            right: 30px;
+            border-top: 1px solid #888;
+            text-align: center;
+            color: #888;
+        }
+
+        .page-template .watermark {
+            font-weight: bold;
+            font-size: 400%;
+            text-align: center;
+            margin-top: 30%;
+            color: #aaaaaa;
+            opacity: 0.1;
+            transform: rotate(-35deg) scale(1.7, 1.5);
+        }
+
+    .button {
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 6px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+    }
+</style>
+
+
+
+<!-- Load Pako ZLIB library to enable PDF compression -->
+<script src="~/lib/kendo-ui/pako_deflate.min.js"></script>
+<div class="page-wrapper">
+    <div class="page-header">
+        <div class="page-header-title">
+            <h4>@ViewData["Title"]</h4>
+
+        </div>
+        <div class="page-header-breadcrumb">
+            <ul class="breadcrumb-title">
+                <li class="breadcrumb-item">
+                    <a href="index.html">
+                        <i class="icofont icofont-home"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">Report</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">@ViewData["Title"]</a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+    <div class="page-body">
+        
+        <div class="row">
+            <div class="col-sm-12">
+
+                <div class="card">
+                    <div class="card-block">
+                        @*Your content here*@
+                        <p>StartDate: <input type="text" id="startdatepicker"> EndDate: <input type="text" id="enddatepicker"  > <button class="button" onclick="DateFilter()">Preview</button></p>
+
+
+                        <div id="grid" ></div>
+                        <script type="x/kendo-template" id="page-template">
+                            <div class="page-template">
+                                <div class="header">
+                                    <div style="float: right">Page #: pageNum # of #: totalPages #</div>
+
+                                </div>
+                                @*<div class="watermark">KENDO UI</div>*@
+                                <div class="footer">
+                                    Page #: pageNum # of #: totalPages #
+                                </div>
+                            </div>
+                        </script>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+@section Scripts {
+    <script>
+        
+        var store = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Store));
+       
+        /*
+            This demo renders the grid in "DejaVu Sans" font family, which is
+            declared in kendo.common.css. It also declares the paths to the
+            fonts below using <tt>kendo.pdf.defineFont</tt>, because the
+            stylesheet is hosted on a different domain.
+        */
+        kendo.pdf.defineFont({
+            "DejaVu Sans": "https://kendo.cdn.telerik.com/2016.2.607/styles/fonts/DejaVu/DejaVuSans.ttf",
+            "DejaVu Sans|Bold": "https://kendo.cdn.telerik.com/2016.2.607/styles/fonts/DejaVu/DejaVuSans-Bold.ttf",
+            "DejaVu Sans|Bold|Italic": "https://kendo.cdn.telerik.com/2016.2.607/styles/fonts/DejaVu/DejaVuSans-Oblique.ttf",
+            "DejaVu Sans|Italic": "https://kendo.cdn.telerik.com/2016.2.607/styles/fonts/DejaVu/DejaVuSans-Oblique.ttf",
+            "WebComponentsIcons": "https://kendo.cdn.telerik.com/2017.1.223/styles/fonts/glyphs/WebComponentsIcons.ttf"
+        });
+    </script>
+
+    <script>
+        var startdate = new Date();
+        var dd = String(startdate.getDate()).padStart(2, '0');
+        var mm = String(startdate.getMonth() + 1).padStart(2, '0'); //January is 0!
+        var yyyy = startdate.getFullYear();
+
+        startdate = mm + '/' + dd + '/' + yyyy;
+
+
+        var enddate = new Date();
+        enddate = startdate;
+        console.log("FirstDate", startdate);
+        console.log("EndDate", enddate);
+
+        function printInvoice(evt) {
+            var invoiceData = $("#grid").data("kendoGrid").dataItem(evt.closest("tr"));
+            $.ajax({
+                url: window.location.origin + "/Print/GetPrintCount?invoiceNumber=" + invoiceData.invoice_Number,
+                type: 'POST',
+                complete: function (result) {
+
+                    if (result.status === 200)
+
+                        var data = {
+                            invoiceData: invoiceData,
+                            storeData: store,
+                            copy: result.responseJSON.printCount,
+                            paymentMode: result.responseJSON.paymentMode
+                        };
+                    printer.PrintInvoice(data, function () {
+                        ////update printcount
+                        //$.ajax({
+                        //    url: window.location.origin + "/Print/UpdatePrintCount?invoiceNumber=" + data.invoiceData.invoice_Number,
+                        //    type: 'POST',
+                        //    complete: function (result) {
+                        //    }
+                        //});
+                    });
+                }
+            });
+
+            
+        }
+        function DateFilter() {
+
+            console.log("StartDate", startdate);
+            console.log("EndDate", enddate);
+           
+            startup();
+        }
+        $(function () {
+            $("#startdatepicker").datepicker({
+                onSelect: function (date) {
+                    //ate = new date();
+                    startdate = date;
+                    console.log(startdate);
+
+
+                }
+              
+
+            });
+            $('#startdatepicker').datepicker('setDate', 'startdate');
+
+            $("#enddatepicker").datepicker({
+                onSelect: function (date) {
+                    enddate = date;
+                    console.log(enddate);
+                }
+            });
+            $('#enddatepicker').datepicker('setDate', 'enddate');
+        });
+        function startup() {
+
+            $("#grid").kendoGrid({
+                toolbar: ["pdf", "excel"],
+                pdf: {
+                    allPages: true,
+                    avoidLinks: true,
+                    paperSize: "A4",
+                    margin: { top: "2cm", left: "1cm", right: "1cm", bottom: "1cm" },
+                    landscape: true,
+                    repeatHeaders: true,
+                    template: $("#page-template").html(),
+                    scale: 0.8
+                },
+                excel: {
+                    fileName: "ABBREVIATED TAX INVOICE Report.xlsx",
+                    proxyURL: window.location.origin + "/Reports/Excel_Export_Save",
+                    filterable: true
+                },
+
+                dataSource: {
+                    type: "json",
+                    transport: {
+                        read: window.location.origin + "/Reports/InvoiceSalesApi?startdate="+startdate+"&enddate="+enddate
+                    },
+                    schema: {
+                        model: {
+                            fields: {
+                                trans_Date_Ad: { type: "date" },
+                                total_Gross_Amount: { type: "number" },
+                                total_Discount: { type: "number" },
+                                total_Net_Amount: { type: "number" }
+
+                            }
+                        },
+                        data: function (data) {
+                            return data;
+                        }
+
+                    },
+                    pageSize: 100,
+                    sort: { field: "invoice_Number", dir: "desc" },
+                    group: {
+                        field: "terminal", aggregates: [
+                            { field: "trans_Date_Bs", aggregate: "count" },
+                            { field: "total_Gross_Amount", aggregate: "sum" },
+                            { field: "total_Discount", aggregate: "sum" },
+                            { field: "total_Net_Amount", aggregate: "sum" },
+
+
+
+                        ],
+                        dir: "desc"
+                    },
+                    aggregate: [
+                        { field: "total_Gross_Amount", aggregate: "sum" },
+                        { field: "total_Discount", aggregate: "sum" },
+                        { field: "total_Net_Amount", aggregate: "sum" }
+                    ],
+                },
+                height: 550,
+                filterable: true,
+                sortable: true,
+                pageable: true,
+                resizable: true,
+                columns: [
+                    {
+                        title: "Invoice Number",
+                        field: "invoice_Number"
+
+
+                    },
+                    {
+                        title: "Created By",
+                        field: "created_By"
+
+
+                    },
+                    {
+                        title: "Trans Type",
+                        field: "trans_Type"
+
+
+                    },
+                    {
+                        title: "Terminal",
+                        field: "terminal"
+
+
+                    },
+                    {
+                        field: "trans_Date_Ad",
+                        title: "Date",
+                        format: "{0:MM/dd/yyyy}",
+                    }, {
+                        field: "trans_Date_Bs",
+                        title: "BS",
+                        footerAttributes: {
+                            "class": "p-1 text-right"
+
+                        },
+                        groupFotterAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        groupFooterTemplate: "Count: #: count #",
+                        footerTemplate: "Total"
+                    },
+                    {
+                        field: "total_Gross_Amount",
+                        title: "Gross Amount",
+                        attributes: {
+                            "class": "p-1 text-right"
+                        },
+                        footerAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        groupFotterAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        template: "#: CurrencyFormat(total_Gross_Amount) #",
+                        groupFooterTemplate: "#: CurrencyFormat(sum) #",
+                        footerTemplate: "#: CurrencyFormat(sum) #",
+
+                    },
+
+                    {
+                        field: "total_Discount",
+                        title: "Discount",
+                        attributes: {
+                            "class": "p-1 text-right"
+                        },
+                        footerAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        groupFotterAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        template: "#: CurrencyFormat(total_Discount) #",
+                        groupFooterTemplate: "#: CurrencyFormat(sum) #",
+                        footerTemplate: "#: CurrencyFormat(sum) #",
+                    },
+                    {
+                        field: "total_Net_Amount",
+                        title: "Net Amount",
+                        attributes: {
+                            "class": "p-1 text-right"
+                        },
+                        footerAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        groupFotterAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        template: "#: CurrencyFormat(total_Net_Amount) #",
+                        groupFooterTemplate: "#: CurrencyFormat(sum) #",
+                        footerTemplate: "#: CurrencyFormat(sum) #",
+                    },
+                    {
+
+                        title: "Action",
+                        attributes: {
+                            "class": "p-1 text-right"
+                        },
+                        template: '<a href="javascript:void(0)" class="print" onclick="printInvoice(this)">Print</a>'
+
+                    }
+                ]
+            });
+            //$(".k-grid-content").css("overflow-y", "hidden").mCustomScrollbar();
+            // All your functions in here.
+
+        }
+        $(document).ready(function () {
+
+          
+            
+           
+            //var g = $("#SalesInvoiceTable").data("kendoGrid");
+            //g.dataSource.pageSize(10);
+            //g.dataSource.group({ field: "Date" });
+            //PageSlimScroll();
+
+
+            startup();
+
+
+
+        });
+    </script>
+
+}
+
