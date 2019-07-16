@@ -45,7 +45,7 @@ namespace POS.DTO
         [Display(Name = "Percentage")]
         public decimal? Flat_Discount_Percent { get; set; } = 0;
         [Display(Name = "Total Quantity")]
-        public int? Total_Quantity { get; set; } = 0;
+        public decimal? Total_Quantity { get; set; } = 0;
         [Display(Name = "Total Gross Amount")]
         public decimal? Total_Gross_Amount { get; set; } = 0;
         [Display(Name = "Total Discount")]

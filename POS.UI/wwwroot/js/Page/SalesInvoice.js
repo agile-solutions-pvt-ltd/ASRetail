@@ -154,6 +154,30 @@ const invoice = (function () {
             success: function (data) {
                 if (data.length === 0) {
                     $("#itemNotFoundLabel").show();
+                    bootbox.alert("Item Not Found !!", function () {
+                        debugger;
+
+                        $("#item_code").focus();
+                        $("#item_code").select();
+
+                        //for barcode device
+                        setTimeout(() => {
+                            $("#item_code").focus();
+                            $("#item_code").select();
+                        }, 20);
+                    }).one("shown.bs.modal", function () {
+                        //temporary paused the shortcut events
+                        Mousetrap.pause();
+
+                    }).one("hide.bs.modal", function () {
+                        // allow Mousetrap events to fire again
+                        Mousetrap.unpause();
+                        setTimeout(() => {
+                            $("#item_code").focus();
+                            $("#item_code").select();
+                        }, 20);
+
+                    });
                     setTimeout(function () { $("#itemNotFoundLabel").hide(); }, 2000);
 
                 } else {
@@ -503,7 +527,7 @@ const invoice = (function () {
         calcAll();
     };
     let makeRowAtTopAndHightlight = (row) => {
-        //remove all highlights
+        //remove all highlights        
         $(table).find("tr").removeClass("active");
         if (row.className === undefined) {
             row.addClass("active");
@@ -519,7 +543,7 @@ const invoice = (function () {
 
         //make this row at top and scroll to top
         $(".k-grid-content.k-auto-scrollable").scrollTop(0);
-       
+
 
 
 
@@ -619,6 +643,7 @@ const invoice = (function () {
     };
     let showPausedTransaction = () => {
         $("#PausedTransactionListModal").modal('show');
+        
     };
     let loadPausedTransaction = (row) => {
         var invoiceId = row.closest("tr").find('td.invoice-id').text();
@@ -728,8 +753,7 @@ const invoice = (function () {
 
     // #region CALCULATIONS
     let calcDiscount = (itemCode, quantity, customerGroupCode) => {
-        //variables
-        debugger;
+        //variables       
         var todayDate = new Date();
         var membershipNumber = $("#membershipId").val();
 
@@ -793,7 +817,8 @@ const invoice = (function () {
         return discount;
     };
     let calcDiscountLine = (selectedItem, quantity, itemCode) => {
-        
+
+        debugger;
         //variables
         var todayDate = new Date();
         var membershipNumber = $("#membershipId").val();
@@ -816,17 +841,16 @@ const invoice = (function () {
 
 
 
-
         //1) filter by date
         var filterByDate = _.filter(lineDiscountRows, function (x) {
-            var conditions = (todayDate >= new Date(x.discountStartDate) && todayDate <= new Date(x.discountEndDate)) ||
-                (x.discountStartDate === null && todayDate <= new Date(x.discountEndDate)) ||
-                (todayDate >= new Date(x.discountStartDate) && x.discountEndDate === null);
+            var conditions = (moment(todayDate).format("YYYY-MM-DD") >= moment(x.discountStartDate).format("YYYY-MM-DD") && moment(todayDate).format("YYYY-MM-DD") <= moment(x.discountEndDate).format("YYYY-MM-DD")) ||
+                (x.discountStartDate === null && moment(todayDate).format("YYYY-MM-DD") <= moment(x.discountEndDate).format("YYYY-MM-DD")) ||
+                (moment(todayDate).format("YYYY-MM-DD") >= moment(x.discountStartDate).format("YYYY-MM-DD") && x.discountEndDate === null);
             return conditions;
         });
 
 
-
+        debugger;
         //2) filter by time
         var filterByTime = _.filter(filterByDate, function (x) {
             var conditions = (moment(todayDate).format("HH:mm:ss") >= moment(x.discountStartTime)._i && moment(todayDate).format("HH:mm:ss") <= moment(x.discountEndTime)._i) ||
@@ -915,9 +939,9 @@ const invoice = (function () {
 
         //1) filter by date
         var filterByDate = _.filter(lineDiscountRows, function (x) {
-            var conditions = (todayDate >= new Date(x.discountStartDate) && todayDate <= new Date(x.discountEndDate)) ||
-                (x.discountStartDate === null && todayDate <= new Date(x.discountEndDate)) ||
-                (todayDate >= new Date(x.discountStartDate) && x.discountEndDate === null);
+            var conditions = (moment(todayDate).format("YYYY-MM-DD") >= moment(x.discountStartDate).format("YYYY-MM-DD") && moment(todayDate).format("YYYY-MM-DD") <= moment(x.discountEndDate).format("YYYY-MM-DD")) ||
+                (x.discountStartDate === null && moment(todayDate).format("YYYY-MM-DD") <= moment(x.discountEndDate).format("YYYY-MM-DD")) ||
+                (moment(todayDate).format("YYYY-MM-DD") >= moment(x.discountStartDate).format("YYYY-MM-DD") && x.discountEndDate === null);
             return conditions;
         });
         //2) filter by time
@@ -960,7 +984,7 @@ const invoice = (function () {
     };
     let calcRate = (itemCode, quantity, row) => {
 
-        debugger;
+
         //Get Selected Item First       
         var todayDate = new Date();
         todayDate = new Date(todayDate.toDateString()); //remove timespan
@@ -972,9 +996,9 @@ const invoice = (function () {
         });
 
         var filterByDate = _.filter(selectedItem, function (x) {
-            var conditions = (todayDate >= new Date(x.rateStartDate) && todayDate <= new Date(x.rateEndDate)) ||
-                (x.rateStartDate === null && todayDate <= new Date(x.rateEndDate)) ||
-                (todayDate >= new Date(x.rateStartDate) && x.rateEndDate === null);
+            var conditions = (moment(todayDate).format("YYYY-MM-DD") >= moment(x.rateStartDate).format("YYYY-MM-DD") && moment(todayDate).format("YYYY-MM-DD") <= moment(x.rateEndDate).format("YYYY-MM-DD")) ||
+                (x.rateStartDate === null && moment(todayDate).format("YYYY-MM-DD") <= moment(x.rateEndDate).format("YYYY-MM-DD")) ||
+                (moment(todayDate).format("YYYY-MM-DD") >= moment(x.rateStartDate).format("YYYY-MM-DD") && x.rateEndDate === null);
             return conditions;
         });
 
@@ -1185,10 +1209,10 @@ const invoice = (function () {
                 totalTax += tax;
                 totalGrossAmount += grossAmount;
                 totalNetAmount += netAmount;
-                
+
                 //calc taxable and non taxable
                 if (taxable)
-                    totalTaxableAmount += rateExcludeTax * quantity - discountExcVat;
+                    totalTaxableAmount +=  (rateExcludeTax - discountExcVat) * quantity;
                 else {
                     totalNonTaxableAmount += rateExcludeTax * quantity;
                 }
@@ -1539,6 +1563,12 @@ const invoice = (function () {
             e.preventDefault(); e.stopPropagation();
             $("#membershipId").focus();
         });
+        //for membership expand
+        Mousetrap.bindGlobal('f6', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            $("#customer_icon_toggle").trigger("click");
+
+        });
 
 
         //for save sales invoice
@@ -1651,6 +1681,16 @@ const invoice = (function () {
         }
     };
     let SaveSalesInvoice = () => {
+
+        //check sales limit
+        if (transType.val() === "Sales" && parseFloat(CurrencyUnFormat($("#totalNetAmount").text())) >= salesTransactionLimit) {
+            //if (confirm('Your Transaction Amount Is Greater Than Sale Limit. \n Do You Want To Convert To Tax Invoice?')) {
+            //    convertSalesTax();
+            //    return false;
+            //}
+            convertSalesTax();
+        }
+
         //variable
         let tableRows = document.getElementById("item_table").getElementsByTagName('tbody')[0];
 
@@ -1693,14 +1733,7 @@ const invoice = (function () {
 
 
 
-        //check sales limit
-        if (transType.val() === "Sales" && totalNetAmount.val() >= salesTransactionLimit) {
-            //if (confirm('Your Transaction Amount Is Greater Than Sale Limit. \n Do You Want To Convert To Tax Invoice?')) {
-            //    convertSalesTax();
-            //    return false;
-            //}
-            convertSalesTax();
-        }
+      
 
         //get items
         var table = $("#item_table");
@@ -1744,7 +1777,7 @@ const invoice = (function () {
         else
             data.Flat_Discount_Amount = $("#flat_discount").val();
 
-        
+
 
         //add membership discount
         data.MembershipDiscount = calcTotalMembershipDiscount();
@@ -1808,7 +1841,7 @@ const invoice = (function () {
     });
     $("#customer_icon_toggle").on('click', customerPanelToggle);
     $("#Customer_Id").on('change', function (e) {
-
+        debugger;
         e.preventDefault(); e.stopPropagation();
         var selectedValue = $("#Customer_Id").data("kendoComboBox").value();
         var selectedItem = _.filter(customerList, function (x) {
@@ -1865,6 +1898,11 @@ const invoice = (function () {
     });
     $("#membershipId").on('change', membershipIdChangeEvent);
     $("#memberAddButton").on('click', addNewMemberClickEvent);
+
+    //prevent click event
+    $("#Invoice_Number,#trans_date_ad,#trans_date_bs").on('click', function (e) {
+        e.preventDefault(); e.stopPropagation();
+    });
 
 
 

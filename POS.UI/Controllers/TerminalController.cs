@@ -195,6 +195,8 @@ namespace POS.UI.Controllers
                 var client = new RestSharp.RestClient(url);
                 var request = new RestSharp.RestRequest(RestSharp.Method.GET);
 
+                request.AddHeader("Access-Control-Allow-Origin", "*");
+
                 RestSharp.IRestResponse response = client.Execute(request);
                 string pcName = response.Content.Replace("\"", "");
                 int terminalId = 0;

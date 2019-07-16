@@ -98,6 +98,7 @@ namespace POS.UI.Controllers
                     //get user role
                     var role = _context.UserViewModel.FirstOrDefault(x => x.UserName == user.UserName);
                     //save to session 
+                    HttpContext.Session.SetString("TotalMenu", JsonConvert.SerializeObject(_context.Menu));
                     HttpContext.Session.SetString("Menus", JsonConvert.SerializeObject(_context.RoleWiseMenuPermission.Where(x => x.RoleId == role.Role).Include(x => x.Menu)));
 
                     if (model.TerminalId != 0)
@@ -754,8 +755,9 @@ namespace POS.UI.Controllers
             RoleWisePermissionCommon data = new RoleWisePermissionCommon();
             if (id != null)
             {
-                data.roleWiseUserPermission = _context.RoleWisePermission.FirstOrDefault(x => x.RoleId == id);
-                data.roleWiseMenuPermissions = _context.RoleWiseMenuPermission.Where(x => x.RoleId == id).ToList();
+                var role = _context.UserViewModel.FirstOrDefault(x => x.RoleId == id);
+                data.roleWiseUserPermission = _context.RoleWisePermission.FirstOrDefault(x => x.RoleId == id || x.RoleId == role.Role);
+                data.roleWiseMenuPermissions = _context.RoleWiseMenuPermission.Where(x => x.RoleId == id || x.RoleId == role.Role).ToList();
             }
             return View(data);
         }
@@ -800,20 +802,12 @@ namespace POS.UI.Controllers
         [HttpGet]
         public IActionResult RoleWiseUserPermission()
         {
-            var roleName = ((ClaimsIdentity)User.Identity).Claims
-                 .Where(c => c.Type == ClaimTypes.Role)
-                 .Select(c => c.Value).FirstOrDefault();
-
-            //Task<string> roleId =  _roleManager.GetRoleIdAsync(new IdentityRole(role));
-            // roleId.Wait();
-
-
-            var role = _roleManager.FindByNameAsync(roleName);
-            var roleId = role.Result.Id;
+            var userName = User.Identity.Name;
+            var role = _context.UserViewModel.FirstOrDefault(x => x.UserName == User.Identity.Name);
             RoleWisePermissionCommon data = new RoleWisePermissionCommon();
             if (role != null)
             {
-                data.roleWiseUserPermission = _context.RoleWisePermission.FirstOrDefault(x => x.RoleId == roleId);
+                data.roleWiseUserPermission = _context.RoleWisePermission.FirstOrDefault(x => x.RoleId == role.RoleId || x.RoleId == role.Role);
                 // data.roleWiseMenuPermissions = _context.RoleWiseMenuPermission.Where(x => x.RoleId == id).ToList();
             }
             return Ok(data);

@@ -506,12 +506,11 @@
             contentType: "application/json; charset=utf-8",
             complete: function (result) {
                 if (result.status === 200) {
-                    //printer.PrintInvoice(result.responseJSON, function () {                       
-                    //   window.location.href = "/SalesInvoice/Landing?StatusMessage=" + result.responseJSON.statusMessage;
-                    //});
-                    window.location.href = "/SalesInvoice/Landing?StatusMessage=" + result.responseJSON.statusMessage;
-
-
+                    printer.PrintInvoice(result.responseJSON, function () {      
+                        debugger;
+                       window.location.href = "/SalesInvoice/Landing?StatusMessage=" + result.responseJSON.statusMessage;
+                    });
+                   // window.location.href = "/SalesInvoice/Landing?StatusMessage=" + result.responseJSON.statusMessage;
                 }
             }
         });

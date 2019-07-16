@@ -75,8 +75,20 @@
                                 <span class="input-group-append border-left-0 border p-2">
                                     <i toggle="#NavPassword" class="fa fa-fw fa-eye field-icon toggle-password bg-transparent"></i>
                                 </span>
-                               
 
+
+                            </div>
+                        </div>
+                        <div class="br"></div>
+                        <div class="row">
+                            <label class="col-md-2"></label>
+                            <div class="col-md-4">                                
+                                @*<div class="checkbox">
+                                    <label>
+
+                                        <input type="checkbox" @(ViewBag.API.StopInvoicePosting == true ? "" : "checked='Checked'") id="postToNav" data-val="true"  value="true"/> Stop Invoice Posting
+                                    </label>
+                                </div>*@
                             </div>
                         </div>
 
@@ -159,7 +171,8 @@
                 NavCompanyId: $("#NavCompanyId").val(),
                 NavUserName: $("#NavUserName").val(),
                 NavPassword: $("#NavPassword").val(),
-                Location: $("#Location").val()
+                Location: $("#Location").val(),
+                StopInvoicePosting: $("#postToNav").val()
             };
 
             $.ajax({

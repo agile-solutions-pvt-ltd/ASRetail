@@ -8,7 +8,7 @@
     <style>
         *, html, body {
             background-color: #fff;
-            font-family: "FontA11[255]", "FontA11", "FontB21", "SaxMono","Consolas";
+            font-family: "FontA11", "Bahnschrift Light", "FontB21", "SaxMono","Consolas";
             font-size: 16px;
             color: #999;
         }
@@ -50,11 +50,11 @@
             max-width: 5%;
             flex: 0 0 5%;
             padding-left: 15px;
-            display:none;
+            display: none;
         }
 
         .col-sm-particulars {
-             padding-left: 15px;
+            padding-left: 15px;
             max-width: 15%;
             flex: 0 0 15%;
         }
@@ -68,7 +68,8 @@
             max-width: 9%;
             flex: 0 0 9%;
         }
-        .col-sm-promo-disc{
+
+        .col-sm-promo-disc {
             max-width: 9%;
             flex: 0 0 9%;
         }
@@ -82,9 +83,63 @@
             margin-top: -15px;
             margin-bottom: -6px;
         }
-        .display-none{
-            display:none;
+
+        .display-none {
+            display: none;
         }
+
+
+      #printbody {
+
+    text-align: left;
+
+    width: 300px;
+
+    background-color: white;
+
+    margin: 20px;
+
+    padding: 15px;
+
+    font-size: 14px;
+
+    padding-bottom:30px;
+
+    display: inline-block;
+
+    font-family: "Monospace"; -> originally "Inconsolata"
+
+    border: solid 1px rgb(220,220,220);
+
+    border-radius: 3px;
+
+    overflow: hidden;
+
+}
+
+
+
+#printbody{
+
+    font-family: "Monospace"; -> originally "Inconsolata"
+
+}
+
+
+
+#printbody {
+
+    width: 95%; -> originally "100%"
+
+    border: 0;
+
+    table-layout: fixed;
+
+}
+
+
+
+
     </style>
 
     @* fonts *@
@@ -144,7 +199,7 @@
                     : {billToName}
                 </div>
             </div>
-            <div class="row pb-1 {customerhide}">
+            <div class="row pb-1 {customerhide} {addresshide}">
                 <div class="col-sm-2">
                     Address
                 </div>
@@ -152,7 +207,7 @@
                     : {billToAddress}
                 </div>
             </div>
-            <div class="row pb-1 {customerhide}">
+            <div class="row pb-1 {customerhide}{mobilehide}">
                 <div class="col-sm-2">
                     Mobile
                 </div>
@@ -252,90 +307,90 @@
                 </div>
                 <div class="col-sm-rate text-right"></div>
                 <div class="col-sm-promo-disc text-right"></div>
-                    <div class="col-sm-total text-right"></div>
-                </div>
+                <div class="col-sm-total text-right"></div>
+            </div>
 
 
 
-                <div class="row pb-1">
-                    <div class="col-sm-1"></div>
-                    <div class="col-sm-3">
-                        &nbsp; Total
-                        <span class="pull-right">:</span>
-                    </div>
-                    <div class="col-sm-2 text-right">
-                        {totalGrossAmount}
-                    </div>
+            <div class="row pb-1">
+                <div class="col-sm-1"></div>
+                <div class="col-sm-3">
+                    &nbsp; Total
+                    <span class="pull-right">:</span>
                 </div>
-                <div class="row pb-1">
-                    <div class="col-sm-1"></div>
-                    <div class="col-sm-3">
-                        &nbsp; Promo Disc.
-                        <span class="pull-right">:</span>
-                    </div>
-                    <div class="col-sm-2 text-right">
-                        {promoDiscount}
-                    </div>
-                </div>
-                <div class="row pb-1">
-                    <div class="col-sm-1"></div>
-                    <div class="col-sm-3">
-                        &nbsp; Loyalty Disc.
-                        <span class="pull-right">:</span>
-                    </div>
-                    <div class="col-sm-2 text-right">
-                        {loyaltyDiscount}
-                    </div>
-                </div>
-                <div class="row pb-1">
-                    <div class="col-sm-1"></div>
-                    <div class="col-sm-3">
-                        &nbsp; Net Amount
-                        <span class="pull-right">:</span>
-                    </div>
-                    <div class="col-sm-2 text-right">
-                        {totalNetAmount}
-                    </div>
-                </div>
-                <div class="row pb-1">
-                    <div class="col-sm-1"></div>
-                    <div class="col-sm-5">
-                        <hr class="style" />
-                    </div>
-                </div>
-                <div class="row pb-1">
-                    <div class="col-sm-1"></div>
-                    <div class="col-sm-3">
-                        &nbsp; Tender
-                        <span class="pull-right">:</span>
-                    </div>
-                    <div class="col-sm-2 text-right">
-                        {tenderAmount}
-                    </div>
-                </div>
-                <div class="row pb-1">
-                    <div class="col-sm-1"></div>
-                    <div class="col-sm-3">
-                        &nbsp; Change
-                        <span class="pull-right">:</span>
-                    </div>
-                    <div class="col-sm-2 text-right">
-                        {changeAmount}
-                    </div>
-                </div>
-                <div class="row pb-1">
-                    <div class="col-sm-1"></div>
-                    <div class="col-sm-5">
-                        <hr class="style" />
-                    </div>
-                </div>
-                <div class="row pb-1">
-                    @*<div class="col-sm-1"></div>*@
-                    <div class="col-sm-6 text-justify">
-                        Saving in this bill: <strong>Rs. {totalSaving}</strong>
-                    </div>
+                <div class="col-sm-2 text-right">
+                    {totalGrossAmount}
                 </div>
             </div>
+            <div class="row pb-1">
+                <div class="col-sm-1"></div>
+                <div class="col-sm-3">
+                    &nbsp; Promo Disc.
+                    <span class="pull-right">:</span>
+                </div>
+                <div class="col-sm-2 text-right">
+                    {promoDiscount}
+                </div>
+            </div>
+            <div class="row pb-1">
+                <div class="col-sm-1"></div>
+                <div class="col-sm-3">
+                    &nbsp; Loyalty Disc.
+                    <span class="pull-right">:</span>
+                </div>
+                <div class="col-sm-2 text-right">
+                    {loyaltyDiscount}
+                </div>
+            </div>
+            <div class="row pb-1">
+                <div class="col-sm-1"></div>
+                <div class="col-sm-3">
+                    &nbsp; Net Amount
+                    <span class="pull-right">:</span>
+                </div>
+                <div class="col-sm-2 text-right">
+                    {totalNetAmount}
+                </div>
+            </div>
+            <div class="row pb-1">
+                <div class="col-sm-1"></div>
+                <div class="col-sm-5">
+                    <hr class="style" />
+                </div>
+            </div>
+            <div class="row pb-1">
+                <div class="col-sm-1"></div>
+                <div class="col-sm-3">
+                    &nbsp; Tender
+                    <span class="pull-right">:</span>
+                </div>
+                <div class="col-sm-2 text-right">
+                    {tenderAmount}
+                </div>
+            </div>
+            <div class="row pb-1">
+                <div class="col-sm-1"></div>
+                <div class="col-sm-3">
+                    &nbsp; Change
+                    <span class="pull-right">:</span>
+                </div>
+                <div class="col-sm-2 text-right">
+                    {changeAmount}
+                </div>
+            </div>
+            <div class="row pb-1">
+                <div class="col-sm-1"></div>
+                <div class="col-sm-5">
+                    <hr class="style" />
+                </div>
+            </div>
+            <div class="row pb-1">
+                @*<div class="col-sm-1"></div>*@
+                <div class="col-sm-6 text-justify">
+                    Saving in this bill: <strong>Rs. {totalSaving}</strong>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="row">
@@ -392,5 +447,4 @@
     </div>
 
 </div>
-
 

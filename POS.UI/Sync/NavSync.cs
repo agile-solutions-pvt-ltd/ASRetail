@@ -367,6 +367,7 @@ namespace POS.UI.Sync
                         {
                             //update cache
                             _cache.Set("IsItemCacheInProcess", false);
+                            _cache.Remove("ItemViewModel");
                             BackgroundJob.Enqueue(() => UpdateCacheItemViewModel());
                         }
 
@@ -961,7 +962,7 @@ namespace POS.UI.Sync
                 //update cache
 
                 //split data to 1lakh and save to cache
-                int count = 20000, skip = 0;
+                int count = 10000, skip = 0;
                 _context.ChangeTracker.AutoDetectChangesEnabled = false;
                 for (; ; )
                 {

@@ -29,11 +29,11 @@
 
         //initialize table to kendo grid
         grid = $("#memberTable").kendoGrid({
-            height: CalcGridHeight() -100,
+            height: CalcGridHeight() - 100,
             editable: true,
             sortable: false,
             scrollable: true
-           
+
 
         });
         $('.k-grid.k-widget.k-display-block.k-editable').addClass("display-none");
@@ -75,7 +75,7 @@
         }
     };
     let SearchMemberServer = (info) => {
-       
+
         var page = GetUrlParameters();
         var url = window.location.origin + "/Customer/SearchMembership?text=" + info;
         if (page === "CrLanding")
@@ -148,6 +148,7 @@
             $(".search-input").focus();
     };
     let SaveMember = () => {
+        $("#memberSaveButton").attr("disabled", true);
         var membership = {
             Name: $("#Customer_Name").val(),
             Mobile1: $("#Customer_Mobile").val(),
@@ -163,20 +164,26 @@
                 contentType: "application/json; charset=utf-8",
                 complete: function (result) {
                     if (result.status === 200) {
-                       
+
                         SelectMember(result.responseJSON.membership.membership_Number);
                     }
                     else if (result.status === 409) {
                         $("#message").text(result.responseJSON.statusMessage);
                         $("#message").show();
+                        $("#memberSaveButton").attr("disabled", false);
                     }
-
+                    else {
+                        $("#message").text("Member creation failed!! try again later !!");
+                        $("#message").show();
+                        $("#memberSaveButton").attr("disabled", false);
+                    }
                 }
             });
         }
         else {
             $("#message").text("Name and Mobile No. are compulsary !!");
             $("#message").show();
+            $("#memberSaveButton").attr("disabled", false);
         }
     };
     let SkipPage = () => {
@@ -199,7 +206,7 @@
                     if (GetUrlParameters("mode") === undefined)
                         url += "/SalesInvoice?M=" + defaultMembershipId;
                     else
-                        url += "/SalesInvoice?M= " + defaultMembershipId + "&Mode=" + GetUrlParameters("mode");
+                        url += "/SalesInvoice?M=" + defaultMembershipId + "&Mode=" + GetUrlParameters("mode");
                     window.location.href = url;
                 }
                 else {
@@ -221,7 +228,10 @@
                 SelectMember(membershipId);
             }
             $(".bootbox-cancel").trigger("click");
-            $(".search").focus();
+            if ($(".memberinput").val() !== "")
+                $(this).next().focus();
+            else
+                $(".search").focus();
         });
         Mousetrap.bindGlobal('up', function () {
             if ($('#memberTable tbody tr').length > 0) {
@@ -231,9 +241,9 @@
                     selectedRow.removeClass("active");
                     selectedRow.prev().addClass("selected");
                     selectedRow.prev().addClass("active");
-                  
+
                     let gridUp = $("#memberTable").data("kendoGrid");
-                   // gridUp.select(selectedRow.prev());
+                    // gridUp.select(selectedRow.prev());
                     gridUp.content.scrollTop(selectedRow.prev().position().top);
                 }
                 return false;
@@ -252,7 +262,7 @@
 
                     let gridDown = $("#memberTable").data("kendoGrid");
                     //gridDown.select(selectedRow.next());
-                    gridDown.content.scrollTop(selectedRow.next().position().top -200);
+                    gridDown.content.scrollTop(selectedRow.next().position().top - 200);
                 }
                 return false;
             }
@@ -278,6 +288,19 @@
             SaveMember();
     });
     $("#skipPage").on("click", SkipPage);
+
+    $("#Customer_Name").keypress(function (evt) {
+        if (evt.keyCode === 13)
+            $("#Customer_Mobile").focus();
+    });
+    $("#Customer_Mobile").keypress(function (evt) {
+        if (evt.keyCode === 13)
+            $("#Customer_Address").focus();
+    });
+    $("#Customer_Address").keypress(function (evt) {
+        if (evt.keyCode === 13)
+            $("#memberSaveButton").focus();
+    });
 
     //********* Public Output ****************//
     return {

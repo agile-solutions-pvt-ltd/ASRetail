@@ -273,6 +273,8 @@ namespace POS.UI.Controllers
                     item.Invoice_Number = salesInvoice.Invoice_Number;
                     item.Invoice_Type = salesInvoice.Trans_Type;
                     item.Terminal = HttpContext.Session.GetString("Terminal");
+                    item.IsNavSync = false;
+
 
                     _context.SalesInvoiceBill.Add(item);
 
@@ -373,6 +375,7 @@ namespace POS.UI.Controllers
                     id = salesInvoice.Id.ToString(),
                     number = salesInvoice.Invoice_Number,
                     postingno = salesInvoice.Invoice_Number,
+                    shippingno = salesInvoice.Invoice_Number,
                     orderDate = salesInvoice.Trans_Date_Ad.Value.ToString("yyyy-MM-dd"),
                     customerNumber = salesInvoice.MemberId,
                     customerName = salesInvoice.Customer_Name,
@@ -464,7 +467,7 @@ namespace POS.UI.Controllers
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                 }));
             var customer = _context.Customer.FirstOrDefault(x => x.Membership_Number == tmp.MemberId);
-            var invoiceBill = _context.SalesInvoiceBill.Where(x => x.Invoice_Number == invoiceNumber);
+            var invoiceBill = _context.SalesInvoiceBill.Where(x => x.Invoice_Number == tmp.Invoice_Number);
 
             return Ok(new { invoiceData = tmp, customerData = customer, invoiceBillData = invoiceBill });
 
@@ -534,7 +537,7 @@ namespace POS.UI.Controllers
 
         public IEnumerable<ItemViewModel> GetItemsRawDataByBarcodeList(List<string> barcodes)
         {
-
+            string barcodeListString = string.Join("','", barcodes);
             string query = @"SELECT 
         ROW_NUMBER() OVER(PARTITION BY Bar_Code order by Rate) AS SN ,
        i.Code,i.Id as ItemId,i.Name,i.KeyInWeight,
@@ -550,10 +553,11 @@ left join ITEM_QUANTITY q on i.Code = q.ItemCode
 left join ITEM_PRICE p on i.Code = p.ItemCode
 left join ITEM_DISCOUNT d on i.Code = d.ItemCode Or (d.ItemType = 'Item Disc. Group' and  d.ItemCode =  i.DiscountGroup)
 cross join STORE s
-where b.BarCode in ({0})";
+where b.BarCode in ('"+barcodeListString+"')";
 
-            string barcodeListString = string.Join(",",barcodes);
-            IEnumerable<ItemViewModel> data = _context.ItemViewModel.FromSql(query, barcodeListString).ToList();
+            // string barcodeListString =string.Join("','",barcodes); 
+            // var p0 = new SqliteParameter("@p0", barcodeListString);
+            IEnumerable<ItemViewModel> data = _context.ItemViewModel.FromSql(query).ToList();
             return data;
 
         }

@@ -43,7 +43,7 @@ namespace POS.DTO
         public string website { get; set; }
         public string taxRegistrationNumber { get; set; }
         public string blocked { get; set; }
-        public Address address { get; set; }
+        public string Address { get; set; }
         public string Description { get; set; }
         public string Customer_Disc_Group { get; set; }
         public string Customer_Price_Group { get; set; }
@@ -60,10 +60,10 @@ namespace POS.DTO
 
         public int Update_No { get; set; }
 
-        public NavCustomer()
-        {
-            address = new Address();
-        }
+        //public NavCustomer()
+        //{
+        //    address = new Address();
+        //}
     }
 
     public class NavCustomerPOST{
@@ -203,6 +203,7 @@ namespace POS.DTO
         public string locationcode { get; set; }
         public string accountabilitycenter { get; set; }
         public string assigneduserid { get; set; }
+        public string shippingno { get; set; }
 
 
     }
@@ -231,11 +232,24 @@ namespace POS.DTO
         public decimal unitPrice { get; set; }
         public decimal discountAmount { get; set; }
         public decimal totalTaxAmount { get; set; }
+        public string itemno { get; set; }
+
         //public decimal netAmount { get; set; }
         //public string itemId { get; set; }
         //public string quantity { get; set; }
         //public string unitPrice { get; set; }
         //public string discountAmount { get; set; }
+
+    }
+    public class NavSalesPaymentMode
+    {
+
+        public string documentno { get; set; }
+       
+        public string locationcode { get; set; }
+        public decimal amount { get; set; }
+        public string paymenttype { get; set; }
+       
 
     }
 

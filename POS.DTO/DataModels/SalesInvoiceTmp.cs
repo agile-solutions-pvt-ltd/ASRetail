@@ -42,8 +42,8 @@ namespace POS.DTO
         public decimal? Flat_Discount_Percent { get; set; }
 
 
-        [Range(1, int.MaxValue)] //should have atleast one quantity
-        public int? Total_Quantity { get; set; } 
+       
+        public decimal? Total_Quantity { get; set; } 
         public decimal? Total_Gross_Amount { get; set; }
         public decimal? Total_Discount { get; set; }
         public decimal TOTAL_DISCOUNT_EXC_VAT { get; set; } = 0;

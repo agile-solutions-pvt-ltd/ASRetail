@@ -1,6 +1,6 @@
 ﻿const printer = (() => {
     //********* Private Variables **************//
-    let maximumCharAllowInItemName = 10;
+    let maximumCharAllowInItemName = 9;
 
 
     //********* Private Methos *****************//
@@ -50,6 +50,8 @@
                     printText = printText.replace("{dateAD}", FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)));
                     printText = printText.replace("{dateBS}", data.invoiceData.trans_Date_Bs);
                     printText = printText.replace(/{customerhide}/g, data.invoiceData.memberId === "POS" ? "display-none" : "");
+                    printText = printText.replace(/{addresshide}/g,_.isEmpty(data.invoiceData.customer_Address) ? "display-none" : "");
+                    printText = printText.replace(/{mobilehide}/g, _.isEmpty(data.invoiceData.customer_Mobile) ? "display-none" : "");
                     printText = printText.replace("{billToName}", data.invoiceData.customer_Name);
                     printText = printText.replace("{billToAddress}", data.invoiceData.customer_Address);
                     printText = printText.replace("{billToMobile}", data.invoiceData.customer_Mobile);
@@ -84,7 +86,7 @@
                     });
 
 
-                    FinalPrint(printText, printItems);
+                    FinalPrint(printText, printItems, callback);
 
                     //update print count
                     $.ajax({
@@ -95,8 +97,8 @@
                     });
                 }
 
-                if (callback !== undefined)
-                    callback();
+                //if (callback !== undefined)
+                //    callback();
             }
         });
     };
@@ -123,6 +125,8 @@
                     printText = printText.replace("{dateAD}", FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)));
                     printText = printText.replace("{dateBS}", data.invoiceData.trans_Date_Bs);
                     printText = printText.replace(/{customerhide}/g, data.invoiceData.memberId === "POS" ? "display-none" : "");
+                    printText = printText.replace(/{addresshide}/g, _.isEmpty(data.invoiceData.customer_Address) ? "display-none" : "");
+                    printText = printText.replace(/{mobilehide}/g, _.isEmpty(data.invoiceData.customer_Mobile) ? "display-none" : "");
                     printText = printText.replace("{billToName}", data.invoiceData.customer_Name);
                     printText = printText.replace("{billToAddress}", data.invoiceData.customer_Address);
                     printText = printText.replace("{billToMobile}", data.invoiceData.customer_Mobile);
@@ -168,7 +172,7 @@
                     //printText = printText.replace("", "");
                     //printText = printText.replace("", "");
 
-                    FinalPrint(printText, printItems);
+                    FinalPrint(printText, printItems, callback);
 
 
                     //update print count
@@ -180,8 +184,8 @@
                     });
                 }
 
-                if (callback !== undefined)
-                    callback();
+                //if (callback !== undefined)
+                //    callback();
             }
         });
     };
@@ -209,6 +213,8 @@
                     printText = printText.replace("{dateAD}", FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)));
                     printText = printText.replace("{dateBS}", data.invoiceData.trans_Date_Bs);
                     printText = printText.replace(/{customerhide}/g, data.invoiceData.memberId === "POS" ? "display-none" : "");
+                    printText = printText.replace(/{addresshide}/g, _.isEmpty(data.invoiceData.customer_Address) ? "display-none" : "");
+                    printText = printText.replace(/{mobilehide}/g, _.isEmpty(data.invoiceData.customer_Mobile) ? "display-none" : "");
                     printText = printText.replace("{billToName}", data.invoiceData.customer_Name);
                     printText = printText.replace("{billToAddress}", data.invoiceData.customer_Address);
                     printText = printText.replace("{billToMobile}", data.invoiceData.customer_Mobile);
@@ -258,7 +264,7 @@
                     //printText = printText.replace("", "");
                     //printText = printText.replace("", "");
 
-                    FinalPrint(printText, printItems);
+                    FinalPrint(printText, printItems, callback);
 
 
                     //update print count
@@ -270,8 +276,8 @@
                     });
                 }
 
-                if (callback !== undefined)
-                    callback();
+                //if (callback !== undefined)
+                //    callback();
             }
         });
     };
@@ -358,11 +364,11 @@
                     printText = printText.replace("{GrandTotal}", grandTotal.toFixed(2));
 
 
-                    FinalPrint(printText);
+                    FinalPrint(printText, undefined, callback);
                 }
 
-                if (callback !== undefined)
-                    callback();
+                //if (callback !== undefined)
+                //    callback();
             }
         });
     };
@@ -456,17 +462,17 @@
 
 
 
-                    FinalPrint(printText);
+                    FinalPrint(printText, undefined, callback);
                 }
 
-                if (callback !== undefined)
-                    callback();
+              
             }
         });
     };
 
 
-    let FinalPrint = (printText, printItemText) => {
+    let FinalPrint = (printText, printItemText, callback) => {
+        debugger;
         $(document.body).find(".main-body").append('<div id="tempprint" ></div>');
         $("#tempprint").html(printText);
         if (printItemText !== undefined)
@@ -477,6 +483,9 @@
             targetStyles: ['*'],
             onLoadingEnd: function () {
                 $("#tempprint").remove();
+                debugger;
+                if (callback !== undefined)
+                    callback();
 
 
             }

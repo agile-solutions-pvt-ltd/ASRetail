@@ -20,5 +20,9 @@ namespace POS.DTO
         public string Account { get; set; }
         public decimal Amount { get; set; }
         public string Remarks { get; set; }
+
+        public bool IsNavSync { get; set; }
+        public int SyncErrorCount { get; set; } = 0;
+        public DateTime? NavSyncDate { get; set; }
     }
 }

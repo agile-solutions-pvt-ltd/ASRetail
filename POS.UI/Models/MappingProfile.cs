@@ -97,7 +97,7 @@ namespace POS.DTO
                .ForMember(dest => dest.Code, opts => opts.MapFrom(src => src.id))
                 .ForMember(dest => dest.Membership_Number, opts => opts.MapFrom(src => src.number))
                .ForMember(dest => dest.Name, opts => opts.MapFrom(src => src.displayName))
-               .ForMember(dest => dest.Address, opts => opts.MapFrom(src => src.address.city))
+               .ForMember(dest => dest.Address, opts => opts.MapFrom(src => src.Address))
                .ForMember(dest => dest.Mobile1, opts => opts.MapFrom(src => src.phoneNumber))
                 .ForMember(dest => dest.Email, opts => opts.MapFrom(src => src.email))
                .ForMember(dest => dest.Vat, opts => opts.MapFrom(src => src.taxRegistrationNumber))

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json;
+using POS.Core;
 using POS.DTO;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,7 @@ namespace Microsoft.AspNetCore.Authorization
 {
     public class RolewiseAuthorized : ActionFilterAttribute
     {
+
         public override void OnResultExecuting(ResultExecutingContext filterContext)
         {
 
@@ -29,14 +31,22 @@ namespace Microsoft.AspNetCore.Authorization
             {
                 if (filterContext.HttpContext.Session.GetString("Menus") != null)
                 {
+                    var totalMenu = JsonConvert.DeserializeObject<List<Menu>>(filterContext.HttpContext.Session.GetString("TotalMenu"));
                     var menus = JsonConvert.DeserializeObject<List<RoleWiseMenuPermission>>(filterContext.HttpContext.Session.GetString("Menus"));
                     var controllerName = filterContext.RouteData.Values["controller"].ToString();
                     var actionName = filterContext.RouteData.Values["action"].ToString();
                     // string url = "/" + controllerName + "/" + actionName;
+                    
                     if (!menus.Where(s => s.Menu.Controller == controllerName).Any())
                     {
                         filterContext.Result = new RedirectToRouteResult(
                             new RouteValueDictionary { { "controller", "Account" }, { "action", "Unauthorized" } });
+                        return;
+                    }
+                    if(totalMenu.Where(x=>x.Controller == controllerName && x.Action == actionName).Any() && !menus.Where(x=> x.Menu.Controller == controllerName && x.Menu.Action == actionName).Any())
+                    {
+                        filterContext.Result = new RedirectToRouteResult(
+                           new RouteValueDictionary { { "controller", "Account" }, { "action", "Unauthorized" } });
                         return;
                     }
                 }

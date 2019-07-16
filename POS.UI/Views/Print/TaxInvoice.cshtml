@@ -45,16 +45,16 @@
         }
 
 
-          /*for item table */
+        /*for item table */
         .col-sm-sn {
             max-width: 5%;
             flex: 0 0 5%;
             padding-left: 15px;
-            display:none;
+            display: none;
         }
 
         .col-sm-particulars {
-             padding-left: 15px;
+            padding-left: 15px;
             max-width: 15%;
             flex: 0 0 15%;
         }
@@ -68,7 +68,8 @@
             max-width: 9%;
             flex: 0 0 9%;
         }
-        .col-sm-promo-disc{
+
+        .col-sm-promo-disc {
             max-width: 9%;
             flex: 0 0 9%;
         }
@@ -82,8 +83,9 @@
             margin-top: -15px;
             margin-bottom: -6px;
         }
-        .display-none{
-            display:none;
+
+        .display-none {
+            display: none;
         }
     </style>
 
@@ -144,7 +146,7 @@
                     : {billToName}
                 </div>
             </div>
-            <div class="row pb-1 {customerhide}">
+            <div class="row pb-1 {customerhide}{addresshide}">
                 <div class="col-sm-2">
                     Address
                 </div>
@@ -152,7 +154,7 @@
                     : {billToAddress}
                 </div>
             </div>
-            <div class="row pb-1 {customerhide}">
+            <div class="row pb-1 {customerhide}{mobilehide}">
                 <div class="col-sm-2">
                     Mobile
                 </div>
@@ -423,5 +425,4 @@
     </div>
 
 </div>
-
 
