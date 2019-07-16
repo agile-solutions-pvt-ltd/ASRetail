@@ -214,6 +214,8 @@
                 }
 
 
+            }).on("change", function () {
+                startdate = this.value;
             });
             $('#startdatepicker').datepicker('setDate', 'startdate');
 
@@ -222,6 +224,8 @@
                     enddate = date;
                     console.log(enddate);
                 }
+            }).on("change", function () {
+                enddate = this.value;
             });
             $('#enddatepicker').datepicker('setDate', 'enddate');
         });

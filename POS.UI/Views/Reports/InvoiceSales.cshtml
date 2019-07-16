@@ -198,17 +198,26 @@
            
             startup();
         }
+        //$(".date").datepicker({
+        //    onSelect: function (dateText) {
+        //        display("Selected date: " + dateText + "; input's current value: " + this.value);
+        //    }
+        //}).on("change", function () {
+        //    display("Got change event from field");
+        //});
         $(function () {
             $("#startdatepicker").datepicker({
                 onSelect: function (date) {
                     //ate = new date();
                     startdate = date;
                     console.log(startdate);
-
+                  
 
                 }
-              
 
+
+            }).on("change", function () {
+                startdate = this.value;
             });
             $('#startdatepicker').datepicker('setDate', 'startdate');
 
@@ -217,6 +226,8 @@
                     enddate = date;
                     console.log(enddate);
                 }
+            }).on("change", function () {
+                enddate = this.value;
             });
             $('#enddatepicker').datepicker('setDate', 'enddate');
         });
