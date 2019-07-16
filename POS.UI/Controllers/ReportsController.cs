@@ -89,8 +89,8 @@ namespace POS.UI.Controllers
 
         public IActionResult InvoiceSalesApi(DateTime? startdate = null, DateTime? enddate = null)
         {
-            DateTime _startDate = startdate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-            DateTime _endDate = enddate ?? _startDate.AddMonths(1).AddDays(-1);
+            DateTime _startDate = startdate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+            DateTime _endDate = enddate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
             //ViewBag.StartDate = _startDate.ToShortDateString();
             //ViewBag.EndDate = _endDate.ToShortDateString();
 

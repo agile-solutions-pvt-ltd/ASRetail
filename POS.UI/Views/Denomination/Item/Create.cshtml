@@ -58,7 +58,8 @@
                 <span asp-validation-for="Remarks" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-default" />
+                <input type="submit" value="save"  class="btn btn-default"  onsubmit="upload();" />
+
             </div>
         </form>
     </div>
@@ -70,4 +71,10 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        function upload() {
+            alert("I am an alert box!");
+        }
+    </script>
 }

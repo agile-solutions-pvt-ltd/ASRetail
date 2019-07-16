@@ -20,7 +20,7 @@
 
     let icRate = 1.6;
 
-
+   
 
     //methods
     let init = () => {
@@ -28,8 +28,9 @@
         //set todays date
         $("#Date").val(FormatForDisplay(new Date()));
         $("#Date").trigger('change');
-
+        
         calcAmount();
+      
 
         //make edit denomination uneditable
         
@@ -38,8 +39,11 @@
         $(".total").attr("readonly", "readonly");
     };
 
+    
+
     let calcAmount = () => {
 
+        
         let totalAmount = 0;
         if (!_.isEmpty(R1000.val())) {
             let R1000Value = parseFloat(R1000.val()) * 1000;
@@ -120,9 +124,15 @@
         Total.val(totalAmount.toFixed(2));
 
     };
+    
+    
+    
 
+   
     //events
     $("#R1000,#R500,#R250,#R100,#R50,#R25,#R20,#R10,#R5,#R2,#R1,#R05,#Ric,#Cheque,#Debit_Card,#Other").on("keyup", calcAmount);
+  
+    $()
 
     $("#Date").datepicker()
         .change(function () {
@@ -135,6 +145,11 @@
         }
     });
 
+    $("#submitbtn").on("click", function () {
+        bootbox.alert("Hello world!", function () {
+            console.log("Alert Callback");
+        });
+    });
 
     $("#print").on('click', function () {
         var data = {

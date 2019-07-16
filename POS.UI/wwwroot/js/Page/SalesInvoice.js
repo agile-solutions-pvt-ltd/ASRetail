@@ -63,11 +63,11 @@ const invoice = (function () {
                 },
                 {
                     title: "BarCode",
-                    width: "8%"
+                    width: "14%"
                 },
                 {
                     title: "Item",
-                    width: "31%"
+                    width: "28%"
                 },
                 {
                     title: "Unit",
