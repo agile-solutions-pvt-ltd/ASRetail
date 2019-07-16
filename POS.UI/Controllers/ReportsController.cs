@@ -79,8 +79,31 @@ namespace POS.UI.Controllers
             return View(salesInvoiceList);
         }
 
+        // Niroj Start
+        public IActionResult InvoiceSales()
+        {
+            //IQueryable<SalesInvoice> salesInvoiceList =_context.SalesInvoice.Where(x => x.Trans_Type == "Sales").OrderByDescending(x => x.Trans_Date_Ad);
+            ViewData["Store"] = _context.Store.FirstOrDefault();
+            return View();
+        }
 
+        public IActionResult InvoiceSalesApi(DateTime? startdate = null, DateTime? enddate = null)
+        {
+            DateTime _startDate = startdate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+            DateTime _endDate = enddate ?? _startDate.AddMonths(1).AddDays(-1);
+            //ViewBag.StartDate = _startDate.ToShortDateString();
+            //ViewBag.EndDate = _endDate.ToShortDateString();
 
+            IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Date_Ad>=_startDate && x.Trans_Date_Ad<=enddate).OrderByDescending(x => x.Trans_Date_Ad);
+            return Ok(salesInvoiceList);
+        }
+        public IActionResult SalesInvoiceUserwise()
+        {
+            //IQueryable<SalesInvoice> salesInvoiceList =_context.SalesInvoice.Where(x => x.Trans_Type == "Sales").OrderByDescending(x => x.Trans_Date_Ad);
+            ViewData["Store"] = _context.Store.FirstOrDefault();
+            return View();
+        }
+        //Niroj End
 
         [HttpPost]
         public ActionResult Excel_Export_Save(string contentType, string base64, string fileName)

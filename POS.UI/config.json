@@ -12,7 +12,9 @@
   "NavPassword": "W3b@2019",
   "StopInvoicePosting": false,
   "Location": "SAT",
-  "LoggedInUsers": [],
+  "LoggedInUsers": [
+    "SIROJA.THAPA"
+  ],
   "SchedulerDuration": {
     "Default": "20",
     "Store": "20",

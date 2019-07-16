@@ -1,5 +1,6 @@
 ﻿const printer = (() => {
     //********* Private Variables **************//
+
     let maximumCharAllowInItemName = 9;
 
 

@@ -1,4 +1,4 @@
-﻿
+
 
 const invoice = (function () {
     // #region PRIVATE VARIABLES **************//
@@ -643,7 +643,7 @@ const invoice = (function () {
     };
     let showPausedTransaction = () => {
         $("#PausedTransactionListModal").modal('show');
-        
+
     };
     let loadPausedTransaction = (row) => {
         var invoiceId = row.closest("tr").find('td.invoice-id').text();
@@ -1212,7 +1212,7 @@ const invoice = (function () {
 
                 //calc taxable and non taxable
                 if (taxable)
-                    totalTaxableAmount +=  (rateExcludeTax - discountExcVat) * quantity;
+                    totalTaxableAmount += (rateExcludeTax - discountExcVat) * quantity;
                 else {
                     totalNonTaxableAmount += rateExcludeTax * quantity;
                 }
@@ -1733,7 +1733,7 @@ const invoice = (function () {
 
 
 
-      
+
 
         //get items
         var table = $("#item_table");
