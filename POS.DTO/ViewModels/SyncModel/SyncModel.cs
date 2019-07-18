@@ -48,7 +48,7 @@ namespace POS.DTO
         public string Customer_Disc_Group { get; set; }
         public string Customer_Price_Group { get; set; }
         public bool Is_Member { get; set; } = false;
-        public string Registration_Date { get; set; }
+        public DateTime Registration_Date { get; set; }
         public string VAT_Bus_Posting_Group { get; set; }
         public string generalbuspostinggrp { get; set; }
         public string Customer_Posting_Group { get; set; }
@@ -245,7 +245,7 @@ namespace POS.DTO
     {
 
         public string documentno { get; set; }
-       
+        public int lineno { get; set; }
         public string locationcode { get; set; }
         public decimal amount { get; set; }
         public string paymenttype { get; set; }

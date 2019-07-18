@@ -219,10 +219,13 @@ namespace POS.UI.Sync
 
             var invoiceBill = _context.SalesInvoiceBill.Where(x => x.Invoice_Number == invoiceNumber);
             //var itemList = _context.SalesInvoiceItems.Where(x=> all)
+            int lineNo = 0;
             foreach (var i in invoiceBill)
             {
+                lineNo += 1;
                 NavSalesPaymentMode mode = new NavSalesPaymentMode()
                 {
+                    lineno = lineNo * 10000,
                     amount = i.Amount,
                     paymenttype = i.Trans_Mode,
                     locationcode = config.Location,

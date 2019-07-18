@@ -19,6 +19,7 @@ namespace POS.UI.Sync
     {
 
         private readonly EntityCore _context;
+        private readonly EntityCore _contextInsert;
         private readonly IMapper _mapper;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
@@ -33,6 +34,8 @@ namespace POS.UI.Sync
             _userManager = userManager;
             _roleManager = roleManager;
             _cache = memoryCache;
+            _contextInsert = context;
+            _context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
 
@@ -354,7 +357,7 @@ namespace POS.UI.Sync
 
                         ////using new extension
                         //_context.Item.AddOrUpdate(ref item, x => new { x.Code });
-
+                        _context.SaveChanges();
                         //update update number
                         if (response.Data.value.Count() > 0)
                         {
@@ -419,11 +422,13 @@ namespace POS.UI.Sync
                     {
 
                         List<Customer> item = _mapper.Map<List<Customer>>(response.Data.value);
-                        _context.Customer.RemoveRange(_context.Customer.Where(x => item.Any(y => y.Membership_Number == x.Membership_Number)));
+                        var customerIds = item.Select(x => x.Membership_Number);
+                       
+                        _context.Customer.RemoveRange(_context.Customer.Where(x => customerIds.Contains(x.Barcode)));
                         _context.SaveChanges();
                         _context.Customer.AddRange(item);
 
-
+                        _context.SaveChanges();
                         //update update number
                         if (response.Data.value.Count() > 0)
                         {
@@ -452,7 +457,7 @@ namespace POS.UI.Sync
                         return false;
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
                     return CustomerSync();
                 }
@@ -472,6 +477,7 @@ namespace POS.UI.Sync
             {
                 try
                 {
+                    _cache.Set("IsItemBarCodeSyncIsInProcess", true);
                     Config config = ConfigJSON.Read();
                     NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Barcode");
                     string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
@@ -487,13 +493,64 @@ namespace POS.UI.Sync
                     if (response.StatusCode == HttpStatusCode.OK)
                     {
 
-                        List<ItemBarCode> item = _mapper.Map<List<ItemBarCode>>(response.Data.value);
-                        _context.ItemBarCode.RemoveRange(_context.ItemBarCode.Where(x => item.Any(y => y.BarCode == x.BarCode && x.ItemCode == y.ItemCode)));
-                        _context.SaveChanges();
-                        List<ItemBarCode> newItem = _mapper.Map<List<ItemBarCode>>(response.Data.value);
-                        _context.ItemBarCode.AddRange(newItem);
+                        List<ItemBarCode> item = _mapper.Map<List<ItemBarCode>>(response.Data.value).ToList();
+                        if (item.Count() > 0)
+                        {
+                            var ids = item.Select(x => x.BarCode).ToArray();
+                            var idsStr = String.Join("','", ids);
+                            string sql = "delete from ITEM_BARCODE where barcode in ('" + idsStr + "')";
+                            using (var tran = _context.Database.BeginTransaction())
+                            {
+                                var a = _context.Database.ExecuteSqlCommand(sql);
+                                tran.Commit();
+                            }
+                            ItemBarCode itemBarcode = new ItemBarCode();
+                            _context.Entry(itemBarcode).State = EntityState.Detached;
+                            var d = item.GroupBy(a => a.BarCode).Where(grp => grp.Count() > 1).Select(grp => grp.Key).Select(a => a);
+                            List<string> lstBarcode = new List<string>();
+                            foreach (var i in item)
+                            {
+                                _context.Entry(i).State = EntityState.Detached;
+                                if (!lstBarcode.Contains(i.BarCode))
+                                {
+                                    lstBarcode.Add(i.BarCode);
+                                    _context.ItemBarCode.Add(i);
+                                }
+                            }
+                            // _context.ItemBarCode.AddRange(item);
+                            _context.SaveChanges();
+                        }
 
-                        //update update number
+                        //foreach (var i in response.Data.value)
+                        //{
+                        //    try
+                        //    {
+                        //        _context.Entry(_mapper.Map<ItemBarCode>(i)).State = EntityState.Unchanged;
+                        //        services.LastUpdateNumber = i.Update_No;
+                        //        services.LastSyncDate = DateTime.Now;
+                        //        _context.SaveChanges();
+
+
+                        //        _context.ItemBarCode.Add(_mapper.Map<ItemBarCode>(i));
+                        //        _context.SaveChanges();
+
+                        //    }
+                        //    catch(Exception ex)
+                        //    {
+
+                        //    }
+                        //}
+                        //foreach(var t in item)
+                        //{
+                        //    try
+                        //    {
+                        //        _context.ItemBarCode.Add(t);
+                        //    }
+                        //    catch { }
+                        //}
+
+                        //_context.SaveChanges();
+                        ////update update number
                         if (response.Data.value.Count() > 0)
                         {
                             services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
@@ -503,10 +560,13 @@ namespace POS.UI.Sync
                         }
                         _context.SaveChanges();
                         //update cache
-                        List<string> itemCodes = newItem.Select(x => x.ItemCode).ToList();
+                        // List<string> itemCodes = item.Select(x => x.ItemCode).ToList();
                         BackgroundJob.Enqueue(() => UpdateCacheItemViewModel());
                         if (response.Data.value.Count() >= 1000)
+                        {
+                            _cache.Set("IsItemBarCodeSyncIsInProcess", false);
                             return ItemBarCodeSync();
+                        }
 
                         _cache.Set("IsItemBarCodeSyncIsInProcess", false);
                         return true;
@@ -518,8 +578,9 @@ namespace POS.UI.Sync
                         return false;
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    _cache.Set("IsItemBarCodeSyncIsInProcess", false);
                     return ItemBarCodeSync();
                 }
             }
@@ -556,7 +617,7 @@ namespace POS.UI.Sync
                         _context.SaveChanges();
 
                         _context.ItemPrice.AddRange(item);
-
+                        _context.SaveChanges();
                         //update update number
                         if (response.Data.value.Count() > 0)
                         {
@@ -594,7 +655,7 @@ namespace POS.UI.Sync
             }
             else
                 return true;
-           
+
 
         }
         public bool ItemDiscountSync()
@@ -624,6 +685,7 @@ namespace POS.UI.Sync
 
                     _context.ItemDiscount.AddRange(item);
                     //update update number
+                    _context.SaveChanges();
                     if (response.Data.value.Count() > 0)
                     {
                         services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);

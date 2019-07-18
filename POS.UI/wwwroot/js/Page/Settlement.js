@@ -126,24 +126,29 @@
             cashAmount: 0
         };
         denominationAmount = data;
-       
+        debugger;
         _.each(data, function (x) {
-            if (x.paymentMode === "Card") {
-                x.paymentMode = "Card";
-                transAmount.cardAmount = CurrencyFormat(x.totalAmount);
+            if (x.paymentMode === "Card") {                
+                transAmount.cardAmount += parseFloat(x.totalAmount);
             }
             else if (x.paymentMode === "Credit") {
-                transAmount.creditAmount = CurrencyFormat(x.totalAmount);
+                transAmount.creditAmount += parseFloat(x.totalAmount);
             }
             else if (x.paymentMode === "Credit Note") {
                 x.paymentMode = "Cr. Note";
-                transAmount.creditNoteAmount = CurrencyFormat(x.totalAmount);
+                transAmount.creditNoteAmount += parseFloat(x.totalAmount);
             }
             else if (x.paymentMode === "Cash") {
-                transAmount.cashAmount = CurrencyFormat(x.totalAmount);
+                transAmount.cashAmount += parseFloat(x.totalAmount);
             }
 
         });
+        transAmount.cashAmount = CurrencyFormat(transAmount.cashAmount);
+        transAmount.creditAmount = CurrencyFormat(transAmount.creditAmount);
+        transAmount.creditNoteAmount = CurrencyFormat(transAmount.creditNoteAmount);
+        transAmount.cardAmount = CurrencyFormat(transAmount.cardAmount);
+
+
 
 
         var shortExcessAmount = calcShortExcessAmount();

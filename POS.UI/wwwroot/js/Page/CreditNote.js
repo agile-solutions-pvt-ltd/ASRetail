@@ -179,24 +179,24 @@
         //if (!isFirstTimeLoadItem)
            
         //isFirstTimeLoadItem = false;
-        $.each(table.rows, function (i, v) {
-            if (parseFloat($(this).find(".Quantity").val()) >= parseFloat($(this).find(".Quantity").attr("max"))) {
-                displayError("Return quantity cannot be greater than sales quantity !!");
-                $(this).find(".Quantity").val($(this).find(".Quantity").attr("max"));
-                isValid = false;
-                return false;
-            }
-        });
-        //check when new quantity is added
-        let itemCode = $("#item_code").val();
-        if (!_.isEmpty(itemCode)) {
-            let checkData = _.filter(salesItems, function (x) { return x.bar_Code === itemCode; })[0];
-            if (_.isEmpty(checkData)) {
-                displayError("Item not available in this sales !!");
-                isValid = false;
-                return false;
-            }
-        }
+        //$.each(table.rows, function (i, v) {
+        //    if (parseFloat($(this).find(".Quantity").val()) >= parseFloat($(this).find(".Quantity").attr("max"))) {
+        //        displayError("Return quantity cannot be greater than sales quantity !!");
+        //        $(this).find(".Quantity").val($(this).find(".Quantity").attr("max"));
+        //        isValid = false;
+        //        return false;
+        //    }
+        //});
+        ////check when new quantity is added
+        //let itemCode = $("#item_code").val();
+        //if (!_.isEmpty(itemCode)) {
+        //    let checkData = _.filter(salesItems, function (x) { return x.bar_Code === itemCode; })[0];
+        //    if (_.isEmpty(checkData)) {
+        //        displayError("Item not available in this sales !!");
+        //        isValid = false;
+        //        return false;
+        //    }
+        //}
         //check others
 
         return isValid;
@@ -599,6 +599,7 @@ return total;
                 if (result.status === 200) {
                     printer.PrintCreditNoteInvoice(result.responseJSON, function () {
                         StatusNotify("success", result.responseJSON.message);
+                        resetForm();
                         //setTimeout(function () {
                         //    window.location.href = window.location.origin + result.responseJSON.redirectUrl;
                         //}, 3000);

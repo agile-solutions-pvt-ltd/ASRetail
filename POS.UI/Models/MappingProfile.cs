@@ -109,7 +109,8 @@ namespace POS.DTO
                 .ForMember(dest => dest.Barcode, opts => opts.MapFrom(src => src.Member_Barcode))
                 .ForMember(dest => dest.Membership_Number_Old, opts => opts.MapFrom(src => src.Membership_ID))
                 .ForMember(dest => dest.IsNavSync, opts => opts.MapFrom(src => true))
-                 .ForMember(dest => dest.NavSyncDate, opts => opts.MapFrom(src => DateTime.Now));
+                 .ForMember(dest => dest.NavSyncDate, opts => opts.MapFrom(src => DateTime.Now))
+                   .ForMember(dest => dest.Registration_Date, opts => opts.MapFrom(src => src.Registration_Date.Year == 1 ? DateTime.Now : src.Registration_Date));
 
             CreateMap<Customer, NavCustomerPOST>()
               .ForMember(dest => dest.id, opts => opts.Ignore())

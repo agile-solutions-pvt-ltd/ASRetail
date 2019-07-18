@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -112,21 +113,30 @@ namespace POS.UI
 
 
             // Add Hangfire services.
-            services.AddHangfire(configuration => configuration
-                //.setdatacompatibilitylevel(compatibilitylevel.version_170)
-                //.usesimpleassemblynametypeserializer()
-                //.userecommendedserializersettings()
-                .UseSqlServerStorage(Configuration.GetConnectionString("DefaultConnection"), new SqlServerStorageOptions
-                {
-                    CommandBatchMaxTimeout = TimeSpan.FromDays(2),
-                    SlidingInvisibilityTimeout = TimeSpan.FromMinutes(20),
-                    QueuePollInterval = TimeSpan.Zero,
-                    UseRecommendedIsolationLevel = true,
-                    UsePageLocksOnDequeue = true,
-                    DisableGlobalLocks = true
-                }));
+            //services.AddHangfire(configuration => configuration
+            //    //.setdatacompatibilitylevel(compatibilitylevel.version_170)
+            //    //.usesimpleassemblynametypeserializer()
+            //    //.userecommendedserializersettings()
+            //    .UseSqlServerStorage(Configuration.GetConnectionString("DefaultConnection"), new SqlServerStorageOptions
+            //    {
+            //        CommandBatchMaxTimeout = TimeSpan.FromDays(2),
+            //        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(20),
+            //        QueuePollInterval = TimeSpan.Zero,
+            //        UseRecommendedIsolationLevel = true,
+            //        UsePageLocksOnDequeue = true,
+            //        DisableGlobalLocks = true
+            //    }));
 
-            services.AddHangfireServer();
+            //services.AddHangfireServer();
+            services.AddHangfire(opt => opt.UseSqlServerStorage(Configuration.GetConnectionString("DefaultConnection"),
+    new SqlServerStorageOptions
+    {
+        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+        QueuePollInterval = TimeSpan.FromMinutes(30),
+        UseRecommendedIsolationLevel = true,
+        UsePageLocksOnDequeue = true,
+        DisableGlobalLocks = true
+    }));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -158,10 +168,11 @@ namespace POS.UI
             {
                 Authorization = new IDashboardAuthorizationFilter[]
            {
-                new Helper.HangFireAuthorizationFilter()
-           }
+                 new Helper.HangFireAuthorizationFilter()
+           },
+                StatsPollingInterval = 30000
             });
-
+           
             app.UseHangfireServer();
             app.UseMvc(routes =>
             {
