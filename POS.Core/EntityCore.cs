@@ -62,6 +62,8 @@ namespace POS.Core
         public virtual DbSet<Menu> Menu { get; set; }
         public virtual DbSet<Settlement> Settlement { get; set; }
         public virtual DbSet<SettlementViewModel> SettlementViewModel { get; set; }
+
+        public virtual DbSet<TodaySalesInvoicePaymentViewModel> TodaySalesInvoicePaymentViewModels { get; set; }
         public virtual DbSet<User> User { get; set; }
 
 

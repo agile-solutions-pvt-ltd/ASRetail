@@ -50,7 +50,7 @@
                 <div class="card">
                     <div class="card-block">
                         @*Your content here*@
-                        <form  asp-action="Create" class="form-horizontal">
+                        <form  asp-action="Create" class="form-horizontal" id="form">
 
                             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                             <div class="d-none d-print-block">
@@ -270,7 +270,9 @@
 
 
                             <div class="form-group ml-button col-md-4">
-                                <input type="submit" value="Save" class="btn btn-success btn-block" />
+                                @*<input  type="submit" value="Save" class="btn btn-success btn-block"  />*@
+                                <input type="button" value="Save"  class="btn btn-success btn-block"  onclick="submitbtn();"  />
+
                             </div>
                         </form>
                         <div>
@@ -288,4 +290,63 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 <script src="~/js/Page/Denomination.js"></script>
+    <script>
+       
+        $(document).on('keypress', function (e) {
+           
+            if (e.which == 13) {
+                
+                    bootbox.confirm({
+                        message: "Are you sure you want to save the denomination??",
+                        buttons: {
+                            confirm: {
+                                label: 'Yes',
+                                className: 'btn-success'
+                            },
+                            cancel: {
+                                label: 'No',
+                                className: 'btn-danger'
+                            }
+                        },
+                        callback: function (result) {
+                            console.log('This was logged in the callback: ' + result);
+                        }
+                    });
+               
+                }
+            Mousetrap.bindGlobal('shift+enter', function (e) {
+                e.preventDefault(); e.stopPropagation();
+                $('#form').trigger('submit', [{ 'variable_name': true }]);
+            });
+           
+        });
+        
+
+        function submitbtn() {
+            bootbox.confirm({
+                message: "Are you sure you want to save the denomination??",
+                buttons: {
+                    confirm: {
+                        label: 'Yes',
+                        className: 'btn-success'
+                    },
+                    cancel: {
+                        label: 'No',
+                        className: 'btn-danger'
+                    }
+                },
+                callback: function (result) {
+                    if (result == true) {
+                        console.log('This was logged in the callback: ' + result);
+                    }
+                    else {
+                        console.log('This was logged in the callback: ' + result);
+                    }
+                }
+            });
+        }
+      
+    </script>
+   
+  
 }

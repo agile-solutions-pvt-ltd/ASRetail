@@ -33,7 +33,7 @@
             editable: true,
             sortable: false,
             scrollable: true
-
+           
 
         });
         $('.k-grid.k-widget.k-display-block.k-editable').addClass("display-none");
@@ -107,11 +107,11 @@
             //add row
             var selected = k === 0 ? "class='selected'" : "";
             var html = '<tr ' + selected + '>' +
-                '<td>' + (k + 1).toString() + '</td>' +
-                '<td class="membership-id">' + v.membership_Number + '</td>' +
-                '<td>' + v.name + '</td>' +
-                '<td>' + v.mobile1 + '</td>' +
-                '<td><input type="button" class="btn btn-success btn-sm" onclick="invoiceLanding.SelectMember(\'' + v.membership_Number + '\');" value="Select" /></td>' +
+                '<td style="width:7%;">' + (k + 1).toString() + '</td>' +
+                '<td class="membership-id" style="width:20%;">' + v.membership_Number + '</td>' +
+                '<td style="width:40%;">' + v.name + '</td>' +
+                '<td style="width:30%">' + v.mobile1 + '</td>' +
+                '<td style="width:15%;"><input type="button" class="btn btn-success btn-sm" onclick="invoiceLanding.SelectMember(\'' + v.membership_Number + '\');" value="Select" /></td>' +
                 '</tr>';
             $('#memberTable').append(html);
         });
