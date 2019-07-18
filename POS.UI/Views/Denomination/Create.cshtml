@@ -291,7 +291,7 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 <script src="~/js/Page/Denomination.js"></script>
     <script>
-        var id = null;
+       
         $(document).on('keypress', function (e) {
            
             if (e.which == 13) {
@@ -309,23 +309,18 @@
                             }
                         },
                         callback: function (result) {
-                            if (result) {
-                                
-                                $(".bootbox-cancel").trigger("click");
-                            }
-                            else {
-                                $(".bootbox-cancel").trigger("click");
-                            }
+                            console.log('This was logged in the callback: ' + result);
                         }
                     });
-                    id = 1;
+               
                 }
-
             Mousetrap.bindGlobal('shift+enter', function (e) {
-            e.preventDefault(); e.stopPropagation();
+                e.preventDefault(); e.stopPropagation();
                 $('#form').trigger('submit', [{ 'variable_name': true }]);
-           });
+            });
+           
         });
+        
 
         function submitbtn() {
             bootbox.confirm({
