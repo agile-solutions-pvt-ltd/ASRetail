@@ -26,7 +26,8 @@ namespace POS.UI.Controllers
         }
         public IActionResult SalesInvoiceApi()
         {
-            IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Type == "Sales").Include(x => x.SalesInvoiceItems).OrderByDescending(x => x.Trans_Date_Ad);
+            IQueryable<SalesInvoiceReportViewModel> salesInvoiceList = _context.SalesInvoiceReportViewModel.Where(x => x.Trans_Type == "Sales").OrderByDescending(x => x.Trans_Date_AD);
+           
             return Ok(salesInvoiceList);
         }
 

@@ -106,7 +106,7 @@
         //});
         //hide bill to customer info
         $(".bill_to_info_div").hide();
-
+      
         AssignKeyEvent();
     };
     let loadInvoice = (invoiceNumber) => {
@@ -537,7 +537,34 @@ return total;
         });
         
     };
+
+    let saveForm = () => {
+        bootbox.confirm({
+            message: "Are you Sure you want to save?",
+            buttons: {
+                cancel: {
+                    label: 'No',
+                    className: 'btn-warning'
+                },
+                confirm: {
+                    label: 'Proceed',
+                    className: 'btn-success'
+                }
+            },
+            callback: function (result) {
+
+                if (result) {
+                    SaveCreditNote();
+                }
+
+            }
+        });
+
+    };
     let SaveCreditNote = () => {
+
+      
+        
         //save field data first
         $("#Total_Quantity").val(CurrencyUnFormat($("#totalQuantity").text()));
         $("#Total_Gross_Amount").val(CurrencyUnFormat($("#totalGrossAmount").text()));
@@ -595,7 +622,8 @@ return total;
             //dataType: "json",
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify(data),
-            complete: function (result) {               
+            complete: function (result) {
+             
                 if (result.status === 200) {
                     printer.PrintCreditNoteInvoice(result.responseJSON, function () {
                         StatusNotify("success", result.responseJSON.message);
@@ -700,7 +728,8 @@ return total;
     //events
 
 
-    $("#SaveButton").on('click', SaveCreditNote);
+    //$("#SaveButton").on('click', SaveCreditNote);
+    $("#SaveButton").on('click', saveForm);
     $('#item_code').on("keypress", barCodeKeyPressEvent);
 
 
