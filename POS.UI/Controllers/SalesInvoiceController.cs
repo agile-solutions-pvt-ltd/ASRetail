@@ -243,14 +243,14 @@ namespace POS.UI.Controllers
                 Store store = _context.Store.FirstOrDefault();
                 //convert to sales invoice and save
                 SalesInvoice salesInvoice = _mapper.Map<SalesInvoice>(salesInvoiceTmp);
-                salesInvoice.Invoice_Id = _context.SalesInvoice.Where(x => x.Trans_Type == salesInvoice.Trans_Type).Select(x => x.Invoice_Id).DefaultIfEmpty(0).Max() + 1;
-                salesInvoice.Invoice_Number = SalesInvoiceNumberFormat(store, salesInvoice.Invoice_Id, salesInvoice.Trans_Type);
+                
                 salesInvoice.Total_Bill_Discount = model.billDiscount;
                 salesInvoice.Total_Payable_Amount = model.totalPayable;
                 salesInvoice.Total_Net_Amount_Roundup = model.totalNetAmountRoundUp;
                 salesInvoice.Tender_Amount = model.tenderAmount;
                 salesInvoice.Change_Amount = model.changeAmount;
                 _context.SalesInvoice.Add(salesInvoice);
+               
 
                 //get invoice items temp convert to sales invoice item and save them
                 IList<SalesInvoiceItemsTmp> itemtmp = _context.SalesInvoiceItemsTmp.Where(x => x.Invoice_Id == salesInvoiceTmp.Id).ToList();
@@ -327,7 +327,8 @@ namespace POS.UI.Controllers
                 _context.InvoicePrint.Add(print);
 
 
-
+                salesInvoice.Invoice_Id = _context.SalesInvoice.Where(x => x.Trans_Type == salesInvoice.Trans_Type).Select(x => x.Invoice_Id).DefaultIfEmpty(0).Max() + 1;
+                salesInvoice.Invoice_Number = SalesInvoiceNumberFormat(store, salesInvoice.Invoice_Id, salesInvoice.Trans_Type);
                 _context.SaveChanges();
 
                 //if everything seems good, then delete salesInvoiceTmp

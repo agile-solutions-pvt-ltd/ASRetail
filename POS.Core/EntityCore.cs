@@ -6,15 +6,25 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.Extensions.Configuration;
 
 namespace POS.Core
 {
     public class EntityCore : IdentityDbContext
     {
-        
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{
+        //    optionsBuilder.UseSqlServer("server=10.10.170.11;database=ASRetail_Production;user=sa;password=Ims16877Nepal;");
+        //}
+        //public EntityCore() : base()
+        //{
+
+        //}
+
         public EntityCore(DbContextOptions<EntityCore> options)
             : base(options)
         {
+            ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
         }
 
@@ -38,7 +48,7 @@ namespace POS.Core
         public virtual DbSet<ItemBarCode> ItemBarCode { get; set; }
         public virtual DbSet<ItemPrice> ItemPrice { get; set; }
         public virtual DbSet<ItemDiscount> ItemDiscount { get; set; }
-       
+
 
 
 

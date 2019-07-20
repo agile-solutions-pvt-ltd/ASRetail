@@ -181,7 +181,7 @@ const invoice = (function () {
                     setTimeout(function () { $("#itemNotFoundLabel").hide(); }, 2000);
 
                 } else {
-
+                    
                     _.each(data, function (x) { selectedItems.push(x); });
                     callback(data);
                 }
@@ -199,7 +199,7 @@ const invoice = (function () {
             url: window.location.origin + "/SalesInvoice/GetItemReferenceData/?id=" + getUrlParameters(),
             type: "GET",
             success: function (data) {
-
+               
                 if (data.length > 0) {
                     _.each(data, function (x) { selectedItems.push(x); });
                     callback();
@@ -482,7 +482,7 @@ const invoice = (function () {
         $("<span class='itemName' data-item-id='" + itemId + "' data-item-code= '" + itemCode + "'>" + itemName + "</span>").appendTo(cell3);
         $("<span>" + unit + "</span>").appendTo(cell4);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Rate" type="number" min="0" onkeyup="invoice.calcTotal()" name="Rate" ' + rateDisabled + ' " value=' + rate.toFixed(2) + '>').appendTo(cell5);
-        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Quantity" type="number" min="1" onkeyup="invoice.calcAll()" name="Quantity" value=' + quantity.toString() + '>').appendTo(cell6);
+        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Quantity" type="number" min="0.01" onkeyup="invoice.calcAll()" name="Quantity" value=' + quantity.toString() + '>').appendTo(cell6);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right GrossAmount" type="number" onkeyup="invoice.calcTotal()" name="GrossAmount" disabled value=' + grossAmount.toFixed(2) + '>').appendTo(cell7);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Discount" type="number" data-isDiscountable="' + isDiscountable + '" ' + discountDisabled + ' min="0" ' + discountLimit + ' onkeyup="invoice.calcTotal(this)" name="Discount" data-original-percent="' + discount.toFixed(2) + '" data-original-value="' + discount.toFixed(2) + '" value=' + discount.toFixed(2) + '>').appendTo(cell8);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Tax" data-isVatable="' + isVatable + '" type="number" onkeyup="invoice.calcTotal()" name="Tax" disabled value=' + tax.toFixed(2) + '>').appendTo(cell9);
@@ -769,7 +769,7 @@ const invoice = (function () {
         //    return 0;
 
         ///if no discount tag is enable then return no discount
-        if (selectedItem[0].no_Discount === true) {
+        if (selectedItem.length > 0 && selectedItem[0].no_Discount === true) {
             $.each(table.rows, function (i, v) {
                 if ($(this).find(".itemName").attr("data-item-code") === itemCode) {
                     $(this).find(".Discount").data("isdiscountable", false);
@@ -1118,7 +1118,7 @@ const invoice = (function () {
                 let discountable = $(this).find(".Discount").data("isdiscountable");
                 let discountType = $(this).find(".Discount").data("discountType");
                 let netAmount = 0;
-
+                debugger;
                 //calculations     
                 // 1. calc quantity
                 var quantity = parseFloat($(this).find(".Quantity").val());

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using POS.Core;
 using POS.DTO;
+using POS.UI.Helper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -211,7 +212,7 @@ where b.BarCode = {0} or i.Code = {0}";
             {
                 _cache.Set("IsItemCacheInProcess", true);
                 //update cache
-
+                Config config = ConfigJSON.Read();
                 //split data to 1lakh and save to cache
                 int count = 1000, skip = 0;
                 _context.ChangeTracker.AutoDetectChangesEnabled = false;
@@ -225,9 +226,11 @@ where b.BarCode = {0} or i.Code = {0}";
                             _cache.Set("ItemViewModel", itemsTotal);
                             break;
                         }
-
+                        config.Environment = itemsTemp.Count() + " item cached";
                         itemsTotal = itemsTotal.Concat(itemsTemp).ToList();
                         skip = skip + count;
+                        config.Environment = itemsTotal.Count() + " item cached";
+                        ConfigJSON.Write(config);
 
                     }
                     catch (Exception ex)

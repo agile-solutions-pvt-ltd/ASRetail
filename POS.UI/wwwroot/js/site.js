@@ -388,7 +388,7 @@ $(document).ready(function () {
 
         // Attach the event keypress to exclude the F5 refresh
         $(document).on('keypress', function (e) {
-            if (e.keyCode == 116) {
+            if (e.keyCode === 116) {
                 validNavigation = true;
             }
         });

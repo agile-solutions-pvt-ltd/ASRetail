@@ -7,10 +7,8 @@ namespace POS.DTO
 {
     public partial class Customer
     {
-        [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Code { get; set; }
-        
         public string Name { get; set; }
         public string Address { get; set; }
         public string Image { get; set; }
@@ -28,6 +26,7 @@ namespace POS.DTO
         public bool? Is_Sale_Refused { get; set; }
         public bool? Is_Member { get; set; }
         public int? Member_Id { get; set; }
+        [Key]
         public string Membership_Number { get; set; }
         public string Membership_Number_Old { get; set; }
         public string Barcode { get; set; }

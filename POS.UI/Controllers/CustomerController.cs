@@ -271,6 +271,7 @@ namespace POS.UI.Controllers
             {
                 try
                 {
+                    customer.Code = Guid.NewGuid().ToString();
                     customer.Is_Member = true;
                     customer.Member_Id = _context.Customer.Where(x => x.Is_Member == true && x.Member_Id != null).Select(x => x.Member_Id).DefaultIfEmpty(0).Max() + 1;
                     Store store = _context.Store.FirstOrDefault();
