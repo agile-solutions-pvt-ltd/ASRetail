@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace POS.UI.Controllers
 {
-    [Authorize]
+    [SessionAuthorized]
     public class ReportsController : Controller
     {
         private readonly EntityCore _context;
@@ -103,7 +103,30 @@ namespace POS.UI.Controllers
             ViewData["Store"] = _context.Store.FirstOrDefault();
             return View();
         }
+
+
+
         //Niroj End
+
+
+        public IActionResult SalesInvoiceSummary()
+        {
+            //IQueryable<SalesInvoice> salesInvoiceList =_context.SalesInvoice.Where(x => x.Trans_Type == "Sales").OrderByDescending(x => x.Trans_Date_Ad);
+           // ViewData["Store"] = _context.Store.FirstOrDefault();
+            return View();
+        }
+        public IActionResult SalesInvoiceSummaryApi(DateTime? StartDate = null, DateTime? EndDate = null)
+        {
+
+            IQueryable<SettlementSummaryView> salesInvoiceList = _context.SettlementSummaryView.OrderByDescending(x=>x.Date);
+            if (StartDate != null)
+                salesInvoiceList = salesInvoiceList.Where(x => x.Date >= StartDate);
+            if (EndDate != null)
+                salesInvoiceList = salesInvoiceList.Where(x => x.Date <= EndDate);
+            return Ok(salesInvoiceList);
+        }
+
+
 
         [HttpPost]
         public ActionResult Excel_Export_Save(string contentType, string base64, string fileName)

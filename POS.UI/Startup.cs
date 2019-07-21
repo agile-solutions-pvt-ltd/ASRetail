@@ -2,6 +2,7 @@
 using Hangfire;
 using Hangfire.Dashboard;
 using Hangfire.SqlServer;
+using Hangfire.Storage;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -102,7 +103,7 @@ namespace POS.UI
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                 .AddJsonOptions(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore); ;
 
-
+           
             services.AddSingleton<InMemoryCache>();
 
             services.AddSession(options =>
@@ -154,7 +155,7 @@ namespace POS.UI
             }
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
+            app.UseStaticFiles();           
             app.UseSession();
             app.UseCookiePolicy();
 
@@ -190,6 +191,7 @@ namespace POS.UI
             // RecurringJob.AddOrUpdate(() => POSScheduler(), Cron.Daily);
 
 
+           
         }
 
 

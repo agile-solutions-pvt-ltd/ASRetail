@@ -214,7 +214,7 @@ where b.BarCode = {0} or i.Code = {0}";
                 //update cache
                 Config config = ConfigJSON.Read();
                 //split data to 1lakh and save to cache
-                int count = 1000, skip = 0;
+                int count = 10000, skip = 0;
                 _context.ChangeTracker.AutoDetectChangesEnabled = false;
                 for (; ; )
                 {

@@ -358,7 +358,7 @@ $(document).ready(function () {
 
     /*chatbar js start*/
     /*chat box scroll*/
-    var a = $(window).height() - 50;
+    //var a = $(window).height() - 50;
     //$(".main-friend-list").slimScroll({
     //    height: a,
     //    allowPageScroll: false,
@@ -376,58 +376,58 @@ $(document).ready(function () {
     $('.theme-loader').fadeOut(300);
     //loader end
 
+   
 
 
 
 
 
+    //////browser closed event
+    //var validNavigation = false;
+    //function wireUpWindowUnloadEvents() {
 
-    ////browser closed event
-    var validNavigation = false;
-    function wireUpWindowUnloadEvents() {
+    //    // Attach the event keypress to exclude the F5 refresh
+    //    $(document).on('keypress', function (e) {
+    //        if (e.keyCode === 116) {
+    //            validNavigation = true;
+    //        }
+    //    });
 
-        // Attach the event keypress to exclude the F5 refresh
-        $(document).on('keypress', function (e) {
-            if (e.keyCode === 116) {
-                validNavigation = true;
-            }
-        });
+    //    // Attach the event click for all links in the page
+    //    $(document).on("click", "a", function () {
+    //        validNavigation = true;
+    //    });
 
-        // Attach the event click for all links in the page
-        $(document).on("click", "a", function () {
-            validNavigation = true;
-        });
+    //    // Attach the event submit for all forms in the page
+    //    $(document).on("submit", "form", function () {
+    //        validNavigation = true;
+    //    });
 
-        // Attach the event submit for all forms in the page
-        $(document).on("submit", "form", function () {
-            validNavigation = true;
-        });
+    //    // Attach the event click for all inputs in the page
+    //    $(document).bind("click", "input[type=submit]", function () {
+    //        validNavigation = true;
+    //    });
+    //    $(document).bind("click", "input[type=button]", function () {
+    //        validNavigation = true;
+    //    });
 
-        // Attach the event click for all inputs in the page
-        $(document).bind("click", "input[type=submit]", function () {
-            validNavigation = true;
-        });
-        $(document).bind("click", "input[type=button]", function () {
-            validNavigation = true;
-        });
+    //    $(document).bind("click", "button[type=submit]", function () {
+    //        validNavigation = true;
+    //    });
 
-        $(document).bind("click", "button[type=submit]", function () {
-            validNavigation = true;
-        });
-
-    }
-
+    //}
 
 
-    function windowCloseEvent() {
-        window.onbeforeunload = function () {
-            if (!validNavigation) {
-                callServerForBrowserCloseEvent();
-            }
-        };
-    }
-    wireUpWindowUnloadEvents();
-    windowCloseEvent();
+
+    //function windowCloseEvent() {
+    //    window.onbeforeunload = function () {
+    //        if (!validNavigation) {
+    //            callServerForBrowserCloseEvent();
+    //        }
+    //    };
+    //}
+    //wireUpWindowUnloadEvents();
+    //windowCloseEvent();
 
     //// Broad cast that your're opening a page.
     //localStorage.openpages = Date.now();

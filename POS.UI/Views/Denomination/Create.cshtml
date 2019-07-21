@@ -261,7 +261,7 @@
                             <hr />
                             <div class="br"></div>
                             <div class="form-row">
-                                <label asp-for="Total" class="control-label col-md-2 mr-denomination text-right"></label>
+                                <label asp-for="Total" class="control-label col-md-2 mr-denomination text-right">Total Cash</label>
                                 <div class="form-group col-md-2">
                                     <input asp-for="Total" class="form-control form-control-sm text-right total" />
                                     <span asp-validation-for="Total" class="text-danger"></span>
@@ -337,7 +337,7 @@
                 },
                 callback: function (result) {
                     if (result == true) {
-                        console.log('This was logged in the callback: ' + result);
+                        $('#form').trigger('submit');
                     }
                     else {
                         console.log('This was logged in the callback: ' + result);

@@ -11,8 +11,10 @@
   "NavUserName": "web.user",
   "NavPassword": "W3b@2019",
   "StopInvoicePosting": false,
-  "Location": "SAT",
-  "LoggedInUsers": [],
+  "Location": "NBT",
+  "LoggedInUsers": [
+    "Admin"
+  ],
   "SchedulerDuration": {
     "Default": "100000",
     "Store": "100000",

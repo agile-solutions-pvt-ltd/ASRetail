@@ -2,11 +2,35 @@
     //********* Private Variables **************//
 
     let maximumCharAllowInItemName = 9;
+    //greycode printing initiliger
+    class Ws {
+        get newClientPromise() {
+            return new Promise((resolve, reject) => {
+                GetClientLocalIP(function (ip) {
 
+                    let wsClient = new WebSocket("ws://" + ip + ":90");
+                    console.log(wsClient)
+                    wsClient.onopen = () => {
+                        console.log("connected");
+                        resolve(wsClient);
+                    };
+                    wsClient.onerror = error => reject(error);
+
+                });
+            })
+        }
+        get clientPromise() {
+            if (!this.promise) {
+                this.promise = this.newClientPromise
+            }
+            return this.promise;
+        }
+    }
 
     //********* Private Methos *****************//
     let init = () => {
 
+        
     };
 
 
@@ -27,6 +51,7 @@
 
         }
     };
+
     let PrintTaxInvoice = (data, callback) => {
         debugger;
         var paymentMode = _.pluck(data.billData, "trans_Mode").join(", ");
@@ -40,7 +65,7 @@
         header += "         " + (data.storeData.ADDRESS || data.storeData.address) + "\r\n ";
         header += "           Vat No.: " + (data.storeData.VAT || data.storeData.vat) + "\r\n";
         header += "        " + (!_.isEmpty(data.copy) && (data.copy !== undefined && data.copy.printCount >= 1) ? "    INVOICE" : "    TAX INVOICE") + "\r\n";
-        header += (data.copy !== undefined && data.copy.printCount > 1) ? "  (COPY OF ORIGINAL) (" + (data.copy.printCount - 1).toString() + ")\r\n\r\n" : "\r\n\r\n";
+        header += (!_.isEmpty(data.copy) && data.copy.printCount > 1) ? "  (COPY OF ORIGINAL) (" + (data.copy.printCount - 1).toString() + ")\r\n\r\n" : "\r\n\r\n";
         header += "Bill #   : " + data.invoiceData.invoice_Number + "\r\n";
         header += "Date     : " + FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)) + " (" + data.invoiceData.trans_Date_Bs + ") \r\n";
         if (data.invoiceData.memberId !== "POS") {
@@ -179,7 +204,7 @@
         //Final Data
         var finalBill = header + itemHeader + item + itemTotal + footer;
 
-        printwsBill(finalBill, callback);
+        printwsBill(finalBill, callback, data, PrintTaxInvoiceBrowser);
         //$.ajax({
         //    url: window.location.origin + "/Print/TaxInvoice",
         //    type: 'GET',
@@ -255,6 +280,86 @@
         //    }
         //});
     };
+    let PrintTaxInvoiceBrowser = (data, callback) => {  
+        debugger;
+        $.ajax({
+            url: window.location.origin + "/Print/TaxInvoice",
+            type: 'GET',
+            complete: function (result) {
+                if (result.status === 200) {
+
+                    let printText = $(result.responseText).find("#printbody").html();
+                    //replace all variables  
+
+                    var paymentMode = _.pluck(data.billData, "trans_Mode").join(", ");
+                    if (paymentMode === "") {
+                        paymentMode = data.paymentMode;
+                    }
+
+                    printText = printText.replace("{companyName}", data.storeData.companY_NAME || data.storeData.COMPANY_NAME);
+                    printText = printText.replace("{storeLocation}", data.storeData.address || data.storeData.ADDRESS);
+                    printText = printText.replace("{vatNumber}", data.storeData.vat || data.storeData.VAT);
+                    printText = printText.replace("{invoiceType}", (!_.isEmpty(data.copy) && data.copy.printCount >= 1) ? "INVOICE" : "TAX INVOICE");
+                    printText = printText.replace("{copyName}", (!_.isEmpty(data.copy) && data.copy.printCount > 1) ? "(COPY OF ORIGINAL) (" + (data.copy.printCount - 1).toString() + ")" : "");
+                    printText = printText.replace("{billNumber}", data.invoiceData.invoice_Number);
+                    printText = printText.replace("{dateAD}", FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)));
+                    printText = printText.replace("{dateBS}", data.invoiceData.trans_Date_Bs);
+                    printText = printText.replace(/{customerhide}/g, data.invoiceData.memberId === "POS" ? "display-none" : "");
+                    printText = printText.replace(/{addresshide}/g, _.isEmpty(data.invoiceData.customer_Address) ? "display-none" : "");
+                    printText = printText.replace(/{mobilehide}/g, _.isEmpty(data.invoiceData.customer_Mobile) ? "display-none" : "");
+                    printText = printText.replace(/{billToVatHide}/g, _.isEmpty(data.invoiceData.customer_Vat) ? "display-none" : "");
+                    printText = printText.replace("{billToName}", data.invoiceData.customer_Name);
+                    printText = printText.replace("{billToVat}", data.invoiceData.customer_Vat);
+                    printText = printText.replace("{billToAddress}", data.invoiceData.customer_Address);
+                    printText = printText.replace("{billToMobile}", data.invoiceData.customer_Mobile);
+                    printText = printText.replace("{paymentMode}", paymentMode);
+                    printText = printText.replace("{totalGrossAmount}", parseFloat(data.invoiceData.total_Gross_Amount).toFixed(2));
+                    printText = printText.replace("{promoDiscount}", parseFloat(data.invoiceData.promoDiscount).toFixed(2));
+                    printText = printText.replace("{loyaltyDiscount}", parseFloat(data.invoiceData.membershipDiscount).toFixed(2));
+                    printText = printText.replace("{totalSaving}", parseFloat(data.invoiceData.total_Discount).toFixed(2));
+                    printText = printText.replace("{totalNetAmount}", parseFloat(data.invoiceData.total_Payable_Amount).toFixed(2));
+                    printText = printText.replace("{tenderAmount}", parseFloat(data.invoiceData.tender_Amount).toFixed(2));
+                    printText = printText.replace("{changeAmount}", parseFloat(data.invoiceData.change_Amount).toFixed(2));
+                    printText = printText.replace("{totalQuantity}", parseFloat(data.invoiceData.total_Quantity).toFixed(2));
+                    printText = printText.replace("{totalTaxableAmount}", parseFloat(data.invoiceData.taxableAmount).toFixed(2));
+                    printText = printText.replace("{totalNonTaxableAmount}", parseFloat(data.invoiceData.nonTaxableAmount).toFixed(2));
+                    printText = printText.replace("{totalVat}", parseFloat(data.invoiceData.total_Vat).toFixed(2));
+                    printText = printText.replace("{terminalName}", data.invoiceData.terminal);
+                    printText = printText.replace("{transTime}", FormatForDisplayTime(data.invoiceData.trans_Time));
+                    printText = printText.replace("{cashierName}", data.invoiceData.created_By);
+
+                    //get items template
+                    let printItemTemplateOld = $(result.responseText).find("#items").html();
+                    let printItems = "";
+                    _.each(data.invoiceData.salesInvoiceItems, function (v, k) {
+                        var printItemTemplate = printItemTemplateOld;
+                        printItemTemplate = printItemTemplate.replace("{ItemSN}", (k + 1).toString());
+                        printItemTemplate = printItemTemplate.replace("{ItemName}", v.name.substring(0, maximumCharAllowInItemName));
+                        printItemTemplate = printItemTemplate.replace("{ItemQuantity}", parseFloat(v.quantity).toFixed(2));
+                        printItemTemplate = printItemTemplate.replace("{ItemRate}", parseFloat(v.rate).toFixed(2));
+                        printItemTemplate = printItemTemplate.replace("{ItemPromoDiscount}", parseFloat(v.promoDiscount).toFixed(2));
+                        printItemTemplate = printItemTemplate.replace("{ItemTotal}", parseFloat(v.gross_Amount).toFixed(2));
+                        printItems += printItemTemplate;
+                    });
+
+
+                    FinalPrint(printText, printItems, callback);
+
+                    //update print count
+                    $.ajax({
+                        url: window.location.origin + "/Print/UpdatePrintCount?invoiceNumber=" + data.invoiceData.invoice_Number,
+                        type: 'POST',
+                        complete: function (result) {
+                        }
+                    });
+                }
+
+                //if (callback !== undefined)
+                //    callback();
+            }
+        });
+    };
+
     let PrintSalesInvoice = (data, callback) => {
         debugger;
         var paymentMode = _.pluck(data.billData, "trans_Mode").join(", ");
@@ -263,7 +368,7 @@
         }
 
         //Header Start here
-        var header = "";       
+        var header = "";
         header += "         " + (data.storeData.COMPANY_NAME || data.storeData.companY_NAME) + "\r\n";
         header += "         " + (data.storeData.ADDRESS || data.storeData.address) + "\r\n ";
         header += "           Vat No.: " + (data.storeData.VAT || data.storeData.vat) + "\r\n";
@@ -515,20 +620,149 @@
         //    }
         //});
     };
+    let PrintSalesInvoiceBrowser = (data, callback) => {
 
-    let printwsBill = (str, callback) => {
-        var ws;
-        ws = new WebSocket('ws://127.0.0.1:90');
-        var state;
-        ws.addEventListener('open', ws_open(str), false);
-        function ws_open(text) {
-            // alert("Are you sure to print?");
-            console.log("printcalled");
-            ws.onopen = () => ws.send(text);
-            // ws.send(text);
-            if (callback !== undefined)
-                callback();
-        }
+
+        debugger;
+        $.ajax({
+            url: window.location.origin + "/Print/SalesInvoice",
+            type: 'GET',
+            complete: function (result) {
+                if (result.status === 200) {
+                    let printText = $(result.responseText).find("#printbody").html();
+                    //replace all variables
+
+
+                    var paymentMode = _.pluck(data.billData, "trans_Mode").join(", ");
+                    if (paymentMode === "") {
+                        paymentMode = data.paymentMode;
+                    }
+
+                    printText = printText.replace("{companyName}", data.storeData.companY_NAME || data.storeData.COMPANY_NAME);
+                    printText = printText.replace("{storeLocation}", data.storeData.address || data.storeData.ADDRESS);
+                    printText = printText.replace("{vatNumber}", data.storeData.vat || data.storeData.VAT);
+                    printText = printText.replace("{invoiceType}", "ABBREVIATED TAX INVOICE");
+                    printText = printText.replace("{copyName}", (_.isEmpty(data.copy) || data.copy.printCount === 0) ? "" : "(COPY OF ORIGINAL)");
+                    printText = printText.replace("{billNumber}", data.invoiceData.invoice_Number);
+                    printText = printText.replace("{dateAD}", FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)));
+                    printText = printText.replace("{dateBS}", data.invoiceData.trans_Date_Bs);
+                    printText = printText.replace(/{customerhide}/g, data.invoiceData.memberId === "POS" ? "display-none" : "");
+                    printText = printText.replace(/{addresshide}/g, _.isEmpty(data.invoiceData.customer_Address) ? "display-none" : "");
+                    printText = printText.replace(/{mobilehide}/g, _.isEmpty(data.invoiceData.customer_Mobile) ? "display-none" : "");
+                    printText = printText.replace("{billToName}", data.invoiceData.customer_Name);
+                    printText = printText.replace("{billToAddress}", data.invoiceData.customer_Address);
+                    printText = printText.replace("{billToMobile}", data.invoiceData.customer_Mobile);
+                    printText = printText.replace("{paymentMode}", paymentMode);
+
+                    printText = printText.replace("{totalGrossAmount}", parseFloat(data.invoiceData.total_Gross_Amount).toFixed(2));
+                    printText = printText.replace("{promoDiscount}", parseFloat(data.invoiceData.promoDiscount).toFixed(2));
+                    printText = printText.replace("{loyaltyDiscount}", parseFloat(data.invoiceData.membershipDiscount).toFixed(2));
+                    printText = printText.replace("{totalSaving}", parseFloat(data.invoiceData.total_Discount).toFixed(2));
+                    printText = printText.replace("{totalNetAmount}", parseFloat(data.invoiceData.total_Payable_Amount).toFixed(2));
+                    printText = printText.replace("{tenderAmount}", parseFloat(data.invoiceData.tender_Amount).toFixed(2));
+                    printText = printText.replace("{changeAmount}", parseFloat(data.invoiceData.change_Amount).toFixed(2));
+                    printText = printText.replace("{totalQuantity}", parseFloat(data.invoiceData.total_Quantity).toFixed(2));
+                    printText = printText.replace("{terminalName}", data.invoiceData.terminal);
+                    printText = printText.replace("{transTime}", FormatForDisplayTime(data.invoiceData.trans_Time));
+                    printText = printText.replace("{cashierName}", data.invoiceData.created_By);
+
+                    //get items template
+                    let printItemTemplateOld = $(result.responseText).find("#items").html();
+                    let printItems = "";
+                    _.each(data.invoiceData.salesInvoiceItems, function (v, k) {
+                        var printItemTemplate = printItemTemplateOld;
+                        printItemTemplate = printItemTemplate.replace("{ItemSN}", (k + 1).toString());
+                        printItemTemplate = printItemTemplate.replace("{ItemName}", v.name.substring(0, maximumCharAllowInItemName));
+                        printItemTemplate = printItemTemplate.replace("{ItemQuantity}", parseFloat(v.quantity).toFixed(2));
+                        printItemTemplate = printItemTemplate.replace("{ItemRate}", parseFloat(v.rate).toFixed(2));
+                        printItemTemplate = printItemTemplate.replace("{ItemPromoDiscount}", parseFloat(v.promoDiscount).toFixed(2));
+                        printItemTemplate = printItemTemplate.replace("{ItemTotal}", parseFloat(v.gross_Amount).toFixed(2));
+                        printItems += printItemTemplate;
+                    });
+
+
+                    //            //printText = 
+                    //            //printText = printText.replace("", "");
+                    //            //printText = printText.replace("", "");
+                    //            //printText = printText.replace("", "");
+                    //            //printText = printText.replace("", "");
+                    //            //printText = printText.replace("", "");
+                    //            //printText = printText.replace("", "");
+                    //            //printText = printText.replace("", "");
+                    //            //printText = printText.replace("", "");
+                    //            //printText = printText.replace("", "");
+                    //            //printText = printText.replace("", "");
+                    //            //printText = printText.replace("", "");
+
+
+
+
+                    FinalPrint(printText, printItems, callback);
+                    // console.log(finalBill);
+                    // printwsBill(finalBill, callback);
+                    //update print count
+                    $.ajax({
+                        url: window.location.origin + "/Print/UpdatePrintCount?invoiceNumber=" + data.invoiceData.invoice_Number,
+                        type: 'POST',
+                        complete: function (result) {
+                        }
+                    });
+                }
+
+                //        //if (callback !== undefined)
+                //        //    callback();
+                //    }
+                //});
+            }
+        });
+    };
+
+    let printwsBill = (str, callback, data, errorcallback,) => {
+        debugger;
+        //var ws;
+        //ws = new WebSocket('ws://127.0.0.1:90');
+        //var state;
+        //ws.addEventListener('open', ws_open(str), false);
+        //ws.addEventListener('close', ws_close(str), false);
+        //function ws_open(text) {
+        //    // alert("Are you sure to print?");
+        //    console.log("printcalled");
+        //    ws.onopen = () => ws.send(text);
+        //    // ws.send(text);
+        //    if (callback !== undefined)
+        //        callback();
+        //}
+        //function ws_close(text) {
+        //    if (errorcallback !== undefined)
+        //        errorcallback(data, callback);
+        //}
+
+
+        window.wsSingleton = new Ws()
+        window.wsSingleton.clientPromise
+            .then(wsClient => {
+                wsClient.send(str);
+                //console.log('sended')
+
+                if (callback !== undefined)
+                    callback();
+            })
+            .catch(error => alert(error))
+
+        //var ws;
+        //ws = new WebSocket('ws://127.0.0.1:90');
+        //var state;       
+        //ws.addEventListener('open', ws_open(str), false);
+
+        //function ws_open(text) {
+        //    // alert("Are you sure to print?");
+        //    console.log("printcalled");
+        //    ws.onopen = () => ws.send(text);
+        //    // ws.send(text);
+        //    if (callback !== undefined)
+        //        callback();
+        //}
+
 
     };
 
@@ -824,7 +1058,7 @@
 
 
     let FinalPrint = (printText, printItemText, callback) => {
-       
+
         $(document.body).find(".main-body").append('<div id="tempprint" ></div>');
         $("#tempprint").html(printText);
         if (printItemText !== undefined)
@@ -832,7 +1066,7 @@
 
 
         //
-       
+
         //var ws;
         //ws = new WebSocket('ws://127.0.0.1:90');
         //var str = $("#tempprint").html();
@@ -851,7 +1085,7 @@
             type: 'html',
             targetStyles: ['*'],
             onLoadingEnd: function () {
-                $("#tempprint").remove();               
+                $("#tempprint").remove();
                 if (callback !== undefined)
                     callback();
 
@@ -875,4 +1109,5 @@
     };
 
 })();
+    
 printer.init();

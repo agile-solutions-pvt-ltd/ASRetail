@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace POS.UI.Controllers
 {
-    [Authorize]
+    [SessionAuthorized]
     public class HomeController : Controller
     {
         private readonly EntityCore _context;

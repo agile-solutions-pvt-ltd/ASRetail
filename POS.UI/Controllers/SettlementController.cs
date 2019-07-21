@@ -58,6 +58,24 @@ namespace POS.UI.Controllers
             return Ok(new { SettlementData = settlementData, Store = store });
         }
 
+//        [HttpGet]
+//        public IActionResult GetSettlementCashAmount(string userId, DateTime startDate, DateTime endDate)
+//        {
+
+//            string query = $@"select si.Created_By, sib.Terminal, sum(si.Total_Payable_Amount) as Amount from
+//SALES_INVOICE si
+//inner join SALES_INVOICE_BILL sib on si.Invoice_Number = sib.Invoice_Number
+//where sib.Trans_Mode = 'Cash' and si.Created_By = 'SUHMITA.RAI' and
+//cast(si.Trans_Date_AD as Date) >= CAST('2019-07-19' as date) and Cast(si.trans_time as time) >= cast('2019-07-19T09:00:00.840' as time)
+//and cast(si.Trans_Date_AD as Date) <= CAST('2019-07-19' as date) and cast(si.Trans_Time as time) <= cast('2019-07-19T20:16:00.840' as time)
+//group by si.Created_By,sib.Terminal";
+//            var value = _context
+//            return Ok(new { CashAmount = settlementData, Store = store });
+//        }
+
+
+
+
 
         [HttpPost]
         public IActionResult VerifySettlement([FromBody] SettlementPostViewModel data)

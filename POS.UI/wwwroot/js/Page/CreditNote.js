@@ -22,7 +22,7 @@
             editable: true,
             sortable: false,
             scrollable: true,
-            resizable:true,
+            resizable: true,
             columns: [
                 {
                     title: "SN",
@@ -111,19 +111,19 @@
     };
     let loadInvoice = (invoiceNumber) => {
         if (validateInvoiceNumber(invoiceNumber)) {
-            getInvoice(invoiceNumber, function (data) {               
-                if (validateInvoiceData(data.invoiceData)) {  
+            getInvoice(invoiceNumber, function (data) {
+                if (validateInvoiceData(data.invoiceData)) {
                     debugger;
                     salesItems = data.invoiceData.salesInvoiceItems;
                     resetTransactionData();
-                    loadPausedTransactionData(data.invoiceData);                   
+                    loadPausedTransactionData(data.invoiceData);
                     $("#Customer_Id").val(data.customerData.membership_Number);
-                    $("#BillTo_Name").val(data.customerData.name);                   
+                    $("#BillTo_Name").val(data.customerData.name);
                     $("#Reference_Number_Id").val(data.invoiceData.id);
                     $("#Payment_Mode").val(_.uniq(_.pluck(data.invoiceBillData, "trans_Mode")).join(', '));
-                   // $("#TaxableAmount").val(data.invoiceData.taxableAmount);
+                    // $("#TaxableAmount").val(data.invoiceData.taxableAmount);
                     //$("#NonTaxableAmount").val(data.invoiceData.nonTaxableAmount);
-                   // $("#Total_Vat").val(data.invoiceData.total_Vat);
+                    // $("#Total_Vat").val(data.invoiceData.total_Vat);
                     $("#Tender_Amount").val(data.invoiceData.tender_Amount);
                     $("#Change_Amount").val(data.invoiceData.change_Amount);
                     $("#Reference_Number").val(data.invoiceData.invoice_Number);
@@ -134,10 +134,10 @@
     };
     let getInvoice = (invoiceNumber, callback) => {
         $.ajax({
-            url: window.location.origin +  "/SalesInvoice/GetInvoice?invoiceNumber=" + invoiceNumber,
+            url: window.location.origin + "/SalesInvoice/GetInvoice?invoiceNumber=" + invoiceNumber,
             type: "GET",
-            complete: function (data) { 
-               
+            complete: function (data) {
+
                 if (data.status !== 200) {
                     $("#itemNotFoundLabel").show();
                     setTimeout(function () { $("#itemNotFoundLabel").hide(); }, 9000);
@@ -152,7 +152,7 @@
         return true;
     };
     let validateInvoiceData = (data) => {
-        
+
         let transDate = new Date(data.trans_Date_Ad);
         let compareDate = new Date();
         compareDate.setDate(compareDate.getDate() - invoiceExpiredDays);
@@ -168,35 +168,35 @@
             return false;
         }
 
-       
+
         return true;
     };
     let validateCreditNoteItems = () => {
         //check if quantity is max then sales quantity
-        
+
         //but skip for firsttime load
         let isValid = true;
         //if (!isFirstTimeLoadItem)
-           
+
         //isFirstTimeLoadItem = false;
-        //$.each(table.rows, function (i, v) {
-        //    if (parseFloat($(this).find(".Quantity").val()) >= parseFloat($(this).find(".Quantity").attr("max"))) {
-        //        displayError("Return quantity cannot be greater than sales quantity !!");
-        //        $(this).find(".Quantity").val($(this).find(".Quantity").attr("max"));
-        //        isValid = false;
-        //        return false;
-        //    }
-        //});
-        ////check when new quantity is added
-        //let itemCode = $("#item_code").val();
-        //if (!_.isEmpty(itemCode)) {
-        //    let checkData = _.filter(salesItems, function (x) { return x.bar_Code === itemCode; })[0];
-        //    if (_.isEmpty(checkData)) {
-        //        displayError("Item not available in this sales !!");
-        //        isValid = false;
-        //        return false;
-        //    }
-        //}
+        $.each(table.rows, function (i, v) {
+            if (parseFloat($(this).find(".Quantity").val()) >= parseFloat($(this).find(".Quantity").attr("max"))) {
+                displayError("Return quantity cannot be greater than sales quantity !!");
+                $(this).find(".Quantity").val($(this).find(".Quantity").attr("max"));
+                isValid = false;
+                return false;
+            }
+        });
+        //check when new quantity is added
+        let itemCode = $("#item_code").val();
+        if (!_.isEmpty(itemCode)) {
+            let checkData = _.filter(salesItems, function (x) { return x.bar_Code === itemCode; })[0];
+            if (_.isEmpty(checkData)) {
+                displayError("Item not available in this sales !!");
+                isValid = false;
+                return false;
+            }
+        }
         //check others
 
         return isValid;
@@ -204,14 +204,14 @@
     let calcAll = () => {
         calculateSN();
         calcTotal();
-       // updateFlatDiscount();
+        // updateFlatDiscount();
         validateCreditNoteItems();
     };
     let resetTransactionData = () => {
         var table = document.getElementById("item_table").getElementsByTagName('tbody')[0];
         if (table.rows.length > 0) {
             $('#item_table').find('tbody').detach();
-            $('#item_table').append($('<tbody>'));             
+            $('#item_table').append($('<tbody>'));
         }
     };
     let convertSalesTax = (type) => {
@@ -226,7 +226,7 @@
         $("#errorMessage").text(message);
         $("#errorMessage").show();
         setTimeout(function () { $("#errorMessage").hide(); }, 9000);
-    };   
+    };
     let GetItems = (code, callback) => {
         $.ajax({
             url: window.location.origin + "/item/GetItems/?code=" + code,
@@ -243,7 +243,7 @@
         });
     };
     let calcTotal = () => {
-       
+
         var table = document.getElementById("item_table").getElementsByTagName('tbody')[0];
         var totalGrossAmount = 0;
         var totalNetAmount = 0;
@@ -263,10 +263,10 @@
                 var quantity = $(this).find(".Quantity").val();
                 var rate = $(this).find(".Rate").val();
                 var discount = $(this).find(".Discount").data("original-discount") || 0;
-               
+
                 var tax = $(this).find(".Tax").val() || 0;
                 let taxable = $(this).find(".Tax").data("isvatable");
-               
+
                 if (quantity !== undefined && rate !== undefined) {
                     quantity = parseFloat(quantity);
                     var grossAmount = quantity * parseFloat(rate);
@@ -358,13 +358,13 @@
     };
     let calcTotalMembershipDiscount = () => {
         debugger;
-    var table = document.getElementById("item_table").getElementsByTagName('tbody')[0];
-    var total = 0;
+        var table = document.getElementById("item_table").getElementsByTagName('tbody')[0];
+        var total = 0;
         $.each(table.rows, function (i, v) {
             //calculations
             total += parseFloat($(this).find(".Discount").data("membershipdiscount") || 0) * parseFloat($(this).find(".Quantity").val());
-});
-return total;
+        });
+        return total;
     };
     let quantityChangeEvent = (that) => {
 
@@ -420,7 +420,7 @@ return total;
     };
     let calcDiscount = (amount, quantity) => {
         if ($("#Trans_Type").val() === "Tax") {
-            return parseFloat(amount) /parseFloat(quantity);
+            return parseFloat(amount) / parseFloat(quantity);
         } else {
             amount = parseFloat(amount) / parseFloat(quantity);
             return calcReverseTaxAmount(amount);
@@ -429,14 +429,14 @@ return total;
     let calcReverseTaxAmount = (amount) => {
         if (amount === 0)
             return 0;
-        var value =amount - (taxPercent * amount) / (taxPercent + 100);
+        var value = amount - (taxPercent * amount) / (taxPercent + 100);
         return value;
     };
     let addRowWithData = (result) => {
         var table = document.getElementById("item_table").getElementsByTagName('tbody')[0];
         var t1 = table.rows.length;
 
-        
+
         var row = table.insertRow(0);
         var cell1 = row.insertCell(0); //SN
         var cell2 = row.insertCell(1); //Bar Code
@@ -461,25 +461,25 @@ return total;
         cell9.className = "tax-width-item p-1 pr-3 tax-show-hide";
         cell10.className = "netAmount-width-item p-1 pr-3";
         cell11.className = "action-width-item p-1";
-       
+
         debugger;
         var barCode = result.bar_Code || result.Bar_Code;
         var itemName = result.name || result.Name;
         var unit = result.unit || result.Unit;
         var rate = result.rateExcludeVat || result.RateExcludeVat;
-        var quantity = (result.quantity || result.Quantity) === undefined ? 1 : (result.quantity || result.Quantity);  
+        var quantity = (result.quantity || result.Quantity) === undefined ? 1 : (result.quantity || result.Quantity);
         //calc discount
         var discount = calcDiscount(result.discount, quantity);
         var isVatable = result.Is_Vatable || result.is_Vatable;
-        
+
         var tax = (result.tax || result.Tax) === undefined ? 0 : (result.tax || result.Tax);
         var grossAmount = 0;
         var netAmount = 0;
         var promoDiscount = calcDiscount(result.promoDiscount || 0, quantity);
 
         var membershipDiscount = calcDiscount(result.membershipDiscount || 0, quantity);
-       
-        
+
+
         $('<i class="sn font-weight-bold">' + table.rows.length + '</i>').appendTo(cell1);
         $("<span class='barcode'>" + barCode + "</span>").appendTo(cell2);
         $("<span>" + itemName + "</span>").appendTo(cell3);
@@ -487,7 +487,7 @@ return total;
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Rate" type="number" onkeyup="creditNote.calcTotal()" disabled name="Rate" min="0" value=' + rate.toFixed(2) + '>').appendTo(cell5);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Quantity" type="number" onkeyup="creditNote.quantityChangeEvent(this);creditNote.calcTotal();" name="Quantity" min="1" max=' + quantity.toString() + ' value=' + quantity.toString() + '>').appendTo(cell6);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right GrossAmount" type="number" onkeyup="creditNote.calcTotal()" name="GrossAmount" disabled value=' + grossAmount.toFixed(2) + '>').appendTo(cell7);
-        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Discount" type="number" disabled onkeyup="creditNote.calcTotal()" name="Discount" min="0" data-original-discount ="'+discount.toFixed(2)+'" data-promoDiscount= '+ promoDiscount+' data-membershipDiscount='+ membershipDiscount+' value=' + discount.toFixed(2) + '>').appendTo(cell8);
+        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Discount" type="number" disabled onkeyup="creditNote.calcTotal()" name="Discount" min="0" data-original-discount ="' + discount.toFixed(2) + '" data-promoDiscount= ' + promoDiscount + ' data-membershipDiscount=' + membershipDiscount + ' value=' + discount.toFixed(2) + '>').appendTo(cell8);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Tax" type="number" onkeyup="creditNote.calcTotal()" name="Tax" data-isVatable="' + isVatable + '" disabled value=' + tax.toFixed(2) + '>').appendTo(cell9);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right NetAmount" type="number" onkeyup="creditNote.calcTotal()" name="NetAmount" disabled value=' + netAmount.toFixed(2) + '>').appendTo(cell10);
 
@@ -496,7 +496,7 @@ return total;
         calcTotal();
     };
     let AssignKeyEvent = () => {
-        
+
         Mousetrap.bindGlobal('ctrl+end', function (e) {
             e.preventDefault(); e.stopPropagation();
             SaveCreditNote();
@@ -504,7 +504,7 @@ return total;
 
         Mousetrap.bindGlobal('enter', function (e) {
             $(".bootbox-cancel").trigger("click");
-            
+
         });
 
         Mousetrap.bindGlobal('shift+enter', function (e) {
@@ -532,12 +532,39 @@ return total;
                 if (result) {
                     window.location.href = window.location.origin + "/CreditNote";
                 }
-               
+
             }
         });
-        
+
+    };
+
+    let saveForm = () => {
+        bootbox.confirm({
+            message: "Are you Sure you want to save?",
+            buttons: {
+                cancel: {
+                    label: 'No',
+                    className: 'btn-warning'
+                },
+                confirm: {
+                    label: 'Proceed',
+                    className: 'btn-success'
+                }
+            },
+            callback: function (result) {
+
+                if (result) {
+                    SaveCreditNote();
+                }
+
+            }
+        });
+
     };
     let SaveCreditNote = () => {
+
+
+
         //save field data first
         $("#Total_Quantity").val(CurrencyUnFormat($("#totalQuantity").text()));
         $("#Total_Gross_Amount").val(CurrencyUnFormat($("#totalGrossAmount").text()));
@@ -579,32 +606,32 @@ return total;
 
 
         var data = $('form#Credit_Note_Form').serializeObject();
-       
+
         data.Customer_Id = $("#Customer_Id").val();
 
         //add membership discount
-       
+
         data.MembershipDiscount = calcTotalMembershipDiscount();
         data.PromoDiscount = calcTotalPromoDiscount();
-       
+
         data.CreditNoteItems = invoiceItems;
-        
+
         $.ajax({
             method: "POST",
             url: "/CreditNote/Index",
             //dataType: "json",
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify(data),
-            complete: function (result) {               
+            complete: function (result) {
+
                 if (result.status === 200) {
                     printer.PrintCreditNoteInvoice(result.responseJSON, function () {
                         StatusNotify("success", result.responseJSON.message);
-                        resetForm();
                         //setTimeout(function () {
                         //    window.location.href = window.location.origin + result.responseJSON.redirectUrl;
                         //}, 3000);
                     });
-                   // window.location.href = window.location.origin + result.responseJSON.redirectUrl;
+                    // window.location.href = window.location.origin + result.responseJSON.redirectUrl;
                 }
                 else {
                     StatusNotify("error", "Error occur, try again later !!");
@@ -632,7 +659,7 @@ return total;
         window.location.href = window.location.origin + "/SalesInvoice/Index/" + invoiceId.trim();
     };
     let loadPausedTransactionData = (data) => {
-        
+
         if (data.salesInvoiceItems !== null) {
             //customer info   
             //
@@ -641,15 +668,15 @@ return total;
             //if (customer !== undefined) {
             //    customerDropdown.value(customer.Membership_Number);
             //    $("#Customer_Id").val(customer.Membership_Number).trigger('change');
-            
-           
+
+
             $("#MemberId").val(data.memberId);
             $("#Customer_Name").val(data.customer_Name);
             $("#Customer_Vat").val(data.customer_Vat);
             $("#Customer_Mobile").val(data.customer_Mobile);
             $("#Customer_Address").val(data.customer_Address);
 
-           // $("#Customer_Id").val(data.customer_Id);
+            // $("#Customer_Id").val(data.customer_Id);
             ////flat discount
             //if (data.flat_Discount_Amount !== null) {
             //    $("#amountRadio").prop("checked", true);
@@ -658,15 +685,15 @@ return total;
             //    $("#percentRadio").prop("checked", true);
             //    $("#flat_discount").val(data.flat_Discount_Percent);
             //}
-            
+
             //insert items
             if (data.salesInvoiceItems.length > 0) {
                 _.each(data.salesInvoiceItems, function (x) {
                     addRowWithData(x);
                 });
             }
-           
-           // convertSalesTax(data.trans_Type);
+
+            // convertSalesTax(data.trans_Type);
         }
     };
     let getUrlParameters = () => {
@@ -701,12 +728,13 @@ return total;
     //events
 
 
-    $("#SaveButton").on('click', SaveCreditNote);
+    //$("#SaveButton").on('click', SaveCreditNote);
+    $("#SaveButton").on('click', saveForm);
     $('#item_code').on("keypress", barCodeKeyPressEvent);
 
 
 
-   // $("#trans_date_ad").datepicker();
+    // $("#trans_date_ad").datepicker();
     //$('#trans_date_bs').nepaliDatePicker({
     //    onChange: function () {
     //        $('#trans_date_ad').val(FormatForDisplay(BS2AD($('#trans_date_bs').val())));
