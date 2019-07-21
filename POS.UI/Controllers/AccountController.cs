@@ -80,9 +80,7 @@ namespace POS.UI.Controllers
                 {
                     // HttpContext.User = await _signInManager.CreateUserPrincipalAsync(user);
                     //first check username already loggedin
-                    Config config = ConfigJSON.Read();
-                    config.Environment = "1 success";
-                    ConfigJSON.Write(config);
+                    Config config = ConfigJSON.Read();                    
                     if (!User.Identity.IsAuthenticated && config.LoggedInUsers.Contains(user.UserName))
                     {
                         //ModelState.AddModelError(string.Empty, "You're currently logged in to another system !!");
@@ -97,10 +95,11 @@ namespace POS.UI.Controllers
                     }
                     //get user role
                     var role = _context.UserViewModel.FirstOrDefault(x => x.UserName == user.UserName);
+
                     //save to session 
                     HttpContext.Session.SetString("TotalMenu", JsonConvert.SerializeObject(_context.Menu));
                     HttpContext.Session.SetString("Menus", JsonConvert.SerializeObject(_context.RoleWiseMenuPermission.Where(x => x.RoleId == role.Role).Include(x => x.Menu)));
-
+                    HttpContext.Session.SetString("Store", JsonConvert.SerializeObject(_context.Store.FirstOrDefault()));
                     if (model.TerminalId != 0)
                     {
                         HttpContext.Session.SetString("TerminalId", model.TerminalId.ToString());
@@ -142,7 +141,7 @@ namespace POS.UI.Controllers
                     if (!string.IsNullOrEmpty(returnUrl) && returnUrl != "/")
                         return RedirectToLocal(returnUrl);
                     else
-                        return RedirectToAction("Landing", "SalesInvoice", new { mode = "tax" });
+                        return RedirectToAction("Landing", "SalesInvoice");
                 }
                 if (result.RequiresTwoFactor)
                 {

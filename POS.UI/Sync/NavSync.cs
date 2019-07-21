@@ -191,6 +191,7 @@ namespace POS.UI.Sync
                     else
                     {
                         _cache.Set("IsStoreSyncIsInProcess", false);
+
                         return false;
                     }
                 }
@@ -340,7 +341,7 @@ namespace POS.UI.Sync
                     NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Item");
                     string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
                     //access update number data only
-                    url += "?$top=1000&$filter=Update_No gt " + services.LastUpdateNumber;
+                    url += "?$top=10&$filter=Update_No gt " + services.LastUpdateNumber;
                     var client = NAV.NAVClient(url, config);
                     var request = new RestRequest(Method.GET);
 
@@ -361,12 +362,16 @@ namespace POS.UI.Sync
                         //update update number
                         if (response.Data.value.Count() > 0)
                         {
-                            services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
-                            services.LastSyncDate = DateTime.Now;
+                            //var maxUpdateNuber
+                            NavIntegrationService services1 = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Item");                            
+                            services1.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
+                            services1.LastSyncDate = DateTime.Now;
+                            _context.Entry(services1).State = EntityState.Modified;
+                            _context.SaveChanges();
                         }
-                        _context.SaveChanges();
+                       
 
-                        if (response.Data.value.Count() > 0 && response.Data.value.Count() < 1000)
+                        if (response.Data.value.Count() > 0 && response.Data.value.Count() < 10)
                         {
                             //update cache
                             _cache.Set("IsItemCacheInProcess", false);
@@ -374,7 +379,7 @@ namespace POS.UI.Sync
                             BackgroundJob.Enqueue(() => UpdateCacheItemViewModel());
                         }
 
-                        if (response.Data.value.Count() >= 1000)
+                        if (response.Data.value.Count() >= 10)
                             return ItemSync();
 
                         //also sync itemfoc
@@ -390,7 +395,7 @@ namespace POS.UI.Sync
                 }
                 catch (Exception ex)
                 {
-                    return ItemSync();
+                    return false;
                 }
             }
             else
@@ -409,7 +414,7 @@ namespace POS.UI.Sync
                     NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Customer");
                     string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
                     //access update number data only
-                    url += "?$top=100&$filter=Update_No gt " + services.LastUpdateNumber;
+                    url += "?$top=10&$filter=Update_No gt " + services.LastUpdateNumber;
 
                     var client = NAV.NAVClient(url, config);
                     var request = new RestRequest(Method.GET);
@@ -423,7 +428,7 @@ namespace POS.UI.Sync
 
                         List<Customer> item = _mapper.Map<List<Customer>>(response.Data.value);
                         var customerIds = item.Select(x => x.Membership_Number);
-                       
+
                         _context.Customer.RemoveRange(_context.Customer.Where(x => customerIds.Contains(x.Barcode)));
                         _context.SaveChanges();
                         _context.Customer.AddRange(item);
@@ -437,14 +442,14 @@ namespace POS.UI.Sync
                         }
                         _context.SaveChanges();
 
-                        if (response.Data.value.Count() > 0 && response.Data.value.Count() < 100)
+                        if (response.Data.value.Count() > 0 && response.Data.value.Count() < 10)
                         {
                             //update cache
                             _cache.Set("IsCustomerCacheInProcess", true);
                             BackgroundJob.Enqueue(() => UpdateCacheCustomer());
                         }
 
-                        if (response.Data.value.Count() >= 100)
+                        if (response.Data.value.Count() >= 10)
                             return CustomerSync();
 
                         _cache.Set("IsCustomerSyncIsInProcess", false);
@@ -459,7 +464,7 @@ namespace POS.UI.Sync
                 }
                 catch (Exception ex)
                 {
-                    return CustomerSync();
+                    return false;
                 }
             }
             else
@@ -482,7 +487,7 @@ namespace POS.UI.Sync
                     NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Barcode");
                     string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
                     //access update number data only
-                    url += "?$top=1000&$filter=Update_No gt " + services.LastUpdateNumber;
+                    url += "?$top=10&$filter=Update_No gt " + services.LastUpdateNumber;
                     var client = NAV.NAVClient(url, config);
                     var request = new RestRequest(Method.GET);
 
@@ -496,30 +501,39 @@ namespace POS.UI.Sync
                         List<ItemBarCode> item = _mapper.Map<List<ItemBarCode>>(response.Data.value).ToList();
                         if (item.Count() > 0)
                         {
-                            var ids = item.Select(x => x.BarCode).ToArray();
-                            var idsStr = String.Join("','", ids);
-                            string sql = "delete from ITEM_BARCODE where barcode in ('" + idsStr + "')";
-                            using (var tran = _context.Database.BeginTransaction())
-                            {
-                                var a = _context.Database.ExecuteSqlCommand(sql);
-                                tran.Commit();
-                            }
-                            ItemBarCode itemBarcode = new ItemBarCode();
-                            _context.Entry(itemBarcode).State = EntityState.Detached;
-                            var d = item.GroupBy(a => a.BarCode).Where(grp => grp.Count() > 1).Select(grp => grp.Key).Select(a => a);
-                            List<string> lstBarcode = new List<string>();
-                            foreach (var i in item)
-                            {
-                                _context.Entry(i).State = EntityState.Detached;
-                                if (!lstBarcode.Contains(i.BarCode))
-                                {
-                                    lstBarcode.Add(i.BarCode);
-                                    _context.ItemBarCode.Add(i);
-                                }
-                            }
-                            // _context.ItemBarCode.AddRange(item);
+                            _context.ItemBarCode.RemoveRange(_context.ItemBarCode.Where(x => item.Any(y => y.BarCode == x.BarCode)));
                             _context.SaveChanges();
+
+                            _context.ItemBarCode.AddRange(item);
+                            _context.SaveChanges();
+
                         }
+                        //if (item.Count() > 0)
+                        //{
+                        //    var ids = item.Select(x => x.BarCode).ToArray();
+                        //    var idsStr = String.Join("','", ids);
+                        //    string sql = "delete from ITEM_BARCODE where barcode in ('" + idsStr + "')";
+                        //    using (var tran = _context.Database.BeginTransaction())
+                        //    {
+                        //        var a = _context.Database.ExecuteSqlCommand(sql);
+                        //        tran.Commit();
+                        //    }
+                        //    ItemBarCode itemBarcode = new ItemBarCode();
+                        //    _context.Entry(itemBarcode).State = EntityState.Detached;
+                        //    var d = item.GroupBy(a => a.BarCode).Where(grp => grp.Count() > 1).Select(grp => grp.Key).Select(a => a);
+                        //    List<string> lstBarcode = new List<string>();
+                        //    foreach (var i in item)
+                        //    {
+                        //        _context.Entry(i).State = EntityState.Detached;
+                        //        if (!lstBarcode.Contains(i.BarCode))
+                        //        {
+                        //            lstBarcode.Add(i.BarCode);
+                        //            _context.ItemBarCode.Add(i);
+                        //        }
+                        //    }
+                        //    // _context.ItemBarCode.AddRange(item);
+                        //    _context.SaveChanges();
+                        //}
 
                         //foreach (var i in response.Data.value)
                         //{
@@ -559,10 +573,13 @@ namespace POS.UI.Sync
 
                         }
                         _context.SaveChanges();
-                        //update cache
-                        // List<string> itemCodes = item.Select(x => x.ItemCode).ToList();
-                        BackgroundJob.Enqueue(() => UpdateCacheItemViewModel());
-                        if (response.Data.value.Count() >= 1000)
+                        if (response.Data.value.Count() > 0 && response.Data.value.Count() < 10)
+                        {
+                            //update cache
+                            _cache.Set("IsItemBarCodeSyncIsInProcess", false);
+                            BackgroundJob.Enqueue(() => UpdateCacheItemViewModel());
+                        }
+                        if (response.Data.value.Count() >= 10)
                         {
                             _cache.Set("IsItemBarCodeSyncIsInProcess", false);
                             return ItemBarCodeSync();
@@ -580,8 +597,7 @@ namespace POS.UI.Sync
                 }
                 catch (Exception ex)
                 {
-                    _cache.Set("IsItemBarCodeSyncIsInProcess", false);
-                    return ItemBarCodeSync();
+                    return false;
                 }
             }
             else
@@ -597,12 +613,14 @@ namespace POS.UI.Sync
             {
                 try
                 {
+
+                    _cache.Set("IsItemPriceSyncIsInProcess", true);
                     Config config = ConfigJSON.Read();
                     NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Item Price");
                     string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
                     //access update number data only
-                    url += "?$top=1000&$filter=Update_No gt " + services.LastUpdateNumber;
-                    url += " and Available_for_Import eq true";
+                    url += "?$top=10&$filter=Update_No gt " + services.LastUpdateNumber;
+                    //url += " and Available_for_Import eq true";
                     var client = NAV.NAVClient(url, config);
                     var request = new RestRequest(Method.GET);
 
@@ -627,15 +645,18 @@ namespace POS.UI.Sync
 
                         }
                         _context.SaveChanges();
-                        if (response.Data.value.Count() > 0 && response.Data.value.Count() < 1000)
+                        if (response.Data.value.Count() > 0 && response.Data.value.Count() < 10)
                         {
                             //update cache
                             _cache.Set("IsItemCacheInProcess", false);
                             BackgroundJob.Enqueue(() => UpdateCacheItemViewModel());
                         }
 
-                        if (response.Data.value.Count() >= 1000)
+                        if (response.Data.value.Count() >= 10)
+                        {
+                            _cache.Set("IsItemPriceSyncIsInProcess", false);
                             return ItemPriceSync();
+                        }
 
 
                         _cache.Set("IsItemPriceSyncIsInProcess", false);
@@ -650,7 +671,7 @@ namespace POS.UI.Sync
                 }
                 catch
                 {
-                    return ItemPriceSync();
+                    return false;
                 }
             }
             else
@@ -666,7 +687,7 @@ namespace POS.UI.Sync
                 NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "ItemDiscount");
                 string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
                 //access update number data only
-                url += "?$top=1000&$filter=Update_No gt " + services.LastUpdateNumber;
+                url += "?$top=1&$filter=Update_No gt " + services.LastUpdateNumber;
                 url += " and Available_for_Import eq true";
                 url += $" and (Location_Code eq '' or Location_Code eq '{config.Location}')";
                 var client = NAV.NAVClient(url, config);
@@ -680,7 +701,9 @@ namespace POS.UI.Sync
                 {
 
                     List<ItemDiscount> item = _mapper.Map<List<ItemDiscount>>(response.Data.value);
-                    _context.ItemDiscount.RemoveRange(_context.ItemDiscount.Where(x => item.Any(y => y.Id == x.Id)));
+                    var itemguidList = item.Select(x => x.Id);
+                    var removeItemList = _context.ItemDiscount.Where(x => itemguidList.Contains(x.Id));
+                    _context.ItemDiscount.RemoveRange(removeItemList);
                     _context.SaveChanges();
 
                     _context.ItemDiscount.AddRange(item);
@@ -693,23 +716,23 @@ namespace POS.UI.Sync
                     }
                     _context.SaveChanges();
 
-                    if (response.Data.value.Count() > 0 && response.Data.value.Count() < 1000)
+                    if (response.Data.value.Count() > 0 && response.Data.value.Count() < 1)
                     {
                         //update cache
                         _cache.Set("IsItemCacheInProcess", false);
                         BackgroundJob.Enqueue(() => UpdateCacheItemViewModel());
                     }
 
-                    if (response.Data.value.Count() >= 1000)
+                    if (response.Data.value.Count() >= 1)
                         return ItemDiscountSync();
                     return true;
                 }
                 else
                     return false;
             }
-            catch
+            catch (Exception ex)
             {
-                return ItemDiscountSync();
+                return false;
             }
 
         }

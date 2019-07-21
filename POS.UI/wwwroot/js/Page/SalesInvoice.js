@@ -482,7 +482,7 @@ const invoice = (function () {
         $("<span class='itemName' data-item-id='" + itemId + "' data-item-code= '" + itemCode + "'>" + itemName + "</span>").appendTo(cell3);
         $("<span>" + unit + "</span>").appendTo(cell4);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Rate" type="number" min="0" onkeyup="invoice.calcTotal()" name="Rate" ' + rateDisabled + ' " value=' + rate.toFixed(2) + '>').appendTo(cell5);
-        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Quantity" type="number" min="0.01" onkeyup="invoice.calcAll()" name="Quantity" value=' + quantity.toString() + '>').appendTo(cell6);
+        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Quantity" type="number" min="0.01" onkeyup="invoice.calcAll(this)" name="Quantity" value=' + quantity.toString() + '>').appendTo(cell6);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right GrossAmount" type="number" onkeyup="invoice.calcTotal()" name="GrossAmount" disabled value=' + grossAmount.toFixed(2) + '>').appendTo(cell7);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Discount" type="number" data-isDiscountable="' + isDiscountable + '" ' + discountDisabled + ' min="0" ' + discountLimit + ' onkeyup="invoice.calcTotal(this)" name="Discount" data-original-percent="' + discount.toFixed(2) + '" data-original-value="' + discount.toFixed(2) + '" value=' + discount.toFixed(2) + '>').appendTo(cell8);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Tax" data-isVatable="' + isVatable + '" type="number" onkeyup="invoice.calcTotal()" name="Tax" disabled value=' + tax.toFixed(2) + '>').appendTo(cell9);
@@ -1111,12 +1111,12 @@ const invoice = (function () {
         if (table.rows.length > 0) {
             $.each(table.rows, function (i, v) {
 
+                debugger;
                 //variables
                 let transType = $("#Trans_Type").val();
                 let itemCode = $(this).find(".itemName").attr("data-item-code").toString();
                 let taxable = $(this).find(".Tax").data("isvatable");
-                let discountable = $(this).find(".Discount").data("isdiscountable");
-                let discountType = $(this).find(".Discount").data("discountType");
+                let discountable = $(this).find(".Discount").data("isdiscountable");                
                 let netAmount = 0;
                 debugger;
                 //calculations     
@@ -1161,6 +1161,7 @@ const invoice = (function () {
                 }
 
                 //if inline discount then calculate direct
+                let discountType = $(this).find(".Discount").data("discountType");
                 if (discountType === "MembershipDiscount" || discountType === "PromoDiscount")
                     discount = discount * quantity;
                 else if ($("input[name='flatDiscount']:checked").val() === "percent") {
@@ -1367,6 +1368,7 @@ const invoice = (function () {
         e.preventDefault(); e.stopPropagation();
     };
     let calcAll = () => {
+       
         calculateSN();
         calcTotal();
         updateFlatDiscount();
@@ -1375,16 +1377,62 @@ const invoice = (function () {
     };
 
     // #endregion
-
     let handleBackButtonEvent = () => {
         if (!_.isEmpty(getUrlParameters())) {
-
             var id = getUrlParameters();
             var mode = GetUrlParameters("mode");
-            if (mode === "tax")
-                window.location.href = window.location.origin + "/SalesInvoice/Landing?mode=tax";
-            else
-                window.location.href = window.location.origin + "/SalesInvoice/Landing";
+            bootbox.confirm({
+                message: "Do you want to cancel this transaction?",
+                buttons: {
+                    confirm: {
+                        label: 'Yes',
+                        className: 'btn-success'
+                    },
+                    cancel: {
+                        label: 'No',
+                        className: 'btn-danger'
+                    }
+                },
+                callback: function (result) {
+                    if (result) {
+                        if (mode === "tax")
+                            window.location.href = window.location.origin + "/SalesInvoice/Landing?mode=tax";
+                        else
+                            window.location.href = window.location.origin + "/SalesInvoice/Landing";
+                    }
+                }
+            });
+            if (table.rows.length > 0) {
+                //bootbox.confirm({
+                //    message: "Do you want to cancel this transaction?",
+                //    buttons: {
+                //        confirm: {
+                //            label: 'Yes',
+                //            className: 'btn-success'
+                //        },
+                //        cancel: {
+                //            label: 'No',
+                //            className: 'btn-danger'
+                //        }
+                //    },
+                //    callback: function (result) {
+                //        if (result) {
+                //            if (mode === "tax")
+                //                window.location.href = window.location.origin + "/SalesInvoice/Landing?mode=tax";
+                //            else
+                //                window.location.href = window.location.origin + "/SalesInvoice/Landing";
+                //        }
+                //    }
+                //});
+            }
+            //} else {
+            //    if (mode === "tax")
+            //        window.location.href = window.location.origin + "/SalesInvoice/Landing?mode=tax";
+            //    else
+            //        window.location.href = window.location.origin + "/SalesInvoice/Landing";
+            //}
+            
+           
         }
     };
     let customerPanelToggle = (evt) => {
@@ -1625,6 +1673,24 @@ const invoice = (function () {
         });
         Mousetrap.bindGlobal('esc', function () {
             handleBackButtonEvent();
+        });
+
+
+        $('#Invoice_Number,#trans_date_ad,#trans_date_bs,#membershipId,#flat_discount,#Customer_Name,#Customer_Vat,#Customer_Mobile,#Customer_Address').on("keypress", function (e) {
+            /* ENTER PRESSED*/
+            if (e.keyCode == 13) {
+                /* FOCUS ELEMENT */
+                var inputs = $(this).parents("form").eq(0).find(":input:visible");
+                var idx = inputs.index(this);
+
+                if (idx == inputs.length - 1) {
+                    inputs[0].select()
+                } else {
+                    inputs[idx + 1].focus(); //  handles submit buttons
+                    inputs[idx + 1].select();
+                }
+                return false;
+            }
         });
 
 

@@ -282,8 +282,12 @@
         if (!_.isEmpty(getUrlParameters())) {
 
             var id = getUrlParameters();
+            var mode = GetUrlParameters("mode");
             var member = GetUrlParameters("M");
-            window.location.href = window.location.origin + "/SalesInvoice/Index/" + id + "?M=" + member;
+            if (mode === "tax")
+                window.location.href = window.location.origin + "/SalesInvoice/Index/" + id + "?Mode=tax&M=" + member;
+            else
+                window.location.href = window.location.origin + "/SalesInvoice/Index/" + id + "?M=" + member;
         }
     };
     let getUrlParameters = () => {
@@ -459,6 +463,8 @@
     };
     let SaveBill = () => {
         //some validation
+        $("#SaveButton").attr("disabled", true);
+        debugger;
 
         if (parseFloat(CurrencyUnFormat($("#changeAmount").text())) < 0) {
             bootbox.alert("Tender amount is less then bill amount !!");
@@ -506,11 +512,15 @@
             contentType: "application/json; charset=utf-8",
             complete: function (result) {
                 if (result.status === 200) {
-                    printer.PrintInvoice(result.responseJSON, function () {      
-                        debugger;
-                       window.location.href = "/SalesInvoice/Landing?StatusMessage=" + result.responseJSON.statusMessage;
+                    printer.PrintInvoice(result.responseJSON, function () {                        
+                        window.location.href = "/SalesInvoice/Landing?StatusMessage=" + result.responseJSON.statusMessage;
                     });
-                   // window.location.href = "/SalesInvoice/Landing?StatusMessage=" + result.responseJSON.statusMessage;
+                    // window.location.href = "/SalesInvoice/Landing?StatusMessage=" + result.responseJSON.statusMessage;
+                }
+                else {
+                    StatusNotify("error", "Error occur, try again later !!");  
+                    $("#SaveButton").attr("disabled", false);
+                    
                 }
             }
         });

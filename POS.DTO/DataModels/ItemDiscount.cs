@@ -10,7 +10,7 @@ namespace POS.DTO
     public partial class ItemDiscount
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Key]
+        
         public string Id { get; set; }
         public decimal DiscountPercent { get; set; }
         public string ItemType { get; set; }

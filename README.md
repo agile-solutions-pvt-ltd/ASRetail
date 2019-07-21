@@ -29,3 +29,12 @@
   - open application pool and select "no manage code"
 
 
+
+
+  #Change Logs
+    * V1.2
+	   - Denomination confirm before saved
+	   - show Cash,Card,Credit & credit amount in Denomination list
+	   - 
+
+

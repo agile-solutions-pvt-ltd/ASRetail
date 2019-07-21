@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace POS.UI.Controllers
 {
-    [Authorize]
+    [SessionAuthorized]
     public class SalesInvoiceController : Controller
     {
         private readonly EntityCore _context;
@@ -47,8 +47,14 @@ namespace POS.UI.Controllers
             }
             else
             {
-                var store = _context.Store.FirstOrDefault();
-                var invoiceId = _context.SalesInvoice.Select(x => x.Invoice_Id).DefaultIfEmpty(0).Max() + 1;
+
+                // var store = _context.Store.FirstOrDefault();
+                var store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
+                int invoiceId = 0;
+                if (Request.Query["Mode"].ToString() != null && Request.Query["Mode"].ToString() == "tax")
+                    invoiceId = _context.SalesInvoice.Where(x => x.Trans_Type == "Tax").Select(x => x.Invoice_Id).DefaultIfEmpty(0).Max() + 1;
+                else
+                    invoiceId = _context.SalesInvoice.Where(x => x.Trans_Type == "Sales").Select(x => x.Invoice_Id).DefaultIfEmpty(0).Max() + 1;
                 tmp = new SalesInvoiceTmp()
                 {
                     Invoice_Number = "SI-" + invoiceId.ToString("0000") + "-" + store.INITIAL + "-" + store.FISCAL_YEAR
@@ -141,6 +147,8 @@ namespace POS.UI.Controllers
 
                 if (salesInvoiceTmp.Trans_Type == "Hold")
                     return Ok(new { redirectUrl = "/SalesInvoice/Landing" });
+                else if (salesInvoiceTmp.Trans_Type == "Tax")
+                    return Ok(new { RedirectUrl = "/SalesInvoice/Billing/" + salesInvoiceTmp.Id + "?M=" + salesInvoiceTmp.MemberId + "&Mode=tax" });
                 else
                     return Ok(new { RedirectUrl = "/SalesInvoice/Billing/" + salesInvoiceTmp.Id + "?M=" + salesInvoiceTmp.MemberId });
             }
@@ -163,7 +171,7 @@ namespace POS.UI.Controllers
             //ViewData["Customer"] = customers;
             TempData["StatusMessage"] = StatusMessage;
 
-            return View(_context.Store.FirstOrDefault());
+            return View(JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store")));
         }
 
 
@@ -171,7 +179,7 @@ namespace POS.UI.Controllers
         public IActionResult CrLanding(string StatusMessage)
         {
             TempData["StatusMessage"] = StatusMessage;
-            return View(_context.Store.FirstOrDefault());
+            return View(JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store")));
         }
 
         [HttpPost]
@@ -206,10 +214,10 @@ namespace POS.UI.Controllers
             if (!_cache.TryGetValue("ItemViewModel", out items))
             {
                 // Key not in cache, so get data.
-               
+
                 items = GetItemsRawDataByBarcodeList(barCodeList).ToList();
 
-               
+
             }
             var temp = items.Where(x => barCodeList.Contains(x.Bar_Code));
             return Ok(temp);
@@ -240,17 +248,19 @@ namespace POS.UI.Controllers
                     return NotFound();
 
                 //get store info
-                Store store = _context.Store.FirstOrDefault();
+                Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
                 //convert to sales invoice and save
                 SalesInvoice salesInvoice = _mapper.Map<SalesInvoice>(salesInvoiceTmp);
-                
+
                 salesInvoice.Total_Bill_Discount = model.billDiscount;
                 salesInvoice.Total_Payable_Amount = model.totalPayable;
                 salesInvoice.Total_Net_Amount_Roundup = model.totalNetAmountRoundUp;
                 salesInvoice.Tender_Amount = model.tenderAmount;
                 salesInvoice.Change_Amount = model.changeAmount;
+                salesInvoice.Invoice_Id = _context.SalesInvoice.Where(x => x.Trans_Type == salesInvoice.Trans_Type).Select(x => x.Invoice_Id).DefaultIfEmpty(0).Max() + 1;
+                salesInvoice.Invoice_Number = SalesInvoiceNumberFormat(store, salesInvoice.Invoice_Id, salesInvoice.Trans_Type);
                 _context.SalesInvoice.Add(salesInvoice);
-               
+
 
                 //get invoice items temp convert to sales invoice item and save them
                 IList<SalesInvoiceItemsTmp> itemtmp = _context.SalesInvoiceItemsTmp.Where(x => x.Invoice_Id == salesInvoiceTmp.Id).ToList();
@@ -263,7 +273,7 @@ namespace POS.UI.Controllers
                     salesItem.Invoice_Number = salesInvoice.Invoice_Number;
                     _context.SalesInvoiceItems.Add(salesItem);
                 }
-
+                _context.SaveChanges();
 
                 //check session
                 Settlement oldSettlement = _context.Settlement.FirstOrDefault(x => x.UserId == salesInvoice.Created_By && x.Status == "Open");
@@ -273,6 +283,8 @@ namespace POS.UI.Controllers
                     item.Invoice_Number = salesInvoice.Invoice_Number;
                     item.Invoice_Type = salesInvoice.Trans_Type;
                     item.Terminal = HttpContext.Session.GetString("Terminal");
+                    if (item.Trans_Mode == "Cash")
+                        item.Amount = item.Amount - salesInvoice.Change_Amount;
                     item.IsNavSync = false;
 
 
@@ -296,6 +308,12 @@ namespace POS.UI.Controllers
                     //save to settlement table
 
                     string sessionId = oldSettlement != null ? oldSettlement.SessionId : Guid.NewGuid().ToString();
+                    decimal totalAmount = 0;
+                    if (item.Trans_Mode == "Cash")
+                        totalAmount = item.Amount;
+                    else
+                        totalAmount = item.Amount;
+
                     Settlement settlement = new Settlement()
                     {
                         SessionId = sessionId,
@@ -327,8 +345,7 @@ namespace POS.UI.Controllers
                 _context.InvoicePrint.Add(print);
 
 
-                salesInvoice.Invoice_Id = _context.SalesInvoice.Where(x => x.Trans_Type == salesInvoice.Trans_Type).Select(x => x.Invoice_Id).DefaultIfEmpty(0).Max() + 1;
-                salesInvoice.Invoice_Number = SalesInvoiceNumberFormat(store, salesInvoice.Invoice_Id, salesInvoice.Trans_Type);
+                
                 _context.SaveChanges();
 
                 //if everything seems good, then delete salesInvoiceTmp
@@ -432,7 +449,7 @@ namespace POS.UI.Controllers
             {
                 customer.Code = Guid.NewGuid().ToString();
                 customer.Member_Id = _context.Customer.Where(x => x.Is_Member == true && x.Member_Id != null).Select(x => x.Member_Id).DefaultIfEmpty(0).Max() + 1;
-                Store store = _context.Store.FirstOrDefault();
+                Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
                 customer.Membership_Number = store.INITIAL + "-" + Convert.ToInt32(customer.Member_Id).ToString("000000");
                 customer.Created_By = User.Identity.Name;
                 customer.Registration_Date = DateTime.Now;
@@ -554,7 +571,7 @@ left join ITEM_QUANTITY q on i.Code = q.ItemCode
 left join ITEM_PRICE p on i.Code = p.ItemCode
 left join ITEM_DISCOUNT d on i.Code = d.ItemCode Or (d.ItemType = 'Item Disc. Group' and  d.ItemCode =  i.DiscountGroup)
 cross join STORE s
-where b.BarCode in ('"+barcodeListString+"')";
+where b.BarCode in ('" + barcodeListString + "')";
 
             // string barcodeListString =string.Join("','",barcodes); 
             // var p0 = new SqliteParameter("@p0", barcodeListString);

@@ -59,4 +59,32 @@ namespace Microsoft.AspNetCore.Authorization
             }
         }
     }
+
+
+    public class SessionAuthorized : ActionFilterAttribute
+    {
+
+        public override void OnResultExecuting(ResultExecutingContext filterContext)
+        {
+
+        }
+        public override void OnActionExecuting(ActionExecutingContext filterContext)
+        {
+            base.OnActionExecuting(filterContext);
+            if (!filterContext.HttpContext.User.Identity.IsAuthenticated)
+            {
+                filterContext.Result = new RedirectToRouteResult(
+                    new RouteValueDictionary { { "controller", "Account" }, { "action", "Login" } });
+                return;
+            }
+            var session = filterContext.HttpContext.Session.GetString("Menus");
+            if (session == null)
+            {
+                filterContext.Result = new RedirectToRouteResult(
+                        new RouteValueDictionary { { "controller", "Account" }, { "action", "Login" } });
+                return;
+            }
+
+        }
+    }
 }

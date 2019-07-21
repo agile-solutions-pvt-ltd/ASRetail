@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace POS.UI.Controllers
 {
-    [Authorize]
+    [SessionAuthorized]
     public class CustomerController : Controller
     {
         private readonly EntityCore _context;

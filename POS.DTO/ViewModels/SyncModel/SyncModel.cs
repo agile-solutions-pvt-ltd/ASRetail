@@ -169,10 +169,10 @@ namespace POS.DTO
         public string Name { get; set; }
         public bool Sales_Discount_Line_Item { get; set; }
 
-        public bool Sales_Discount_Line_Item_Limit { get; set; }
+        public decimal Sales_Discount_Line_Item_Limit { get; set; }
         public bool Sales_Discount_Flat_Item { get; set; }
 
-        public bool Sales_Discount_Flat_Item_Limit { get; set; }
+        public decimal Sales_Discount_Flat_Item_Limit { get; set; }
         public bool Sales_Rate_Edit { get; set; }
         public bool Require_Terminal_To_Login { get; set; }
         public bool Credit_Note_Bill_Pay { get; set; }

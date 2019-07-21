@@ -14,7 +14,7 @@ using System.Reflection;
 
 namespace POS.UI.Controllers
 {
-    [Authorize]
+    [SessionAuthorized]
     public class SettingsController : Controller
     {
         private readonly EntityCore _context;
