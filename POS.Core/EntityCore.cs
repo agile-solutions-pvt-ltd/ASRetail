@@ -65,10 +65,16 @@ namespace POS.Core
         public virtual DbSet<SettlementSummaryView> SettlementSummaryView { get; set; }
 
         public virtual DbSet<TodaySalesInvoicePaymentViewModel> TodaySalesInvoicePaymentViewModels { get; set; }
+
+       
+
         public virtual DbSet<User> User { get; set; }
 
 
         public virtual DbSet<InvoiceMaterializedView> InvoiceMaterializedView { get; set; }
+
+       
+        public virtual DbSet<SpSalesInvoiceAggregateGet> SpSalesInvoiceAggregateGet { get; set; }
 
         public virtual DbSet<Company> Company { get; set; }
         public virtual DbSet<NavIntegrationService> NavIntegrationService { get; set; }

@@ -310,7 +310,7 @@ namespace POS.UI.Controllers
                     string sessionId = oldSettlement != null ? oldSettlement.SessionId : Guid.NewGuid().ToString();
                     decimal totalAmount = 0;
                     if (item.Trans_Mode == "Cash")
-                        totalAmount = item.Amount - salesInvoice.Change_Amount;
+                        totalAmount = item.Amount;
                     else
                         totalAmount = item.Amount;
 
@@ -320,7 +320,7 @@ namespace POS.UI.Controllers
 
                         TransactionDate = DateTime.Now,
                         PaymentMode = item.Trans_Mode,
-                        Amount = totalAmount,
+                        Amount = item.Amount,
                         Status = "Open",
                         VerifiedBy = "",
                         VerifiedDate = DateTime.Now,

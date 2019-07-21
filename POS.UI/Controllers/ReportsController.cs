@@ -105,7 +105,20 @@ namespace POS.UI.Controllers
         }
 
 
+        public IActionResult SalesInvoiceAggregate()
+        {
+            //IQueryable<SalesInvoice> salesInvoiceList =_context.SalesInvoice.Where(x => x.Trans_Type == "Sales").OrderByDescending(x => x.Trans_Date_Ad);
+            ViewData["Store"] = _context.Store.FirstOrDefault();
+            return View();
+        }
 
+        public IActionResult SalesInvoiceAggregateApi(DateTime? startdate = null, DateTime? enddate = null)
+        {
+            DateTime _startDate = startdate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month,DateTime.Now.Day);
+            DateTime _endDate = enddate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+            var salesInvoiceAggregateList = _context.SpSalesInvoiceAggregateGet.FromSql($"SpSalesInvoiceAggregateGet").Where(x=>x.Trans_Date_AD>=_startDate && x.Trans_Date_AD<=_endDate);
+            return Ok(salesInvoiceAggregateList);
+        }
         //Niroj End
 
 
