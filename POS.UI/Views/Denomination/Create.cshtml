@@ -291,35 +291,74 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 <script src="~/js/Page/Denomination.js"></script>
     <script>
-       
-        $(document).on('keypress', function (e) {
-           
-            if (e.which == 13) {
-                
-                    bootbox.confirm({
-                        message: "Are you sure you want to save the denomination??",
-                        buttons: {
-                            confirm: {
-                                label: 'Yes',
-                                className: 'btn-success'
-                            },
-                            cancel: {
-                                label: 'No',
-                                className: 'btn-danger'
-                            }
-                        },
-                        callback: function (result) {
-                            console.log('This was logged in the callback: ' + result);
-                        }
-                    });
+        
+        //$(document).on('keypress', function (e) {
+        //    var id = null;
+        //    if (e.which == 13) {
+
+        //        if (id == null) {
+        //            bootbox.confirm({
+        //                message: "Are you sure you want to save the denomination??",
+        //                buttons: {
+                            
+        //                    cancel: {
+        //                        label: 'No',
+        //                        className: 'btn-danger'
+        //                    },
+        //                    confirm: {
+        //                        label: 'Yes',
+        //                        className: 'btn-success'
+        //                    },
+        //                },
+        //                callback: function (result) {
+        //                    if (result) {
+        //                        $('#form').trigger('submit', [{ 'variable_name': true }]);
+        //                    }
+        //                    else {
+        //                        console.log("The result is:", result);
+        //                    }
+        //                }
+        //            });
+        //            var id = 1;
+        //        }
+        //        else {
+        //            $(".bootbox-cancel").trigger("click");
+        //        }
                
-                }
-            Mousetrap.bindGlobal('shift+enter', function (e) {
-                e.preventDefault(); e.stopPropagation();
-                $('#form').trigger('submit', [{ 'variable_name': true }]);
-            });
+        //        }
+        //    Mousetrap.bindGlobal('shift+enter', function (e) {
+        //        e.preventDefault(); e.stopPropagation();
+        //        $('#form').trigger('submit', [{ 'variable_name': true }]);
+        //    });
+        //    Mousetrap.bindGlobal('esc', function (e) {
+        //        e.preventDefault(); e.stopPropagation();
+        //        $(".bootbox-cancel").trigger("click");
+        //    });
            
+        //});
+        
+
+        $('input').on("keypress", function (e) {
+            /* ENTER PRESSED*/
+            if (e.keyCode == 13) {
+                /* FOCUS ELEMENT */
+                var inputs = $(this).parents("form").eq(0).find(":input:visible");
+                var idx = inputs.index(this);
+
+
+                if (idx == inputs.length - 1) {
+                    inputs[0].select()
+                } else {
+                    inputs[idx + 1].focus(); //  handles submit buttons
+                    inputs[idx + 1].select();
+                }
+                return false;
+            }
         });
+
+
+
+
         
 
         function submitbtn() {
@@ -337,7 +376,7 @@
                 },
                 callback: function (result) {
                     if (result == true) {
-                        console.log('This was logged in the callback: ' + result);
+                        $('#form').trigger('submit', [{ 'variable_name': true }]);
                     }
                     else {
                         console.log('This was logged in the callback: ' + result);
