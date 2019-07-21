@@ -497,9 +497,9 @@
     };
     let AssignKeyEvent = () => {
 
-        Mousetrap.bindGlobal('ctrl+end', function (e) {
+        Mousetrap.bindGlobal(['ctrl+end','end'], function (e) {
             e.preventDefault(); e.stopPropagation();
-            SaveCreditNote();
+            saveForm();
         });
 
         Mousetrap.bindGlobal('enter', function (e) {
@@ -538,7 +538,9 @@
 
     };
 
+
     let saveForm = () => {
+        $("#SaveButton").attr("disabled", true);
         bootbox.confirm({
             message: "Are you Sure you want to save?",
             buttons: {
@@ -556,30 +558,7 @@
                 if (result) {
                     SaveCreditNote();
                 }
-
-            }
-        });
-
-    };
-
-    let saveForm = () => {
-        bootbox.confirm({
-            message: "Are you Sure you want to save?",
-            buttons: {
-                cancel: {
-                    label: 'No',
-                    className: 'btn-warning'
-                },
-                confirm: {
-                    label: 'Proceed',
-                    className: 'btn-success'
-                }
-            },
-            callback: function (result) {
-
-                if (result) {
-                    SaveCreditNote();
-                }
+               
 
             }
         });
@@ -647,14 +626,15 @@
                 if (result.status === 200) {
                     printer.PrintCreditNoteInvoice(result.responseJSON, function () {
                         StatusNotify("success", result.responseJSON.message);
-                        //setTimeout(function () {
-                        //    window.location.href = window.location.origin + result.responseJSON.redirectUrl;
-                        //}, 3000);
+                        setTimeout(function () {
+                            window.location.href = window.location.origin + result.responseJSON.redirectUrl;
+                        }, 3000);
                     });
                     // window.location.href = window.location.origin + result.responseJSON.redirectUrl;
                 }
                 else {
                     StatusNotify("error", "Error occur, try again later !!");
+                    $("#SaveButton").attr("disabled", false);
                 }
             }
         });

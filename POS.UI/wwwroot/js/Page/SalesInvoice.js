@@ -1381,32 +1381,56 @@ const invoice = (function () {
         if (!_.isEmpty(getUrlParameters())) {
             var id = getUrlParameters();
             var mode = GetUrlParameters("mode");
-            if (table.rows.length > 0) {
-                bootbox.confirm({
-                    message: "Do you want to cancel this transaction?",
-                    buttons: {
-                        confirm: {
-                            label: 'Yes',
-                            className: 'btn-success'
-                        },
-                        cancel: {
-                            label: 'No',
-                            className: 'btn-danger'
-                        }
+            bootbox.confirm({
+                message: "Do you want to cancel this transaction?",
+                buttons: {
+                    confirm: {
+                        label: 'Yes',
+                        className: 'btn-success'
                     },
-                    callback: function (result) {
+                    cancel: {
+                        label: 'No',
+                        className: 'btn-danger'
+                    }
+                },
+                callback: function (result) {
+                    if (result) {
                         if (mode === "tax")
                             window.location.href = window.location.origin + "/SalesInvoice/Landing?mode=tax";
                         else
                             window.location.href = window.location.origin + "/SalesInvoice/Landing";
                     }
-                });
-            } else {
-                if (mode === "tax")
-                    window.location.href = window.location.origin + "/SalesInvoice/Landing?mode=tax";
-                else
-                    window.location.href = window.location.origin + "/SalesInvoice/Landing";
+                }
+            });
+            if (table.rows.length > 0) {
+                //bootbox.confirm({
+                //    message: "Do you want to cancel this transaction?",
+                //    buttons: {
+                //        confirm: {
+                //            label: 'Yes',
+                //            className: 'btn-success'
+                //        },
+                //        cancel: {
+                //            label: 'No',
+                //            className: 'btn-danger'
+                //        }
+                //    },
+                //    callback: function (result) {
+                //        if (result) {
+                //            if (mode === "tax")
+                //                window.location.href = window.location.origin + "/SalesInvoice/Landing?mode=tax";
+                //            else
+                //                window.location.href = window.location.origin + "/SalesInvoice/Landing";
+                //        }
+                //    }
+                //});
             }
+            //} else {
+            //    if (mode === "tax")
+            //        window.location.href = window.location.origin + "/SalesInvoice/Landing?mode=tax";
+            //    else
+            //        window.location.href = window.location.origin + "/SalesInvoice/Landing";
+            //}
             
            
         }
