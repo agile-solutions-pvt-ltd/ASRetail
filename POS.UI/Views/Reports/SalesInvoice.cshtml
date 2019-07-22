@@ -3,7 +3,10 @@
 @{
     ViewData["Title"] = "Sales Invoice Reports";
 }
-
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<link rel="stylesheet" href="/resources/demos/style.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
 <style>
     .k-grid {
@@ -49,6 +52,19 @@
             opacity: 0.1;
             transform: rotate(-35deg) scale(1.7, 1.5);
         }
+
+    .button {
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 6px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+    }
 </style>
 
 
@@ -84,12 +100,13 @@
                 <div class="card">
                     <div class="card-block">
                         @*Your content here*@
+                        <p>StartDate: <input type="text" id="startdatepicker"> EndDate: <input type="text" id="enddatepicker"> <button class="button" onclick="DateFilter()">Preview</button></p>
                         <div id="grid"></div>
                         <script type="x/kendo-template" id="page-template">
                             <div class="page-template">
                                 <div class="header">
                                     <div style="float: right">Page #: pageNum # of #: totalPages #</div>
-                                    
+
                                 </div>
                                 @*<div class="watermark">KENDO UI</div>*@
                                 <div class="footer">
@@ -127,39 +144,52 @@
     </script>
 
     <script>
-      function printInvoice(evt) {
-            var invoiceData = $("#grid").data("kendoGrid").dataItem(evt.closest("tr"));
-            $.ajax({
-                url: window.location.origin + "/Print/GetPrintCount?invoiceNumber=" + invoiceData.invoice_Number,
-                type: 'POST',
-                complete: function (result) {
-                    
-                    if (result.status === 200)
+        var startdate = new Date();
+        var dd = String(startdate.getDate()).padStart(2, '0');
+        var mm = String(startdate.getMonth() + 1).padStart(2, '0'); //January is 0!
+        var yyyy = startdate.getFullYear();
 
-                        var data = {
-                            invoiceData: invoiceData,
-                            storeData: store,
-                            copy: result.responseJSON.printCount,
-                            paymentMode :  result.responseJSON.paymentMode
-                        };
-                    printer.PrintInvoice(data, function () {
-                        ////update printcount
-                        //$.ajax({
-                        //    url: window.location.origin + "/Print/UpdatePrintCount?invoiceNumber=" + data.invoiceData.invoice_Number,
-                        //    type: 'POST',
-                        //    complete: function (result) {
-                        //    }
-                        //});
-                    });
-                }
-            });
+        startdate = mm + '/' + dd + '/' + yyyy;
 
 
+        var enddate = new Date();
+        enddate = startdate;
+        console.log("FirstDate", startdate);
+        console.log("EndDate", enddate);
+        function DateFilter() {
+
+            console.log("StartDate", startdate);
+            console.log("EndDate", enddate);
+
+            startup();
         }
-        $(document).ready(function () {
+        $(function () {
+            $("#startdatepicker").datepicker({
+                onSelect: function (date) {
+                    //ate = new date();
+                    startdate = date;
+                    console.log(startdate);
 
 
+                }
 
+
+            }).on("change", function () {
+                startdate = this.value;
+            });
+            $('#startdatepicker').datepicker('setDate', 'startdate');
+
+            $("#enddatepicker").datepicker({
+                onSelect: function (date) {
+                    enddate = date;
+                    console.log(enddate);
+                }
+            }).on("change", function () {
+                enddate = this.value;
+            });
+            $('#enddatepicker').datepicker('setDate', 'enddate');
+        });
+        function startup() {
             $("#grid").kendoGrid({
                 toolbar: ["pdf", "excel"],
                 pdf: {
@@ -181,7 +211,7 @@
                 dataSource: {
                     type: "json",
                     transport: {
-                        read: window.location.origin + "/Reports/SalesInvoiceApi"
+                        read: window.location.origin + "/Reports/SalesInvoiceApi?startdate=" + startdate + "&enddate=" + enddate
                     },
                     schema: {
                         model: {
@@ -303,7 +333,42 @@
                     }
                 ]
             });
-            $(".k-grid-content").css("overflow-y", "hidden").mCustomScrollbar();
+           // $(".k-grid-content").css("overflow-y", "hidden").mCustomScrollbar();
+        }
+        function printInvoice(evt) {
+            var invoiceData = $("#grid").data("kendoGrid").dataItem(evt.closest("tr"));
+            $.ajax({
+                url: window.location.origin + "/Print/GetPrintCount?invoiceNumber=" + invoiceData.invoice_Number,
+                type: 'POST',
+                complete: function (result) {
+
+                    if (result.status === 200)
+
+                        var data = {
+                            invoiceData: invoiceData,
+                            storeData: store,
+                            copy: result.responseJSON.printCount,
+                            paymentMode: result.responseJSON.paymentMode
+                        };
+                    printer.PrintInvoice(data, function () {
+                        ////update printcount
+                        //$.ajax({
+                        //    url: window.location.origin + "/Print/UpdatePrintCount?invoiceNumber=" + data.invoiceData.invoice_Number,
+                        //    type: 'POST',
+                        //    complete: function (result) {
+                        //    }
+                        //});
+                    });
+                }
+            });
+
+
+        }
+        $(document).ready(function () {
+
+
+            startup();
+           
             //var g = $("#SalesInvoiceTable").data("kendoGrid");
             //g.dataSource.pageSize(10);
             //g.dataSource.group({ field: "Date" });
