@@ -23,9 +23,9 @@ namespace POS.UI.Controllers
 
         public IActionResult Index()
         {
-            ViewData["TotalTransaction"] = _context.SalesInvoice.Count();
-            ViewData["TotalQuantity"] = _context.SalesInvoiceItems.Sum(x => x.Quantity);
-            ViewData["TotalAmount"] = _context.SalesInvoice.Sum(x => x.Total_Payable_Amount);
+            ViewData["TotalTransaction"] = _context.SalesInvoice.Where(x => x.Trans_Date_Ad.Value.Date == DateTime.Now.Date).Count();
+            ViewData["TotalQuantity"] = _context.SalesInvoice.Where(x => x.Trans_Date_Ad.Value.Date == DateTime.Now.Date).Sum(x => x.Total_Quantity);
+            ViewData["NewMember"] = _context.Customer.Where(x => x.Created_Date.HasValue && x.Created_Date.Value.Date == DateTime.Now.Date).Count();
             ViewData["TotalCash"] = _context.TodaySalesInvoicePaymentViewModels.Where(x => x.Trans_Mode=="Cash").Sum(x=>x.TotalAmount);
             ViewData["TotalCard"] = _context.TodaySalesInvoicePaymentViewModels.Where(x => x.Trans_Mode == "Card").Sum(x => x.TotalAmount);
             ViewData["TotalCreditNote"] = _context.TodaySalesInvoicePaymentViewModels.Where(x => x.Trans_Mode == "Credit Note").Sum(x => x.TotalAmount);

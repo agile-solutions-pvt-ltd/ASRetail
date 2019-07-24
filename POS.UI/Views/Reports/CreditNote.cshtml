@@ -4,8 +4,24 @@
     ViewData["Title"] = "Credit Note Reports";
 }
 
-
-
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<link rel="stylesheet" href="/resources/demos/style.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<style>
+    .button {
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 6px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+    }
+</style>
 
 <div class="page-wrapper">
     <div class="page-header">
@@ -36,6 +52,8 @@
                 <div class="card">
                     <div class="card-block">
                         @*Your content here*@
+                        <p>StartDate: <input type="text" id="startdatepicker"> EndDate: <input type="text" id="enddatepicker"> <button class="button" onclick="DateFilter()">Preview</button></p>
+
                         <div id="grid"></div>
                         <script type="x/kendo-template" id="page-template">
                             <div class="page-template">
@@ -98,7 +116,53 @@
                 //});
             });
         }
-        $(document).ready(function () {
+        var startdate = new Date();
+        var dd = String(startdate.getDate()).padStart(2, '0');
+        var mm = String(startdate.getMonth() + 1).padStart(2, '0'); //January is 0!
+        var yyyy = startdate.getFullYear();
+
+        startdate = mm + '/' + dd + '/' + yyyy;
+
+
+        var enddate = new Date();
+        enddate = startdate;
+        console.log("FirstDate", startdate);
+        console.log("EndDate", enddate);
+        function DateFilter() {
+
+            console.log("StartDate", startdate);
+            console.log("EndDate", enddate);
+
+            startup();
+        }
+        $(function () {
+            $("#startdatepicker").datepicker({
+                onSelect: function (date) {
+                    //ate = new date();
+                    startdate = date;
+                    console.log(startdate);
+
+
+                }
+
+
+            }).on("change", function () {
+                startdate = this.value;
+            });
+            $('#startdatepicker').datepicker('setDate', 'startdate');
+
+            $("#enddatepicker").datepicker({
+                onSelect: function (date) {
+                    enddate = date;
+                    console.log(enddate);
+                }
+            }).on("change", function () {
+                enddate = this.value;
+            });
+            $('#enddatepicker').datepicker('setDate', 'enddate');
+        });
+
+        function startup() {
 
             $("#grid").kendoGrid({
                 toolbar: ["pdf", "excel"],
@@ -120,7 +184,7 @@
                 dataSource: {
                     type: "json",
                     transport: {
-                        read: window.location.origin + "/Reports/CreditNoteApi"
+                        read: window.location.origin + "/Reports/CreditNoteApi?startdate=" + startdate + "&enddate=" + enddate
                     },
                     schema: {
                         model: {
@@ -137,15 +201,15 @@
                     },
                     pageSize: 100,
                     sort: { field: "invoice_Number", dir: "desc" },
-                    //group: {
-                    //    field: "trans_Date_Ad", aggregates: [
-                    //        { field: "trans_Date_Bs", aggregate: "count" },
-                    //        { field: "total_Gross_Amount", aggregate: "sum" },
-                    //        { field: "total_Discount", aggregate: "sum" },
-                    //        { field: "total_Net_Amount", aggregate: "sum" }
-                    //    ],
-                    //    dir: "desc"
-                    //},
+                    group: {
+                        field: "trans_Date_Ad", aggregates: [
+                            { field: "trans_Date_Bs", aggregate: "count" },
+                            { field: "total_Gross_Amount", aggregate: "sum" },
+                            { field: "total_Discount", aggregate: "sum" },
+                            { field: "total_Net_Amount", aggregate: "sum" }
+                        ],
+                        dir: "desc"
+                    },
                     aggregate: [
                         { field: "total_Gross_Amount", aggregate: "sum" },
                         { field: "total_Discount", aggregate: "sum" },
@@ -261,7 +325,12 @@
                     }
                 ]
             });
-            $(".k-grid-content").css("overflow-y", "hidden").mCustomScrollbar();
+           // $(".k-grid-content").css("overflow-y", "hidden").mCustomScrollbar();
+        }
+        $(document).ready(function () {
+
+
+            startup();
             //var g = $("#SalesInvoiceTable").data("kendoGrid");
             //g.dataSource.pageSize(10);
             //g.dataSource.group({ field: "Date" });

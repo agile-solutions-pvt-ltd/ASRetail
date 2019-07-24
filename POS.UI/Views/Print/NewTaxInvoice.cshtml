@@ -1,0 +1,530 @@
+﻿@{
+    ViewData["Title"] = "Sales Invoice";
+}
+
+<div id="printbody">
+    <style>
+        *, html, body {
+            background-color: #fff;
+            font-family: "FontA11", FontB21, SaxMono,Consolas;
+            font-size: 16px;
+            color: #999;
+        }
+
+        .font-store {
+            font-size: 20px;
+        }
+
+        .items {
+            font-size: 15px;
+        }
+
+        hr.style {
+            border-top: 1px dotted #8c8b8b;
+            margin-top: 2px;
+            margin-bottom: 2px;
+        }
+
+        hr.style-mt {
+            border-top: 1px dotted #8c8b8b;
+            margin-top: 2px;
+        }
+
+        hr.style-mb {
+            border-top: 1px dotted #8c8b8b;
+            margin-bottom: 2px;
+        }
+
+
+        /*for header*/
+        .header {
+            margin-left: -10px;
+        }
+
+
+        /*for item table */
+        .col-sm-sn {
+            max-width: 10%;
+            flex: 0 0 10%;
+            padding-left: 15px;
+            display: none;
+        }
+
+        .col-sm-particulars {
+            padding-left: 15px;
+            max-width: 30%;
+            flex: 0 0 30%;
+        }
+
+        .col-sm-qty {
+            max-width: 12%;
+            flex: 0 0 12%;
+        }
+
+        .col-sm-rate {
+            max-width: 18%;
+            flex: 0 0 18%;
+        }
+
+        .col-sm-promo-disc {
+            max-width: 18%;
+            flex: 0 0 18%;
+        }
+
+        .col-sm-total {
+            max-width: 18%;
+            flex: 0 0 18%;
+        }
+
+        .total-quantity {
+            margin-top: -15px;
+            margin-bottom: -6px;
+        }
+
+        .display-none {
+            display: none;
+        }
+    </style>
+
+    @* fonts *@
+    @*<basefont face="arial, verdana, sans-serif">*@
+
+
+    @* Store Info *@
+    <center class="header">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="make-center font-store">
+                    {companyName}
+                </div>
+
+                <div class="make-center">
+                    {storeLocation}
+                </div>
+
+                <div class="make-center">
+                    VAT No: {vatNumber}
+                </div>
+
+                <div class="make-center">
+                    {invoiceType}
+                </div>
+
+                <div class="make-center">
+                    {copyName}
+                </div>
+            </div>
+        </div>
+    </center>
+
+    <div class="clearfix"><br /></div>
+
+
+    @* Billing Info *@
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="row pb-1">
+                <div class="col-sm-2">
+                    BILL #
+                </div>
+
+                <div class="col-sm-4">
+                    : {billNumber}
+                </div>
+
+                <div class="col-sm-2">
+                    Date
+                </div>
+
+                <div class="col-sm-4">
+                    : {dateBS} ({dateAD})
+                </div>
+            </div>
+
+            <div class="row pb-1 {customerhide} {billToVatHide}">
+                <div class="col-sm-2">
+                    Bill To
+                </div>
+
+                <div class="col-sm-4">
+                    : {billToName}
+                </div>
+
+                <div class="col-sm-2">
+                    Vat
+                </div>
+
+                <div class="col-sm-4">
+                    : {billToVat}
+                </div>
+            </div>
+
+            <div class="row pb-1 {customerhide} {addresshide} {mobilehide}">
+                <div class="col-sm-2">
+                    Address
+                </div>
+
+                <div class="col-sm-4">
+                    : {billToAddress}
+                </div>
+
+                <div class="col-sm-2">
+                    Mobile
+                </div>
+
+                <div class="col-sm-4">
+                    : {billToMobile}
+                </div>
+            </div>
+
+            <div class="row pb-1">
+                <div class="col-sm-2">
+                    Pay Mode
+                </div>
+
+                <div class="col-sm-4">
+                    : {paymentMode}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <hr class="style-4 style-mb" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    @* Item Table *@
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="row pb-1 item-header">
+                <div class="sn col-sm-sn">
+                    Sn
+                </div>
+
+                <div class="col-sm-particulars">
+                    Particulars
+                </div>
+
+                <div class="col-sm-qty text-right">
+                    Qty
+                </div>
+
+                <div class="col-sm-rate text-right">
+                    Rate
+                </div>
+
+                <div class="col-sm-promo-disc text-right">
+                    P.Dis
+                </div>
+
+                <div class="col-sm-total text-right">
+                    Amount
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-12">
+            <div class="row">
+                <div class="col-sm-12">
+                    <hr class="style-mt" />
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-12" id="items">
+            <div class="row pb-1 items">
+                <div class="col-sm-sn">
+                    {ItemSN}
+                </div>
+
+                <div class="col-sm-particulars">
+                    {ItemName}
+                </div>
+
+                <div class="col-sm-qty text-right">
+                    {ItemQuantity}
+                </div>
+
+                <div class="col-sm-rate text-right">
+                    {ItemRate}
+                </div>
+
+                <div class="col-sm-promo-disc text-right">
+                    {ItemPromoDiscount}
+                </div>
+
+                <div class="col-sm-total text-right">
+                    {ItemTotal}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-12">
+            <div class="row">
+                <div class="col-sm-12">
+                    <hr class="style-mt" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    @* Total Calculation *@
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="row items total-quantity">
+                <div class="col-sm-sn"></div>
+                <div class="col-sm-particulars"></div>
+                <div class="col-sm-qty text-right">
+                    {totalQuantity}
+                </div>
+                <div class="col-sm-rate text-right"></div>
+                <div class="col-sm-promo-disc text-right"></div>
+                <div class="col-sm-total text-right"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12">
+            <hr class="style-mt" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="row pb-1">
+                <div class="col-sm-12 text-justify">
+                    <u>
+                        Terms &amp; Conditions :-
+                    </u>
+                    <br />
+                    <span>
+                        Goods once sold are not returnable.
+                    </span>
+                    <br />
+                    <span>
+                        E. &amp; O. E.
+                    </span>
+                    <br />
+                    Thank You.
+                </div>
+            </div>
+
+            @*<div class="row pb-1">
+                <div class="col-sm-12">
+                    <div class="row pb-1">
+                        <div class="col-sm-4">
+                            Counter
+                        </div>
+
+                        <div class="col-sm-8">
+                            : {terminalName} ({transTime})
+                        </div>
+                    </div>
+
+                    <div class="row pb-1">
+                        <div class="col-sm-4">
+                            Cashier
+                        </div>
+
+                        <div class="col-sm-8">
+                            : {cashierName}
+                        </div>
+                    </div>
+                </div>
+            </div>*@
+        </div>
+
+        <div class="col-sm-6">
+            <div class="row pb-1">
+                <div class="col-sm-2"></div>
+
+                <div class="col-sm-6">
+                    &nbsp; Total
+                    <span class="pull-right">:</span>
+                </div>
+
+                <div class="col-sm-4 text-right">
+                    {totalGrossAmount}
+                </div>
+            </div>
+
+            <div class="row pb-1">
+                <div class="col-sm-2"></div>
+
+                <div class="col-sm-6">
+                    &nbsp; Promo Disc.
+                    <span class="pull-right">:</span>
+                </div>
+
+                <div class="col-sm-4 text-right">
+                    {promoDiscount}
+                </div>
+            </div>
+
+            <div class="row pb-1">
+                <div class="col-sm-2"></div>
+
+                <div class="col-sm-6">
+                    &nbsp; Loyalty Disc.
+                    <span class="pull-right">:</span>
+                </div>
+
+                <div class="col-sm-4 text-right">
+                    {loyaltyDiscount}
+                </div>
+            </div>
+
+            <div class="row pb-1">
+                <div class="col-sm-2"></div>
+
+                <div class="col-sm-6">
+                    &nbsp; Taxable
+                    <span class="pull-right">:</span>
+                </div>
+
+                <div class="col-sm-4 text-right">
+                    {totalTaxableAmount}
+                </div>
+            </div>
+
+            <div class="row pb-1">
+                <div class="col-sm-2"></div>
+
+                <div class="col-sm-6">
+                    &nbsp; NonTaxable
+                    <span class="pull-right">:</span>
+                </div>
+
+                <div class="col-sm-4 text-right">
+                    {totalNonTaxableAmount}
+                </div>
+            </div>
+
+            <div class="row pb-1">
+                <div class="col-sm-2"></div>
+
+                <div class="col-sm-6">
+                    &nbsp; Vat 13%
+                    <span class="pull-right">:</span>
+                </div>
+
+                <div class="col-sm-4 text-right">
+                    {totalVat}
+                </div>
+            </div>
+
+            <div class="row pb-1">
+                <div class="col-sm-2"></div>
+
+                <div class="col-sm-6">
+                    &nbsp; Net Amount
+                    <span class="pull-right">:</span>
+                </div>
+
+                <div class="col-sm-4 text-right">
+                    {totalNetAmount}
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    @* Footer *@
+    <div class="row">
+        <div class="col-sm-12">
+            <hr class="style" />
+        </div>
+    </div>
+
+    @*<div class="row">
+        <div class="col-sm-6">
+            <div class="row pb-1">
+                <div class="col-sm-12 text-justify">
+                    Saving in this bill: <strong>Rs. {totalSaving}</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="row pb-1">
+                <div class="col-sm-2"></div>
+
+                <div class="col-sm-6">
+                    &nbsp; Tender
+                    <span class="pull-right">:</span>
+                </div>
+
+                <div class="col-sm-4 text-right">
+                    {tenderAmount}
+                </div>
+            </div>
+
+            <div class="row pb-1">
+                <div class="col-sm-2"></div>
+
+                <div class="col-sm-6">
+                    &nbsp; Change
+                    <span class="pull-right">:</span>
+                </div>
+
+                <div class="col-sm-4 text-right">
+                    {changeAmount}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12">
+            <hr class="style" />
+        </div>
+    </div>*@
+
+    <div class="row">
+
+        <div class="col-sm-6">
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <div class="row pb-1">
+                <div class="col-sm-2"></div>
+
+                <div class="col-sm-8" style="text-align:center;">
+                    <hr class="style" />
+                    <span>(Customer Signature)</span>
+                </div>
+
+                <div class="col-sm-2"></div>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <br />
+            <div class="row pb-1">
+                <div class="col-sm-12">
+                    For :- {companyName}
+                </div>
+            </div>
+            <br />
+            <br />
+            <br />
+            <div class="row pb-1">
+                <div class="col-sm-2"></div>
+
+                <div class="col-sm-8" style="text-align:center;">
+                    <hr class="style" />
+                    <span>(Authorized By)</span>
+                </div>
+
+                <div class="col-sm-2"></div>
+            </div>
+        </div>
+    </div>
+</div>
