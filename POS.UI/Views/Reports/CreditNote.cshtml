@@ -4,6 +4,9 @@
     ViewData["Title"] = "Credit Note Reports";
 }
 
+
+
+
 <div class="page-wrapper">
     <div class="page-header">
         <div class="page-header-title">
@@ -57,6 +60,7 @@
 
 
 @section Scripts {
+    <script src="~/lib/kendo-ui/kendo.all.min.js"></script>
     <script>
 
          var store = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Store));
@@ -81,7 +85,7 @@
                 invoiceData: invoiceData,
                 storeData: store,
                 copy: true,
-                paymentMode :  ""
+                paymentMode: ""
             };
             printer.PrintCreditNoteInvoice(data, function () {
                 //update printcount

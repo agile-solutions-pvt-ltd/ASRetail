@@ -95,17 +95,17 @@
         </div>
     </div>
     <div class="page-body">
-        
+
         <div class="row">
             <div class="col-sm-12">
 
                 <div class="card">
                     <div class="card-block">
                         @*Your content here*@
-                        <p>StartDate: <input type="text" id="startdatepicker"> EndDate: <input type="text" id="enddatepicker"  > <button class="button" onclick="DateFilter()">Preview</button></p>
+                        <p>StartDate: <input type="text" id="startdatepicker"> EndDate: <input type="text" id="enddatepicker"> <button class="button" onclick="DateFilter()">Preview</button></p>
 
 
-                        <div id="grid" ></div>
+                        <div id="grid"></div>
                         <script type="x/kendo-template" id="page-template">
                             <div class="page-template">
                                 <div class="header">
@@ -129,10 +129,12 @@
 
 
 @section Scripts {
+    <script src="~/lib/kendo-ui/kendo.all.min.js"></script>
+
     <script>
-        
+
         var store = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Store));
-       
+
         /*
             This demo renders the grid in "DejaVu Sans" font family, which is
             declared in kendo.common.css. It also declares the paths to the
@@ -189,13 +191,13 @@
                 }
             });
 
-            
+
         }
         function DateFilter() {
 
             console.log("StartDate", startdate);
             console.log("EndDate", enddate);
-           
+
             startup();
         }
         //$(".date").datepicker({
@@ -211,7 +213,7 @@
                     //ate = new date();
                     startdate = date;
                     console.log(startdate);
-                  
+
 
                 }
 
@@ -254,7 +256,7 @@
                 dataSource: {
                     type: "json",
                     transport: {
-                        read: window.location.origin + "/Reports/InvoiceSalesApi?startdate="+startdate+"&enddate="+enddate
+                        read: window.location.origin + "/Reports/InvoiceSalesApi?startdate=" + startdate + "&enddate=" + enddate
                     },
                     schema: {
                         model: {
@@ -405,9 +407,9 @@
         }
         $(document).ready(function () {
 
-          
-            
-           
+
+
+
             //var g = $("#SalesInvoiceTable").data("kendoGrid");
             //g.dataSource.pageSize(10);
             //g.dataSource.group({ field: "Date" });

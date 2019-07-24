@@ -138,6 +138,22 @@ namespace POS.UI.Controllers
             return Ok();
         }
 
+       
+        public IActionResult NAVTestConnection()
+        {
+            Config config = ConfigJSON.Read();
+            NavSync sync = new NavSync(_context, _mapper, _userManager, _roleManager, _cache);
+            var result = sync.TestNavConnection();
+
+            if (result.Count() > 0)
+                return Ok(result);
+            else
+                return StatusCode(500, result);
+        }
+
+
+
+
 
         public IActionResult DatabaseBackupRestore()
         {

@@ -66,7 +66,7 @@
 
     #Credit_Note {
         position: relative;
-        z-index: 99999;
+        /*z-index: 99999;*/
         height: 60px;
         margin-bottom: -90px;
     }
@@ -81,7 +81,7 @@
      .k-footer-template td:nth-child(5)
      {
         border-width: 0;
-    }
+   
 </style>
 <div class="page-wrapper">    
     <div class="page-body">
@@ -134,7 +134,7 @@
                                 </div>
                                 <div class="form-group col-md-5">
                                     <label asp-for="Credit_Note" class="control-label"></label>
-                                    <textarea asp-for="Credit_Note" class="form-control form-control-sm"></textarea>
+                                    <input asp-for="Credit_Note" class="form-control form-control-sm" />
                                     <span id="Credit_Note_Message" asp-validation-for="Credit_Note" class="text-danger"></span>
                                 </div>
                             </div>

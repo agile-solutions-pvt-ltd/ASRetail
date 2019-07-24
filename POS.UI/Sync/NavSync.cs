@@ -136,6 +136,21 @@ namespace POS.UI.Sync
                 return new List<Company>();
         }
 
+        public string TestNavConnection()
+        {
+            Config config = ConfigJSON.Read();
+            string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/poslocations";
+            var client = NAV.NAVClient(url, config);
+            var request = new RestRequest(Method.GET);
+
+            IRestResponse<CompanyApiModel> response = client.Execute<CompanyApiModel>(request);
+
+            if (response.StatusCode == HttpStatusCode.OK)
+                return "Success";
+            else
+                return response.Content;
+        }
+
 
         public bool StoreSync()
         {
@@ -175,16 +190,20 @@ namespace POS.UI.Sync
                             store.EMAIL = item.EMAIL;
                             store.WEBSITE = item.WEBSITE;
                             store.CustomerPriceGroup = item.CustomerPriceGroup;
-
+                            _context.Entry(store).State = EntityState.Modified;
                             //update update number
                             if (response.Data.value.Count() > 0)
                             {
                                 services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
                                 services.LastSyncDate = DateTime.Now;
+                                _context.Entry(services).State = EntityState.Modified;
                             }
+                            _context.SaveChanges();
                         }
+                        
+                        
                         CompanyVatNumberSync();
-                        _context.SaveChanges();
+                        
                         _cache.Set("IsStoreSyncIsInProcess", false);
                         return true;
                     }
@@ -228,7 +247,7 @@ namespace POS.UI.Sync
                     Store store = _context.Store.FirstOrDefault();
                     store.VAT = item.taxRegistrationNumber;
 
-
+                    _context.Entry(store).State = EntityState.Modified;
                     _context.SaveChanges();
                 }
                 return true;
@@ -335,9 +354,10 @@ namespace POS.UI.Sync
             _cache.TryGetValue("IsItemSyncIsInProcess", out IsItemSyncIsInProcess);
             if (!IsItemSyncIsInProcess)
             {
+                Config config = ConfigJSON.Read();
                 try
                 {
-                    Config config = ConfigJSON.Read();
+                   
                     NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Item");
                     string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
                     //access update number data only
@@ -352,9 +372,17 @@ namespace POS.UI.Sync
                     if (response.StatusCode == HttpStatusCode.OK)
                     {
                         List<Item> item = _mapper.Map<List<Item>>(response.Data.value);
-                        _context.Item.RemoveRange(_context.Item.Where(x => item.Any(y => y.Code == x.Code)));
-                        _context.SaveChanges();
-                        _context.Item.AddRange(item);
+
+                        var listOfItemsToUpdate = _context.Item.Where(x => item.Any(y => y.Code == x.Code));
+                        
+                        foreach (var i in listOfItemsToUpdate)
+                        {
+                            
+
+                        }
+                        //_context.Item.RemoveRange(_context.Item.Where(x => item.Any(y => y.Code == x.Code)));
+                        //var c = _context.SaveChanges();
+                        _context.Item.AddRange(new Item { });
 
                         ////using new extension
                         //_context.Item.AddOrUpdate(ref item, x => new { x.Code });
@@ -373,6 +401,8 @@ namespace POS.UI.Sync
 
                         if (response.Data.value.Count() > 0 && response.Data.value.Count() < 10)
                         {
+                            config.SyncLog.Item = "Last Sync :" + DateTime.Now.ToShortDateString();
+                            ConfigJSON.Write(config);
                             //update cache
                             _cache.Set("IsItemCacheInProcess", false);
                             _cache.Remove("ItemViewModel");
@@ -395,6 +425,8 @@ namespace POS.UI.Sync
                 }
                 catch (Exception ex)
                 {
+                    config.SyncLog.Item = "Error :" + ex.InnerException;
+                    ConfigJSON.Write(config);
                     return false;
                 }
             }
@@ -408,9 +440,10 @@ namespace POS.UI.Sync
             _cache.TryGetValue("IsCustomerSyncIsInProcess", out IsCustomerSyncIsInProcess);
             if (!IsCustomerSyncIsInProcess)
             {
+                Config config = ConfigJSON.Read();
                 try
                 {
-                    Config config = ConfigJSON.Read();
+                   
                     NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Customer");
                     string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
                     //access update number data only
@@ -444,6 +477,8 @@ namespace POS.UI.Sync
 
                         if (response.Data.value.Count() > 0 && response.Data.value.Count() < 10)
                         {
+                            config.SyncLog.Item = "Last Sync :" + DateTime.Now.ToShortDateString();
+                            ConfigJSON.Write(config);
                             //update cache
                             _cache.Set("IsCustomerCacheInProcess", true);
                             BackgroundJob.Enqueue(() => UpdateCacheCustomer());
@@ -464,6 +499,8 @@ namespace POS.UI.Sync
                 }
                 catch (Exception ex)
                 {
+                    config.SyncLog.Item = "Error :" + ex.InnerException.Message;
+                    ConfigJSON.Write(config);
                     return false;
                 }
             }
@@ -480,10 +517,11 @@ namespace POS.UI.Sync
             _cache.TryGetValue("IsItemBarCodeSyncIsInProcess", out IsItemBarCodeSyncIsInProcess);
             if (!IsItemBarCodeSyncIsInProcess)
             {
+                Config config = ConfigJSON.Read();
                 try
                 {
                     _cache.Set("IsItemBarCodeSyncIsInProcess", true);
-                    Config config = ConfigJSON.Read();
+                   
                     NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Barcode");
                     string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
                     //access update number data only
@@ -575,6 +613,8 @@ namespace POS.UI.Sync
                         _context.SaveChanges();
                         if (response.Data.value.Count() > 0 && response.Data.value.Count() < 10)
                         {
+                            config.SyncLog.Item = "Last Sync :" + DateTime.Now.ToShortDateString();
+                            ConfigJSON.Write(config);
                             //update cache
                             _cache.Set("IsItemBarCodeSyncIsInProcess", false);
                             BackgroundJob.Enqueue(() => UpdateCacheItemViewModel());
@@ -597,6 +637,8 @@ namespace POS.UI.Sync
                 }
                 catch (Exception ex)
                 {
+                    config.SyncLog.Item = "Error :" + ex.InnerException.Message;
+                    ConfigJSON.Write(config);
                     return false;
                 }
             }

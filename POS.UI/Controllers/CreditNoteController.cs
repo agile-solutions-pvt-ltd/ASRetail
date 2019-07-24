@@ -153,6 +153,7 @@ namespace POS.UI.Controllers
         //    return StatusCode(404);
         //}
         [HttpGet]
+        [SessionAuthorized]
         public IActionResult GetCreditNote(string CN)
         {
             if (!string.IsNullOrEmpty(CN))

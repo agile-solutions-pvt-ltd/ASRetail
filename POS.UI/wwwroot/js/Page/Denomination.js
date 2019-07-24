@@ -37,6 +37,7 @@
         $('#detail-form :input').attr('readonly', 'readonly');
         $("#print").removeAttr('readonly');
         $(".total").attr("readonly", "readonly");
+        $("#Date").attr("readonly", "readonly");
     };
 
     
@@ -132,7 +133,7 @@
     //events
     $("#R1000,#R500,#R250,#R100,#R50,#R25,#R20,#R10,#R5,#R2,#R1,#R05,#Ric,#Cheque,#Debit_Card,#Other").on("keyup", calcAmount);
   
-    $()
+    
 
     $("#Date").datepicker()
         .change(function () {

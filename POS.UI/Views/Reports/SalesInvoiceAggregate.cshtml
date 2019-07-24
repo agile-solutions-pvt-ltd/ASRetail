@@ -4,137 +4,138 @@
 @model IEnumerable<POS.DTO.SalesInvoice>
 
 
-    @{
-        ViewData["Title"] = "Sales Invoice Aggregate";
+@{
+    ViewData["Title"] = "Sales Invoice Aggregate";
+}
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<link rel="stylesheet" href="/resources/demos/style.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+<style>
+    .k-grid {
+        font-family: "DejaVu Sans", "Arial", sans-serif;
+    }
+</style>
+<style>
+    /* Page Template for the exported PDF */
+    .page-template {
+        font-family: "DejaVu Sans", "Arial", sans-serif;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
     }
 
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-    <link rel="stylesheet" href="/resources/demos/style.css">
-    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-
-    <style>
-        .k-grid {
-            font-family: "DejaVu Sans", "Arial", sans-serif;
-        }
-    </style>
-    <style>
-        /* Page Template for the exported PDF */
-        .page-template {
-            font-family: "DejaVu Sans", "Arial", sans-serif;
+        .page-template .header {
             position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
+            top: 30px;
+            left: 30px;
+            right: 30px;
+            border-bottom: 1px solid #888;
+            color: #888;
         }
 
-            .page-template .header {
-                position: absolute;
-                top: 30px;
-                left: 30px;
-                right: 30px;
-                border-bottom: 1px solid #888;
-                color: #888;
-            }
-
-            .page-template .footer {
-                position: absolute;
-                bottom: 30px;
-                left: 30px;
-                right: 30px;
-                border-top: 1px solid #888;
-                text-align: center;
-                color: #888;
-            }
-
-            .page-template .watermark {
-                font-weight: bold;
-                font-size: 400%;
-                text-align: center;
-                margin-top: 30%;
-                color: #aaaaaa;
-                opacity: 0.1;
-                transform: rotate(-35deg) scale(1.7, 1.5);
-            }
-
-        .button {
-            background-color: #4CAF50;
-            border: none;
-            color: white;
-            padding: 6px 32px;
+        .page-template .footer {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            right: 30px;
+            border-top: 1px solid #888;
             text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            cursor: pointer;
+            color: #888;
         }
-    </style>
+
+        .page-template .watermark {
+            font-weight: bold;
+            font-size: 400%;
+            text-align: center;
+            margin-top: 30%;
+            color: #aaaaaa;
+            opacity: 0.1;
+            transform: rotate(-35deg) scale(1.7, 1.5);
+        }
+
+    .button {
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 6px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+    }
+</style>
 
 
 
-    <!-- Load Pako ZLIB library to enable PDF compression -->
-    <script src="~/lib/kendo-ui/pako_deflate.min.js"></script>
-    <div class="page-wrapper">
-        <div class="page-header">
-            <div class="page-header-title">
-                <h4>@ViewData["Title"]</h4>
+<!-- Load Pako ZLIB library to enable PDF compression -->
+<script src="~/lib/kendo-ui/pako_deflate.min.js"></script>
+<div class="page-wrapper">
+    <div class="page-header">
+        <div class="page-header-title">
+            <h4>@ViewData["Title"]</h4>
 
-            </div>
-            <div class="page-header-breadcrumb">
-                <ul class="breadcrumb-title">
-                    <li class="breadcrumb-item">
-                        <a href="index.html">
-                            <i class="icofont icofont-home"></i>
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="#!">Report</a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="#!">@ViewData["Title"]</a>
-                    </li>
-
-                </ul>
-            </div>
         </div>
-        <div class="page-body">
+        <div class="page-header-breadcrumb">
+            <ul class="breadcrumb-title">
+                <li class="breadcrumb-item">
+                    <a href="index.html">
+                        <i class="icofont icofont-home"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">Report</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">@ViewData["Title"]</a>
+                </li>
 
-            <div class="row">
-                <div class="col-sm-12">
+            </ul>
+        </div>
+    </div>
+    <div class="page-body">
 
-                    <div class="card">
-                        <div class="card-block">
-                            @*Your content here*@
-                            <p>StartDate: <input type="text" id="startdatepicker"> EndDate: <input type="text" id="enddatepicker"> <button class="button" onclick="DateFilter()">Preview</button></p>
+        <div class="row">
+            <div class="col-sm-12">
+
+                <div class="card">
+                    <div class="card-block">
+                        @*Your content here*@
+                        <p>StartDate: <input type="text" id="startdatepicker"> EndDate: <input type="text" id="enddatepicker"> <button class="button" onclick="DateFilter()">Preview</button></p>
 
 
-                            <div id="grid"></div>
-                            <script type="x/kendo-template" id="page-template">
-                                <div class="page-template">
-                                    <div class="header">
-                                        <div style="float: right">Page #: pageNum # of #: totalPages #</div>
+                        <div id="grid"></div>
+                        <script type="x/kendo-template" id="page-template">
+                            <div class="page-template">
+                                <div class="header">
+                                    <div style="float: right">Page #: pageNum # of #: totalPages #</div>
 
-                                    </div>
-                                    @*<div class="watermark">KENDO UI</div>*@
-                                    <div class="footer">
-                                        Page #: pageNum # of #: totalPages #
-                                    </div>
                                 </div>
-                            </script>
-                        </div>
+                                @*<div class="watermark">KENDO UI</div>*@
+                                <div class="footer">
+                                    Page #: pageNum # of #: totalPages #
+                                </div>
+                            </div>
+                        </script>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
 
 
 
-    @section Scripts {
-        <script>
+@section Scripts {
+    <script src="~/lib/kendo-ui/kendo.all.min.js"></script>
+    <script>
 
         var store = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Store));
 
@@ -151,9 +152,9 @@
             "DejaVu Sans|Italic": "https://kendo.cdn.telerik.com/2016.2.607/styles/fonts/DejaVu/DejaVuSans-Oblique.ttf",
             "WebComponentsIcons": "https://kendo.cdn.telerik.com/2017.1.223/styles/fonts/glyphs/WebComponentsIcons.ttf"
         });
-        </script>
+    </script>
 
-        <script>
+    <script>
             var startdate = new Date();
             var dd = String(startdate.getDate()).padStart(2, '0');
             var mm = String(startdate.getMonth() + 1).padStart(2, '0'); //January is 0!
@@ -258,7 +259,7 @@
                             model: {
                                 fields: {
                                     trans_Date_AD: { type: "date" }
-                                   
+
 
                                 }
                             },
@@ -268,17 +269,17 @@
 
                         },
                         pageSize: 100,
-                        
+
                         group: {
                             field: "trans_Date_AD", aggregates: [
-                               
+
                                 { field: "total", aggregate: "sum" },
                                 { field: "cash", aggregate: "sum" },
                                 { field: "card", aggregate: "sum" },
 
                                 { field: "credit", aggregate: "sum" },
                                 { field: "credit_Note", aggregate: "sum" }
-                                
+
 
 
 
@@ -292,9 +293,9 @@
                             { field: "credit", aggregate: "sum" },
                             { field: "credit_Note", aggregate: "sum" }
 
-                           
+
                         ]
-                        
+
                     },
                     height: 550,
                     filterable: true,
@@ -424,7 +425,7 @@
 
 
             });
-        </script>
+    </script>
 
-    }
+}
 

@@ -25,7 +25,7 @@
         }, 3000);
 
         $('#memberTable').hide();
-        $('.k-grid.k-widget.k-display-block.k-editable').addClass("display-none");
+        $('.k-grid.k-widget.k-editable').addClass("display-none");
 
         //initialize table to kendo grid
         grid = $("#memberTable").kendoGrid({
@@ -33,10 +33,10 @@
             editable: true,
             sortable: false,
             scrollable: true
-           
+
 
         });
-        $('.k-grid.k-widget.k-display-block.k-editable').addClass("display-none");
+        $('.k-grid.k-widget.k-editable').addClass("display-none");
         //new logic
         // 
 
@@ -78,7 +78,7 @@
 
         var page = GetUrlParameters();
         var url = window.location.origin + "/Customer/SearchMembership?text=" + info;
-        if (page === "CrLanding")
+        if (page.indexOf("CrLanding") > -1)
             url += "&customer=Credit";
         $.ajax({
             method: "POST",
@@ -97,11 +97,11 @@
         $('#memberTable tbody').html('');
         if (list.length > 0) {
             $('#memberTable').show();
-            $('.k-grid.k-widget.k-display-block.k-editable').removeClass("display-none");
+            $('.k-grid.k-widget.k-editable').removeClass("display-none");
         }
         else {
             $('#memberTable').hide();
-            $('.k-grid.k-widget.k-display-block.k-editable').addClass("display-none");
+            $('.k-grid.k-widget.k-editable').addClass("display-none");
         }
         _.each(list, function (v, k) {
             //add row
@@ -129,15 +129,21 @@
 
         if (evt.keyCode === 13 || evt.keyCode === 38 || evt.keyCode === 40) {
             //continue
-        } else {
-            let searchInfo = $(".search-input").val();
-            if (searchInfo !== "" && searchInfo.length >= 3)
-                SearchMember(searchInfo);
-            else {
-                $('#memberTable tbody').html('');
-                $('#memberTable').hide();
-                $('.k-grid.k-widget.k-display-block.k-editable').addClass("display-none");
+            if (evt.keyCode === 13) {
+                let searchInfo = $(".search-input").val();
+                if (searchInfo !== "" && searchInfo.length >= 3)
+                    SearchMember(searchInfo);
+                else {
+                    $('#memberTable tbody').html('');
+                    $('#memberTable').hide();
+                    $('.k-grid.k-widget.k-editable').addClass("display-none");
+                }
             }
+
+        } else {
+            $('#memberTable tbody').html('');
+            $('#memberTable').hide();
+            $('.k-grid.k-widget.k-editable').addClass("display-none");
         }
     };
     let AddMember = () => {
@@ -187,39 +193,39 @@
         }
     };
     let SkipPage = () => {
-        bootbox.confirm({
-            message: "Are you sure our customer doesn't want membership ?",
-            buttons: {
-                cancel: {
-                    label: 'Go Back',
-                    className: 'btn-warning'
+        debugger;
+        if ($(".bootbox.modal").is(":visible")) {
+            $(".bootbox.modal").modal('hide')
+        }
+        else {
+            bootbox.confirm({
+                message: "Are you sure our customer doesn't want membership ?",
+                buttons: {
+                    cancel: {
+                        label: 'Go Back',
+                        className: 'btn-warning'
+                    },
+                    confirm: {
+                        label: 'Sure',
+                        className: 'btn-success'
+                    }
                 },
-                confirm: {
-                    label: 'Sure',
-                    className: 'btn-success'
+                callback: function (result) {
+                    if (result) {
+                        var url = window.location.origin;
+                        if (GetUrlParameters("mode") === undefined)
+                            url += "/SalesInvoice?M=" + defaultMembershipId;
+                        else
+                            url += "/SalesInvoice?M=" + defaultMembershipId + "&Mode=" + GetUrlParameters("mode");
+                        window.location.href = url;
+                    }
+                    else {
+                        $(".search").focus();
+                    }
+
                 }
-            },
-            callback: function (result) {
-
-                if (result) {
-                    var url = window.location.origin;
-                    if (GetUrlParameters("mode") === undefined)
-                        url += "/SalesInvoice?M=" + defaultMembershipId;
-                    else
-                        url += "/SalesInvoice?M=" + defaultMembershipId + "&Mode=" + GetUrlParameters("mode");
-                    window.location.href = url;
-                }
-                else {
-                    $(".search").focus();
-                }
-
-            }
-        });
-
-
-
-
-
+            });
+        }
     };
     let AssignKeyEvent = () => {
         Mousetrap.bindGlobal('enter', function () {
@@ -283,7 +289,6 @@
     $("#addNewMemberButton").on("click", AddMember);
     $("#memberSaveButton").on("click", SaveMember);
     $("#memberSaveButton").on("keydown", function (e) {
-        debugger;
         if (e.keyCode === 13)
             SaveMember();
     });

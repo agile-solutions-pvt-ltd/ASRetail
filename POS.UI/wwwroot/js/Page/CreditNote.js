@@ -22,7 +22,6 @@
             editable: true,
             sortable: false,
             scrollable: true,
-            resizable: true,
             columns: [
                 {
                     title: "SN",
@@ -759,14 +758,14 @@
 
 
     $("#Customer_Id").on('change', function () {
-        var selectedValue = $("#Customer_Id").data("kendoComboBox").value();
-        var selectedItem = _.filter(customerList, function (x) {
-            return x.Membership_Number === selectedValue;
-        })[0];
-        $("#Customer_Name").val(selectedItem.Name);
-        $("#Customer_Address").val(selectedItem.Address);
-        $("#Customer_Vat").val(selectedItem.Vat);
-        $("#Customer_Mobile").val(selectedItem.Mobile1);
+        //var selectedValue = $("#Customer_Id").data("kendoComboBox").value();
+        //var selectedItem = _.filter(customerList, function (x) {
+        //    return x.Membership_Number === selectedValue;
+        //})[0];
+        //$("#Customer_Name").val(selectedItem.Name);
+        //$("#Customer_Address").val(selectedItem.Address);
+        //$("#Customer_Vat").val(selectedItem.Vat);
+        //$("#Customer_Mobile").val(selectedItem.Mobile1);
     });
 
 

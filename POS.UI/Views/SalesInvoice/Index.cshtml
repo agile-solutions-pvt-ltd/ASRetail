@@ -276,7 +276,7 @@
                                             <label class="control-label col-md-1 text-right pr-1">Bill To</label>
                                             <div class="form-group col-md-2">
                                                 @*@Html.DropDownList("Customer_Id", new SelectList(@ViewBag.Customer, "Membership_Number", "Name"), "", new { @class = "form-control form-control-sm" })*@
-                                                <select id="Customer_Id" class="form-control form-control-sm"></select>
+                                                <input id="Customer_Id" class="form-control form-control-sm" />
                                             </div>
                                             <div class="form-group ml-2">
                                                 <span class="fa fa-chevron-right" id="customer_icon_toggle"></span>
@@ -423,5 +423,5 @@
        // var customerList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Customer));
     var salesInvoiceTmpData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
     </script>
-    <script src="~/js/Page/SalesInvoice.js"></script>
+    <script src="~/js/Page/SalesInvoice.js" asp-append-version="true"></script>
 }

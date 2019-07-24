@@ -99,6 +99,7 @@ namespace POS.UI
 
 
             services.AddMemoryCache();
+            services.AddResponseCaching();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                 .AddJsonOptions(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore); ;
@@ -175,6 +176,7 @@ namespace POS.UI
             });
            
             app.UseHangfireServer();
+            app.UseResponseCaching();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

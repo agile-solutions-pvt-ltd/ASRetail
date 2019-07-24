@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 
 namespace POS.UI.Controllers
 {
+    
     [Authorize]
     public class ItemController : Controller
     {
@@ -158,6 +159,7 @@ namespace POS.UI.Controllers
         }
 
 
+        [ResponseCache(Duration = 60, VaryByQueryKeys = new string[] { "code","cacheId" })]
         public IEnumerable<ItemViewModel> GetItems(string code)
         {
             
@@ -188,7 +190,7 @@ namespace POS.UI.Controllers
 	   i.Is_Vatable,
 	   s.INITIAL as Location, s.CustomerPriceGroup as LocationwisePriceGroup
 FROM ITEM i
-left join ITEM_BARCODE b on i.Code = b.ItemCode
+left join ITEM_BARCODE b on i.Code = b.ItemCode and b.IsActive = 1
 left join ITEM_QUANTITY q on i.Code = q.ItemCode
 left join ITEM_PRICE p on i.Code = p.ItemCode
 left join ITEM_DISCOUNT d on i.Code = d.ItemCode Or (d.ItemType = 'Item Disc. Group' and  d.ItemCode =  i.DiscountGroup)

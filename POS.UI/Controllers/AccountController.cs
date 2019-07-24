@@ -104,8 +104,8 @@ namespace POS.UI.Controllers
                     {
                         HttpContext.Session.SetString("TerminalId", model.TerminalId.ToString());
                         HttpContext.Session.SetString("Terminal", model.TerminalName);
-                        await _userManager.AddClaimAsync(user, new Claim("Terminal", model.TerminalId.ToString()));
-                        await _userManager.AddClaimAsync(user, new Claim("TerminalName", model.TerminalName.ToString()));
+                        //await _userManager.AddClaimAsync(user, new Claim("Terminal", model.TerminalId.ToString()));
+                        //await _userManager.AddClaimAsync(user, new Claim("TerminalName", model.TerminalName.ToString()));
 
                     }
                     else
@@ -141,7 +141,7 @@ namespace POS.UI.Controllers
                     if (!string.IsNullOrEmpty(returnUrl) && returnUrl != "/")
                         return RedirectToLocal(returnUrl);
                     else
-                        return RedirectToAction("Landing", "SalesInvoice");
+                        return RedirectToAction("CrLanding", "SalesInvoice",new { Mode="tax" });
                 }
                 if (result.RequiresTwoFactor)
                 {

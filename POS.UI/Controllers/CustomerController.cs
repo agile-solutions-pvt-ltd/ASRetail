@@ -236,14 +236,16 @@ namespace POS.UI.Controllers
             if (customer == "")
                 customers = customers.Where(x => x.Is_Member == true);
             else if (customer == "Credit")
-                customers = customers.Where(x => x.Type == "Credit");
+                customers = customers.Where(x => x.Type == "1");
+            
             customers = customers.Where(x =>
             (!string.IsNullOrEmpty(x.Name) && x.Name.ToLower().Contains(text)) ||
             (!string.IsNullOrEmpty(x.Membership_Number) && x.Membership_Number.ToLower().Contains(text)) ||
             (!string.IsNullOrEmpty(x.Membership_Number_Old) && x.Membership_Number_Old.ToLower().Contains(text)) ||
             (!string.IsNullOrEmpty(x.Barcode) && x.Barcode.ToLower().Contains(text)) ||
             (!string.IsNullOrEmpty(x.Mobile1) && x.Mobile1.ToLower().Contains(text)));
-            customer.Take(50);
+            customers.OrderBy(x => new { x.Membership_Number, x.Mobile1,x.Name});
+            customers.Take(50);
             return Ok(customers);
         }
 
@@ -254,7 +256,12 @@ namespace POS.UI.Controllers
             return Ok(customers);
         }
 
+        public IActionResult GetCustomerByNumber(string MembershipNumber)
+        {
+            IEnumerable<Customer> customers = customers = _context.Customer.Where(x => x.Membership_Number == MembershipNumber);
 
+            return Ok(customers);
+        }
 
 
         public IActionResult CreateMembership()

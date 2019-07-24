@@ -14,7 +14,7 @@
       "wwwroot/lib/bootstrap/js/bootstrap.js",
       "wwwroot/lib/bootstrap-treeview/js/bootstrap-treeview.js",
       "wwwroot/lib/jquery-slimscroll/js/jquery.slimscroll.js",
-      "wwwroot/lib/jquery.mCustomScrollbar.concat/jquery.mCustomScrollbar.js",
+      //"wwwroot/lib/jquery.mCustomScrollbar.concat/jquery.mCustomScrollbar.js",
       "wwwroot/lib/moment/js/moment.min.js",
       "wwwroot/lib/kendo-ui/jszip.min.js",
       "wwwroot/lib/modernizr/js/modernizr.js",

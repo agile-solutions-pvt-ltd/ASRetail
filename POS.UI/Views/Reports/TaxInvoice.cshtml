@@ -57,6 +57,7 @@
 
 
 @section Scripts {
+    <script src="~/lib/kendo-ui/kendo.all.min.js"></script>
     <script>
 
          var store = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Store));
@@ -81,14 +82,14 @@
                 url: window.location.origin + "/Print/GetPrintCount?invoiceNumber=" + invoiceData.invoice_Number,
                 type: 'POST',
                 complete: function (result) {
-                    
+
                     if (result.status === 200)
 
                         var data = {
                             invoiceData: invoiceData,
                             storeData: store,
                             copy: result.responseJSON.printCount,
-                            paymentMode :  result.responseJSON.paymentMode
+                            paymentMode: result.responseJSON.paymentMode
                         };
                     printer.PrintInvoice(data, function () {
                         ////update printcount
@@ -106,7 +107,7 @@
         }
         $(document).ready(function () {
             $("#grid").kendoGrid({
-                 toolbar: ["pdf", "excel"],
+                toolbar: ["pdf", "excel"],
                 pdf: {
                     allPages: true,
                     avoidLinks: true,
@@ -255,7 +256,7 @@
                         groupFooterTemplate: "#: CurrencyFormat(sum) #",
                         footerTemplate: "#: CurrencyFormat(sum) #",
                     },
-                     {
+                    {
 
                         title: "Action",
                         attributes: {

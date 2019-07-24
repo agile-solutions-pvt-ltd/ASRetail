@@ -128,7 +128,7 @@ const invoice = (function () {
 
             ]
         });
-
+        $("#membershipId").attr("readonly", true);
 
 
 
@@ -181,7 +181,7 @@ const invoice = (function () {
                     setTimeout(function () { $("#itemNotFoundLabel").hide(); }, 2000);
 
                 } else {
-                    
+
                     _.each(data, function (x) { selectedItems.push(x); });
                     callback(data);
                 }
@@ -195,11 +195,12 @@ const invoice = (function () {
         });
     };
     let getItemReferenceData = (callback) => {
+        debugger;
         $.ajax({
             url: window.location.origin + "/SalesInvoice/GetItemReferenceData/?id=" + getUrlParameters(),
             type: "GET",
             success: function (data) {
-               
+                debugger;
                 if (data.length > 0) {
                     _.each(data, function (x) { selectedItems.push(x); });
                     callback();
@@ -395,9 +396,17 @@ const invoice = (function () {
         });
 
         if (!checkAlreadyExistItem) {
-            GetItems(code, function (result) {
-                addRowWithData(result);
-            });
+            debugger;
+            //check if item already loaded to client
+            var itemFromClient = _.filter(selectedItems, function (x) { return x.code == code || x.bar_Code == code });
+            if (itemFromClient.length > 0) {
+                addRowWithData(itemFromClient);
+                isBarCodePressed = false;
+            }
+            else
+                GetItems(code, function (result) {
+                    addRowWithData(result);
+                });
         }
         else {
             isBarCodePressed = false;
@@ -481,12 +490,12 @@ const invoice = (function () {
         $("<span class='barcode'>" + barCode + "</span>").appendTo(cell2);
         $("<span class='itemName' data-item-id='" + itemId + "' data-item-code= '" + itemCode + "'>" + itemName + "</span>").appendTo(cell3);
         $("<span>" + unit + "</span>").appendTo(cell4);
-        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Rate" type="number" min="0" onkeyup="invoice.calcTotal()" name="Rate" ' + rateDisabled + ' " value=' + rate.toFixed(2) + '>').appendTo(cell5);
-        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Quantity" type="number" min="0.01" onkeyup="invoice.calcAll(this)" name="Quantity" value=' + quantity.toString() + '>').appendTo(cell6);
-        $('<input class="tabledit-input form-control form-control-sm input-sm text-right GrossAmount" type="number" onkeyup="invoice.calcTotal()" name="GrossAmount" disabled value=' + grossAmount.toFixed(2) + '>').appendTo(cell7);
-        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Discount" type="number" data-isDiscountable="' + isDiscountable + '" ' + discountDisabled + ' min="0" ' + discountLimit + ' onkeyup="invoice.calcTotal(this)" name="Discount" data-original-percent="' + discount.toFixed(2) + '" data-original-value="' + discount.toFixed(2) + '" value=' + discount.toFixed(2) + '>').appendTo(cell8);
-        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Tax" data-isVatable="' + isVatable + '" type="number" onkeyup="invoice.calcTotal()" name="Tax" disabled value=' + tax.toFixed(2) + '>').appendTo(cell9);
-        $('<input class="tabledit-input form-control form-control-sm input-sm text-right NetAmount" type="number" onkeyup="invoice.calcTotal()" name="NetAmount" disabled value=' + netAmount.toFixed(2) + '>').appendTo(cell10);
+        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Rate" type="number" min="0" onfocusout="invoice.calcTotal()" name="Rate" ' + rateDisabled + ' " value=' + rate.toFixed(2) + '>').appendTo(cell5);
+        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Quantity" type="number" min="0.01" onfocusout="invoice.calcAll()" name="Quantity" value=' + quantity.toString() + '>').appendTo(cell6);
+        $('<input class="tabledit-input form-control form-control-sm input-sm text-right GrossAmount" type="number" name="GrossAmount" disabled value=' + grossAmount.toFixed(2) + '>').appendTo(cell7);
+        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Discount" type="number" data-isDiscountable="' + isDiscountable + '" ' + discountDisabled + ' min="0" ' + discountLimit + ' onfocusout="invoice.calcTotal(this)" name="Discount" data-original-percent="' + discount.toFixed(2) + '" data-original-value="' + discount.toFixed(2) + '" value=' + discount.toFixed(2) + '>').appendTo(cell8);
+        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Tax" data-isVatable="' + isVatable + '" type="number" name="Tax" disabled value=' + tax.toFixed(2) + '>').appendTo(cell9);
+        $('<input class="tabledit-input form-control form-control-sm input-sm text-right NetAmount" type="number" name="NetAmount" disabled value=' + netAmount.toFixed(2) + '>').appendTo(cell10);
 
         $('<botton onclick="invoice.delete_row(this);" class="btn btn-sm btn-danger"><i class="fa fa-times fa-sm"></i></botton>').appendTo(cell11);
 
@@ -651,6 +660,7 @@ const invoice = (function () {
         window.location.href = window.location.origin + "/SalesInvoice/Index/" + invoiceId.trim() + "?M=" + membershipId.trim();
     };
     let loadPausedTransactionData = (data) => {
+        debugger;
         if (getUrlParameters() !== 0 && salesInvoiceTmpData.SalesInvoiceItems !== null) {
             getItemReferenceData(function () {
 
@@ -818,7 +828,7 @@ const invoice = (function () {
     };
     let calcDiscountLine = (selectedItem, quantity, itemCode) => {
 
-        debugger;
+
         //variables
         var todayDate = new Date();
         var membershipNumber = $("#membershipId").val();
@@ -850,7 +860,7 @@ const invoice = (function () {
         });
 
 
-        debugger;
+
         //2) filter by time
         var filterByTime = _.filter(filterByDate, function (x) {
             var conditions = (moment(todayDate).format("HH:mm:ss") >= moment(x.discountStartTime)._i && moment(todayDate).format("HH:mm:ss") <= moment(x.discountEndTime)._i) ||
@@ -1104,30 +1114,41 @@ const invoice = (function () {
         return rate;
 
     };
-    let calcTotal = (from) => {
+    let calcRateFromCommission = (rate) => {
+        var commissionPercent = $("#commissionPercent").val() || "0";
+        if (parseFloat(commissionPercent) > 0) {
+            commissionPercent = parseFloat($("#commissionPercent").val());
+            var commissionedRate = rate + rate * commissionPercent / 100;
 
+            return commissionedRate;
+        }
+        else
+            return rate;
+
+    };
+    let calcTotal = (from) => {
         var totalGrossAmount = 0, totalNetAmount = 0, totalQuantity = 0, totalDiscount = 0, totalTax = 0, totalTaxableAmount = 0, totalNonTaxableAmount = 0, totalDiscountExcVat = 0;
 
         if (table.rows.length > 0) {
             $.each(table.rows, function (i, v) {
 
-                debugger;
+
                 //variables
                 let transType = $("#Trans_Type").val();
                 let itemCode = $(this).find(".itemName").attr("data-item-code").toString();
                 let taxable = $(this).find(".Tax").data("isvatable");
-                let discountable = $(this).find(".Discount").data("isdiscountable");                
+                let discountable = $(this).find(".Discount").data("isdiscountable");
                 let netAmount = 0;
-                debugger;
+
                 //calculations     
                 // 1. calc quantity
                 var quantity = parseFloat($(this).find(".Quantity").val());
                 // 2. calc tax include Rate
-                var rateIncludeTax = calcRate(itemCode, quantity, $(this));
+                var rateIncludeTax = calcRate(itemCode, quantity, $(this));               
                 // 3. calc unit tax
                 var tax = calculateReverseTax(rateIncludeTax, taxPercent, taxable);
                 // 4. calc tax exclude rate
-                var rateExcludeTax = rateIncludeTax - tax;
+                var rateExcludeTax = rateIncludeTax - tax;                
                 // 5. calc rate
                 var rate = transType === "Tax" ? rateExcludeTax : rateIncludeTax;
                 // 5. calc discount
@@ -1231,7 +1252,7 @@ const invoice = (function () {
         $("#TaxableAmount").val(CurrencyFormat(totalTaxableAmount.toFixed(2)));
     };
     let calcNetTotalsOnly = () => {
-        let totalQuantity = 0, totalGrossAmount = 0, totalDiscount = 0, totalTax, totalNetAmount = 0;
+        let totalQuantity = 0, totalGrossAmount = 0, totalDiscount = 0, totalTax = 0, totalNetAmount = 0;
         $.each(table.rows, function (i, v) {
             let quantity = parseFloat($(this).find(".Quantity").val()),
                 grossAmount = parseFloat($(this).find(".GrossAmount").val()),
@@ -1247,6 +1268,38 @@ const invoice = (function () {
             ///update netamount first    
 
             $(this).find(".NetAmount").val(netAmount.toFixed(2));
+
+        });
+        //assign total
+        $("#totalQuantity").text(CurrencyFormat(totalQuantity));
+        $("#totalGrossAmount").text(CurrencyFormat(totalGrossAmount));
+        $("#totalDiscount").text(CurrencyFormat(totalDiscount));
+        $("#totalTax").text(CurrencyFormat(totalTax));
+        $("#totalNetAmount").text(CurrencyFormat(totalNetAmount));
+
+
+
+    };
+    let calcNetTotalAfterCommission = () => {
+        let totalQuantity = 0, totalGrossAmount = 0, totalDiscount = 0, totalTax = 0, totalNetAmount = 0;
+        $.each(table.rows, function (i, v) {
+            let rate = parseFloat($(this).find(".Rate").val()),
+                quantity = parseFloat($(this).find(".Quantity").val()),
+                grossAmount = rate * quantity,
+                discount = parseFloat($(this).find(".Discount").val()),
+                taxable = $(this).find(".Tax").data("isvatable"),
+                tax = calculateTax(rate,taxPercent, taxable) * quantity;
+            let netAmount = grossAmount - discount + tax;
+            totalQuantity += quantity;
+            totalGrossAmount += grossAmount;
+            totalDiscount += discount;
+            totalTax += tax;
+            totalNetAmount += netAmount;
+
+            ///update netamount first    
+            $(this).find(".GrossAmount").val(grossAmount.toFixed(2));
+            $(this).find(".NetAmount").val(netAmount.toFixed(2));
+            $(this).find(".Tax").val(tax.toFixed(2));
 
         });
         //assign total
@@ -1362,15 +1415,16 @@ const invoice = (function () {
                 $(this).find(".Rate").data("original-rate", commissionedRate.toFixed(2));
                 $(this).find(".Rate").data("rate-before-commission", rate);
 
+
             });
-            calcTotal();
+            calcNetTotalAfterCommission();
         }
         e.preventDefault(); e.stopPropagation();
     };
     let calcAll = () => {
-       
+
         calculateSN();
-        calcTotal();
+        //calcTotal();
         updateFlatDiscount();
         updateSalesTax();
         adjustTableWidth();
@@ -1381,61 +1435,57 @@ const invoice = (function () {
         if (!_.isEmpty(getUrlParameters())) {
             var id = getUrlParameters();
             var mode = GetUrlParameters("mode");
-            bootbox.confirm({
-                message: "Do you want to cancel this transaction?",
-                buttons: {
-                    confirm: {
-                        label: 'Yes',
-                        className: 'btn-success'
-                    },
-                    cancel: {
-                        label: 'No',
-                        className: 'btn-danger'
-                    }
-                },
-                callback: function (result) {
-                    if (result) {
-                        if (mode === "tax")
-                            window.location.href = window.location.origin + "/SalesInvoice/Landing?mode=tax";
-                        else
-                            window.location.href = window.location.origin + "/SalesInvoice/Landing";
-                    }
-                }
-            });
+
             if (table.rows.length > 0) {
-                //bootbox.confirm({
-                //    message: "Do you want to cancel this transaction?",
-                //    buttons: {
-                //        confirm: {
-                //            label: 'Yes',
-                //            className: 'btn-success'
-                //        },
-                //        cancel: {
-                //            label: 'No',
-                //            className: 'btn-danger'
-                //        }
-                //    },
-                //    callback: function (result) {
-                //        if (result) {
-                //            if (mode === "tax")
-                //                window.location.href = window.location.origin + "/SalesInvoice/Landing?mode=tax";
-                //            else
-                //                window.location.href = window.location.origin + "/SalesInvoice/Landing";
-                //        }
-                //    }
-                //});
+                bootbox.confirm({
+                    message: "Do you want to cancel this transaction?",
+                    buttons: {
+                        confirm: {
+                            label: 'Yes',
+                            className: 'btn-success'
+                        },
+                        cancel: {
+                            label: 'No',
+                            className: 'btn-danger'
+                        }
+                    },
+                    callback: function (result) {
+                        if (result) {
+                            if (mode === "tax")
+                                window.location.href = window.location.origin + "/SalesInvoice/Landing?mode=tax";
+                            else
+                                window.location.href = window.location.origin + "/SalesInvoice/Landing";
+                        }
+                    }
+                }).one("shown.bs.modal", function () {
+                    //temporary paused the shortcut events
+                    Mousetrap.pause();
+                }).one("hide.bs.modal", function () {
+                    // allow Mousetrap events to fire again
+                    Mousetrap.unpause();
+
+                });
             }
-            //} else {
-            //    if (mode === "tax")
-            //        window.location.href = window.location.origin + "/SalesInvoice/Landing?mode=tax";
-            //    else
-            //        window.location.href = window.location.origin + "/SalesInvoice/Landing";
-            //}
-            
-           
+
+            else {
+                if (mode === "tax")
+                    window.location.href = window.location.origin + "/SalesInvoice/Landing?mode=tax";
+                else
+                    window.location.href = window.location.origin + "/SalesInvoice/Landing";
+            }
+        }
+
+
+    };
+    let quantityKeyPress = (event) => {
+
+        var x = event.charCode || event.keyCode;  // Get the Unicode value
+        if (x === 13 || x === 9) {
+            calcAll();
         }
     };
     let customerPanelToggle = (evt) => {
+        debugger;
         if (evt !== undefined) {
             evt.preventDefault(); evt.stopPropagation();
         }
@@ -1443,84 +1493,117 @@ const invoice = (function () {
             $("fieldset").toggleClass("bill_to_background_color");
             $("#customer_icon_toggle").toggleClass("fa-chevron-down");
         });
+        if ($(".bill_to_info_div").is(":visible") == false) {
+            $("#item_code").focus();
+        } else {
+            $("#Customer_Vat").focus();
+        }
+
     };
     let loadCustomer = (callback) => {
-        //initialize customer dropdown
-        // var customerList = localStorage.getItem("customerList");
-        $(".theme-loader").show();
-        $("#item_code").attr("disabled", true);
-        var membershipNumber = GetUrlParameters("M");
-        var getMembershipUrlBase = window.location.origin + "/Customer/";
-        var getMembershipUrl = getMembershipUrlBase + "GetMembershipByNumber?MembershipNumber=" + membershipNumber;
-        var loadedAll = false;
-        var dataSource = new kendo.data.DataSource({
-            transport: {
-                read: function (options) {
-
-
-                    if (options.data !== undefined && options.data.filter !== undefined && options.data.filter.filters.length > 0) {
-                        getMembershipUrl = getMembershipUrlBase + "GetMembership?text=" + options.data.filter.filters[0].value;
+        debugger;
+        $.ajax({
+            method: "POST",
+            url: window.location.origin + "/Customer/GetCustomerByNumber?MembershipNumber=" + GetUrlParameters("M"),
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            complete: function (result) {
+                debugger;
+                if (result.status === 200) {
+                    if (result.responseJSON.length > 0) {
+                        customerList = result.responseJSON;
+                        $("#Customer_Id").val(result.responseJSON[0].name);
+                        $("#Customer_Id").trigger("change");
+                        if (callback !== undefined)
+                            callback();
                     }
-                    else if (loadedAll) {
-                        getMembershipUrl = getMembershipUrlBase + "GetMembership";
-                    }
-                    $.ajax({
-                        type: 'GET',
-                        url: getMembershipUrl + "",
-                        contentType: 'application/json; charset=utf-8',
-                        dataType: 'json',
-                        complete: function (data) {
-
-                            if (data.status === 200) {
-                                customerList = data.responseJSON;
-
-                                options.success(data.responseJSON);
-
-                                if (loadedAll === false) {
-                                    loadedAll = true;
-
-                                    getMembershipUrl = getMembershipUrlBase + "/GetMembership";
-                                    //dataSource.fetch();
-                                    var customerMultiselect = $("#Customer_Id").data("kendoComboBox");
-                                    customerMultiselect.input.attr("readonly", true);
-                                    //customerMultiselect.input.attr("disabled", "disabled");
-                                    $(".k-icon").remove();
-                                    customerMultiselect.setDataSource(dataSource);
-                                    customerMultiselect.dataSource.options.serverFiltering = true;
-                                    // customerMultiselect.dataSource.read();
-
-
-                                    callback();
-                                }
-                            }
-                            else {
-                                options.error(data.responseJSON);
-                            }
-
-                        }
-                    });
                 }
-            },
-            //serverFiltering:true
-        });
-        $("#Customer_Id").kendoComboBox({
-            dataSource: dataSource,
-            dataTextField: "name",
-            dataValueField: "membership_Number",
-            filter: "contains",
-            suggest: true,
-            index: 1,
-            dataBound: function () {
-                $(".theme-loader").hide();
-                $("#item_code").attr("disabled", false);
-                $("#membershipId").trigger("change");
-
-
+                $("#Customer_Id").attr("readonly", true);
             }
         });
+
+
+
+
+        //initialize customer dropdown
+        // var customerList = localStorage.getItem("customerList");
+        //$(".theme-loader").show();
+        //$("#item_code").attr("disabled", true);
+        //var membershipNumber = GetUrlParameters("M");
+        //var getMembershipUrlBase = window.location.origin + "/Customer/";
+        //var getMembershipUrl = getMembershipUrlBase + "GetMembershipByNumber?MembershipNumber=" + membershipNumber;
+        //var loadedAll = false;
+        //var dataSource = new kendo.data.DataSource({
+        //    transport: {
+        //        read: function (options) {
+
+
+        //            if (options.data !== undefined && options.data.filter !== undefined && options.data.filter.filters.length > 0) {
+        //                getMembershipUrl = getMembershipUrlBase + "GetMembership?text=" + options.data.filter.filters[0].value;
+        //            }
+        //            else if (loadedAll) {
+        //                getMembershipUrl = getMembershipUrlBase + "GetMembership";
+        //            }
+        //            $.ajax({
+        //                type: 'GET',
+        //                url: getMembershipUrl + "",
+        //                contentType: 'application/json; charset=utf-8',
+        //                dataType: 'json',
+        //                complete: function (data) {
+
+        //                    if (data.status === 200) {
+        //                        customerList = data.responseJSON;
+
+        //                        options.success(data.responseJSON);
+
+        //                        if (loadedAll === false) {
+        //                            loadedAll = true;
+
+        //                            getMembershipUrl = getMembershipUrlBase + "/GetMembership";
+        //                            //dataSource.fetch();
+        //                            var customerMultiselect = $("#Customer_Id").data("kendoComboBox");
+
+        //                            customerMultiselect.input.attr("readonly", true);
+        //                            //customerMultiselect.input.attr("disabled", "disabled");
+        //                            $(".k-icon").remove();
+        //                            customerMultiselect.setDataSource(dataSource);
+        //                            customerMultiselect.dataSource.options.serverFiltering = true;
+        //                            // customerMultiselect.dataSource.read();
+
+
+        //                            callback();
+        //                        }
+        //                    }
+        //                    else {
+        //                        options.error(data.responseJSON);
+        //                    }
+
+        //                }
+        //            });
+        //        }
+        //    },
+        //    //serverFiltering:true
+        //});
+        //$("#Customer_Id").kendoComboBox({
+        //    dataSource: dataSource,
+        //    dataTextField: "name",
+        //    dataValueField: "membership_Number",
+        //    filter: "contains",
+        //    suggest: true,
+        //    index: 1,
+        //    dataBound: function () {
+        //        $(".theme-loader").hide();
+        //        $("#item_code").attr("disabled", false);
+        //        $("#membershipId").trigger("change");
+
+
+        //    }
+        //});
     };
     let updatePageWithRespectToPermission = (Callback) => {
+        debugger;
         getPermissions((data) => {
+            debugger;
             //for flat discount Right
             if (data.roleWiseUserPermission.sales_Discount_Flat_Item) {
                 $("#flat_discount").data("data-max", data.roleWiseUserPermission.sales_Discount_Flat_Item_Limit);
@@ -1540,41 +1623,41 @@ const invoice = (function () {
             permission.salesDiscountItemwise = data.roleWiseUserPermission.sales_Discount_Line_Item;
             permission.salesDiscountItemLimit = data.roleWiseUserPermission.sales_Discount_Flat_Item_Limit;
             permission.salesRateEditRight = data.roleWiseUserPermission.sales_Rate_Edit;
-
+            debugger;
             if (Callback !== undefined)
                 Callback();
         });
     };
     let membershipIdChangeEvent = (evt) => {
-        evt.preventDefault(); evt.stopPropagation();
+        //evt.preventDefault(); evt.stopPropagation();
 
-        let $mId = $("#membershipId").val();
-        if (_.isEmpty($mId) && $mId.length < 4)
-            return false;
-        //search through customer       
-        let customer = _.filter(customerList, (x) => { return x.membership_Number === $mId; })[0]; //donot update double equal
-        var customerDropdown = $("#Customer_Id").data("kendoComboBox");
+        //let $mId = $("#membershipId").val();
+        //if (_.isEmpty($mId) && $mId.length < 4)
+        //    return false;
+        ////search through customer       
+        //let customer = _.filter(customerList, (x) => { return x.membership_Number === $mId; })[0]; //donot update double equal
+        ////var customerDropdown = $("#Customer_Id").data("kendoComboBox");
 
-        if (customer !== undefined) {
-            customerDropdown.value(customer.membership_Number);
-            $("#Customer_Id").val(customer.membership_Number).trigger('change');
-        }
-        else {
-            customerDropdown.value('');
-            $("#Customer_Id").val("").trigger('change');
-        }
-        //focus on barcode
-        $("#item_code").focus();
+        //if (customer !== undefined) {
+        //   // customerDropdown.value(customer.membership_Number);
+        //    $("#Customer_Id").val(customer.name).trigger('change');
+        //}
+        //else {
+        //   // customerDropdown.value('');
+        //    $("#Customer_Id").val("").trigger('change');
+        //}
+        ////focus on barcode
+        //$("#item_code").focus();
 
 
     };
     let addNewMemberClickEvent = (evt) => {
-        evt.preventDefault();
-        customerPanelToggle();
-        $("#Customer_Id").val("").trigger("change");
-        $("#Customer_Id option[value='0']").remove();
-        $("#memberSaveButton").attr("disabled", false);
-        $("#memberSaveButtonSH").show();
+        evt.preventDefault(); evt.stopPropagation();
+        //customerPanelToggle();
+        //$("#Customer_Id").val("").trigger("change");
+        //$("#Customer_Id option[value='0']").remove();
+        //$("#memberSaveButton").attr("disabled", false);
+        //$("#memberSaveButtonSH").show();
     };
     let AssignKeyEvent = () => {
         //for barcode textbox focus
@@ -1672,6 +1755,7 @@ const invoice = (function () {
             changeSelectedRow("up");
         });
         Mousetrap.bindGlobal('esc', function () {
+            debugger;
             handleBackButtonEvent();
         });
 
@@ -1679,15 +1763,20 @@ const invoice = (function () {
         $('#Invoice_Number,#trans_date_ad,#trans_date_bs,#membershipId,#flat_discount,#Customer_Name,#Customer_Vat,#Customer_Mobile,#Customer_Address').on("keypress", function (e) {
             /* ENTER PRESSED*/
             if (e.keyCode == 13) {
-                /* FOCUS ELEMENT */
-                var inputs = $(this).parents("form").eq(0).find(":input:visible");
-                var idx = inputs.index(this);
+            /* FOCUS ELEMENT */
+                if (this.name == "Customer_Address") {
+                    customerPanelToggle();
+                }
+                else {
+                    var inputs = $(this).parents("form").eq(0).find(":input:visible");
+                    var idx = inputs.index(this);
 
-                if (idx == inputs.length - 1) {
-                    inputs[0].select()
-                } else {
-                    inputs[idx + 1].focus(); //  handles submit buttons
-                    inputs[idx + 1].select();
+                    if (idx == inputs.length - 1) {
+                        inputs[0].select()
+                    } else {
+                        inputs[idx + 1].focus(); //  handles submit buttons
+                        inputs[idx + 1].select();
+                    }
                 }
                 return false;
             }
@@ -1696,55 +1785,42 @@ const invoice = (function () {
 
     };
     let saveNewMemberClickEvent = (evt) => {
-        evt.preventDefault();
-        let $name = $("#Customer_Name").val();
-        let $mobile = $("#Customer_Mobile").val();
-        let $vat = $("#Customer_Vat").val();
-        let $address = $("#Customer_Address").val();
-        if (!_.isEmpty($name) && !_.isEmpty($mobile) && $mobile.length > 9) {
-            $("#membershipId").attr("readonly", true);
-            $("#Customer_Id").attr("readonly", true);
-            $("#Customer_Id").append($('<option>', {
-                value: "0",
-                text: $name,
-                "data-mobile": $mobile,
-                "data-vat": $vat,
-                "data-address": $address
-            })).val("0");
-            $("#isNewMember").val(true);
-            $("#memberSaveButton").attr("disabled", true);
-            customerPanelToggle();
+        //evt.preventDefault();
+        //let $name = $("#Customer_Name").val();
+        //let $mobile = $("#Customer_Mobile").val();
+        //let $vat = $("#Customer_Vat").val();
+        //let $address = $("#Customer_Address").val();
+        //if (!_.isEmpty($name) && !_.isEmpty($mobile) && $mobile.length > 7) {
 
+        //    //save to database async // if not save now also then it will save when save sales invoice
+        //    //CreateMembership
 
-            //save to database async // if not save now also then it will save when save sales invoice
-            //CreateMembership
+        //    var member = {
+        //        Name: $("#Customer_Name").val(),
+        //        Address: $("#Customer_Address").val(),
+        //        Vat: $("#Customer_Vat").val(),
+        //        Mobile1: $("#Customer_Mobile").val(),
+        //        Is_Member: true
+        //    };
 
-            var member = {
-                Name: $("#Customer_Name").val(),
-                Address: $("#Customer_Address").val(),
-                Vat: $("#Customer_Vat").val(),
-                Mobile1: $("#Customer_Mobile").val(),
-                Is_Member: true
-            };
+        //    $.ajax({
+        //        method: "POST",
+        //        url: "/Customer/CreateMembership",
+        //        data: JSON.stringify(member),
+        //        dataType: "json",
+        //        contentType: "application/json; charset=utf-8",
+        //        complete: function (result) {
+        //            if (result.status === 200) {
 
-            $.ajax({
-                method: "POST",
-                url: "/Customer/CreateMembership",
-                data: JSON.stringify(member),
-                dataType: "json",
-                contentType: "application/json; charset=utf-8",
-                complete: function (result) {
-                    if (result.status === 200) {
+        //                //update membership id
+        //                $("#membershipId").val(result.responseJSON.membership.membership_Number);
+        //                //update customer code 'new' to newly generated code
+        //                $("#Customer_Id option[value='0'").val(result.responseJSON.membership.code);
 
-                        //update membership id
-                        $("#membershipId").val(result.responseJSON.membership.membership_Number);
-                        //update customer code 'new' to newly generated code
-                        $("#Customer_Id option[value='0'").val(result.responseJSON.membership.code);
-
-                    }
-                }
-            });
-        }
+        //            }
+        //        }
+        //    });
+        //}
     };
     let SaveSalesInvoice = () => {
 
@@ -1907,12 +1983,13 @@ const invoice = (function () {
     });
     $("#customer_icon_toggle").on('click', customerPanelToggle);
     $("#Customer_Id").on('change', function (e) {
-        debugger;
-        e.preventDefault(); e.stopPropagation();
-        var selectedValue = $("#Customer_Id").data("kendoComboBox").value();
-        var selectedItem = _.filter(customerList, function (x) {
-            return x.membership_Number === selectedValue;
-        })[0];
+
+        //e.preventDefault(); e.stopPropagation();
+        //var selectedValue = $("#Customer_Id").data("kendoComboBox").value();
+        //var selectedItem = _.filter(customerList, function (x) {
+        //    return x.membership_Number === selectedValue;
+        //})[0];
+        var selectedItem = customerList[0];
         if (selectedItem) {
 
             $("#Customer_Name").val(selectedItem.name);
@@ -1926,7 +2003,7 @@ const invoice = (function () {
             $("#Customer_Vat").val("");
             $("#Customer_Mobile").val("");
         }
-        $("#memberSaveButtonSH").hide();
+        //$("#memberSaveButtonSH").hide();
 
     });
     $("input[name='flatDiscount'],#flat_discount").on('change', calcTotal);
@@ -1987,7 +2064,8 @@ const invoice = (function () {
         delete_row: delete_row,
         deleteInvoice: deleteInvoice,
         calcTotal: calcTotal,
-        calcAll
+        calcAll,
+        quantityKeyPress
     };
 
 

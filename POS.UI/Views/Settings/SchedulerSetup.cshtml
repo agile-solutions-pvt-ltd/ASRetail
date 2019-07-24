@@ -63,6 +63,7 @@
                                             <th width="70%">Type</th>
                                             <th width="20%">Interval (min)</th>
                                             <th width="10%"></th>
+                                            <th >Message</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -70,66 +71,79 @@
                                             <td>Store Info</td>
                                             <td> <input type="number" class="form-control form-control-sm interval interval-Store" value="@ViewBag.Scheduler.SchedulerDuration.Store" /></td>
                                             <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('StoreSync')" /></td>
+                                            <td>  @ViewBag.Scheduler.SyncLog.Store</td>
                                         </tr>
                                         <tr>
                                             <td>Customer</td>
                                             <td> <input type="number" class="form-control form-control-sm interval interval-Customer" value="@ViewBag.Scheduler.SchedulerDuration.Customer" /></td>
                                             <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('CustomerSync')" /></td>
+                                            <td>  @ViewBag.Scheduler.SyncLog.Customer</td>
                                         </tr>
                                         <tr>
                                             <td>Item Category</td>
                                             <td> <input type="number" class="form-control form-control-sm interval interval-ItemCategory" value="@ViewBag.Scheduler.SchedulerDuration.ItemCategory" /></td>
                                             <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('ItemCategorySync')" /></td>
+                                            <td>  @ViewBag.Scheduler.SyncLog.ItemCategory</td>
                                         </tr>
                                         <tr>
                                             <td>Produt Group</td>
                                             <td> <input type="number" class="form-control form-control-sm interval interval-ProductGroup" value="@ViewBag.Scheduler.SchedulerDuration.ProductGroup" /></td>
                                             <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('ProductGroupSync')" /></td>
+                                            <td>  @ViewBag.Scheduler.SyncLog.ProductGroup</td>
                                         </tr>
                                         <tr>
                                             <td>Items</td>
                                             <td> <input type="number" class="form-control form-control-sm interval interval-Items" value="@ViewBag.Scheduler.SchedulerDuration.Item" /></td>
                                             <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('ItemSync')" /></td>
+                                            <td>  @ViewBag.Scheduler.SyncLog.Item</td>
                                         </tr>
                                         <tr>
                                             <td>Item Price</td>
                                             <td> <input type="number" class="form-control form-control-sm interval interval-ItemPrice" value="@ViewBag.Scheduler.SchedulerDuration.ItemPrice" /></td>
                                             <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('ItemPriceSync')" /></td>
+                                            <td>  @ViewBag.Scheduler.SyncLog.ItemPrice</td>
                                         </tr>
                                         <tr>
                                             <td>Item Discount</td>
                                             <td> <input type="number" class="form-control form-control-sm interval interval-ItemDiscount" value="@ViewBag.Scheduler.SchedulerDuration.ItemDiscount" /></td>
                                             <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('ItemDiscountSync')" /></td>
+                                            <td>  @ViewBag.Scheduler.SyncLog.ItemDiscount</td>
                                         </tr>
                                         <tr>
                                             <td>Item BarCode</td>
                                             <td> <input type="number" class="form-control form-control-sm interval interval-ItemBarCode" value="@ViewBag.Scheduler.SchedulerDuration.ItemBarCode" /></td>
                                             <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('ItemBarCodeSync')" /></td>
+                                            <td>  @ViewBag.Scheduler.SyncLog.ItemBarCode</td>
                                         </tr>
                                         <tr>
                                             <td>Terminal</td>
                                             <td> <input type="number" class="form-control form-control-sm interval interval-Terminal" value="@ViewBag.Scheduler.SchedulerDuration.Terminal" /></td>
                                             <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('TerminalSync')" /></td>
+                                            <td>  @ViewBag.Scheduler.SyncLog.Terminal</td>
                                         </tr>
                                         <tr>
                                             <td>User</td>
                                             <td> <input type="number" class="form-control form-control-sm interval interval-User" value="@ViewBag.Scheduler.SchedulerDuration.User" /></td>
                                             <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('UserSync')" /></td>
+                                            <td>  @ViewBag.Scheduler.SyncLog.User</td>
                                         </tr>
                                         <tr>
                                             <td>UserRoles</td>
                                             <td> <input type="number" class="form-control form-control-sm interval interval-UserRoles" value="@ViewBag.Scheduler.SchedulerDuration.UserRole" /></td>
                                             <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('RoleSync')" /></td>
+                                            <td>  @ViewBag.Scheduler.SyncLog.UserRole</td>
                                         </tr>
                                         <tr>
                                             <td>Menu</td>
                                             <td> <input type="number" class="form-control form-control-sm interval interval-Menu" value="@ViewBag.Scheduler.SchedulerDuration.Menu" /></td>
                                             <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('MenuSync')" /></td>
+                                            <td>  @ViewBag.Scheduler.SyncLog.Menu</td>
                                         </tr>
                                         <tr>
                                             <td>Menu Permission</td>
                                             <td> <input type="number" class="form-control form-control-sm interval interval-MenuPermission" value="@ViewBag.Scheduler.SchedulerDuration.MenuPermission" /></td>
                                             <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('MenuPermissionSync')" /></td>
+                                            <td>  @ViewBag.Scheduler.SyncLog.MenuPermission</td>
                                         </tr>
 
                                     </tbody>

@@ -3,6 +3,14 @@
     ViewData["Title"] = "Landing";
 }
 <style>
+
+
+    
+    .search,.search:hover,.search:focus{
+         border: 2px solid #020202 !important;
+         border-radius:20px;
+    }
+
     .cinfo {
         font-size: xx-large;
     }
@@ -82,10 +90,10 @@
 
                                     <div class="br"></div>
                                     <div class="form-group input-group"style="margin-top:110px;">
-                                        <input type="search" class="form-control form-control-lg py-2 border-right-0 border search search-input" placeholder="Search Membership" />
-                                        <span class="input-group-append border-left-0 border p-2">
+                                        <input type="search" class="form-control form-control-lg  border search search-input" placeholder="Search Membership" />
+                                        @*<span class="input-group-append border-left-0 border p-2">
                                             <i class="input-group-text bg-transparent  search fa fa-search"></i>
-                                        </span>
+                                        </span>*@
                                     </div>
                                     <span class="text-danger" id="message"></span>
                                     <div class="br"></div>
@@ -151,7 +159,7 @@
      // var customerList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Customer));
     </script>
 
-    <script src="~/js/Page/InvoiceLanding.js"></script>
+    <script src="~/js/Page/InvoiceLanding.js" asp-append-version="true"></script>
 
 
 }

@@ -28,5 +28,12 @@ namespace POS.DTO
         public string Remarks { get; set; }
         public string VendorNumber { get; set; }
         public string DiscountGroup { get; set; }
+
+        public Item UpdateItemUsingNewVal(Item item)
+        {
+            var itemToReturn = new Item();
+            item.Code = itemToReturn.Code;
+            return itemToReturn;
+        }
     }
 }

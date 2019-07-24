@@ -3,33 +3,37 @@
 
     let maximumCharAllowInItemName = 9;
     //greycode printing initiliger
-    class Ws {
-        get newClientPromise() {
-            return new Promise((resolve, reject) => {
-                GetClientLocalIP(function (ip) {
+    //class Ws {
+    //    get newClientPromise() {
+    //        return new Promise((resolve, reject) => {
+    //            GetClientLocalIP(function (ip) {
+    //                debugger;
+    //                let wsClient;
+    //                if (location.protocol !== 'https:')
+    //                    wsClient = new WebSocket("wss://" + ip + ":90");
+    //                else
+    //                    wsClient = new WebSocket("ws://" + ip + ":90");
+    //                console.log(wsClient)
+    //                wsClient.onopen = () => {
+    //                    console.log("connected");
+    //                    resolve(wsClient);
+    //                };
+    //                wsClient.onerror = error => reject(error);
 
-                    let wsClient = new WebSocket("ws://" + ip + ":90");
-                    console.log(wsClient)
-                    wsClient.onopen = () => {
-                        console.log("connected");
-                        resolve(wsClient);
-                    };
-                    wsClient.onerror = error => reject(error);
-
-                });
-            })
-        }
-        get clientPromise() {
-            if (!this.promise) {
-                this.promise = this.newClientPromise
-            }
-            return this.promise;
-        }
-    }
+    //            });
+    //        })
+    //    }
+    //    get clientPromise() {
+    //        if (!this.promise) {
+    //            this.promise = this.newClientPromise
+    //        }
+    //        return this.promise;
+    //    }
+    //}
 
     //********* Private Methos *****************//
     let init = () => {
-
+       
         
     };
 
@@ -41,8 +45,8 @@
 
             if (data.copy !== undefined) {
                 //print double
-                PrintTaxInvoice(data, callback);
-                PrintTaxInvoice(data, callback);
+                PrintTaxInvoiceBrowser(data, callback);
+                PrintTaxInvoiceBrowser(data, callback);
             }
             else {
                 //print single
@@ -205,80 +209,7 @@
         var finalBill = header + itemHeader + item + itemTotal + footer;
 
         printwsBill(finalBill, callback, data, PrintTaxInvoiceBrowser);
-        //$.ajax({
-        //    url: window.location.origin + "/Print/TaxInvoice",
-        //    type: 'GET',
-        //    complete: function (result) {
-        //        if (result.status === 200) {
-
-        //            let printText = $(result.responseText).find("#printbody").html();
-        //            //replace all variables  
-
-        //            var paymentMode = _.pluck(data.billData, "trans_Mode").join(", ");
-        //            if (paymentMode === "") {
-        //                paymentMode = data.paymentMode;
-        //            }
-
-        //            printText = printText.replace("{companyName}", data.storeData.companY_NAME || data.storeData.COMPANY_NAME);
-        //            printText = printText.replace("{storeLocation}", data.storeData.address || data.storeData.ADDRESS);
-        //            printText = printText.replace("{vatNumber}", data.storeData.vat || data.storeData.VAT);
-        //            printText = printText.replace("{invoiceType}", (data.copy !== undefined && data.copy.printCount >= 1) ? "INVOICE" : "TAX INVOICE");
-        //            printText = printText.replace("{copyName}", (data.copy !== undefined && data.copy.printCount > 1) ? "(COPY OF ORIGINAL) (" + (data.copy.printCount - 1).toString() + ")" : "");
-        //            printText = printText.replace("{billNumber}", data.invoiceData.invoice_Number);
-        //            printText = printText.replace("{dateAD}", FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)));
-        //            printText = printText.replace("{dateBS}", data.invoiceData.trans_Date_Bs);
-        //            printText = printText.replace(/{customerhide}/g, data.invoiceData.memberId === "POS" ? "display-none" : "");
-        //            printText = printText.replace(/{addresshide}/g, _.isEmpty(data.invoiceData.customer_Address) ? "display-none" : "");
-        //            printText = printText.replace(/{mobilehide}/g, _.isEmpty(data.invoiceData.customer_Mobile) ? "display-none" : "");
-        //            printText = printText.replace("{billToName}", data.invoiceData.customer_Name);
-        //            printText = printText.replace("{billToAddress}", data.invoiceData.customer_Address);
-        //            printText = printText.replace("{billToMobile}", data.invoiceData.customer_Mobile);
-        //            printText = printText.replace("{paymentMode}", paymentMode);
-        //            printText = printText.replace("{totalGrossAmount}", parseFloat(data.invoiceData.total_Gross_Amount).toFixed(2));
-        //            printText = printText.replace("{promoDiscount}", parseFloat(data.invoiceData.promoDiscount).toFixed(2));
-        //            printText = printText.replace("{loyaltyDiscount}", parseFloat(data.invoiceData.membershipDiscount).toFixed(2));
-        //            printText = printText.replace("{totalSaving}", parseFloat(data.invoiceData.total_Discount).toFixed(2));
-        //            printText = printText.replace("{totalNetAmount}", parseFloat(data.invoiceData.total_Payable_Amount).toFixed(2));
-        //            printText = printText.replace("{tenderAmount}", parseFloat(data.invoiceData.tender_Amount).toFixed(2));
-        //            printText = printText.replace("{changeAmount}", parseFloat(data.invoiceData.change_Amount).toFixed(2));
-        //            printText = printText.replace("{totalQuantity}", parseFloat(data.invoiceData.total_Quantity).toFixed(2));
-        //            printText = printText.replace("{totalTaxableAmount}", parseFloat(data.invoiceData.taxableAmount).toFixed(2));
-        //            printText = printText.replace("{totalNonTaxableAmount}", parseFloat(data.invoiceData.nonTaxableAmount).toFixed(2));
-        //            printText = printText.replace("{totalVat}", parseFloat(data.invoiceData.total_Vat).toFixed(2));
-        //            printText = printText.replace("{terminalName}", data.invoiceData.terminal);
-        //            printText = printText.replace("{transTime}", FormatForDisplayTime(data.invoiceData.trans_Time));
-        //            printText = printText.replace("{cashierName}", data.invoiceData.created_By);
-
-        //            //get items template
-        //            let printItemTemplateOld = $(result.responseText).find("#items").html();
-        //            let printItems = "";
-        //            _.each(data.invoiceData.salesInvoiceItems, function (v, k) {
-        //                var printItemTemplate = printItemTemplateOld;
-        //                printItemTemplate = printItemTemplate.replace("{ItemSN}", (k + 1).toString());
-        //                printItemTemplate = printItemTemplate.replace("{ItemName}", v.name.substring(0, maximumCharAllowInItemName));
-        //                printItemTemplate = printItemTemplate.replace("{ItemQuantity}", parseFloat(v.quantity).toFixed(2));
-        //                printItemTemplate = printItemTemplate.replace("{ItemRate}", parseFloat(v.rate).toFixed(2));
-        //                printItemTemplate = printItemTemplate.replace("{ItemPromoDiscount}", parseFloat(v.promoDiscount).toFixed(2));
-        //                printItemTemplate = printItemTemplate.replace("{ItemTotal}", parseFloat(v.gross_Amount).toFixed(2));
-        //                printItems += printItemTemplate;
-        //            });
-
-
-        //            FinalPrint(printText, printItems, callback);
-
-        //            //update print count
-        //            $.ajax({
-        //                url: window.location.origin + "/Print/UpdatePrintCount?invoiceNumber=" + data.invoiceData.invoice_Number,
-        //                type: 'POST',
-        //                complete: function (result) {
-        //                }
-        //            });
-        //        }
-
-        //        //if (callback !== undefined)
-        //        //    callback();
-        //    }
-        //});
+        
     };
     let PrintTaxInvoiceBrowser = (data, callback) => {  
         debugger;
@@ -494,131 +425,6 @@
 
         printwsBill(finalBill, callback);
 
-
-        //$.ajax({
-        //    url: window.location.origin + "/Print/SalesInvoice",
-        //    type: 'GET',
-        //    complete: function (result) {
-        //        if (result.status === 200) {
-        //            let printText = $(result.responseText).find("#printbody").html();
-        //            //replace all variables
-
-
-        //            var paymentMode = _.pluck(data.billData, "trans_Mode").join(", ");
-        //            if (paymentMode === "") {
-        //                paymentMode = data.paymentMode;
-        //            }
-
-        //            printText = printText.replace("{companyName}", data.storeData.companY_NAME || data.storeData.COMPANY_NAME);
-        //            printText = printText.replace("{storeLocation}", data.storeData.address || data.storeData.ADDRESS);
-        //            printText = printText.replace("{vatNumber}", data.storeData.vat || data.storeData.VAT);
-        //            printText = printText.replace("{invoiceType}", "ABBREVIATED TAX INVOICE");
-        //            printText = printText.replace("{copyName}", (data.copy === undefined || data.copy.printCount === 0) ? "" : "(COPY OF ORIGINAL)");
-        //            printText = printText.replace("{billNumber}", data.invoiceData.invoice_Number);
-        //            printText = printText.replace("{dateAD}", FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)));
-        //            printText = printText.replace("{dateBS}", data.invoiceData.trans_Date_Bs);
-        //            printText = printText.replace(/{customerhide}/g, data.invoiceData.memberId === "POS" ? "display-none" : "");
-        //            printText = printText.replace(/{addresshide}/g, _.isEmpty(data.invoiceData.customer_Address) ? "display-none" : "");
-        //            printText = printText.replace(/{mobilehide}/g, _.isEmpty(data.invoiceData.customer_Mobile) ? "display-none" : "");
-        //            printText = printText.replace("{billToName}", data.invoiceData.customer_Name);
-        //            printText = printText.replace("{billToAddress}", data.invoiceData.customer_Address);
-        //            printText = printText.replace("{billToMobile}", data.invoiceData.customer_Mobile);
-        //            printText = printText.replace("{paymentMode}", paymentMode);
-
-        //            printText = printText.replace("{totalGrossAmount}", parseFloat(data.invoiceData.total_Gross_Amount).toFixed(2));
-        //            printText = printText.replace("{promoDiscount}", parseFloat(data.invoiceData.promoDiscount).toFixed(2));
-        //            printText = printText.replace("{loyaltyDiscount}", parseFloat(data.invoiceData.membershipDiscount).toFixed(2));
-        //            printText = printText.replace("{totalSaving}", parseFloat(data.invoiceData.total_Discount).toFixed(2));
-        //            printText = printText.replace("{totalNetAmount}", parseFloat(data.invoiceData.total_Payable_Amount).toFixed(2));
-        //            printText = printText.replace("{tenderAmount}", parseFloat(data.invoiceData.tender_Amount).toFixed(2));
-        //            printText = printText.replace("{changeAmount}", parseFloat(data.invoiceData.change_Amount).toFixed(2));
-        //            printText = printText.replace("{totalQuantity}", parseFloat(data.invoiceData.total_Quantity).toFixed(2));
-        //            printText = printText.replace("{terminalName}", data.invoiceData.terminal);
-        //            printText = printText.replace("{transTime}", FormatForDisplayTime(data.invoiceData.trans_Time));
-        //            printText = printText.replace("{cashierName}", data.invoiceData.created_By);
-
-        //            //get items template
-        //            let printItemTemplateOld = $(result.responseText).find("#items").html();
-        //            let printItems = "";
-        //            var space = ' ';
-        //            var spaceMain = ' ';
-        //            var itemName = '';
-        //            var qty = '';
-        //            var rate = '';
-        //            var dis = '';
-        //            var amt = '';
-        //            _.each(data.invoiceData.salesInvoiceItems, function (v, k) {
-        //                itemName = v.name.substring(0, maximumCharAllowInItemName);
-        //                while (itemName.length < 12) {
-        //                    itemName = itemName + ' ';  //adds a space before the d
-        //                }
-        //                item += itemName;
-        //                qty = parseFloat(v.quantity).toFixed(2);
-        //                while (qty.length < 6) {
-        //                    qty = qty + ' ';  //adds a space before the d
-        //                }
-        //                item += qty;
-        //                rate = parseFloat(v.rate).toFixed(2);
-        //                while (rate.length < 9) {
-        //                    rate = rate + ' ';  //adds a space before the d
-        //                }
-        //                item += rate;
-        //                dis = parseFloat(v.promoDiscount).toFixed(2);
-        //                while (dis.length < 6) {
-        //                    dis = dis + ' ';  //adds a space before the d
-        //                }
-        //                item += dis;
-        //                amt = parseFloat(v.gross_Amount).toFixed(2);
-        //                while (amt.length < 9) {
-        //                    amt = amt + ' ';  //adds a space before the d
-        //                }
-        //                item += amt;
-        //                item += "      ";
-        //                item += "\r\n";
-        //                //var printItemTemplate = printItemTemplateOld;
-
-        //                //printItemTemplate = printItemTemplate.replace("{ItemSN}", (k + 1).toString());
-        //                //printItemTemplate = printItemTemplate.replace("{ItemName}", v.name.substring(0, maximumCharAllowInItemName));
-        //                //printItemTemplate = printItemTemplate.replace("{ItemQuantity}", parseFloat(v.quantity).toFixed(2));
-        //                //printItemTemplate = printItemTemplate.replace("{ItemRate}", parseFloat(v.rate).toFixed(2));
-        //                //printItemTemplate = printItemTemplate.replace("{ItemPromoDiscount}", parseFloat(v.promoDiscount).toFixed(2));
-        //                //printItemTemplate = printItemTemplate.replace("{ItemTotal}", parseFloat(v.gross_Amount).toFixed(2));
-        //                //printItems += printItemTemplate;
-        //            });
-
-
-        //            //printText = 
-        //            //printText = printText.replace("", "");
-        //            //printText = printText.replace("", "");
-        //            //printText = printText.replace("", "");
-        //            //printText = printText.replace("", "");
-        //            //printText = printText.replace("", "");
-        //            //printText = printText.replace("", "");
-        //            //printText = printText.replace("", "");
-        //            //printText = printText.replace("", "");
-        //            //printText = printText.replace("", "");
-        //            //printText = printText.replace("", "");
-        //            //printText = printText.replace("", "");
-
-
-
-
-        //            //FinalPrint(printText, printItems, callback);
-        //            console.log(finalBill);
-        //            printwsBill(finalBill, callback);
-        //            //update print count
-        //            $.ajax({
-        //                url: window.location.origin + "/Print/UpdatePrintCount?invoiceNumber=" + data.invoiceData.invoice_Number,
-        //                type: 'POST',
-        //                complete: function (result) {
-        //                }
-        //            });
-        //        }
-
-        //        //if (callback !== undefined)
-        //        //    callback();
-        //    }
-        //});
     };
     let PrintSalesInvoiceBrowser = (data, callback) => {
 
@@ -717,7 +523,7 @@
         });
     };
 
-    let printwsBill = (str, callback, data, errorcallback,) => {
+    let printwsBill = (str, callback, data, errorcallback, ) => {
         debugger;
         //var ws;
         //ws = new WebSocket('ws://127.0.0.1:90');
@@ -736,18 +542,27 @@
         //    if (errorcallback !== undefined)
         //        errorcallback(data, callback);
         //}
+        try {
+            window.wsSingleton = new Ws()
+            window.wsSingleton.clientPromise
+                .then(wsClient => {
+                    wsClient.send(str);
+                    //console.log('sended')
 
+                    if (callback !== undefined)
+                        callback();
+                })
+                .catch((error) => {
+                    if (errorcallback !== undefined)
+                        errorcallback();
+                });
+           
+           
+        } catch{
+            alert("error");
+        }
 
-        window.wsSingleton = new Ws()
-        window.wsSingleton.clientPromise
-            .then(wsClient => {
-                wsClient.send(str);
-                //console.log('sended')
-
-                if (callback !== undefined)
-                    callback();
-            })
-            .catch(error => alert(error))
+        
 
         //var ws;
         //ws = new WebSocket('ws://127.0.0.1:90');
@@ -1055,8 +870,6 @@
             }
         });
     };
-
-
     let FinalPrint = (printText, printItemText, callback) => {
 
         $(document.body).find(".main-body").append('<div id="tempprint" ></div>');

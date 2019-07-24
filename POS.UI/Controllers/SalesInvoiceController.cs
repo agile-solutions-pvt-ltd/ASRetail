@@ -65,14 +65,14 @@ namespace POS.UI.Controllers
 
             //for customer
             //display only ismember data later
-            IList<Customer> customers;
-            if (!_cache.TryGetValue("Customer", out customers))
-            {
-                // Key not in cache, so get data.
-                customers = _context.Customer.Where(x => x.Is_Member == true).ToList();
+            //IList<Customer> customers;
+            //if (!_cache.TryGetValue("Customer", out customers))
+            //{
+            //    // Key not in cache, so get data.
+            //    customers = _context.Customer.Where(x => x.Is_Member == true).ToList();
 
-                _cache.Set("Customer", customers);
-            }
+            //    _cache.Set("Customer", customers);
+            //}
             //ViewData["Customer"] = customers;
 
             return View(tmp);
@@ -228,7 +228,15 @@ namespace POS.UI.Controllers
         {
             var salesInvoiceTMP = _context.SalesInvoiceTmp.FirstOrDefault(x => x.Id == id);
             ViewBag.SalesInvoiceTemp = salesInvoiceTMP;
-            ViewData["Customer"] = _context.Customer.Where(x => x.Membership_Number == salesInvoiceTMP.MemberId);
+            IEnumerable<Customer> customers;
+            if (!_cache.TryGetValue("Customers", out customers))
+            {
+                // Key not in cache, so get data.
+                customers = _context.Customer;
+                //Donot save from here
+               // _cache.Set("Customers", customers);
+            }
+            ViewData["Customer"] = customers.Where(x => x.Membership_Number == salesInvoiceTMP.MemberId);
             return View();
         }
 
@@ -246,6 +254,16 @@ namespace POS.UI.Controllers
                 SalesInvoiceTmp salesInvoiceTmp = _context.SalesInvoiceTmp.FirstOrDefault(x => x.Id == model.salesInvoiceId);
                 if (salesInvoiceTmp == null)
                     return NotFound();
+
+
+                //using (var trans = _context.Database.BeginTransaction()) {
+                //    try
+                //    {
+                //    } catch (Exception ex)
+                //    {
+                //        trans.Rollback();
+                //    }
+                //};
 
                 //get store info
                 Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
@@ -566,7 +584,7 @@ namespace POS.UI.Controllers
 	   i.Is_Vatable,
 	   s.INITIAL as Location, s.CustomerPriceGroup as LocationwisePriceGroup
 FROM ITEM i
-left join ITEM_BARCODE b on i.Code = b.ItemCode
+left join ITEM_BARCODE b on i.Code = b.ItemCode AND b.IsActive = 1
 left join ITEM_QUANTITY q on i.Code = q.ItemCode
 left join ITEM_PRICE p on i.Code = p.ItemCode
 left join ITEM_DISCOUNT d on i.Code = d.ItemCode Or (d.ItemType = 'Item Disc. Group' and  d.ItemCode =  i.DiscountGroup)

@@ -78,21 +78,22 @@
 
         //});
 
-        $("#customer").kendoComboBox({
-            placeholder: "Select customer",
-            dataTextField: "name",
-            dataValueField: "membership_Number",
-            filter: "contains",
-            autoBind: false,
-            minLength: 3,
-            dataSource: {
-                type: "json",
-                serverFiltering: true,
-                transport: {
-                    read: {
-                        url: window.location.origin + "/Customer/GetCreditCustomerr"
+        
+
+        $.ajax({
+            method: "POST",
+            url: window.location.origin + "/Customer/GetCustomerByNumber?MembershipNumber=" + GetUrlParameters("M"),
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            complete: function (result) {
+                debugger;
+                if (result.status === 200) {
+                    if (result.responseJSON.length > 0) {
+                        customerList = result.responseJSON;
+                        $("#customer").val(result.responseJSON[0].name);
                     }
                 }
+                $("#customer").attr("readonly", true);
             }
         });
 
@@ -304,13 +305,14 @@
             return 0;
     };
     let customerChangeEvent = () => {
-        var customerDropdown = $("#customer").data("kendoComboBox");
-        var selectedItem = customerDropdown.dataItem();
+        //var customerDropdown = $("#customer").data("kendoComboBox");
+        //var selectedItem = customerDropdown.dataItem();
         
         //var selectedValue = $('#customer').find(":selected").val();
         //var selectedItem = _.filter(customerList, function (x) {
         //    return x.Code === selectedValue;
         //})[0];
+        var selectedItem = customerList[0];
         if (selectedItem) {
             $("#customerPan").text(selectedItem.vat);
             $("#customerAddress").text(selectedItem.address);
@@ -352,7 +354,7 @@
 
     let paymentMethodForWholesaleCustomer = () => {
        
-        if (customerList[0].CustomerPriceGroup === "WSP" || customerList[0].Type === "Credit") {
+        if (customerList[0].CustomerPriceGroup === "WSP" || customerList[0].customerPriceGroup === "WSP" || customerList[0].Type === "1" || customerList[0].type === "1") {
             $("#cash").remove();
             $("#card").remove();
             $("#creditNote").remove();
@@ -360,13 +362,15 @@
             //trigger credit
             $(".payment-mode-panel").hide();
             $("#credit-panel").show();
+            $("#customer").val(customerList[0].name);
+            customerChangeEvent();
 
             //select default customer           
             //make readonly
-            var customerMultiselect = $("#customer").data("kendoComboBox");
-            customerMultiselect.value(customerList[0].Membership_Number);
-            customerMultiselect.input.attr("readonly", true);
-            $(".k-icon.k-clear-value.k-i-close").remove();
+            //var customerMultiselect = $("#customer").data("kendoComboBox");
+            //customerMultiselect.value(customerList[0].Membership_Number);
+           // customerMultiselect.input.attr("readonly", true);
+           // $(".k-icon.k-clear-value.k-i-close").remove();
         }
     };
     let PaymentMethodClickEvent = (evt) => {
@@ -542,13 +546,13 @@
         }
     });
     $("#AddCreditButton").on('click', function () {
-        if ($("#customer :selected").val() === "") {
+        if ($("#customer").val() === "") {
             showErrorMessage("Please select credit account first !!");
             return false;
         }
 
         if ($("#creditAmount").val() !== "") {
-            addRow("Credit", $("#customer :selected").text(), $("#creditAmount").val());
+            addRow("Credit", $("#customer").text(), $("#creditAmount").val());
             clear();
         }
     });

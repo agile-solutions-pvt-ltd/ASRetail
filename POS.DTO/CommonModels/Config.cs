@@ -28,6 +28,7 @@ namespace POS.DTO
 
 
         public SchedulerDuration SchedulerDuration { get; set; }
+        public SyncLog SyncLog { get; set; }
 
         public Config()
         {
@@ -35,7 +36,7 @@ namespace POS.DTO
         }
     }
 
-  
+
 
     public class SchedulerDuration
     {
@@ -58,5 +59,26 @@ namespace POS.DTO
         public string Menu { get; set; }
         public string MenuPermission { get; set; }
 
+    }
+
+    public class SyncLog
+    {
+        public string Store { get; set; }
+        public string Customer { get; set; }
+        public string ItemCategory { get; set; }
+        public string ProductGroup { get; set; }
+        public string ItemType { get; set; }
+        public string Item { get; set; }
+        public string ItemPrice { get; set; }
+        public string ItemDiscount { get; set; }
+        public string ItemBarCode { get; set; }
+        public string Terminal { get; set; }
+
+        public string User { get; set; }
+        public string UserRole { get; set; }
+        public string UserPermission { get; set; }
+        public string Status { get; set; }
+        public string Menu { get; set; }
+        public string MenuPermission { get; set; }
     }
 }
