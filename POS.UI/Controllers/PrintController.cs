@@ -30,6 +30,11 @@ namespace POS.UI.Controllers
             return View();
         }
 
+        public IActionResult NewTaxInvoice()
+        {
+            return View();
+        }
+
         public IActionResult CreditNote()
         {
             return View();
