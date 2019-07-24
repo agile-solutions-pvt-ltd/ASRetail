@@ -1,4 +1,4 @@
-﻿@model IEnumerable<POS.DTO.Customer>
+﻿@*@model IEnumerable<POS.DTO.Customer>*@
 
 @{
     ViewData["Title"] = "Customer";
@@ -35,7 +35,7 @@
                         @*Your content here*@
 
                         <table id="grid" class="table table-striped">
-                            <thead>
+                            @*<thead>
                                 <tr>
 
                                     <th>
@@ -80,12 +80,12 @@
 
                                         <td>
                                             <a asp-action="Delete" asp-route-id="@item.Code">Details</a>
-                                            @*<a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                                                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>*@
+                                            //<a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                                            //<a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
                                         </td>
                                     </tr>
                                 }
-                            </tbody>
+                            </tbody>*@
                         </table>
                     </div>
                 </div>
@@ -95,7 +95,7 @@
 </div>
 
 @section Scripts {
-    <script>
+    @*<script>
         $(document).ready(function () {
             $("#grid").kendoGrid({
                 height: CalcGridHeight(),
@@ -130,6 +130,49 @@
             });
             $("#grid").data("kendoGrid").dataSource.pageSize(100);
             PageSlimScroll();
+        });
+    </script>*@
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#grid").kendoGrid({
+                height: CalcGridHeight(),
+                dataSource: {
+                    pageSize: 100,
+                    serverPaging: true,
+                    serverFiltering: true,
+                    serverSorting: true,
+                    transport: {
+                        read: {
+                            url: "/Customer/Index",
+                            dataType: "json",
+                            type: "POST"
+                        }
+                    },
+                    schema: {
+                        data: "data",
+                        total: "total"
+                    },
+                },
+                columns: [
+                    { field: "name", title: "Name" },
+                    { field: "address", title: "Address" },
+                    { field: "mobile1", title: "Mobile" },
+                    { field: "email", title: "Email" },
+                    { field: "vat", title: "Vat" },
+                    { title: "Details", template: `<a href="/Customer/Delete/#=code#"> Details </a>` }
+                ],
+                pageable: {
+                    messages: {
+                        empty: "No items to display"
+                    },
+                    refresh: true,
+                    pageSizes: [5, 10, 25, 50, 100],
+                    buttonCount: 5
+                },
+                filterable: true,
+                sortable: true,
+            });
         });
     </script>
 }

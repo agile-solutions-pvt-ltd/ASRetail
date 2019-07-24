@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using POS.Core;
 using POS.DTO;
+using POS.UI.Models;
 using POS.UI.Sync;
 using System;
 using System.Collections.Generic;
@@ -29,9 +30,140 @@ namespace POS.UI.Controllers
 
 
         // GET: Customer
-        public async Task<IActionResult> Index()
+        //public async Task<IActionResult> Index()
+        //{
+        //    return View(await _context.Customer.ToListAsync());
+        //}
+
+        public IActionResult Index()
         {
-            return View(await _context.Customer.ToListAsync());
+            return View();
+        }
+        
+        [HttpPost]
+        public async Task<IActionResult> Index(int pageSize, int skip, Filter filter, IEnumerable<Sort> sort)
+        {
+            //var customers = _context.Customer;
+            //var totalCustomers = customers.Count();
+            //var customersList = await customers.OrderBy(x => x.Name).Skip(skip).Take(pageSize).ToListAsync();
+
+            var newSort = sort.ToList();
+            if (!newSort.Any())
+            {
+                newSort.Add(new Sort { Field = "name", Dir = "asc" });
+            }
+
+            var customers = _context.Customer;
+            var customersList = new List<Customer>();
+
+            //Sorting by column names.
+            var sortValue = newSort.FirstOrDefault();
+            if(sortValue.Field == "name")
+            {
+                if(sortValue.Dir == "asc")
+                {
+                    customersList = await _context.Customer
+                        .OrderBy(x => x.Name)
+                        .Skip(skip)
+                        .Take(pageSize)
+                        .ToListAsync();
+                }
+                else
+                {
+                    customersList = await _context.Customer
+                        .OrderByDescending(x => x.Name)
+                        .Skip(skip)
+                        .Take(pageSize)
+                        .ToListAsync();
+                }
+            }
+            else if(sortValue.Field == "address")
+            {
+                if (sortValue.Dir == "asc")
+                {
+                    customersList = await _context.Customer
+                        .OrderBy(x => x.Address)
+                        .Skip(skip)
+                        .Take(pageSize)
+                        .ToListAsync();
+                }
+                else
+                {
+                    customersList = await _context.Customer
+                        .OrderByDescending(x => x.Address)
+                        .Skip(skip)
+                        .Take(pageSize)
+                        .ToListAsync();
+                }
+            }
+            else if (sortValue.Field == "mobile1")
+            {
+                if (sortValue.Dir == "asc")
+                {
+                    customersList = await _context.Customer
+                        .OrderBy(x => x.Mobile1)
+                        .Skip(skip)
+                        .Take(pageSize)
+                        .ToListAsync();
+                }
+                else
+                {
+                    customersList = await _context.Customer
+                        .OrderByDescending(x => x.Mobile1)
+                        .Skip(skip)
+                        .Take(pageSize)
+                        .ToListAsync();
+                }
+            }
+            else if (sortValue.Field == "email")
+            {
+                if (sortValue.Dir == "asc")
+                {
+                    customersList = await _context.Customer
+                        .OrderBy(x => x.Email)
+                        .Skip(skip)
+                        .Take(pageSize)
+                        .ToListAsync();
+                }
+                else
+                {
+                    customersList = await _context.Customer
+                        .OrderByDescending(x => x.Email)
+                        .Skip(skip)
+                        .Take(pageSize)
+                        .ToListAsync();
+                }
+            }
+            else if (sortValue.Field == "vat")
+            {
+                if (sortValue.Dir == "asc")
+                {
+                    customersList = await _context.Customer
+                        .OrderBy(x => x.Vat)
+                        .Skip(skip)
+                        .Take(pageSize)
+                        .ToListAsync();
+                }
+                else
+                {
+                    customersList = await _context.Customer
+                        .OrderByDescending(x => x.Vat)
+                        .Skip(skip)
+                        .Take(pageSize)
+                        .ToListAsync();
+                }
+            }
+            else
+            {
+                customersList = await _context.Customer
+                    .Skip(skip)
+                    .Take(pageSize)
+                    .ToListAsync();
+            }
+
+            int total = customers.Count();
+
+            return Json(new { total = total, data = customersList });
         }
 
         // GET: Customer/Details/5
