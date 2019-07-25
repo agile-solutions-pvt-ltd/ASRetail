@@ -127,7 +127,7 @@ namespace POS.UI.Controllers
         {
             DateTime _startDate = startdate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month,DateTime.Now.Day);
             DateTime _endDate = enddate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
-            var salesInvoiceAggregateList = _context.SpSalesInvoiceAggregateGet.FromSql($"SpSalesInvoiceAggregateGet").Where(x=>x.Trans_Date_AD>=_startDate && x.Trans_Date_AD<=_endDate);
+            IQueryable<SpSalesInvoiceAggregateGet> salesInvoiceAggregateList = _context.SpSalesInvoiceAggregateGet.FromSql($"SpSalesInvoiceAggregateGet").Where(x=>x.Trans_Date_AD>=_startDate && x.Trans_Date_AD<=_endDate);
             return Ok(salesInvoiceAggregateList);
         }
         //Niroj End

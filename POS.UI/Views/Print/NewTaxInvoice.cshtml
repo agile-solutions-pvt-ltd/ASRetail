@@ -44,36 +44,35 @@
 
         /*for item table */
         .col-sm-sn {
-            max-width: 10%;
-            flex: 0 0 10%;
+            max-width: 6%;
+            flex: 0 0 6%;
             padding-left: 15px;
-            display: none;
         }
 
         .col-sm-particulars {
             padding-left: 15px;
-            max-width: 30%;
-            flex: 0 0 30%;
+            max-width: 50%;
+            flex: 0 0 50%;
         }
 
         .col-sm-qty {
-            max-width: 12%;
-            flex: 0 0 12%;
+            max-width: 10%;
+            flex: 0 0 10%;
         }
 
         .col-sm-rate {
-            max-width: 18%;
-            flex: 0 0 18%;
+            max-width: 13%;
+            flex: 0 0 13%;
         }
 
         .col-sm-promo-disc {
-            max-width: 18%;
-            flex: 0 0 18%;
+            max-width: 6%;
+            flex: 0 0 6%;
         }
 
         .col-sm-total {
-            max-width: 18%;
-            flex: 0 0 18%;
+            max-width: 15%;
+            flex: 0 0 15%;
         }
 
         .total-quantity {
@@ -95,7 +94,7 @@
         <div class="row">
             <div class="col-sm-12">
                 <div class="make-center font-store">
-                    {companyName}
+                    <b>{companyName}</b>
                 </div>
 
                 <div class="make-center">
@@ -103,11 +102,11 @@
                 </div>
 
                 <div class="make-center">
-                    VAT No: {vatNumber}
+                    <b>VAT No: {vatNumber}</b>
                 </div>
 
                 <div class="make-center">
-                    {invoiceType}
+                    <b>{invoiceType}</b>
                 </div>
 
                 <div class="make-center">
@@ -129,7 +128,7 @@
                 </div>
 
                 <div class="col-sm-4">
-                    : {billNumber}
+                    : <b>{billNumber}</b>
                 </div>
 
                 <div class="col-sm-2">
@@ -141,21 +140,13 @@
                 </div>
             </div>
 
-            <div class="row pb-1">
-                <div class="col-sm-2 {customerhide}">
-                    Bill To
+            <div class="row pb-1 {customerhide}">
+                <div class="col-sm-2">
+                    Buyer Name
                 </div>
 
-                <div class="col-sm-4 {customerhide}">
+                <div class="col-sm-9">
                     : {billToName}
-                </div>
-
-                <div class="col-sm-2 {billToVatHide}">
-                    Vat
-                </div>
-
-                <div class="col-sm-4 {billToVatHide}">
-                    : {billToVat}
                 </div>
             </div>
 
@@ -178,6 +169,14 @@
             </div>
 
             <div class="row pb-1">
+                <div class="col-sm-2 {billToVatHide}">
+                    Buyer's Vat
+                </div>
+
+                <div class="col-sm-4 {billToVatHide}">
+                    : {billToVat}
+                </div>
+
                 <div class="col-sm-2">
                     Pay Mode
                 </div>
@@ -201,11 +200,15 @@
         <div class="col-sm-12">
             <div class="row pb-1 item-header">
                 <div class="sn col-sm-sn">
-                    Sn
+                    S.N.
                 </div>
 
                 <div class="col-sm-particulars">
                     Particulars
+                </div>
+
+                <div class="col-sm-promo-disc text-right">
+                    T
                 </div>
 
                 <div class="col-sm-qty text-right">
@@ -214,10 +217,6 @@
 
                 <div class="col-sm-rate text-right">
                     Rate
-                </div>
-
-                <div class="col-sm-promo-disc text-right">
-                    P.Dis
                 </div>
 
                 <div class="col-sm-total text-right">
@@ -244,16 +243,16 @@
                     {ItemName}
                 </div>
 
+                <div class="col-sm-promo-disc text-right">
+                    {ItemTax}
+                </div>
+
                 <div class="col-sm-qty text-right">
                     {ItemQuantity}
                 </div>
 
                 <div class="col-sm-rate text-right">
                     {ItemRate}
-                </div>
-
-                <div class="col-sm-promo-disc text-right">
-                    {ItemPromoDiscount}
                 </div>
 
                 <div class="col-sm-total text-right">
@@ -278,11 +277,11 @@
             <div class="row items total-quantity">
                 <div class="col-sm-sn"></div>
                 <div class="col-sm-particulars"></div>
+                <div class="col-sm-promo-disc text-right"></div>
                 <div class="col-sm-qty text-right">
                     {totalQuantity}
                 </div>
                 <div class="col-sm-rate text-right"></div>
-                <div class="col-sm-promo-disc text-right"></div>
                 <div class="col-sm-total text-right"></div>
             </div>
         </div>
@@ -296,7 +295,7 @@
 
     <div class="row">
         <div class="col-sm-6">
-            <div class="row pb-1">
+            @*<div class="row pb-1">
                 <div class="col-sm-12 text-justify">
                     <u>
                         Terms &amp; Conditions :-
@@ -312,7 +311,7 @@
                     <br />
                     Thank You.
                 </div>
-            </div>
+            </div>*@
 
             @*<div class="row pb-1">
                 <div class="col-sm-12">
@@ -353,7 +352,7 @@
                 </div>
             </div>
 
-            <div class="row pb-1">
+            @*<div class="row pb-1">
                 <div class="col-sm-2"></div>
 
                 <div class="col-sm-6">
@@ -364,9 +363,9 @@
                 <div class="col-sm-4 text-right">
                     {promoDiscount}
                 </div>
-            </div>
+            </div>*@
 
-            <div class="row pb-1">
+            @*<div class="row pb-1">
                 <div class="col-sm-2"></div>
 
                 <div class="col-sm-6">
@@ -377,7 +376,7 @@
                 <div class="col-sm-4 text-right">
                     {loyaltyDiscount}
                 </div>
-            </div>
+            </div>*@
 
             <div class="row pb-1">
                 <div class="col-sm-2"></div>
@@ -488,9 +487,23 @@
     <div class="row">
 
         <div class="col-sm-6">
-            <br />
-            <br />
-            <br />
+            <div class="row pb-1">
+                <div class="col-sm-12 text-justify">
+                    <u>
+                        Terms &amp; Conditions :-
+                    </u>
+                    <br />
+                    <span>
+                        * Goods once sold are not returnable.
+                    </span>
+                    <br />
+                    <span>
+                        E. &amp; O. E.
+                    </span>
+                    <br />
+                    Thank You.
+                </div>
+            </div>
             <br />
             <br />
             <div class="row pb-1">
@@ -506,6 +519,7 @@
         </div>
 
         <div class="col-sm-6">
+            <br />
             <br />
             <div class="row pb-1">
                 <div class="col-sm-12">

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<POS.DTO.Item>
+﻿@*@model IEnumerable<POS.DTO.Item>*@
 
 @{
     ViewData["Title"] = "Items";
@@ -34,7 +34,7 @@
                     <div class="card-block">
                         @*Your content here*@
                         <table id="grid" class="table table-striped">
-                            <thead>
+                            @*<thead>
                                 <tr>
                                     <th data-filterable="false" data-sortable="false">
                                         @Html.DisplayNameFor(model => model.Code)
@@ -53,8 +53,8 @@
                                     </th>
 
                                 </tr>
-                            </thead>
-                            <tbody>
+                            </thead>*@
+                            @*<tbody>
                                 @foreach (var item in Model)
                                 {
                                     <tr>
@@ -72,14 +72,9 @@
                                         <td>
                                             @Html.DisplayFor(modelItem => item.Rate)
                                         </td>
-
-                                        @*<td>
-                                            <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                                            <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                                        </td>*@
                                     </tr>
                                 }
-                            </tbody>
+                            </tbody>*@
                         </table>
                     </div>
                 </div>
@@ -88,12 +83,35 @@
     </div>
 </div>
 @section Scripts {
+    <script src="~/lib/kendo-ui/kendo.all.min.js"></script>
     <script>
         $(document).ready(function () {
 
             $("#grid").kendoGrid({
                 height: 500,
-                //sortable: true,
+                dataSource: {
+                    pageSize: 100,
+                    serverPaging: true,
+                    serverFiltering: true,
+                    serverSorting: true,
+                    transport: {
+                        read: {
+                            url: "/Item/Index",
+                            dataType: "json",
+                            type: "POST"
+                        }
+                    },
+                    schema: {
+                        data: "data",
+                        total: "total"
+                    },
+                },
+                columns: [
+                    { field: "code", title: "Code" },
+                    { field: "name", title: "Name" },
+                    { field: "unit", title: "Unit" },
+                    { field: "rate", title: "Rate" },
+                ],
                 pageable: {
                     messages: {
                         empty: "No items to display"
@@ -103,28 +121,15 @@
                     buttonCount: 5
                 },
                 filterable: true,
-                sortable: true,
+                sortable: true
             });
+
             $(".k-grid-content").css("overflow-y", "hidden").mCustomScrollbar();
             $("#grid").data("kendoGrid").dataSource.pageSize(100);
 
 
             PageSlimScroll();
-
-
-
         });
     </script>
-   
+
 }
-
-
-
-
-
-
-
-
-
-
-

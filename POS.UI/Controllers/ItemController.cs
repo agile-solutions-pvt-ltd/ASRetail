@@ -7,6 +7,7 @@ using Microsoft.Extensions.Caching.Memory;
 using POS.Core;
 using POS.DTO;
 using POS.UI.Helper;
+using POS.UI.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,18 +21,148 @@ namespace POS.UI.Controllers
     {
         private readonly EntityCore _context;
         private IMemoryCache _cache;
-        public ItemController(EntityCore context, IMemoryCache memoryCache)
+        private readonly IKendoGrid _kendoGrid;
+        public ItemController(EntityCore context, IMemoryCache memoryCache, IKendoGrid kendoGrid)
         {
             _context = context;
             _cache = memoryCache;
+            _kendoGrid = kendoGrid;
         }
 
         // GET: Item
+        //[RolewiseAuthorized]
+        //public async Task<IActionResult> Index()
+        //{
+        //    return View(await _context.Item.ToListAsync());
+        //}
+
         [RolewiseAuthorized]
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            return View(await _context.Item.ToListAsync());
+            return View();
         }
+
+        [HttpPost]
+        public async Task<IActionResult> Index(int pageSize, int skip, Filter filter, IEnumerable<Sort> sort)
+        {
+            var items = _context.Item.AsQueryable();
+
+            // Filter the data first
+            var queryable = _kendoGrid.Filter(items, filter);
+
+            // Calculate the total number of records (needed for paging)
+            var total = queryable.Count();
+
+            // Sort the data
+            queryable = _kendoGrid.Sort(queryable, sort);
+
+            // Finally page the data
+            var itemList = await queryable.Skip(skip).Take(pageSize).ToListAsync();
+            return Json(new { data = itemList, total = total });
+        }
+
+        //[HttpPost]
+        //public async Task<IActionResult> Index(int pageSize, int skip, Filter filter, IEnumerable<Sort> sort)
+        //{
+        //    var newSort = sort.ToList();
+        //    if (!newSort.Any())
+        //    {
+        //        newSort.Add(new Sort { Field = "name", Dir = "asc" });
+        //    }
+
+        //    var items = _context.Item;
+        //    var itemsList = new List<Item>();
+
+        //    //Sorting by column names.
+        //    var sortValue = newSort.FirstOrDefault();
+        //    if (sortValue.Field == "name")
+        //    {
+        //        if (sortValue.Dir == "asc")
+        //        {
+        //            itemsList = await _context.Item
+        //                .OrderBy(x => x.Name)
+        //                .Skip(skip)
+        //                .Take(pageSize)
+        //                .ToListAsync();
+        //        }
+        //        else
+        //        {
+        //            itemsList = await _context.Item
+        //                .OrderByDescending(x => x.Name)
+        //                .Skip(skip)
+        //                .Take(pageSize)
+        //                .ToListAsync();
+        //        }
+        //    }
+        //    else if (sortValue.Field == "code")
+        //    {
+        //        if (sortValue.Dir == "asc")
+        //        {
+        //            itemsList = await _context.Item
+        //                .OrderBy(x => x.Code)
+        //                .Skip(skip)
+        //                .Take(pageSize)
+        //                .ToListAsync();
+        //        }
+        //        else
+        //        {
+        //            itemsList = await _context.Item
+        //                .OrderByDescending(x => x.Code)
+        //                .Skip(skip)
+        //                .Take(pageSize)
+        //                .ToListAsync();
+        //        }
+        //    }
+        //    else if (sortValue.Field == "Unit")
+        //    {
+        //        if (sortValue.Dir == "asc")
+        //        {
+        //            itemsList = await _context.Item
+        //                .OrderBy(x => x.Unit)
+        //                .Skip(skip)
+        //                .Take(pageSize)
+        //                .ToListAsync();
+        //        }
+        //        else
+        //        {
+        //            itemsList = await _context.Item
+        //                .OrderByDescending(x => x.Unit)
+        //                .Skip(skip)
+        //                .Take(pageSize)
+        //                .ToListAsync();
+        //        }
+        //    }
+        //    else if (sortValue.Field == "rate")
+        //    {
+        //        if (sortValue.Dir == "asc")
+        //        {
+        //            itemsList = await _context.Item
+        //                .OrderBy(x => x.Rate)
+        //                .Skip(skip)
+        //                .Take(pageSize)
+        //                .ToListAsync();
+        //        }
+        //        else
+        //        {
+        //            itemsList = await _context.Item
+        //                .OrderByDescending(x => x.Rate)
+        //                .Skip(skip)
+        //                .Take(pageSize)
+        //                .ToListAsync();
+        //        }
+        //    }
+        //    else
+        //    {
+        //        itemsList = await _context.Item
+        //            .Skip(skip)
+        //            .Take(pageSize)
+        //            .ToListAsync();
+        //    }
+
+        //    int total = items.Count();
+
+        //    return Json(new { total = total, data = itemsList });
+        //}
 
         // GET: Item/Details/5
         public async Task<IActionResult> Details(string id)
