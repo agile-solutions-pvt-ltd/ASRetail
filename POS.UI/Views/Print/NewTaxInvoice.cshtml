@@ -44,36 +44,36 @@
 
         /*for item table */
         .col-sm-sn {
-            max-width: 10%;
-            flex: 0 0 10%;
+            max-width: 5%;
+            flex: 0 0 5%;
             padding-left: 15px;
             display: none;
         }
 
         .col-sm-particulars {
             padding-left: 15px;
-            max-width: 30%;
-            flex: 0 0 30%;
+            max-width: 50%;
+            flex: 0 0 50%;
         }
 
         .col-sm-qty {
+            max-width: 10%;
+            flex: 0 0 10%;
+        }
+
+        .col-sm-rate {
             max-width: 12%;
             flex: 0 0 12%;
         }
 
-        .col-sm-rate {
-            max-width: 18%;
-            flex: 0 0 18%;
-        }
-
         .col-sm-promo-disc {
-            max-width: 18%;
-            flex: 0 0 18%;
+            max-width: 10%;
+            flex: 0 0 10%;
         }
 
         .col-sm-total {
-            max-width: 18%;
-            flex: 0 0 18%;
+            max-width: 13%;
+            flex: 0 0 13%;
         }
 
         .total-quantity {
@@ -141,21 +141,13 @@
                 </div>
             </div>
 
-            <div class="row pb-1">
-                <div class="col-sm-2 {customerhide}">
-                    Bill To
+            <div class="row pb-1 {customerhide}">
+                <div class="col-sm-2">
+                    Buyer Name
                 </div>
 
-                <div class="col-sm-4 {customerhide}">
+                <div class="col-sm-9">
                     : {billToName}
-                </div>
-
-                <div class="col-sm-2 {billToVatHide}">
-                    Vat
-                </div>
-
-                <div class="col-sm-4 {billToVatHide}">
-                    : {billToVat}
                 </div>
             </div>
 
@@ -178,6 +170,14 @@
             </div>
 
             <div class="row pb-1">
+                <div class="col-sm-2 {billToVatHide}">
+                    Buyer's Vat
+                </div>
+
+                <div class="col-sm-4 {billToVatHide}">
+                    : {billToVat}
+                </div>
+
                 <div class="col-sm-2">
                     Pay Mode
                 </div>
