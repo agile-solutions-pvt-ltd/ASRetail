@@ -43,6 +43,7 @@
 </div>
 
 @section Scripts {
+    <script src="~/lib/kendo-ui/kendo.all.min.js"></script>
     <script>
         $(document).ready(function () {
             $("#treelist").kendoTreeList({
@@ -59,7 +60,7 @@
                             parentId: "parentCode",
                             fields: {
                                 parentCode: { field: "parentCode", nullable: true },
-                               
+
                             },
                             expanded: true,
                         },
