@@ -33,6 +33,8 @@ namespace POS.UI.Controllers
             Configuration = configuration;
         }
 
+
+        [RolewiseAuthorized]
         [HttpGet]
         public IActionResult Index()
         {

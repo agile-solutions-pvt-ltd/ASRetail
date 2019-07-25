@@ -14,7 +14,7 @@ namespace POS.Core
     {
         //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         //{
-        //    optionsBuilder.UseSqlServer("server=10.10.170.11;database=ASRetail_Production;user=sa;password=Ims16877Nepal;");
+        //    optionsBuilder.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
         //}
         //public EntityCore() : base()
         //{
@@ -24,7 +24,7 @@ namespace POS.Core
         public EntityCore(DbContextOptions<EntityCore> options)
             : base(options)
         {
-            ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+            //ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
         }
 

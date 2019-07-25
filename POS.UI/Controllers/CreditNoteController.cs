@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace POS.UI.Controllers
 {
-    [RolewiseAuthorized]
+    [SessionAuthorized]
     public class CreditNoteController : Controller
     {
         private readonly EntityCore _context;
@@ -24,6 +24,8 @@ namespace POS.UI.Controllers
             _context = context;
         }
 
+
+        [RolewiseAuthorized]
         public IActionResult Index()
         {
             // ViewData["Customer"] = new List<Customer>();//_context.Customer;
@@ -152,8 +154,7 @@ namespace POS.UI.Controllers
         //    }
         //    return StatusCode(404);
         //}
-        [HttpGet]
-        [SessionAuthorized]
+        [HttpGet]       
         public IActionResult GetCreditNote(string CN)
         {
             if (!string.IsNullOrEmpty(CN))

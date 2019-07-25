@@ -3,54 +3,91 @@
 
     let maximumCharAllowInItemName = 9;
     //greycode printing initiliger
-    //class Ws {
-    //    get newClientPromise() {
-    //        return new Promise((resolve, reject) => {
-    //            GetClientLocalIP(function (ip) {
-    //                debugger;
-    //                let wsClient;
-    //                if (location.protocol !== 'https:')
-    //                    wsClient = new WebSocket("wss://" + ip + ":90");
-    //                else
-    //                    wsClient = new WebSocket("ws://" + ip + ":90");
-    //                console.log(wsClient)
-    //                wsClient.onopen = () => {
-    //                    console.log("connected");
-    //                    resolve(wsClient);
-    //                };
-    //                wsClient.onerror = error => reject(error);
+    class Ws {
+        get newClientPromise() {
+            return new Promise((resolve, reject) => {
+                GetClientLocalIP(function (ip) {
+                    debugger;
+                    let wsClient;
+                    if (location.protocol === 'https:')
+                        wsClient = new WebSocket("wss://" + ip + ":90");
+                    else
+                        wsClient = new WebSocket("ws://" + ip + ":90");
+                    console.log(wsClient)
+                    wsClient.onopen = () => {
+                        console.log("connected");
+                        resolve(wsClient);
+                    };
+                    wsClient.onerror = error => reject(error);
 
-    //            });
-    //        })
-    //    }
-    //    get clientPromise() {
-    //        if (!this.promise) {
-    //            this.promise = this.newClientPromise
-    //        }
-    //        return this.promise;
-    //    }
-    //}
+                });
+            })
+        }
+        get clientPromise() {
+            if (!this.promise) {
+                this.promise = this.newClientPromise
+            }
+            return this.promise;
+        }
+    }
 
     //********* Private Methos *****************//
     let init = () => {
-       
-        
+
+
     };
 
 
     let PrintInvoice = (data, callback) => {
-        if (data.invoiceData.trans_Type === "Sales")
-            PrintSalesInvoice(data, callback);
-        else {
+        debugger;
+        //if (data.invoiceData.trans_Type === "Sales")
+        //    PrintSalesInvoice(data, callback);
+        //else {
 
-            if (data.copy !== undefined) {
-                //print double
-                PrintTaxInvoiceBrowser(data, callback);
-                PrintTaxInvoiceBrowser(data, callback);
+        //    if (data.copy !== undefined) {
+        //        //print double
+        //        PrintTaxInvoice(data, callback);
+        //        // PrintTaxInvoiceBrowser(data, callback);
+        //    }
+        //    else {
+        //        //print single
+        //        PrintTaxInvoice(data, callback);
+        //    }
+
+        //}
+        window.wsSingleton = new Ws()
+        if (data.invoiceData.trans_Type === "Sales") {
+            if (typeof ws === 'undefined')
+                PrintSalesInvoiceBrowser(data, callback);
+            else
+                PrintSalesInvoice(data, callback);
+        }
+        else {
+            if (typeof ws === 'undefined') {
+                debugger;
+                if (data.copy !== undefined && data.copy.printCount == 0) {
+                    //print double
+                    PrintTaxInvoiceBrowser(data, function () {
+                        data.copy.printCount = 1;
+                        PrintTaxInvoiceBrowser(data, callback);
+                    });
+                   
+                }
+                else {
+                    //print single
+                    PrintTaxInvoiceBrowser(data, callback);
+                }
             }
             else {
-                //print single
-                PrintTaxInvoice(data, callback);
+                if (data.copy !== undefined) {
+                    //print double
+                    PrintTaxInvoice(data, callback);
+                    PrintTaxInvoice(data, callback);
+                }
+                else {
+                    //print single
+                    PrintTaxInvoice(data, callback);
+                }
             }
 
         }
@@ -209,12 +246,17 @@
         var finalBill = header + itemHeader + item + itemTotal + footer;
 
         printwsBill(finalBill, callback, data, PrintTaxInvoiceBrowser);
-        
+
     };
-    let PrintTaxInvoiceBrowser = (data, callback) => {  
-        debugger;
+    let PrintTaxInvoiceBrowser = (data, callback) => {
+       
+        var url = ""
+        if (data.billData !== null && data.billData[0].trans_Mode === "Credit")
+            url = window.location.origin + "/Print/NewTaxInvoice";
+        else
+            url = window.location.origin + "/Print/TaxInvoice";
         $.ajax({
-            url: window.location.origin + "/Print/TaxInvoice",
+            url: url,
             type: 'GET',
             complete: function (result) {
                 if (result.status === 200) {
@@ -227,7 +269,7 @@
                         paymentMode = data.paymentMode;
                     }
 
-                    printText = printText.replace("{companyName}", data.storeData.companY_NAME || data.storeData.COMPANY_NAME);
+                    printText = printText.replace(/{companyName}/g, data.storeData.companY_NAME || data.storeData.COMPANY_NAME);
                     printText = printText.replace("{storeLocation}", data.storeData.address || data.storeData.ADDRESS);
                     printText = printText.replace("{vatNumber}", data.storeData.vat || data.storeData.VAT);
                     printText = printText.replace("{invoiceType}", (!_.isEmpty(data.copy) && data.copy.printCount >= 1) ? "INVOICE" : "TAX INVOICE");
@@ -556,13 +598,13 @@
                     if (errorcallback !== undefined)
                         errorcallback();
                 });
-           
-           
+
+
         } catch{
             alert("error");
         }
 
-        
+
 
         //var ws;
         //ws = new WebSocket('ws://127.0.0.1:90');
@@ -899,6 +941,7 @@
             targetStyles: ['*'],
             onLoadingEnd: function () {
                 $("#tempprint").remove();
+                debugger;
                 if (callback !== undefined)
                     callback();
 
@@ -922,5 +965,5 @@
     };
 
 })();
-    
+
 printer.init();

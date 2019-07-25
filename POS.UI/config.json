@@ -5,13 +5,13 @@
   "IRDBillUrl": "api/bill",
   "NavApiBaseUrl": "http://10.10.10.25:7098",
   "NavPath": "poslive/api/beta/",
-  "NavCompanyId": "ca25d1ed-4fff-49df-bf9b-c1f18a0bf932",
+  "NavCompanyId": "3b456591-ecf6-4723-9c94-092d0ecedf61",
   "IRDUserName": "Test_CBMS",
   "IRDPassword": "test@321",
   "NavUserName": "web.user",
   "NavPassword": "W3b@2019",
-  "StopInvoicePosting": true,
-  "Location": "WHS",
+  "StopInvoicePosting": false,
+  "Location": "BIR",
   "LoggedInUsers": [
     "Admin"
   ],
@@ -35,21 +35,21 @@
     "MenuPermission": "100000"
   },
   "SyncLog": {
-    "Store": "100000",
-    "Customer": "20",
-    "ItemCategory": "100000",
-    "ProductGroup": "100000",
+    "Store": "",
+    "Customer": "",
+    "ItemCategory": "",
+    "ProductGroup": "",
     "ItemType": null,
-    "Item": "Error :System.Data.SqlClient.SqlException (0x80131904): Cannot insert the value NULL into column 'Id', table 'ASRetail_Production.dbo.ITEM'; column does not allow nulls. INSERT fails.\r\nThe statement has been terminated.\r\n   at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)\r\n   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)\r\n   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)\r\n   at System.Data.SqlClient.SqlDataReader.TryConsumeMetaData()\r\n   at System.Data.SqlClient.SqlDataReader.get_MetaData()\r\n   at System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString)\r\n   at System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async, Int32 timeout, Task& task, Boolean asyncWrite, SqlDataReader ds)\r\n   at System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior)\r\n   at System.Data.Common.DbCommand.ExecuteReader()\r\n   at Microsoft.EntityFrameworkCore.Storage.Internal.RelationalCommand.Execute(IRelationalConnection connection, DbCommandMethod executeMethod, IReadOnlyDictionary`2 parameterValues)\r\n   at Microsoft.EntityFrameworkCore.Storage.Internal.RelationalCommand.ExecuteReader(IRelationalConnection connection, IReadOnlyDictionary`2 parameterValues)\r\n   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.Execute(IRelationalConnection connection)\r\nClientConnectionId:d7cbc67f-6b98-4c75-a898-938710a0ff11\r\nError Number:515,State:2,Class:16",
-    "ItemPrice": "100000",
-    "ItemDiscount": "100000",
-    "ItemBarCode": "100000",
-    "Terminal": "100000",
-    "User": "100000",
-    "UserRole": "100000",
+    "Item": "",
+    "ItemPrice": "",
+    "ItemDiscount": "",
+    "ItemBarCode": "",
+    "Terminal": "",
+    "User": "",
+    "UserRole": "",
     "UserPermission": null,
-    "Status": "Not Started",
-    "Menu": "100000",
-    "MenuPermission": "100000"
+    "Status": "",
+    "Menu": "",
+    "MenuPermission": ""
   }
 }

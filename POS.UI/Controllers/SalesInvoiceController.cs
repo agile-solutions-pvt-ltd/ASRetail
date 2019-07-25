@@ -175,6 +175,7 @@ namespace POS.UI.Controllers
         }
 
 
+       [RolewiseAuthorized]
         [HttpGet]
         public IActionResult CrLanding(string StatusMessage)
         {
@@ -209,7 +210,9 @@ namespace POS.UI.Controllers
         public IActionResult GetItemReferenceData(Guid id)
         {
             //for item Reference Data           
-            List<string> barCodeList = _context.SalesInvoiceItemsTmp.Where(x => x.Invoice_Id == id).Select(x => x.Bar_Code).ToList();
+            var item = _context.SalesInvoiceItemsTmp.Where(x => x.Invoice_Id == id).ToList();
+            List<string> barCodeList = item.Select(x => x.Bar_Code).ToList();
+            barCodeList = barCodeList.Concat(item.Select(x => x.ItemCode)).ToList();
             IList<ItemViewModel> items;
             if (!_cache.TryGetValue("ItemViewModel", out items))
             {
@@ -574,7 +577,7 @@ namespace POS.UI.Controllers
         public IEnumerable<ItemViewModel> GetItemsRawDataByBarcodeList(List<string> barcodes)
         {
             string barcodeListString = string.Join("','", barcodes);
-            string query = @"SELECT 
+            string query = @"SELECT Distinct
         ROW_NUMBER() OVER(PARTITION BY Bar_Code order by Rate) AS SN ,
        i.Code,i.Id as ItemId,i.Name,i.KeyInWeight,
        ISNULL(b.BarCode,0) as Bar_Code,b.Unit,  
@@ -589,7 +592,7 @@ left join ITEM_QUANTITY q on i.Code = q.ItemCode
 left join ITEM_PRICE p on i.Code = p.ItemCode
 left join ITEM_DISCOUNT d on i.Code = d.ItemCode Or (d.ItemType = 'Item Disc. Group' and  d.ItemCode =  i.DiscountGroup)
 cross join STORE s
-where b.BarCode in ('" + barcodeListString + "')";
+where b.BarCode in ('" + barcodeListString + "') OR i.Code in ('" + barcodeListString + "')";
 
             // string barcodeListString =string.Join("','",barcodes); 
             // var p0 = new SqliteParameter("@p0", barcodeListString);

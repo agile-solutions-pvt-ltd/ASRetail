@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Authorization
                     var actionName = filterContext.RouteData.Values["action"].ToString();
                     // string url = "/" + controllerName + "/" + actionName;
                     
-                    if (!menus.Where(s => s.Menu.Controller == controllerName).Any())
+                    if (!menus.Where(s => s.Menu.Controller == controllerName || s.Menu.Action == actionName).Any())
                     {
                         filterContext.Result = new RedirectToRouteResult(
                             new RouteValueDictionary { { "controller", "Account" }, { "action", "Unauthorized" } });
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Authorization
 
         public override void OnResultExecuting(ResultExecutingContext filterContext)
         {
-
+           
         }
         public override void OnActionExecuting(ActionExecutingContext filterContext)
         {

@@ -144,16 +144,16 @@ namespace POS.UI
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IServiceProvider service)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-                app.UseHsts();
-            }
+            //if (env.IsDevelopment())
+            //{
+            //    app.UseDeveloperExceptionPage();
+            //    app.UseDatabaseErrorPage();
+            //}
+            //else
+            //{
+            //    app.UseExceptionHandler("/Home/Error");
+            //    app.UseHsts();
+            //}
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();           
@@ -165,6 +165,8 @@ namespace POS.UI
 
 
             app.UseAuthentication();
+            app.UseHangfireServer();
+            app.UseResponseCaching();
 
             app.UseHangfireDashboard(options: new DashboardOptions()
             {
@@ -175,8 +177,7 @@ namespace POS.UI
                 StatsPollingInterval = 30000
             });
            
-            app.UseHangfireServer();
-            app.UseResponseCaching();
+           
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
@@ -197,6 +198,7 @@ namespace POS.UI
         }
 
 
+        
         private async Task CreateUserRoles(IServiceProvider serviceProvider)
         {
             var RoleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -232,4 +234,7 @@ namespace POS.UI
 
 
     }
+
+
+  
 }
