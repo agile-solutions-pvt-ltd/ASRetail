@@ -38,6 +38,7 @@ namespace POS.UI.Controllers
             }
 
             var denomination = await _context.Denomination.FindAsync(id);
+            TempData["Startingdate"] = denomination.Date.ToShortDateString();
             if (denomination == null)
             {
                 return NotFound();

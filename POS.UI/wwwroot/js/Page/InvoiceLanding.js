@@ -159,6 +159,7 @@
             Name: $("#Customer_Name").val(),
             Mobile1: $("#Customer_Mobile").val(),
             Address: $("#Customer_Address").val(),
+            Vat: $("#Customer_Vat").val(),
             Is_Member: true
         };
         if (!_.isEmpty(membership.Name) && !_.isEmpty(membership.Mobile1) && membership.Mobile1.length > 9) {
@@ -303,6 +304,10 @@
             $("#Customer_Address").focus();
     });
     $("#Customer_Address").keypress(function (evt) {
+        if (evt.keyCode === 13)
+            $("#memberSaveButton").focus();
+    });
+    $("#Customer_Vat").keypress(function (evt) {
         if (evt.keyCode === 13)
             $("#memberSaveButton").focus();
     });
