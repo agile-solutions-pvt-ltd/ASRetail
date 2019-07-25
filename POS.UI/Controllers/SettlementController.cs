@@ -21,7 +21,7 @@ namespace POS.UI.Controllers
         }
 
         [HttpGet]
-        public IActionResult Index()
+        public IActionResult Index(string status, DateTime? startdate = null, DateTime? enddate = null)
         {
             //IEnumerable<Settlement> settlement = _context.Settlement.Include(x => x.Terminal).Include(x => x.User).Where(x => x.Status == "Closed");
             //settlement = (from x in settlement
@@ -36,23 +36,44 @@ namespace POS.UI.Controllers
             //.Select(y => new Settlement{
             //    Id = x=>x.
             //    x.Sum(y => y.Amount));
-            IEnumerable<SettlementViewModel> settlement = _context.SettlementViewModel.Where(x => x.Status == "Closed");
+            
+            String _status = status ?? new string("Closed");
+            DateTime _startDate = startdate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+           
+            DateTime _endDate = enddate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day) ;
+            TempData["startdate"] = _startDate;
+            TempData["enddate"] = _endDate;
+            TempData["Status"] = _status;
+
+            IEnumerable<SettlementViewModel> settlement = _context.SettlementViewModel.Where(x => x.Status == _status && x.StartTransaction >= _startDate && x.EndTransaction <= _endDate);
             return View(settlement);
         }
 
 
         [HttpGet]
-        public IActionResult GetSettlement(string status = "Closed")
+        public IActionResult GetSettlement(string status, DateTime? startdate = null, DateTime? enddate = null)
         {
+            String _status = status ?? new string("Closed");
 
-            IEnumerable<SettlementViewModel> settlement = _context.SettlementViewModel.Where(x => x.Status == status).ToList();
-            return Ok(settlement);
+            DateTime _startDate = startdate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month,DateTime.Now.Day);
+            DateTime _endDate = enddate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+            if (_status == "verified") { 
+            IEnumerable<SettlementViewModel> settlement = _context.SettlementViewModel.Where(x => x.Status == _status && x.VerifiedDate >= _startDate && x.VerifiedDate <= _endDate).ToList();
+                return Ok(settlement);
+            }
+            else
+            {
+                IEnumerable<SettlementViewModel> settlement = _context.SettlementViewModel.Where(x => x.Status == _status && x.StartTransaction >= _startDate && x.EndTransaction <= _endDate).ToList();
+                return Ok(settlement);
+
+            }
+           
         }
 
         [HttpGet]
         public IActionResult GetSettlementById(string session)
         {
-
+           
             IEnumerable<SettlementViewModel> settlementData = _context.SettlementViewModel.Where(x => x.SessionId == session).ToList();
             var store = _context.Store.FirstOrDefault();
             return Ok(new { SettlementData = settlementData, Store = store });

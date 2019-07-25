@@ -26,8 +26,16 @@
     let init = () => {
 
         //set todays date
-        $("#Date").val(FormatForDisplay(new Date()));
-        $("#Date").trigger('change');
+       
+        
+        if (verifydate != null) {
+            var verifydate = document.getElementById("startingdate").value;
+        }
+        else {
+            $("#Date").val(FormatForDisplay(new Date()));
+            $("#Date").trigger('change');
+        }
+       
         
         calcAmount();
       
@@ -138,6 +146,7 @@
         .change(function () {
             $('#Date_BS').val(AD2BS(FormatForInput($('#Date').val())));
         });
+    
     $('#Date_BS').nepaliDatePicker({
         onChange: function () {
             $('#Date').val(FormatForDisplay(BS2AD($('#Date_BS').val())));

@@ -4,10 +4,68 @@
     var htmlParent = "";
     var transAmount = {};
     var denominationAmount = {};
+    var startdate = "";
+    var enddate = "";
+    var test = "";
+    $("#filer").on('click', function () {
 
 
+        let url = window.location.origin + "/Settlement/Index?startdate=" + $("#startdatepicker").val() + "&enddate=" + $("#enddatepicker").val();
+
+
+        window.location.href = url;
+        
+       
+
+
+    });
+    $("#VerifyList").on('click', function () {
+
+
+        let url = window.location.origin + "/Settlement/Index?startdate=" + $("#startdatepicker").val() + "&enddate=" + $("#enddatepicker").val()+"&status="+"verified";
+
+
+        window.location.href = url;
+
+
+
+
+    });
+   
     //********* Private Methos *****************//
     let init = () => {
+
+       
+        var startdate = document.getElementById("startdatepicker").value;
+        var enddate = document.getElementById("enddatepicker").value;
+        var status = document.getElementById("VerifyList").value;
+
+
+
+        console.log("startdate", startdate)
+
+            $("#startdatepicker").datepicker({
+                onSelect: function (date) {
+                    startdate = date;
+                    console.log(startdate);
+                }
+
+
+            }).on("change", function () {
+                startdate = startdate;
+            });
+        $('#startdatepicker').datepicker('setDate', startdate);
+
+            $("#enddatepicker").datepicker({
+                onselect: function (date) {
+                    enddate = date;
+                    console.log(enddate);
+                }
+            }).on("change", function () {
+                enddate = enddate;
+            });
+        $('#enddatepicker').datepicker('setDate', enddate);
+        
 
         getSettlementData((data) => {
             data = list = _.sortBy(data, "endTransaction");
@@ -24,7 +82,8 @@
         AssignKeyEvent();
     };
     let denominationView = (id) => {
-        var url = window.location.origin + "/Denomination/Details/" + id;
+        var url = window.location.origin + "/Denomination/Details/" + id ;
+
         window.open(url, "_blank", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,top=50,left=400,width=800,height=600");
 
     };
@@ -126,8 +185,7 @@
             cashAmount: 0
         };
         denominationAmount = data;
-        debugger;
-        _.each(data, function (x) {
+        debugger;        _.each(data, function (x) {
             if (x.paymentMode === "Card") {                
                 transAmount.cardAmount += parseFloat(x.totalAmount);
             }
@@ -166,7 +224,7 @@
         html = html.replace("$startDate", getMinDate(_.pluck(data, "startTransaction")));
         html = html.replace("$endDate", getMaxDate(_.pluck(data, "endTransaction")));
 
-
+        
         html = html.replace("$transCardAmount", transAmount.cardAmount);
         html = html.replace("$transCreditAmount", transAmount.creditAmount);
         html = html.replace("$transCreditNoteAmount", transAmount.creditNoteAmount);
@@ -186,15 +244,16 @@
 
         return html;
     };
-    let getSettlementData = (callback) => {        
-        var url = window.location.origin + "/Settlement/GetSettlement";
-        if (GetUrlParameters("status") !== undefined && GetUrlParameters("status").toLowerCase() === "verified") {
-            url += "?status=Verified";
+    let getSettlementData = (callback) => {
+        var url = window.location.origin + "/Settlement/GetSettlement?startdate=" + $("#startdatepicker").val() + "&enddate=" + $("#enddatepicker").val() + "&status=" + $("#VerifyList").val();
+            //$("#enddatepicker").val();
+        if ($("#VerifyList").val()=="verified") {
+            
             $(".VerifyButton").hide();
 
         }
         else {
-            $(".PrintButton").hide();
+            $(".PrintButton").hide(); 
         }
        
         $.ajax({
@@ -291,6 +350,10 @@
 
     };
 
+    let dateFilter = () => {
+        init();
+    };
+
     let printSettlement = (evt) => {
         $this = $(this.event.target);
         $parent = $(this.event.target).parent().parent();
@@ -323,7 +386,9 @@
         denominationView,
         verifySettlement,
         calcShortExcessAmount,
-        printSettlement
+        printSettlement,
+        dateFilter
+       
     };
 
 })();
