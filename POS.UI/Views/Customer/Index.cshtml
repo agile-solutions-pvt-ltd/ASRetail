@@ -140,21 +140,31 @@
             $("#grid").kendoGrid({
                 height: CalcGridHeight(),
                 dataSource: {
-                    pageSize: 100,
-                    serverPaging: true,
-                    serverFiltering: true,
-                    serverSorting: true,
                     transport: {
                         read: {
                             url: "/Customer/Index",
                             dataType: "json",
                             type: "POST"
-                        }
+                        },
                     },
                     schema: {
                         data: "data",
                         total: "total"
                     },
+                    pageSize: 100,
+                    serverPaging: true,
+                    serverFiltering: true,
+                    serverSorting: true,
+                },
+                filterable: true,
+                sortable: true,
+                pageable: {
+                    messages: {
+                        empty: "No items to display"
+                    },
+                    refresh: true,
+                    pageSizes: [5, 10, 25, 50, 100],
+                    buttonCount: 5
                 },
                 columns: [
                     { field: "name", title: "Name" },
@@ -164,16 +174,6 @@
                     { field: "vat", title: "Vat" },
                     { title: "Details", template: `<a href="/Customer/Delete/#=code#"> Details </a>` }
                 ],
-                pageable: {
-                    messages: {
-                        empty: "No items to display"
-                    },
-                    refresh: true,
-                    pageSizes: [5, 10, 25, 50, 100],
-                    buttonCount: 5
-                },
-                filterable: true,
-                sortable: true,
             });
         });
     </script>

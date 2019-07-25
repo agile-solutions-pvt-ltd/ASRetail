@@ -15,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using POS.Core;
 using POS.DTO;
+using POS.UI.Helper;
 using POS.UI.Models;
 using System;
 using System.Linq;
@@ -100,6 +101,8 @@ namespace POS.UI
 
             services.AddMemoryCache();
             services.AddResponseCaching();
+
+            services.AddSingleton<IKendoGrid, KendoGrid>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                 .AddJsonOptions(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore); ;
