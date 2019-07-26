@@ -1,5 +1,5 @@
 {
-  "Environment": "successfully login",
+  "Environment": "300000 item cached",
   "ClientPort": "1111",
   "IRDBaseUrl": "http://103.1.92.174:9050",
   "IRDBillUrl": "api/bill",

@@ -44,6 +44,9 @@ namespace POS.UI.Controllers
             TempData["startdate"] = _startDate;
             TempData["enddate"] = _endDate;
             TempData["Status"] = _status;
+         
+                 _endDate = _endDate.AddHours(23);
+ 
 
             IEnumerable<SettlementViewModel> settlement = _context.SettlementViewModel.Where(x => x.Status == _status && x.StartTransaction >= _startDate && x.EndTransaction <= _endDate);
             return View(settlement);
@@ -57,6 +60,7 @@ namespace POS.UI.Controllers
 
             DateTime _startDate = startdate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month,DateTime.Now.Day);
             DateTime _endDate = enddate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+            _endDate = _endDate.AddHours(23);
             if (_status == "verified") { 
             IEnumerable<SettlementViewModel> settlement = _context.SettlementViewModel.Where(x => x.Status == _status && x.VerifiedDate >= _startDate && x.VerifiedDate <= _endDate).ToList();
                 return Ok(settlement);
@@ -105,37 +109,51 @@ namespace POS.UI.Controllers
             {
                 IList<Settlement> settlement = _context.Settlement.Where(x => x.SessionId == data.Settlement.SessionId).ToList();
                 var store = _context.Store.FirstOrDefault();
-                foreach (var item in settlement)
+                using (var trans = _context.Database.BeginTransaction())
                 {
-                    if (item.PaymentMode == "Cash")
-                    {
-                        item.AdjustmentAmount = data.AdjustmentCashAmount;
-                        item.ShortExcessAmount = data.ShortExcessCashAmount;
-                    }
-                    else if (item.PaymentMode == "Credit")
-                    {
-                        item.AdjustmentAmount = data.AdjustmentCreditAmount;
-                        item.ShortExcessAmount = data.ShortExcessCreditAmount;
-                    }
-                    else if (item.PaymentMode == "CreditNote")
-                    {
-                        item.AdjustmentAmount = data.AdjustmentCreditNoteAmount;
-                        item.ShortExcessAmount = data.ShortExcessCreditNoteAmount;
-                    }
-                    else if (item.PaymentMode == "Card")
-                    {
-                        item.AdjustmentAmount = data.AdjustmentCardAmount;
-                        item.ShortExcessAmount = data.ShortExcessCardAmount;
-                    }
-                    item.VerifiedBy = User.Identity.Name;
-                    item.VerifiedDate = DateTime.Now;
-                    item.Status = "Verified";
-                    _context.Entry(item).State = EntityState.Modified;
-                }
+                    try
+                    {                        
+                        foreach (var item in settlement)
+                        {
+                            if (item.PaymentMode == "Cash")
+                            {
+                                item.AdjustmentAmount = data.AdjustmentCashAmount;
+                                item.ShortExcessAmount = data.ShortExcessCashAmount;
+                            }
+                            else if (item.PaymentMode == "Credit")
+                            {
+                                item.AdjustmentAmount = data.AdjustmentCreditAmount;
+                                item.ShortExcessAmount = data.ShortExcessCreditAmount;
+                            }
+                            else if (item.PaymentMode == "CreditNote")
+                            {
+                                item.AdjustmentAmount = data.AdjustmentCreditNoteAmount;
+                                item.ShortExcessAmount = data.ShortExcessCreditNoteAmount;
+                            }
+                            else if (item.PaymentMode == "Card")
+                            {
+                                item.AdjustmentAmount = data.AdjustmentCardAmount;
+                                item.ShortExcessAmount = data.ShortExcessCardAmount;
+                            }
+                            item.VerifiedBy = User.Identity.Name;
+                            item.VerifiedDate = DateTime.Now;
+                            item.Status = "Verified";
+                            _context.Entry(item).State = EntityState.Modified;
+                        }
 
-                _context.SaveChanges();
-                var settlementData = _context.SettlementViewModel.Where(x => x.SessionId == settlement.FirstOrDefault().SessionId).ToList();
-                return Ok(new { SettlementData = settlementData, Store = store });
+                        _context.SaveChanges();
+                        trans.Commit();
+
+                        var settlementData = _context.SettlementViewModel.Where(x => x.SessionId == settlement.FirstOrDefault().SessionId).ToList();
+                        return Ok(new { SettlementData = settlementData, Store = store });
+                    }
+                    catch (Exception ex)
+                    {
+                        trans.Rollback();
+                    }
+                };
+                
+                
             }
             return StatusCode(400);
         }

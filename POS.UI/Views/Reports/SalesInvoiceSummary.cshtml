@@ -8,7 +8,7 @@
     ViewData["Title"] = "Sales Invoice Summary";
 }
 
-
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 <!-- Load Pako ZLIB library to enable PDF compression -->
 <script src="~/lib/kendo-ui/pako_deflate.min.js"></script>
 <div class="page-wrapper">
@@ -57,8 +57,7 @@
 
 
 
-@section Scripts {
-    <script src="~/lib/nepali.datepicker/nepali.datepicker.v2.2.min.js"></script>
+@section Scripts {  
     <script src="~/lib/kendo-ui/kendo.all.min.js"></script>
 
 
@@ -165,6 +164,7 @@
 
                     },
                     // pageSize: 100,
+                    group:[{ field: "date", dir: "desc" },{ field: "created_By" }],
                     sort: { field: "date", dir: "desc" },
 
                 },

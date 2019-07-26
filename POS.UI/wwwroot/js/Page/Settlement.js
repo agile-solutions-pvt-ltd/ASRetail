@@ -39,12 +39,13 @@
         var startdate = document.getElementById("startdatepicker").value;
         var enddate = document.getElementById("enddatepicker").value;
         var status = document.getElementById("VerifyList").value;
-
+        startdate = formatDate(startdate);
+        enddate = formatDate(enddate);
 
 
         console.log("startdate", startdate)
-
-            $("#startdatepicker").datepicker({
+        debugger;
+        $("#startdatepicker").datepicker({
                 onSelect: function (date) {
                     startdate = date;
                     console.log(startdate);
@@ -328,7 +329,18 @@
             }
         });
     };
+    let formatDate = (dates) => {
 
+
+
+        var date = new Date(dates);
+        var month = date.getMonth() + 1; //js start with zero
+
+
+
+
+        return month + "/" + date.getDate() + "/" + date.getFullYear();
+    };
     let AssignKeyEvent = () => {
 
         //Mousetrap.bindGlobal('ctrl+end', function (e) {

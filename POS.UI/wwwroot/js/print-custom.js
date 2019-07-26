@@ -7,21 +7,39 @@
         get newClientPromise() {
             return new Promise((resolve, reject) => {
                 GetClientLocalIP(function (ip) {
-                    debugger;
+
+                    var newIp = _.filter(serverIp, function (x, y) {                        
+                        return y == ip;
+                    });
+                    if (_.isEmpty(newIp))
+                        newIp = ip;
+                    //var newIp = ip;
                     let wsClient;
                     if (location.protocol === 'https:')
-                        wsClient = new WebSocket("wss://" + ip + ":90");
+                        wsClient = new WebSocket("wss://" + newIp + ":90");
                     else
-                        wsClient = new WebSocket("ws://" + ip + ":90");
+                        wsClient = new WebSocket("ws://" + newIp + ":90");
                     console.log(wsClient)
                     wsClient.onopen = () => {
                         console.log("connected");
                         resolve(wsClient);
                     };
-                    wsClient.onerror = error => reject(error);
+                    wsClient.addEventListener("error", e => {
+                        // readyState === 3 is CLOSED
+                        //if (e.target.readyState === 3) {
+                        //    this.connectionTries--;
 
-                });
-            })
+                        //    if (this.connectionTries > 0) {
+                        //        setTimeout(() => this.connect(url), 5000);
+                        //    } else {
+                        alert("Maximum number of connection trials has been reached");
+                        //      }
+
+                        // }
+
+                    });
+                })
+            });
         }
         get clientPromise() {
             if (!this.promise) {
@@ -30,6 +48,7 @@
             return this.promise;
         }
     }
+
 
     //********* Private Methos *****************//
     let init = () => {
@@ -57,10 +76,10 @@
         //}
         window.wsSingleton = new Ws()
         if (data.invoiceData.trans_Type === "Sales") {
-            if (typeof ws === 'undefined')
-                PrintSalesInvoiceBrowser(data, callback);
-            else
-                PrintSalesInvoice(data, callback);
+            //if (typeof ws === 'undefined')
+            //    PrintSalesInvoiceBrowser(data, callback);
+            //else
+            PrintSalesInvoice(data, callback);
         }
         else {
             if (typeof ws === 'undefined') {
@@ -71,7 +90,7 @@
                         data.copy.printCount = 1;
                         PrintTaxInvoiceBrowser(data, callback);
                     });
-                   
+
                 }
                 else {
                     //print single
@@ -249,10 +268,13 @@
 
     };
     let PrintTaxInvoiceBrowser = (data, callback) => {
-       
-        var url = ""
-        if (data.billData !== null && data.billData[0].trans_Mode === "Credit")
+        debugger;
+        var url = "";
+        var companyInitital = data.storeData.initial || data.storeData.Initial;
+        if (data.billData !== null && data.billData.length > 0 && data.billData[0].trans_Mode === "Credit" && companyInitital === "WHS") {
             url = window.location.origin + "/Print/NewTaxInvoice";
+            maximumCharAllowInItemName = 40;
+        }
         else
             url = window.location.origin + "/Print/TaxInvoice";
         $.ajax({
@@ -312,6 +334,7 @@
                         printItemTemplate = printItemTemplate.replace("{ItemRate}", parseFloat(v.rate).toFixed(2));
                         printItemTemplate = printItemTemplate.replace("{ItemPromoDiscount}", parseFloat(v.promoDiscount).toFixed(2));
                         printItemTemplate = printItemTemplate.replace("{ItemTotal}", parseFloat(v.gross_Amount).toFixed(2));
+                        printItemTemplate = printItemTemplate.replace("{ItemTax}", (v.is_Vatable == true ? "V" : "N"));
                         printItems += printItemTemplate;
                     });
 
@@ -595,6 +618,7 @@
                         callback();
                 })
                 .catch((error) => {
+                    alert("error");
                     if (errorcallback !== undefined)
                         errorcallback();
                 });

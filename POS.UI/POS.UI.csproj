@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="wwwroot\servers.js" />
     <None Include="wwwroot\wwwroot\css\bootstrap-override.css" />
     <None Include="wwwroot\wwwroot\css\ionicons.css" />
     <None Include="wwwroot\wwwroot\css\jquery.mCustomScrollbar.css" />

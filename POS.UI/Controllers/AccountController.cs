@@ -80,7 +80,8 @@ namespace POS.UI.Controllers
                 {
                     // HttpContext.User = await _signInManager.CreateUserPrincipalAsync(user);
                     //first check username already loggedin
-                    Config config = ConfigJSON.Read();                    
+                    Config config = ConfigJSON.Read();
+                    Store store = _context.Store.FirstOrDefault();
                     if (!User.Identity.IsAuthenticated && config.LoggedInUsers.Contains(user.UserName))
                     {
                         //ModelState.AddModelError(string.Empty, "You're currently logged in to another system !!");
@@ -97,9 +98,9 @@ namespace POS.UI.Controllers
                     var role = _context.UserViewModel.FirstOrDefault(x => x.UserName == user.UserName);
 
                     //save to session 
-                    HttpContext.Session.SetString("TotalMenu", JsonConvert.SerializeObject(_context.Menu));                    
+                    HttpContext.Session.SetString("TotalMenu", JsonConvert.SerializeObject(_context.Menu));
                     HttpContext.Session.SetString("Menus", JsonConvert.SerializeObject(_context.RoleWiseMenuPermission.Where(x => x.RoleId == role.Role).Include(x => x.Menu)));
-                    HttpContext.Session.SetString("Store", JsonConvert.SerializeObject(_context.Store.FirstOrDefault()));
+                    HttpContext.Session.SetString("Store", JsonConvert.SerializeObject(store));
                     if (model.TerminalId != 0)
                     {
                         HttpContext.Session.SetString("TerminalId", model.TerminalId.ToString());
@@ -142,8 +143,11 @@ namespace POS.UI.Controllers
                         return RedirectToLocal(returnUrl);
                     else
                     {
-                       // return RedirectToAction("Landing", "SalesInvoice");
-                        return RedirectToAction("CrLanding", "SalesInvoice", new { Mode = "tax" });
+                        if (store.INITIAL == "WHS")
+                            return RedirectToAction("CrLanding", "SalesInvoice", new { Mode = "tax" });
+                        else
+                            return RedirectToAction("Landing", "SalesInvoice");
+                        //return RedirectToAction("CrLanding", "SalesInvoice", new { Mode = "tax" });
                     }
                 }
                 if (result.RequiresTwoFactor)

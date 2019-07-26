@@ -347,13 +347,13 @@ where b.BarCode = {0} or i.Code = {0}";
                 //update cache
                 Config config = ConfigJSON.Read();
                 //split data to 1lakh and save to cache
-                int count = 10000, skip = 0;
-                _context.ChangeTracker.AutoDetectChangesEnabled = false;
+                int count = 100000, skip = 0;
+                //_context.ChangeTracker.AutoDetectChangesEnabled = false;
                 for (; ; )
                 {
                     try
                     {
-                        itemsTemp = _context.ItemViewModel.AsNoTracking().Skip(skip).Take(count).ToList();
+                        itemsTemp = _context.ItemViewModel.FromSql("SPItemViewModel @p0, @p1", count, skip).ToList();
                         if (itemsTemp.Count() == 0 && itemsTotal.Count() > 0)
                         {
                             _cache.Set("ItemViewModel", itemsTotal);

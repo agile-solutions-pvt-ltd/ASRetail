@@ -188,6 +188,8 @@ namespace POS.UI.Sync
                 {
                     if (response.Content.Contains("already exist"))
                     {
+
+                       
                         // update update number
                         var updatedCustomer = customers.FirstOrDefault(x => x.Membership_Number == cus.number);
                         updatedCustomer.IsNavSync = true;

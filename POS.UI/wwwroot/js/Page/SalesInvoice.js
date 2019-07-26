@@ -1281,7 +1281,7 @@ const invoice = (function () {
 
     };
     let calcNetTotalAfterCommission = () => {
-        let totalQuantity = 0, totalGrossAmount = 0, totalDiscount = 0, totalTax = 0, totalNetAmount = 0;
+        let totalQuantity = 0, totalGrossAmount = 0, totalDiscount = 0, totalTax = 0, totalNetAmount = 0, totalTaxableAmount = 0, totalNonTaxableAmount=0 ;
         $.each(table.rows, function (i, v) {
             let rate = parseFloat($(this).find(".Rate").val()),
                 quantity = parseFloat($(this).find(".Quantity").val()),
@@ -1290,6 +1290,15 @@ const invoice = (function () {
                 taxable = $(this).find(".Tax").data("isvatable"),
                 tax = calculateTax(rate,taxPercent, taxable) * quantity;
             let netAmount = grossAmount - discount + tax;
+
+
+            //calc taxable and non taxable
+            if (taxable)
+                totalTaxableAmount += (rate - discount) * quantity;
+            else {
+                totalNonTaxableAmount += rate * quantity;
+            }
+
             totalQuantity += quantity;
             totalGrossAmount += grossAmount;
             totalDiscount += discount;
@@ -1308,6 +1317,8 @@ const invoice = (function () {
         $("#totalDiscount").text(CurrencyFormat(totalDiscount));
         $("#totalTax").text(CurrencyFormat(totalTax));
         $("#totalNetAmount").text(CurrencyFormat(totalNetAmount));
+        $("#NonTaxableAmount").val(totalNonTaxableAmount.toFixed(2));
+        $("#TaxableAmount").val(totalTaxableAmount.toFixed(2));
 
 
 
