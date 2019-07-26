@@ -56,8 +56,8 @@ namespace POS.UI.Sync
                     _context.SaveChanges();
                     PostSalesInvoicePaymentMode(invoice.number);
                     PostSalesInvoiceItem(invoice.number);
-                   
-                   
+
+
 
                     return true;
                 }
@@ -183,6 +183,19 @@ namespace POS.UI.Sync
                         services.LastSyncDate = DateTime.Now;
                     }
                     _context.SaveChanges();
+                }
+                else
+                {
+                    if (response.Content.Contains("already exist"))
+                    {
+                        // update update number
+                        var updatedCustomer = customers.FirstOrDefault(x => x.Membership_Number == cus.number);
+                        updatedCustomer.IsNavSync = true;
+                        updatedCustomer.NavSyncDate = DateTime.Now;
+
+                        _context.SaveChanges();
+                        continue;
+                    }
 
                 }
             }
@@ -251,7 +264,7 @@ namespace POS.UI.Sync
                     i.IsNavSync = true;
                     i.NavSyncDate = DateTime.Now;
                     _context.Entry(i).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-                   
+
 
                 }
 
@@ -282,7 +295,7 @@ namespace POS.UI.Sync
                     quantity = item.Quantity.Value,
                     unitPrice = item.RateExcludeVat, //Send rate excluding vat
                     discountAmount = item.Discount.Value
-                    
+
 
                 };
 
@@ -391,7 +404,7 @@ namespace POS.UI.Sync
                     NavCreditItems navSalesItem = new NavCreditItems()
                     {
 
-                       // itemId = item.it,
+                        // itemId = item.it,
                         unitPrice = item.Rate.Value,
                         quantity = item.Quantity.Value,
                         discountAmount = item.Discount.Value,
@@ -426,7 +439,7 @@ namespace POS.UI.Sync
 
                 }
 
-              
+
             }
 
 

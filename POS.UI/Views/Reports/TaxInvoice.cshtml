@@ -151,11 +151,11 @@
                 complete: function (result) {
 
                     if (result.status === 200)
-
                         var data = {
                             invoiceData: invoiceData,
                             storeData: store,
                             copy: result.responseJSON.printCount,
+                            billData: result.responseJSON.billData,
                             paymentMode: result.responseJSON.paymentMode
                         };
                     printer.PrintInvoice(data, function () {

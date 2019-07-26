@@ -32,8 +32,8 @@ namespace POS.UI.Controllers
             //ViewBag.EndDate = _endDate.ToShortDateString();
             DateTime _startDate = startdate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
             DateTime _endDate = enddate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
-            IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Date_Ad >= _startDate && x.Trans_Date_Ad <= _endDate && x.Trans_Type == "Sales").OrderByDescending(x => x.Trans_Date_Ad);
-            // IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Type == "Sales").Include(x => x.SalesInvoiceItems).OrderByDescending(x => x.Trans_Date_Ad);
+            IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Date_Ad >= _startDate && x.Trans_Date_Ad <= _endDate && x.Trans_Type=="Sales").Include(x=>x.SalesInvoiceItems).OrderByDescending(x => x.Trans_Date_Ad);
+           // IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Type == "Sales").Include(x => x.SalesInvoiceItems).OrderByDescending(x => x.Trans_Date_Ad);
             return Ok(salesInvoiceList);
         }
 

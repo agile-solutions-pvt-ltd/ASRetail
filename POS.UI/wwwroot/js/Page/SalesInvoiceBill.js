@@ -78,7 +78,7 @@
 
         //});
 
-        
+
 
         $.ajax({
             method: "POST",
@@ -307,7 +307,7 @@
     let customerChangeEvent = () => {
         //var customerDropdown = $("#customer").data("kendoComboBox");
         //var selectedItem = customerDropdown.dataItem();
-        
+
         //var selectedValue = $('#customer').find(":selected").val();
         //var selectedItem = _.filter(customerList, function (x) {
         //    return x.Code === selectedValue;
@@ -353,7 +353,7 @@
     };
 
     let paymentMethodForWholesaleCustomer = () => {
-       
+
         if (customerList[0].CustomerPriceGroup === "WSP" || customerList[0].customerPriceGroup === "WSP" || customerList[0].Type === "1" || customerList[0].type === "1") {
             $("#cash").remove();
             $("#card").remove();
@@ -369,8 +369,8 @@
             //make readonly
             //var customerMultiselect = $("#customer").data("kendoComboBox");
             //customerMultiselect.value(customerList[0].Membership_Number);
-           // customerMultiselect.input.attr("readonly", true);
-           // $(".k-icon.k-clear-value.k-i-close").remove();
+            // customerMultiselect.input.attr("readonly", true);
+            // $(".k-icon.k-clear-value.k-i-close").remove();
         }
     };
     let PaymentMethodClickEvent = (evt) => {
@@ -481,7 +481,7 @@
 
 
         let invoiceId = $("#Invoice_Id").val();
-       
+
         let data = [];
         $.each(table.rows, function (i, v) {
             let mode = $(this).find(".trans_mode").text();
@@ -516,15 +516,25 @@
             contentType: "application/json; charset=utf-8",
             complete: function (result) {
                 if (result.status === 200) {
-                    printer.PrintInvoice(result.responseJSON, function () {                        
-                        window.location.href = "/SalesInvoice/Landing?StatusMessage=" + result.responseJSON.statusMessage;
-                    });
-                    // window.location.href = "/SalesInvoice/Landing?StatusMessage=" + result.responseJSON.statusMessage;
+                    debugger;
+                    if (result.responseJSON.billData !== null && result.responseJSON.billData[0].trans_Mode === "Credit") {
+                        result.responseJSON.copy = {
+                            printCount: 0
+                        };
+                        printer.PrintInvoice(result.responseJSON, function () {
+                            window.location.href = "/SalesInvoice/CrLanding?StatusMessage=" + result.responseJSON.statusMessage;
+                        });
+                    } else {
+                        printer.PrintInvoice(result.responseJSON, function () {
+                            window.location.href = "/SalesInvoice/Landing?StatusMessage=" + result.responseJSON.statusMessage;
+                        });
+                    }
+
                 }
                 else {
-                    StatusNotify("error", "Error occur, try again later !!");  
+                    StatusNotify("error", "Error occur, try again later !!");
                     $("#SaveButton").attr("disabled", false);
-                    
+
                 }
             }
         });

@@ -29,10 +29,10 @@ namespace POS.DTO
         public string VendorNumber { get; set; }
         public string DiscountGroup { get; set; }
 
-        public Item UpdateItemUsingNewVal(Item item)
+        public Item UpdateItem(Item item)
         {
             var itemToReturn = new Item();
-            item.Code = itemToReturn.Code;
+            item.Code = itemToReturn.Code;            
             return itemToReturn;
         }
     }

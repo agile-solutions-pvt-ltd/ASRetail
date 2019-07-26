@@ -200,10 +200,10 @@ namespace POS.UI.Sync
                             }
                             _context.SaveChanges();
                         }
-                        
-                        
+
+
                         CompanyVatNumberSync();
-                        
+
                         _cache.Set("IsStoreSyncIsInProcess", false);
                         return true;
                     }
@@ -357,7 +357,7 @@ namespace POS.UI.Sync
                 Config config = ConfigJSON.Read();
                 try
                 {
-                   
+
                     NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Item");
                     string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
                     //access update number data only
@@ -374,30 +374,45 @@ namespace POS.UI.Sync
                         List<Item> item = _mapper.Map<List<Item>>(response.Data.value);
 
                         var listOfItemsToUpdate = _context.Item.Where(x => item.Any(y => y.Code == x.Code));
-                        
+
                         foreach (var i in listOfItemsToUpdate)
                         {
-                            
+                            var newItem = item.FirstOrDefault(x => x.Code == i.Code);
+                            i.Name = newItem.Name;
+                            i.DiscountGroup = newItem.DiscountGroup;
+                            i.Bar_Code = newItem.Bar_Code;
+                            i.Code = newItem.Code;
+                            i.Discount = newItem.Discount;
+                            i.Is_Active = newItem.Is_Active;
+                            i.Is_Discountable = newItem.Is_Discountable;
+                            i.Is_Vatable = newItem.Is_Vatable;
+                            i.KeyInWeight = newItem.KeyInWeight;
+                            i.No_Discount = newItem.No_Discount;
+                            i.Parent_Code = newItem.Parent_Code;
+                            i.Rate = newItem.Rate;
+                            i.Remarks = newItem.Remarks;
+                            i.Type = newItem.Type;
+                            i.Unit = newItem.Unit;
+                            i.VendorNumber = newItem.VendorNumber;
+                            _context.Entry(i).State = EntityState.Modified;
+
 
                         }
-                        //_context.Item.RemoveRange(_context.Item.Where(x => item.Any(y => y.Code == x.Code)));
-                        //var c = _context.SaveChanges();
-                        _context.Item.AddRange(new Item { });
-
-                        ////using new extension
-                        //_context.Item.AddOrUpdate(ref item, x => new { x.Code });
+                        var listOfItemsCodesToUpdate = item.Select(x => x.Code).ToList();
+                        var listOfItemsToAdd = item.Where(x => !listOfItemsCodesToUpdate.Contains(x.Code));
+                        _context.Item.AddRange(listOfItemsToAdd);
                         _context.SaveChanges();
                         //update update number
                         if (response.Data.value.Count() > 0)
                         {
                             //var maxUpdateNuber
-                            NavIntegrationService services1 = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Item");                            
-                            services1.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
-                            services1.LastSyncDate = DateTime.Now;
-                            _context.Entry(services1).State = EntityState.Modified;
+                            NavIntegrationService services1 = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Item");
+                            services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
+                            services.LastSyncDate = DateTime.Now;
+                            _context.Entry(services).State = EntityState.Modified;
                             _context.SaveChanges();
                         }
-                       
+
 
                         if (response.Data.value.Count() > 0 && response.Data.value.Count() < 10)
                         {
@@ -419,6 +434,8 @@ namespace POS.UI.Sync
                     }
                     else
                     {
+                        config.SyncLog.Item = "Error :" + response.Content;
+                        ConfigJSON.Write(config);
                         _cache.Set("IsItemSyncIsInProcess", false);
                         return false;
                     }
@@ -443,7 +460,7 @@ namespace POS.UI.Sync
                 Config config = ConfigJSON.Read();
                 try
                 {
-                   
+
                     NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Customer");
                     string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
                     //access update number data only
@@ -521,7 +538,7 @@ namespace POS.UI.Sync
                 try
                 {
                     _cache.Set("IsItemBarCodeSyncIsInProcess", true);
-                   
+
                     NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Barcode");
                     string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
                     //access update number data only
@@ -857,8 +874,13 @@ namespace POS.UI.Sync
                     if (user1 != null && !string.IsNullOrEmpty(ur.Role_ID))
                     {
                         var roles = _userManager.GetRolesAsync(user1).Result;
-                        var userRoles = _userManager.RemoveFromRolesAsync(user1, roles.ToArray());
-                        userRoles.Wait();
+                        if (roles.Count() > 0)
+                        {
+                            var userRoles = _userManager.RemoveFromRolesAsync(user1, roles.ToArray());
+                            userRoles.Wait();
+
+                        }
+                          
                         var userNewRoles = _userManager.AddToRoleAsync(user1, ur.Role_ID);
                         userNewRoles.Wait();
 

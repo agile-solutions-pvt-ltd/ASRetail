@@ -97,7 +97,7 @@ namespace POS.UI.Controllers
                     var role = _context.UserViewModel.FirstOrDefault(x => x.UserName == user.UserName);
 
                     //save to session 
-                    HttpContext.Session.SetString("TotalMenu", JsonConvert.SerializeObject(_context.Menu));
+                    HttpContext.Session.SetString("TotalMenu", JsonConvert.SerializeObject(_context.Menu));                    
                     HttpContext.Session.SetString("Menus", JsonConvert.SerializeObject(_context.RoleWiseMenuPermission.Where(x => x.RoleId == role.Role).Include(x => x.Menu)));
                     HttpContext.Session.SetString("Store", JsonConvert.SerializeObject(_context.Store.FirstOrDefault()));
                     if (model.TerminalId != 0)
@@ -130,8 +130,8 @@ namespace POS.UI.Controllers
                             {
                                 HttpContext.Session.SetString("TerminalId", terminal.Id.ToString());
                                 HttpContext.Session.SetString("Terminal", terminal.Name.ToString());
-                                await _userManager.AddClaimAsync(user, new Claim("Terminal", terminal.Id.ToString()));
-                                await _userManager.AddClaimAsync(user, new Claim("TerminalName", terminal.Name.ToString()));
+                                //await _userManager.AddClaimAsync(user, new Claim("Terminal", terminal.Id.ToString()));
+                                //await _userManager.AddClaimAsync(user, new Claim("TerminalName", terminal.Name.ToString()));
                             }
 
                         }
@@ -141,7 +141,10 @@ namespace POS.UI.Controllers
                     if (!string.IsNullOrEmpty(returnUrl) && returnUrl != "/")
                         return RedirectToLocal(returnUrl);
                     else
-                        return RedirectToAction("CrLanding", "SalesInvoice",new { Mode="tax" });
+                    {
+                       // return RedirectToAction("Landing", "SalesInvoice");
+                        return RedirectToAction("CrLanding", "SalesInvoice", new { Mode = "tax" });
+                    }
                 }
                 if (result.RequiresTwoFactor)
                 {
