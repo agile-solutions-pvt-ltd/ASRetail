@@ -47,6 +47,7 @@
     <script>
         $(document).ready(function () {
             $("#treelist").kendoTreeList({
+                height: CalcGridHeight(),
                 dataSource: {
                     transport: {
                         read: {
@@ -73,7 +74,6 @@
                     }
 
                 },
-                height: 540,
                 filterable: true,
                 sortable: true,
                 columns: [
@@ -82,8 +82,8 @@
                 ],
 
             });
-            $(".k-grid-content").css("overflow-y", "hidden").mCustomScrollbar();
-            PageSlimScroll();
+            //$(".k-grid-content").css("overflow-y", "hidden").mCustomScrollbar();
+            //PageSlimScroll();
         });
     </script>
 }
