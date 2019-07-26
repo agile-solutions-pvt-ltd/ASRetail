@@ -104,13 +104,13 @@
                             <span class="pcoded-mcaret"></span>
                         </a>
                     </li>
-                    <li class="role-menu Item_Type_Setup">
+                    @*<li class="role-menu Item_Type_Setup">
                         <a asp-controller="ItemType" asp-action="Index">
                             <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
                             <span class="pcoded-mtext" data-i18n="nav.user-profile.user-card">Item Type Setup</span>
                             <span class="pcoded-mcaret"></span>
                         </a>
-                    </li>
+                    </li>*@
                     <li class="role-menu Item_Setup">
                         <a asp-controller="Item" asp-action="Index">
                             <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
@@ -180,6 +180,13 @@
                         <a asp-controller="Reports" asp-action="TaxInvoice">
                             <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
                             <span class="pcoded-mtext">Tax Invoice Report</span>
+                            <span class="pcoded-mcaret"></span>
+                        </a>
+                    </li>
+                    <li class="role-menu Wholesale_Tax_Invoice_Report">
+                        <a asp-controller="Reports" asp-action="WholeSaleTaxInvoice">
+                            <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
+                            <span class="pcoded-mtext">Wholesale Tax Invoice Report</span>
                             <span class="pcoded-mcaret"></span>
                         </a>
                     </li>

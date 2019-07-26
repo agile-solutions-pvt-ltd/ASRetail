@@ -88,7 +88,7 @@
         $(document).ready(function () {
 
             $("#grid").kendoGrid({
-                height: 500,
+                height: CalcGridHeight(),
                 dataSource: {
                     pageSize: 100,
                     serverPaging: true,
@@ -124,11 +124,11 @@
                 sortable: true
             });
 
-            $(".k-grid-content").css("overflow-y", "hidden").mCustomScrollbar();
-            $("#grid").data("kendoGrid").dataSource.pageSize(100);
+            //$(".k-grid-content").css("overflow-y", "hidden").mCustomScrollbar();
+            //$("#grid").data("kendoGrid").dataSource.pageSize(100);
 
 
-            PageSlimScroll();
+            //PageSlimScroll();
         });
     </script>
 
