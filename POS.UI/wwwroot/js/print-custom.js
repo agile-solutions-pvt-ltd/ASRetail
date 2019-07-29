@@ -233,7 +233,8 @@
 
         //Footer start here
         var footer = "--------------------------------------- \r\n";
-        footer += "Welcome to great shopping experience. Goods exchange within 7 days with original bill. contact: 01-5550422,23 \r\n";
+        //footer += "Welcome to great shopping experience. Goods exchange within 7 days with original bill. contact: 01-5550422,23 \r\n";
+        footer += data.storeData.PrintMessage;
         footer += "--------------------------------------- \r\n";
         footer += "Counter : " + data.invoiceData.terminal + " (" + FormatForDisplayTime(data.invoiceData.trans_Time) + ") \r\n";
         footer += "Cashier : " + data.invoiceData.created_By;
@@ -300,6 +301,7 @@
                     printText = printText.replace("{terminalName}", data.invoiceData.terminal);
                     printText = printText.replace("{transTime}", FormatForDisplayTime(data.invoiceData.trans_Time));
                     printText = printText.replace("{cashierName}", data.invoiceData.created_By);
+                    printText = printText.replace("{printMessage}", data.storeData.PrintMessage);
 
                     //get items template
                     let printItemTemplateOld = $(result.responseText).find("#items").html();
@@ -453,7 +455,8 @@
 
         //Footer start here
         var footer = "--------------------------------------- \r\n";
-        footer += "Welcome to great shopping experience. Goods exchange within 7 days with original bill. contact: 01-5550422,23 \r\n";
+        //footer += "Welcome to great shopping experience. Goods exchange within 7 days with original bill. contact: 01-5550422,23 \r\n";
+        footer += data.storeData.PrintMessage;
         footer += "--------------------------------------- \r\n";
         footer += "Counter : " + data.invoiceData.terminal + " (" + FormatForDisplayTime(data.invoiceData.trans_Time) + ") \r\n";
         footer += "Cashier : " + data.invoiceData.created_By;
@@ -513,6 +516,7 @@
                     printText = printText.replace("{terminalName}", data.invoiceData.terminal);
                     printText = printText.replace("{transTime}", FormatForDisplayTime(data.invoiceData.trans_Time));
                     printText = printText.replace("{cashierName}", data.invoiceData.created_By);
+                    printText = printText.replace("{printMessage}", data.storeData.PrintMessage);
 
                     //get items template
                     let printItemTemplateOld = $(result.responseText).find("#items").html();
@@ -669,6 +673,7 @@
                     printText = printText.replace("{terminalName}", data.invoiceData.terminal);
                     printText = printText.replace("{transTime}", FormatForDisplayTime(data.invoiceData.trans_Time));
                     printText = printText.replace("{cashierName}", data.invoiceData.created_By);
+                    printText = printText.replace("{printMessage}", data.storeData.PrintMessage);
 
                     //get items template
                     let printItemTemplateOld = $(result.responseText).find("#items").html();

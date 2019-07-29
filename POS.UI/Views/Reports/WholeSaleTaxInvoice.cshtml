@@ -145,7 +145,8 @@
                             invoiceData: invoiceData,
                             storeData: store,
                             copy: result.responseJSON.printCount,
-                            paymentMode: result.responseJSON.paymentMode
+                            paymentMode: result.responseJSON.paymentMode,
+                            billData: result.responseJSON.billData
                         };
 
                         printer.PrintInvoice(data, function () { });

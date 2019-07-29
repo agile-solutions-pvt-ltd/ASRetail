@@ -37,5 +37,7 @@ namespace POS.DTO
         public string FISCAL_YEAR { get; set; }
         [Display(Name = "Customer Price Group")]
         public string CustomerPriceGroup { get; set; }
+        [Display(Name = "Print Message")]
+        public string PrintMessage { get; set; }
     }
 }
