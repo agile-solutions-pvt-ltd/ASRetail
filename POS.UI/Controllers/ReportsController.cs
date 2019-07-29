@@ -113,7 +113,7 @@ namespace POS.UI.Controllers
             //ViewBag.StartDate = _startDate.ToShortDateString();
             //ViewBag.EndDate = _endDate.ToShortDateString();
 
-            IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Date_Ad >= _startDate && x.Trans_Date_Ad <= _endDate).OrderByDescending(x => x.Trans_Date_Ad);
+            IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Date_Ad >= _startDate && x.Trans_Date_Ad <= _endDate).OrderByDescending(x => x.Trans_Date_Ad).Include(x => x.SalesInvoiceItems);
             return Ok(salesInvoiceList);
         }
         public IActionResult SalesInvoiceUserwise()

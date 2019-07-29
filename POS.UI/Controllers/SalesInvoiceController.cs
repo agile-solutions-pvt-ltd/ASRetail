@@ -145,7 +145,7 @@ namespace POS.UI.Controllers
                 //    return RedirectToAction("Billing", new { id = salesInvoiceTmp.Id });
                 //for api return
 
-                if (salesInvoiceTmp.Trans_Type == "Hold")
+                if (salesInvoiceTmp.Trans_Type == "Hold" || salesInvoiceTmp.Trans_Type=="Save")
                     return Ok(new { redirectUrl = "/SalesInvoice/Landing" });
                 else if (salesInvoiceTmp.Trans_Type == "Tax")
                     return Ok(new { RedirectUrl = "/SalesInvoice/Billing/" + salesInvoiceTmp.Id + "?M=" + salesInvoiceTmp.MemberId + "&Mode=tax" });
@@ -204,6 +204,14 @@ namespace POS.UI.Controllers
             var userid = User.Identity.Name;
             var trans = _context.SalesInvoiceTmp.Where(x => x.Trans_Type == "Hold" && x.Created_By == userid).ToList();
             return PartialView("_PausedTransactionListPartial", trans);
+        }
+
+
+        public IActionResult SavedTransactionListPartial()
+        {
+           
+            var trans = _context.SalesInvoiceTmp.Where(x => x.Trans_Type == "Save").ToList();
+            return PartialView("_SavedTransactionListPartial", trans);
         }
 
 
