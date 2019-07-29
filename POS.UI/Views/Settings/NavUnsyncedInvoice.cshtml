@@ -1,0 +1,127 @@
+﻿
+@{
+    ViewData["Title"] = "Nav Unsynced Invoice";
+}
+
+<div class="page-wrapper">
+    <div class="page-header">
+        <div class="page-header-title">
+            <h4>@ViewData["Title"]</h4>
+        </div>
+
+        <div class="page-header-breadcrumb">
+            <ul class="breadcrumb-title">
+                <li class="breadcrumb-item">
+                    <a href="index.html">
+                        <i class="icofont icofont-home"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">Settings</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="#!">@ViewData["Title"]</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="page-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-block">
+                        <p>
+                            Transaction Type :
+                            <select id="sel_TransactionType">
+                                <option value="0" disabled>Select Transaction Type</option>
+                                <option value="1" selected>Sales</option>
+                                <option value="2">Tax</option>
+                                <option value="3">Credit Note</option>
+                            </select>
+                        </p>
+
+                        <div id="grid"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/kendo-ui/kendo.all.min.js"></script>
+
+    <script type="text/javascript">
+
+        var transactionType = 1;
+
+        function BindTable() {
+            $("#grid").kendoGrid({
+                height: CalcGridHeight(),
+                filterable: true,
+                sortable: true,
+                pageable: true,
+                resizable: true,
+                dataSource: {
+                    transport: {
+                        read: window.location.origin + "/Settings/NavUnsyncedInvoiceByTransaction?transactionType=" + transactionType
+                    },
+                    schema: {
+                        model: {
+                            fields: {
+                                trans_Date_Ad: { type: "date" },
+                                total_Net_Amount: { type: "number" }
+                            }
+                        },
+                    },
+                    pageSize: 10,
+                    sort: { field: "invoice_Number", dir: "desc" },
+                },
+                columns: [
+                    {
+                        title: 'Transaction Number',
+                        field: 'invoice_Number'
+                    },
+                    {
+                        title: 'Date AD',
+                        field: 'trans_Date_Ad',
+                        format: "{0:MM/dd/yyyy}"
+                    },
+                    {
+                        title: 'Date BS',
+                        field: 'trans_Date_Bs'
+                    },
+                    {
+                        title: 'Membership No.',
+                        field: 'customer_Id'
+                    },
+                    {
+                        title: 'Net Amount',
+                        field: 'total_Net_Amount'
+                    },
+                    {
+                        title: 'Action',
+                        template: '<a href="javascript:void(0)">Sync Now</a>'
+                    }
+                ]
+            });
+        };
+
+        $(document).ready(function () {
+
+            $("#sel_TransactionType").on('change', function (e) {
+                e.preventDefault();
+                var value = parseInt($(this).val());
+                if (value == 1 || value == 2 || value == 3) {
+                    transactionType = value;
+                } else {
+                    $(this).val(transactionType);
+                }
+                BindTable();
+            });
+
+            BindTable();
+        });
+    </script>
+}

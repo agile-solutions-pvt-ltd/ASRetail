@@ -184,5 +184,45 @@ namespace POS.UI.Controllers
             else
                 return StatusCode(500);
         }
+
+
+        //Author - Santosh Sapkota
+        public IActionResult NavUnsyncedInvoice()
+        {
+            return View();
+        }
+        //transaction type: 1 = Sales, 2 = Tax Invoice, 2 = Credit Note Invoice
+        public IActionResult NavUnsyncedInvoiceByTransaction(int transactionType)
+        {
+            if(transactionType == 1)
+            {
+                var list = _context.SalesInvoice.Where(x => x.IsNavSync == false && x.Trans_Type == "Sales");
+                return Ok(list);
+            }
+            else if(transactionType == 2)
+            {
+                var list = _context.SalesInvoice.Where(x => x.IsNavSync == false && x.Trans_Type == "Tax");
+                return Ok(list);
+            }
+            else if(transactionType == 3)
+            {
+                var list = _context.CreditNote
+                    .Where(x => x.IsNavSync == false)
+                    .Select(x => new SalesInvoice
+                    {
+                        Invoice_Number = x.Credit_Note_Number,
+                        Trans_Date_Ad = x.Trans_Date_Ad,
+                        Trans_Date_Bs = x.Trans_Date_Bs,
+                        Trans_Type = "Credit",
+                        Customer_Id = x.Customer_Id,
+                        Total_Net_Amount = x.Total_Net_Amount
+                    });
+                return Ok(list);
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
     }
 }
