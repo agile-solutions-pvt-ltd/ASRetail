@@ -58,7 +58,6 @@
 
         function BindTable() {
             $("#grid").kendoGrid({
-                height: CalcGridHeight(),
                 filterable: true,
                 sortable: true,
                 pageable: true,
@@ -93,6 +92,10 @@
                         field: 'trans_Date_Bs'
                     },
                     {
+                        title: 'Transaction Type',
+                        field: 'trans_Type'
+                    },
+                    {
                         title: 'Membership No.',
                         field: 'customer_Id'
                     },
@@ -118,6 +121,7 @@
                 } else {
                     $(this).val(transactionType);
                 }
+                $("#grid").data("kendoGrid").destroy();
                 BindTable();
             });
 
