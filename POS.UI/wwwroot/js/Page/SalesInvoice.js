@@ -650,8 +650,19 @@ const invoice = (function () {
         $("#Trans_Type").val("Hold");
         SaveSalesInvoice();
     };
+
+    let saveTransaction = () => {
+        $("#Remarks").val($("#Trans_Type").val());
+        $("#Trans_Type").val("Save");
+        SaveSalesInvoice();
+    };
     let showPausedTransaction = () => {
         $("#PausedTransactionListModal").modal('show');
+
+    };
+    ///
+    let showSavedTransaction = () => {
+        $("#SavedTransactionListModal").modal('show');
 
     };
     let loadPausedTransaction = (row) => {
@@ -1720,10 +1731,22 @@ const invoice = (function () {
         });
 
 
+        //For Save transaction
+        Mousetrap.bindGlobal('ctrl+alt+s', function () {
+            saveTransaction();
+        });
+
         //for display hold transactions
         Mousetrap.bindGlobal('f2', function () {
             showPausedTransaction();
         });
+
+
+        //for display save transactions
+        Mousetrap.bindGlobal('f4', function () {
+            showSavedTransaction();
+        });
+
 
         //to convert sales and tax
         Mousetrap.bindGlobal('alt+c', function () {
@@ -1823,7 +1846,7 @@ const invoice = (function () {
         //}
     };
     let SaveSalesInvoice = () => {
-
+        debugger;
         //check sales limit
         if (transType.val() === "Sales" && parseFloat(CurrencyUnFormat($("#totalNetAmount").text())) >= salesTransactionLimit) {
             //if (confirm('Your Transaction Amount Is Greater Than Sale Limit. \n Do You Want To Convert To Tax Invoice?')) {
@@ -1942,7 +1965,7 @@ const invoice = (function () {
             }
         };
 
-
+        debugger;
         $.ajax({
             method: "POST",
             url: "/SalesInvoice/Index",
@@ -1959,6 +1982,7 @@ const invoice = (function () {
                     //}
                     //else
                     window.location.href = window.location.origin + result.responseJSON.redirectUrl;
+                    console.log("windows Url", window.location.href);
                 }
             }
         });
@@ -2035,6 +2059,10 @@ const invoice = (function () {
     $('#pausedTransactionListTable >tbody > tr').on('dblclick', function () {
         loadPausedTransaction($(this));
         $("#PausedTransactionListModal").modal('hide');
+    });
+    $('#savedTransactionListTable >tbody > tr').on('dblclick', function () {
+        loadPausedTransaction($(this));
+        $("#SavedTransactionListModal").modal('hide');
     });
     $("#ResetButton").on('click', function () {
         resetForm();
