@@ -12,6 +12,9 @@
     .k-grid {
         font-family: "DejaVu Sans", "Arial", sans-serif;
     }
+    .disabled-link {
+        color: Gray;
+    }
 </style>
 <style>
     /* Page Template for the exported PDF */
@@ -165,6 +168,7 @@
         console.log("EndDate", enddate);
 
         function printInvoice(evt) {
+            $(evt).addClass('disabled-link').removeAttr('onclick');
             var invoiceData = $("#grid").data("kendoGrid").dataItem(evt.closest("tr"));
             $.ajax({
                 url: window.location.origin + "/Print/GetPrintCount?invoiceNumber=" + invoiceData.invoice_Number,
@@ -188,6 +192,10 @@
                         //    }
                         //});
                     });
+
+                    setTimeout(function () {
+                        $(evt).removeClass('disabled-link').attr('onclick', 'printInvoice(this)');
+                    }, 5000);
                 }
             });
 
