@@ -7,7 +7,6 @@
         get newClientPromise() {
             return new Promise((resolve, reject) => {
                 GetClientLocalIP(function (ip) {
-                    debugger;
                     let wsClient;
                     if (location.protocol === 'https:')
                         wsClient = new WebSocket("wss://" + ip + ":90");
@@ -39,7 +38,6 @@
 
 
     let PrintInvoice = (data, callback) => {
-        debugger;
         //if (data.invoiceData.trans_Type === "Sales")
         //    PrintSalesInvoice(data, callback);
         //else {
@@ -64,7 +62,6 @@
         }
         else {
             if (typeof ws === 'undefined') {
-                debugger;
                 if (data.copy !== undefined && data.copy.printCount == 0) {
                     //print double
                     PrintTaxInvoiceBrowser(data, function () {
@@ -94,7 +91,6 @@
     };
 
     let PrintTaxInvoice = (data, callback) => {
-        debugger;
         var paymentMode = _.pluck(data.billData, "trans_Mode").join(", ");
         if (paymentMode === "") {
             paymentMode = data.paymentMode;
@@ -173,6 +169,8 @@
 
         //Items end here
 
+        //Adding Total Item
+        item += "            " + parseFloat(data.invoiceData.total_Quantity).toFixed(2) + "\r\n";
 
         //Items Total Start here
         let grossAmount = parseFloat(data.invoiceData.total_Gross_Amount).toFixed(2);
@@ -413,6 +411,8 @@
 
         //Items end here
 
+        //Adding Total Item
+        item += "            " + parseFloat(data.invoiceData.total_Quantity).toFixed(2) + "\r\n";
 
         //Items Total Start here
         let grossAmount = parseFloat(data.invoiceData.total_Gross_Amount).toFixed(2);
@@ -473,8 +473,6 @@
     };
     let PrintSalesInvoiceBrowser = (data, callback) => {
 
-
-        debugger;
         $.ajax({
             url: window.location.origin + "/Print/SalesInvoice",
             type: 'GET',
@@ -570,7 +568,6 @@
     };
 
     let printwsBill = (str, callback, data, errorcallback, ) => {
-        debugger;
         //var ws;
         //ws = new WebSocket('ws://127.0.0.1:90');
         //var state;
@@ -636,7 +633,6 @@
                 if (result.status === 200) {
                     let printText = $(result.responseText).find("#printbody").html();
                     //replace all variables
-                    debugger;
                     var paymentMode = _.pluck(data.billData, "trans_Mode").join(", ");
                     if (paymentMode === "") {
                         paymentMode = data.paymentMode;
@@ -946,7 +942,6 @@
             targetStyles: ['*'],
             onLoadingEnd: function () {
                 $("#tempprint").remove();
-                debugger;
                 if (callback !== undefined)
                     callback();
 
