@@ -21,6 +21,9 @@
         margin: 4px 2px;
         cursor: pointer;
     }
+    .disabled-link {
+        color: Gray;
+    }
 </style>
 
 <div class="page-wrapper">
@@ -98,6 +101,7 @@
     </script>
     <script>
         function printInvoice(evt) {
+            $(evt).addClass('disabled-link').removeAttr('onclick');
             var invoiceData = $("#grid").data("kendoGrid").dataItem(evt.closest("tr"));
             var data = {
                 invoiceData: invoiceData,
@@ -115,6 +119,10 @@
                 //    }
                 //});
             });
+
+            setTimeout(function () {
+                $(evt).removeClass('disabled-link').attr('onclick', 'printInvoice(this)');
+            }, 5000);
         }
         var startdate = new Date();
         var dd = String(startdate.getDate()).padStart(2, '0');

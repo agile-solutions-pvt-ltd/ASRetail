@@ -68,15 +68,23 @@ namespace POS.UI.Controllers
         }
 
 
-        public IActionResult SalesVatBook(DateTime? StartDate = null, DateTime? EndDate = null)
+        public IActionResult SalesVatBook(DateTime? StartDate = null, DateTime? EndDate = null,string TransType=null)
         {
             ViewData["Store"] = _context.Store.FirstOrDefault();
-            IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.OrderByDescending(x => x.Trans_Date_Ad);
-            if (StartDate != null)
-                salesInvoiceList = salesInvoiceList.Where(x => x.Trans_Date_Ad >= StartDate);
-            if (EndDate != null)
-                salesInvoiceList = salesInvoiceList.Where(x => x.Trans_Date_Ad <= EndDate);
+            //IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.OrderByDescending(x => x.Trans_Date_Ad);
+            //if (StartDate != null)
+            //    salesInvoiceList = salesInvoiceList.Where(x => x.Trans_Date_Ad >= StartDate);
+            //if (EndDate != null)
+            //    salesInvoiceList = salesInvoiceList.Where(x => x.Trans_Date_Ad <= EndDate);
+            //return View(salesInvoiceList);
+
+            DateTime _startDate = StartDate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+            DateTime _endDate = EndDate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+            string _TransType = TransType ?? "All";
+            TempData["TransType"] = _TransType;
+            IQueryable<SalesVatBookReport> salesInvoiceList = _context.SalesVatBookReport.FromSql($"SpSalesVatBookRpt {_startDate},{_endDate},{_TransType}");
             return View(salesInvoiceList);
+
         }
 
         public IActionResult InvoiceMaterial(DateTime? StartDate = null, DateTime? EndDate = null)
@@ -105,7 +113,7 @@ namespace POS.UI.Controllers
             //ViewBag.StartDate = _startDate.ToShortDateString();
             //ViewBag.EndDate = _endDate.ToShortDateString();
 
-            IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Date_Ad >= _startDate && x.Trans_Date_Ad <= _endDate).OrderByDescending(x => x.Trans_Date_Ad);
+            IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Date_Ad >= _startDate && x.Trans_Date_Ad <= _endDate).OrderByDescending(x => x.Trans_Date_Ad).Include(x => x.SalesInvoiceItems);
             return Ok(salesInvoiceList);
         }
         public IActionResult SalesInvoiceUserwise()
@@ -128,6 +136,8 @@ namespace POS.UI.Controllers
             DateTime _startDate = startdate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
             DateTime _endDate = enddate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
             IQueryable<SpSalesInvoiceAggregateGet> salesInvoiceAggregateList = _context.SpSalesInvoiceAggregateGet.FromSql($"SpSalesInvoiceAggregateGet {_startDate},{_endDate}");
+
+            //IQueryable<SpSalesInvoiceAggregateGet> salesInvoiceAggregateList = _context.SpSalesInvoiceAggregateGet.FromSql($"SpSalesInvoiceAggregateGet").Where(x => x.Trans_Date_AD >= _startDate && x.Trans_Date_AD <= _endDate);
             return Ok(salesInvoiceAggregateList);
         }
         //Niroj End

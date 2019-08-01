@@ -82,6 +82,10 @@ namespace POS.Core
        
         public virtual DbSet<SpSalesInvoiceAggregateGet> SpSalesInvoiceAggregateGet { get; set; }
 
+        
+        public virtual DbSet<SalesVatBookReport> SalesVatBookReport { get; set; }
+
+
         public virtual DbSet<Company> Company { get; set; }
         public virtual DbSet<NavIntegrationService> NavIntegrationService { get; set; }
 

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<POS.DTO.SalesInvoice>
+﻿@model IEnumerable<POS.DTO.SalesVatBookReport>
 
 @{
     ViewData["Title"] = "Sales Vat Book";
@@ -32,7 +32,9 @@
         font-size: 9px !important;
     }
 
-
+    #transtype {
+        margin-top: 14px;
+    }
     /*table width*/
 </style>
 <div class="page-wrapper">
@@ -68,24 +70,47 @@
                                 <div class="form-group col-md-2">
                                     <label for="StartDate" class="control-label">Start Date</label>
                                     <input id="StartDate" type="date" class="form-control form-control-sm" />
-
                                 </div>
                                 <div class="form-group col-md-2">
                                     <label for="EndDate" class="control-label">End Date</label>
                                     <input type="date" class="form-control form-control-sm" id="EndDate" />
-
                                 </div>
+                                <div class="form-group col-md-2">
+                                    <label for="Trans_type" class="control-label">Trans Type</label>
+
+                                    @*<select id="transtype">
+            <option value="All">All</option>
+            <option value="Sales">Sales</option>
+            <option value="Tax">Tax</option>
+            <option value="Credit_Note">Credit_Note</option>
+        </select>*@
+                                    <select id="transtype" selected="@TempData["TransType"]" option="@TempData["TransType"]">
+                                        <option value="All">All</option>
+                                        <option value="Sales">Sales</option>
+                                        <option value="Tax">Tax</option>
+                                        <option value="Credit_Note">Credit_Note</option>
+                                    </select>
+                                </div>
+                                @*<div class="form-group col-md-1 pt-3">
+            <label for="EndDate" class="control-label">End Date</label>
+            <select>
+                <option value="All">All</option>
+                <option value="Sales">Sales</option>
+                <option value="Tax">Tax</option>
+                <option value="Credit_Note">Credit_Note</option>
+            </select>
+
+        </div>*@
                                 <div class="form-group col-md-1 pt-3">
                                     <button type="button" id="filer" value="Filter" class="btn btn-sm btn-primary"> Filter</button>
-
                                 </div>
+
                                 <div class="form-group col-md-2 pt-3">
                                     <input type="button" class="btn btn-success btn-sm" id="print" value="Print" />
                                 </div>
                             </div>
-                            <hr />
-
-                        </div>
+                                <hr />
+                            </div>
 
                         <div id="print-content">
                             <div class="pt-5"></div>
@@ -146,7 +171,7 @@
                                     {
                                         <tr>
                                             <td>
-                                                @Html.DisplayFor(modelItem => item.Trans_Date_Ad)
+                                                @Html.DisplayFor(modelItem => item.Trans_Date_AD)
                                             </td>
                                             <td class="nowrap" style="text-wrap:none">
                                                 @Html.DisplayFor(modelItem => item.Invoice_Number)
@@ -206,8 +231,11 @@
 @section Scripts {
 
     <script>
+      
         $(document).ready(function () {
-            
+
+
+            $('#transtype :selected').text()
             init();
             //events
             $("#print").on('click', function () {
@@ -217,8 +245,9 @@
                     targetStyles: ['*']
                 });
             });
+            console.log('Selected', Option);
 
-
+          
             $("#filer").on('click', function () {
                 ;
                 let startDate = $("#StartDate").val();
@@ -228,7 +257,8 @@
                     url = SetUrlParameters(url, ["StartDate=" + startDate]);
                 if (endDate !== "")
                     url = SetUrlParameters(url, ["EndDate=" + endDate]);
-
+                if ($('#transtype :selected').text() !== "")
+                    url = SetUrlParameters(url, ["TransType=" + $('#transtype :selected').text()]);
                 window.location.href = url;
             });
 

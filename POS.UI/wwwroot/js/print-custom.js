@@ -8,7 +8,7 @@
             return new Promise((resolve, reject) => {
                 GetClientLocalIP(function (ip) {
                     debugger;
-                    var newIp = _.filter(serverIp, function (x, y) {                        
+                    var newIp = _.filter(serverIp, function (x, y) {
                         return y == ip;
                     });
                     if (newIp.length === 0)
@@ -53,7 +53,6 @@
         }
     }
 
-
     //********* Private Methos *****************//
     let init = () => {
 
@@ -62,7 +61,6 @@
 
 
     let PrintInvoice = (data, callback) => {
-        debugger;
         //if (data.invoiceData.trans_Type === "Sales")
         //    PrintSalesInvoice(data, callback);
         //else {
@@ -79,28 +77,43 @@
 
         //}
         window.wsSingleton = new Ws()
-        if (data.invoiceData.trans_Type === "Sales") {           
-            PrintSalesInvoice(data, callback);
+        if (data.invoiceData.trans_Type === "Sales") {
+            if (typeof ws === 'undefined')
+                PrintSalesInvoiceBrowser(data, callback);
+            else
+                PrintSalesInvoice(data, callback);
         }
         else {
-            if (data.copy !== undefined && data.copy.printCount == 0) {
-                //print double
-                PrintTaxInvoice(data, function () {
-                    data.copy.printCount = 1;
-                    PrintTaxInvoice(data, callback);
-                });
-
+            if (typeof ws === 'undefined') {
+                if (data.copy !== undefined && data.copy.printCount == 0) {
+                    //print double
+                    PrintTaxInvoiceBrowser(data, function () {
+                        data.copy.printCount = 1;
+                        PrintTaxInvoiceBrowser(data, callback);
+                    });
+                   
+                }
+                else {
+                    //print single
+                    PrintTaxInvoiceBrowser(data, callback);
+                }
             }
             else {
-                //print single
-                PrintTaxInvoice(data, callback);
+                if (data.copy !== undefined) {
+                    //print double
+                    PrintTaxInvoice(data, callback);
+                    PrintTaxInvoice(data, callback);
+                }
+                else {
+                    //print single
+                    PrintTaxInvoice(data, callback);
+                }
             }
 
         }
     };
 
     let PrintTaxInvoice = (data, callback) => {
-        debugger;
         var paymentMode = _.pluck(data.billData, "trans_Mode").join(", ");
         if (paymentMode === "") {
             paymentMode = data.paymentMode;
@@ -179,6 +192,8 @@
 
         //Items end here
 
+        //Adding Total Item
+        item += "            " + parseFloat(data.invoiceData.total_Quantity).toFixed(2) + "\r\n";
 
         //Items Total Start here
         let grossAmount = parseFloat(data.invoiceData.total_Gross_Amount).toFixed(2);
@@ -239,7 +254,8 @@
 
         //Footer start here
         var footer = "--------------------------------------- \r\n";
-        footer += "Welcome to great shopping experience. Goods exchange within 7 days with original bill. contact: 01-5550422,23 \r\n";
+        //footer += "Welcome to great shopping experience. Goods exchange within 7 days with original bill. contact: 01-5550422,23 \r\n";
+        footer += data.storeData.PrintMessage;
         footer += "--------------------------------------- \r\n";
         footer += "Counter : " + data.invoiceData.terminal + " (" + FormatForDisplayTime(data.invoiceData.trans_Time) + ") \r\n";
         footer += "Cashier : " + data.invoiceData.created_By;
@@ -255,13 +271,10 @@
 
     };
     let PrintTaxInvoiceBrowser = (data, callback) => {
-        debugger;
-        var url = "";
-        var companyInitital = data.storeData.initial || data.storeData.INITIAL;
-        if (data.billData !== null && data.billData.length > 0 && data.billData[0].trans_Mode === "Credit" && companyInitital === "WHS") {
+       
+        var url = ""
+        if (data.billData !== null && data.billData[0].trans_Mode === "Credit")
             url = window.location.origin + "/Print/NewTaxInvoice";
-            maximumCharAllowInItemName = 40;
-        }
         else
             url = window.location.origin + "/Print/TaxInvoice";
         $.ajax({
@@ -309,6 +322,7 @@
                     printText = printText.replace("{terminalName}", data.invoiceData.terminal);
                     printText = printText.replace("{transTime}", FormatForDisplayTime(data.invoiceData.trans_Time));
                     printText = printText.replace("{cashierName}", data.invoiceData.created_By);
+                    printText = printText.replace("{printMessage}", data.storeData.PrintMessage);
 
                     //get items template
                     let printItemTemplateOld = $(result.responseText).find("#items").html();
@@ -321,7 +335,6 @@
                         printItemTemplate = printItemTemplate.replace("{ItemRate}", parseFloat(v.rate).toFixed(2));
                         printItemTemplate = printItemTemplate.replace("{ItemPromoDiscount}", parseFloat(v.promoDiscount).toFixed(2));
                         printItemTemplate = printItemTemplate.replace("{ItemTotal}", parseFloat(v.gross_Amount).toFixed(2));
-                        printItemTemplate = printItemTemplate.replace("{ItemTax}", (v.is_Vatable == true ? "V" : "N"));
                         printItems += printItemTemplate;
                     });
 
@@ -421,6 +434,8 @@
 
         //Items end here
 
+        //Adding Total Item
+        item += "            " + parseFloat(data.invoiceData.total_Quantity).toFixed(2) + "\r\n";
 
         //Items Total Start here
         let grossAmount = parseFloat(data.invoiceData.total_Gross_Amount).toFixed(2);
@@ -463,7 +478,8 @@
 
         //Footer start here
         var footer = "--------------------------------------- \r\n";
-        footer += "Welcome to great shopping experience. Goods exchange within 7 days with original bill. contact: 01-5550422,23 \r\n";
+        //footer += "Welcome to great shopping experience. Goods exchange within 7 days with original bill. contact: 01-5550422,23 \r\n";
+        footer += data.storeData.PrintMessage;
         footer += "--------------------------------------- \r\n";
         footer += "Counter : " + data.invoiceData.terminal + " (" + FormatForDisplayTime(data.invoiceData.trans_Time) + ") \r\n";
         footer += "Cashier : " + data.invoiceData.created_By;
@@ -475,13 +491,11 @@
         //Final Data
         var finalBill = header + itemHeader + item + itemTotal + footer;
 
-        printwsBill(finalBill, callback, data, PrintSalesInvoiceBrowser);
+        printwsBill(finalBill, callback);
 
     };
     let PrintSalesInvoiceBrowser = (data, callback) => {
 
-
-        debugger;
         $.ajax({
             url: window.location.origin + "/Print/SalesInvoice",
             type: 'GET',
@@ -523,6 +537,7 @@
                     printText = printText.replace("{terminalName}", data.invoiceData.terminal);
                     printText = printText.replace("{transTime}", FormatForDisplayTime(data.invoiceData.trans_Time));
                     printText = printText.replace("{cashierName}", data.invoiceData.created_By);
+                    printText = printText.replace("{printMessage}", data.storeData.PrintMessage);
 
                     //get items template
                     let printItemTemplateOld = $(result.responseText).find("#items").html();
@@ -575,7 +590,62 @@
         });
     };
 
-   
+    let printwsBill = (str, callback, data, errorcallback, ) => {
+        //var ws;
+        //ws = new WebSocket('ws://127.0.0.1:90');
+        //var state;
+        //ws.addEventListener('open', ws_open(str), false);
+        //ws.addEventListener('close', ws_close(str), false);
+        //function ws_open(text) {
+        //    // alert("Are you sure to print?");
+        //    console.log("printcalled");
+        //    ws.onopen = () => ws.send(text);
+        //    // ws.send(text);
+        //    if (callback !== undefined)
+        //        callback();
+        //}
+        //function ws_close(text) {
+        //    if (errorcallback !== undefined)
+        //        errorcallback(data, callback);
+        //}
+        try {
+            window.wsSingleton = new Ws()
+            window.wsSingleton.clientPromise
+                .then(wsClient => {
+                    wsClient.send(str);
+                    //console.log('sended')
+
+                    if (callback !== undefined)
+                        callback();
+                })
+                .catch((error) => {
+                    if (errorcallback !== undefined)
+                        errorcallback();
+                });
+
+
+        } catch{
+            alert("error");
+        }
+
+
+
+        //var ws;
+        //ws = new WebSocket('ws://127.0.0.1:90');
+        //var state;       
+        //ws.addEventListener('open', ws_open(str), false);
+
+        //function ws_open(text) {
+        //    // alert("Are you sure to print?");
+        //    console.log("printcalled");
+        //    ws.onopen = () => ws.send(text);
+        //    // ws.send(text);
+        //    if (callback !== undefined)
+        //        callback();
+        //}
+
+
+    };
 
     let PrintCreditNoteInvoice = (data, callback) => {
 
@@ -586,7 +656,6 @@
                 if (result.status === 200) {
                     let printText = $(result.responseText).find("#printbody").html();
                     //replace all variables
-                    debugger;
                     var paymentMode = _.pluck(data.billData, "trans_Mode").join(", ");
                     if (paymentMode === "") {
                         paymentMode = data.paymentMode;
@@ -623,6 +692,7 @@
                     printText = printText.replace("{terminalName}", data.invoiceData.terminal);
                     printText = printText.replace("{transTime}", FormatForDisplayTime(data.invoiceData.trans_Time));
                     printText = printText.replace("{cashierName}", data.invoiceData.created_By);
+                    printText = printText.replace("{printMessage}", data.storeData.PrintMessage);
 
                     //get items template
                     let printItemTemplateOld = $(result.responseText).find("#items").html();
@@ -895,7 +965,6 @@
             targetStyles: ['*'],
             onLoadingEnd: function () {
                 $("#tempprint").remove();
-                debugger;
                 if (callback !== undefined)
                     callback();
 
@@ -904,65 +973,6 @@
         });
     };
 
-
-    let printwsBill = (str, callback, data, errorcallback, ) => {
-        debugger;
-        //var ws;
-        //ws = new WebSocket('ws://127.0.0.1:90');
-        //var state;
-        //ws.addEventListener('open', ws_open(str), false);
-        //ws.addEventListener('close', ws_close(str), false);
-        //function ws_open(text) {
-        //    // alert("Are you sure to print?");
-        //    console.log("printcalled");
-        //    ws.onopen = () => ws.send(text);
-        //    // ws.send(text);
-        //    if (callback !== undefined)
-        //        callback();
-        //}
-        //function ws_close(text) {
-        //    if (errorcallback !== undefined)
-        //        errorcallback(data, callback);
-        //}
-        try {
-            window.wsSingleton = new Ws()
-            window.wsSingleton.clientPromise
-                .then(wsClient => {
-                    wsClient.send(str);
-                    //console.log('sended')
-
-                    if (callback !== undefined)
-                        callback();
-                })
-                .catch((error) => {
-                    //alert("error");
-                    if (errorcallback !== undefined)
-                        errorcallback(data,callback);
-                });
-
-
-        } catch{
-            alert("error");
-        }
-
-
-
-        //var ws;
-        //ws = new WebSocket('ws://127.0.0.1:90');
-        //var state;       
-        //ws.addEventListener('open', ws_open(str), false);
-
-        //function ws_open(text) {
-        //    // alert("Are you sure to print?");
-        //    console.log("printcalled");
-        //    ws.onopen = () => ws.send(text);
-        //    // ws.send(text);
-        //    if (callback !== undefined)
-        //        callback();
-        //}
-
-
-    };
 
 
 

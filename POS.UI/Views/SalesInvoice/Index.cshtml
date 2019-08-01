@@ -123,7 +123,7 @@
     .card-block {
         padding-bottom: 0.5rem;
     }
-
+    
     /*table widths*/
     /*.sn-width {
         width: 1%;
@@ -205,6 +205,7 @@
     .k-footer-template td:nth-child(5) {
         border-width: 0;
     }
+    
 </style>
 
 
@@ -220,7 +221,6 @@
                                 @Html.Partial("_ResponseMessagePartial")
                                 <form id="Sales_Invoice_Form" asp-action="Index">
                                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
                                     <input type="hidden" asp-for="Id" />
                                     <input type="hidden" asp-for="Flat_Discount_Amount" />
                                     <input type="hidden" asp-for="Flat_Discount_Percent" />
@@ -235,9 +235,7 @@
                                     <input type="hidden" asp-for="NonTaxableAmount" />
                                     <input type="hidden" asp-for="TaxableAmount" />
 
-
                                     <input type="hidden" id="isNewMember" value="false" />
-
                                     <div class="br"></div>
                                     <div class="form-row">
                                         <div class="form-group col-md-3">
@@ -262,10 +260,8 @@
                                         </div>
                                         <div class="form-group col-md-2">
                                             <button type="button" id="convert-sales-tax" value=" Convert" data-selectedValue="" title="Convert to Tax Invoice" class="btn btn-sm btn-convert-to-tax btn-primary"><span class="fa fa-exchange"></span> Convert (Alt+C)</button>
-
                                         </div>
                                     </div>
-
 
                                     <fieldset>
                                         <div class="form-row">
@@ -281,7 +277,6 @@
                                             <div class="form-group ml-2">
                                                 <span class="fa fa-chevron-right" id="customer_icon_toggle"></span>
                                             </div>
-
                                             <label class="control-label flatDiscountHide col-md-1 pr-2 text-center">Flat Disc:</label>
                                             <div class="form-group col-md-1 flatDiscountHide">
                                                 <input name="flat_discount" id="flat_discount" class="form-control form-control-sm text-right" />
@@ -296,15 +291,12 @@
                                                     <label class="form-check-label" for="amountRadio">Rs</label>
                                                 </div>
                                             </div>
-
                                             <label class="control-label commissionPercentHide col-md-1 text-center">Com. %:</label>
                                             <div class="form-group col-md-1 commissionPercentHide">
                                                 <input type="number" name="commissionPercent" id="commissionPercent" min="0" max="5" class="form-control form-control-sm text-right" />
                                             </div>
                                             <input type="button" class="btn btn-success btn-sm btn-small commissionPercentHide" value="calc" id="CalculateCommission" />
-
                                         </div>
-
                                         <div class="bill_to_info_div">
                                             <div class="form-row">
                                                 <div class="form-group col-md-3">
@@ -345,7 +337,6 @@
                                         </div>
                                     </div>
                                     <div class="br"></div>
-
                                     <div class="row">
                                         <div class="col-md-12">
                                             <div id="example" class="k-content">
@@ -379,26 +370,20 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody></tbody>
-
                                                 </table>
-
                                             </div>
                                         </div>
-
                                     </div>
-
-
 
                                     <div class="br"></div>
                                     <div class="form-group">
                                         <input type="button" value="Next" id="NextButton" class="btn pull-right btn-success" />
                                         <label class="pull-right">&nbsp;&nbsp;</label>
                                         <input type="button" value="Reset" id="ResetButton" class="btn pull-right btn-danger" />
-
                                     </div>
                                 </form>
                                 @Html.RenderAction("PausedTransactionListPartial", "SalesInvoice")
-
+                                @Html.RenderAction("SavedTransactionListPartial", "SalesInvoice")
                             </div>
                         </div>
 
