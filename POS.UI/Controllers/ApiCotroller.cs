@@ -33,16 +33,29 @@ namespace POS.UI.Controllers
         {
             try
             {
-                _cache.Remove("Customer");
+                _cache.Remove("Customers");
+                IEnumerable<Customer> customers;
+                if (!_cache.TryGetValue("Customers", out customers))
+                {
+                    // Key not in cache, so get data.
+                    customers = _context.Customer.ToList();
+
+                    _cache.Set("Customers", customers);
+                }
                 var data =new  {
                     Status=  200,
-                    Messge= "Success"
+                    Message= "Success"
                 };
                 return Ok(data);
             }
             catch (Exception ex)
             {
-                return StatusCode(500);
+                var data = new
+                {
+                    Status = 500,
+                    Message = "Error :" + ex.Message
+                };
+                return StatusCode(500, data);
             }
         }
         // GET: Customer
@@ -51,11 +64,21 @@ namespace POS.UI.Controllers
             try
             {
                 _cache.Remove("ItemViewModel");
-                return Ok();
+                var data = new
+                {
+                    Status = 200,
+                    Message = "Success"
+                };
+                return Ok(data);
             }
             catch (Exception ex)
             {
-                return StatusCode(500);
+                var data = new
+                {
+                    Status = 500,
+                    Message = "Error :" + ex.Message
+                };
+                return StatusCode(500, data);
             }
         }
 

@@ -1,5 +1,4 @@
 
-
 const invoice = (function () {
     // #region PRIVATE VARIABLES **************//
 
@@ -155,7 +154,7 @@ const invoice = (function () {
                 if (data.length === 0) {
                     $("#itemNotFoundLabel").show();
                     bootbox.alert("Item Not Found !!", function () {
-                        debugger;
+                        
 
                         $("#item_code").focus();
                         $("#item_code").select();
@@ -195,12 +194,12 @@ const invoice = (function () {
         });
     };
     let getItemReferenceData = (callback) => {
-        debugger;
+        
         $.ajax({
             url: window.location.origin + "/SalesInvoice/GetItemReferenceData/?id=" + getUrlParameters(),
             type: "GET",
             success: function (data) {
-                debugger;
+                
                 if (data.length > 0) {
                     _.each(data, function (x) { selectedItems.push(x); });
                     callback();
@@ -396,7 +395,7 @@ const invoice = (function () {
         });
 
         if (!checkAlreadyExistItem) {
-            debugger;
+            
             //check if item already loaded to client
             var itemFromClient = _.filter(selectedItems, function (x) { return x.code == code || x.bar_Code == code });
             if (itemFromClient.length > 0) {
@@ -451,7 +450,7 @@ const invoice = (function () {
         cell10.className = "netAmount-width-item p-1 pr-3";
         cell11.className = "action-width-item p-1";
 
-
+       
         var barCode = result.Bar_Code || result[0].bar_Code;
         var itemCode = result.Remarks || result[0].code; //temporary update code to remarks field :)       
         var itemName = result.Name || result[0].name;
@@ -468,7 +467,8 @@ const invoice = (function () {
         //    tax = (grossAmount - discount) * taxPercent / 100;
         //}
         //later calculations
-        var rate = 0;
+        var rate = result.rate || result.Rate || 0;
+        var originalRate = rate == 0 ? "" : "data-original-rate=" + rate;
         var discount = 0;
         var grossAmount = 0;
         var tax = 0;
@@ -490,7 +490,7 @@ const invoice = (function () {
         $("<span class='barcode'>" + barCode + "</span>").appendTo(cell2);
         $("<span class='itemName' data-item-id='" + itemId + "' data-item-code= '" + itemCode + "'>" + itemName + "</span>").appendTo(cell3);
         $("<span>" + unit + "</span>").appendTo(cell4);
-        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Rate" type="number" min="0" onfocusout="invoice.calcTotal()" name="Rate" ' + rateDisabled + ' " value=' + rate.toFixed(2) + '>').appendTo(cell5);
+        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Rate" type="number" min="0" onfocusout="invoice.calcTotal()" name="Rate"  data-popup-rate="'+rate+'" ' + rateDisabled + ' " value=' + rate.toFixed(2) + ' ' + originalRate+'>').appendTo(cell5);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Quantity" type="number" min="0.01" onfocusout="invoice.calcAll()" name="Quantity" value=' + quantity.toString() + '>').appendTo(cell6);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right GrossAmount" type="number" name="GrossAmount" disabled value=' + grossAmount.toFixed(2) + '>').appendTo(cell7);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Discount" type="number" data-isDiscountable="' + isDiscountable + '" ' + discountDisabled + ' min="0" ' + discountLimit + ' onfocusout="invoice.calcTotal(this)" name="Discount" data-original-percent="' + discount.toFixed(2) + '" data-original-value="' + discount.toFixed(2) + '" value=' + discount.toFixed(2) + '>').appendTo(cell8);
@@ -666,15 +666,21 @@ const invoice = (function () {
 
     };
     let loadPausedTransaction = (row) => {
+        debugger;
         var invoiceId = row.closest("tr").find('td.invoice-id').text();
         var membershipId = row.closest("tr").find('td.membership-id').text();
-        window.location.href = window.location.origin + "/SalesInvoice/Index/" + invoiceId.trim() + "?M=" + membershipId.trim();
+        var transType = row.closest("tr").find('td.trans-type-popup').text();
+        if(transType.trim() =="Tax")
+            window.location.href = window.location.origin + "/SalesInvoice/Index/" + invoiceId.trim() + "?Mode=tax&M=" + membershipId.trim();
+        else
+            window.location.href = window.location.origin + "/SalesInvoice/Index/" + invoiceId.trim() + "?M=" + membershipId.trim();
+
     };
     let loadPausedTransactionData = (data) => {
-        debugger;
+        
         if (getUrlParameters() !== 0 && salesInvoiceTmpData.SalesInvoiceItems !== null) {
             getItemReferenceData(function () {
-
+                debugger;
                 //flat discount
                 if (salesInvoiceTmpData.Flat_Discount_Amount !== null) {
                     $("#amountRadio").prop("checked", true);
@@ -692,7 +698,7 @@ const invoice = (function () {
                     $("#Trans_Type").val("Tax");
                 if (salesInvoiceTmpData.Remarks === "Tax")
                     $("#Trans_Type").val("Sales");
-                convertSalesTax();
+               // convertSalesTax();
 
                 //save transaction id
                 $("#Id").val(getUrlParameters());
@@ -1045,15 +1051,15 @@ const invoice = (function () {
         var rate = _.filter(filterByCustomerGroup, function (x) {
             return x.rateMinimumQuantity === 0;
         });
-
+       
         //check if multiple open rate
-        var selectedRate = parseFloat($(row).find(".Rate").data("original-rate"));
-        if (!isNaN(selectedRate)) {
+        var selectedRate = parseFloat($(row).find(".Rate").data("popup-rate"));
+        if (!isNaN(selectedRate) && selectedRate > 0) {
             rate = selectedRate;
         } else {
             var distinctRate = _.uniq(_.pluck(rate, "rate"));
-
-            if (distinctRate.length > 1 && row.find(".Rate").data("original-rate") === undefined && row.find(".Rate").data("rate-selected") === undefined) {
+            debugger;
+            if (distinctRate.length > 1) {
                 row.find(".Rate").data("rate-selected", true);
                 var options = "<select id='rateDropdown' class='form-control'>";
                 _.each(distinctRate, function (x) {
@@ -1070,7 +1076,8 @@ const invoice = (function () {
                             className: 'btn-info',
                             callback: function () {
                                 rate = $("#rateDropdown :selected").val();
-                                row.find(".Rate").data("original-rate", rate);
+                                row.find(".Rate").data("popup-rate", rate);
+                                //row.find(".Rate").data("rate-selected", true);
                                 calcTotal();
                                 $("#item_code").focus();
                                 $("#item_code").select();
@@ -1125,7 +1132,7 @@ const invoice = (function () {
         return rate;
 
     };
-    let calcRateFromCommission = (rate) => {
+    let calcRateFromCommission = (rate) => {       
         var commissionPercent = $("#commissionPercent").val() || "0";
         if (parseFloat(commissionPercent) > 0) {
             commissionPercent = parseFloat($("#commissionPercent").val());
@@ -1143,7 +1150,7 @@ const invoice = (function () {
         if (table.rows.length > 0) {
             $.each(table.rows, function (i, v) {
 
-
+                debugger;
                 //variables
                 let transType = $("#Trans_Type").val();
                 let itemCode = $(this).find(".itemName").attr("data-item-code").toString();
@@ -1225,6 +1232,8 @@ const invoice = (function () {
                 //assign value
                 $(this).find(".Rate").val(rate.toFixed(2));
                 $(this).find(".Rate").data("RateExcludedVat", rateExcludeTax.toFixed(2));
+                $(this).find(".Rate").data("RateExcludedVatWithoutRoundoff", rateExcludeTax);
+                $(this).find(".Discount").data("DiscountPercent", discountPercent);
                 $(this).find(".GrossAmount").val(grossAmount.toFixed(2));
                 $(this).find(".Tax").val(tax.toFixed(2));
                 $(this).find(".NetAmount").val(netAmount.toFixed(2));
@@ -1237,7 +1246,7 @@ const invoice = (function () {
 
                 //calc total
                 totalQuantity += quantity;
-                totalDiscount += discount;
+                totalDiscount += parseFloat(discount.toFixed(2));
                 totalDiscountExcVat += discountExcVat;
                 totalTax += tax;
                 totalGrossAmount += grossAmount;
@@ -1245,9 +1254,9 @@ const invoice = (function () {
 
                 //calc taxable and non taxable
                 if (taxable)
-                    totalTaxableAmount += (rateExcludeTax - discountExcVat) * quantity;
+                    totalTaxableAmount += parseFloat(parseFloat((rateExcludeTax * quantity).toFixed(2)) - parseFloat((discountExcVat * quantity).toFixed(2)).toFixed(2))// parseFloat(((rateExcludeTax - discountExcVat) * quantity).toFixed(2));
                 else {
-                    totalNonTaxableAmount += rateExcludeTax * quantity;
+                    totalNonTaxableAmount += parseFloat((rateExcludeTax * quantity).toFixed(2));
                 }
 
             });
@@ -1270,9 +1279,10 @@ const invoice = (function () {
                 discount = parseFloat($(this).find(".Discount").val()),
                 tax = parseFloat($(this).find(".Tax").val());
             let netAmount = grossAmount - discount + tax;
+
             totalQuantity += quantity;
             totalGrossAmount += grossAmount;
-            totalDiscount += discount;
+            totalDiscount += parseFloat(discount.toFixed(2));
             totalTax += tax;
             totalNetAmount += netAmount;
 
@@ -1292,7 +1302,7 @@ const invoice = (function () {
 
     };
     let calcNetTotalAfterCommission = () => {
-        let totalQuantity = 0, totalGrossAmount = 0, totalDiscount = 0, totalTax = 0, totalNetAmount = 0;
+        let totalQuantity = 0, totalGrossAmount = 0, totalDiscount = 0, totalTax = 0, totalNetAmount = 0, totalTaxableAmount = 0, totalNonTaxableAmount=0 ;
         $.each(table.rows, function (i, v) {
             let rate = parseFloat($(this).find(".Rate").val()),
                 quantity = parseFloat($(this).find(".Quantity").val()),
@@ -1301,9 +1311,24 @@ const invoice = (function () {
                 taxable = $(this).find(".Tax").data("isvatable"),
                 tax = calculateTax(rate,taxPercent, taxable) * quantity;
             let netAmount = grossAmount - discount + tax;
+
+
+            //calc taxable and non taxable
+            //if (taxable)
+            //    totalTaxableAmount += parseFloat(((rate - discount) * quantity).toFixed(2));
+            //else {
+            //    totalNonTaxableAmount += parseFloat((rate * quantity).toFixed(2));
+            //}
+            //new logic
+            if (taxable)
+                totalTaxableAmount += parseFloat(parseFloat((rate * quantity).toFixed(2)) - parseFloat((discount * quantity).toFixed(2)).toFixed(2))// parseFloat(((rateExcludeTax - discountExcVat) * quantity).toFixed(2));
+            else {
+                totalNonTaxableAmount += parseFloat((rate * quantity).toFixed(2));
+            }
+
             totalQuantity += quantity;
             totalGrossAmount += grossAmount;
-            totalDiscount += discount;
+            totalDiscount += parseFloat(discount.toFixed(2));
             totalTax += tax;
             totalNetAmount += netAmount;
 
@@ -1319,6 +1344,8 @@ const invoice = (function () {
         $("#totalDiscount").text(CurrencyFormat(totalDiscount));
         $("#totalTax").text(CurrencyFormat(totalTax));
         $("#totalNetAmount").text(CurrencyFormat(totalNetAmount));
+        $("#NonTaxableAmount").val(totalNonTaxableAmount.toFixed(2));
+        $("#TaxableAmount").val(totalTaxableAmount.toFixed(2));
 
 
 
@@ -1496,7 +1523,7 @@ const invoice = (function () {
         }
     };
     let customerPanelToggle = (evt) => {
-        debugger;
+        
         if (evt !== undefined) {
             evt.preventDefault(); evt.stopPropagation();
         }
@@ -1512,14 +1539,14 @@ const invoice = (function () {
 
     };
     let loadCustomer = (callback) => {
-        debugger;
+        
         $.ajax({
             method: "POST",
             url: window.location.origin + "/Customer/GetCustomerByNumber?MembershipNumber=" + GetUrlParameters("M"),
             dataType: "json",
             contentType: "application/json; charset=utf-8",
             complete: function (result) {
-                debugger;
+                
                 if (result.status === 200) {
                     if (result.responseJSON.length > 0) {
                         customerList = result.responseJSON;
@@ -1612,9 +1639,9 @@ const invoice = (function () {
         //});
     };
     let updatePageWithRespectToPermission = (Callback) => {
-        debugger;
+        
         getPermissions((data) => {
-            debugger;
+            
             //for flat discount Right
             if (data.roleWiseUserPermission.sales_Discount_Flat_Item) {
                 $("#flat_discount").data("data-max", data.roleWiseUserPermission.sales_Discount_Flat_Item_Limit);
@@ -1634,7 +1661,7 @@ const invoice = (function () {
             permission.salesDiscountItemwise = data.roleWiseUserPermission.sales_Discount_Line_Item;
             permission.salesDiscountItemLimit = data.roleWiseUserPermission.sales_Discount_Flat_Item_Limit;
             permission.salesRateEditRight = data.roleWiseUserPermission.sales_Rate_Edit;
-            debugger;
+            
             if (Callback !== undefined)
                 Callback();
         });
@@ -1778,7 +1805,7 @@ const invoice = (function () {
             changeSelectedRow("up");
         });
         Mousetrap.bindGlobal('esc', function () {
-            debugger;
+            
             handleBackButtonEvent();
         });
 
@@ -1859,6 +1886,8 @@ const invoice = (function () {
         //variable
         let tableRows = document.getElementById("item_table").getElementsByTagName('tbody')[0];
 
+        
+
 
         //save field data first
         $("#Total_Quantity").val(CurrencyUnFormat($("#totalQuantity").text()));
@@ -1916,9 +1945,11 @@ const invoice = (function () {
                 Unit: $tds.eq(3).text(),
                 Rate: $(this).find('td input.Rate').val(),
                 RateExcludeVat: $(this).find('td input.Rate').data("RateExcludedVat"),
+                RateExcludeVatWithoutRoundoff: $(this).find('td input.Rate').data("RateExcludedVatWithoutRoundoff"),
                 Quantity: $(this).find('td input.Quantity').val(),
                 Gross_Amount: $(this).find('td input.GrossAmount').val(),
                 Discount: $(this).find('td input.Discount').val(),
+                DiscountPercent: $(this).find('td input.Discount').data("DiscountPercent"),
                 PromoDiscount: promoDiscount,
                 MembershipDiscount: membershipDiscount,
                 Tax: $(this).find('td input.Tax').val(),
@@ -2093,7 +2124,8 @@ const invoice = (function () {
         deleteInvoice: deleteInvoice,
         calcTotal: calcTotal,
         calcAll,
-        quantityKeyPress
+        quantityKeyPress,
+        addRowGetUpdateData
     };
 
 

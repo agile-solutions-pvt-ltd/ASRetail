@@ -33,7 +33,7 @@
         }
         else {
             $("#Date").val(FormatForDisplay(new Date()));
-            $("#Date").trigger('change');
+            $('#Date_BS').val(AD2BS(FormatForInput($('#Date').val())));
         }
        
         
@@ -143,17 +143,17 @@
   
     
 
-    $("#Date").datepicker()
-        .change(function () {
-            $('#Date_BS').val(AD2BS(FormatForInput($('#Date').val())));
-        });
+    //$("#Date").datepicker()
+    //    .change(function () {
+    //        $('#Date_BS').val(AD2BS(FormatForInput($('#Date').val())));
+    //    });
     
-    $('#Date_BS').nepaliDatePicker({
-        onChange: function () {
-            $('#Date').val(FormatForDisplay(BS2AD($('#Date_BS').val())));
+    //$('#Date_BS').nepaliDatePicker({
+    //    onChange: function () {
+    //        $('#Date').val(FormatForDisplay(BS2AD($('#Date_BS').val())));
 
-        }
-    });
+    //    }
+    //});
 
     $("#submitbtn").on("click", function () {
         bootbox.alert("Hello world!", function () {

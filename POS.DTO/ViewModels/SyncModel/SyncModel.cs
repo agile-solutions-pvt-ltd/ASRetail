@@ -204,6 +204,8 @@ namespace POS.DTO
         public string accountabilitycenter { get; set; }
         public string assigneduserid { get; set; }
         public string shippingno { get; set; }
+        public string externalDocumentNumber { get; set; }
+        public bool amountrounded { get; set; }
 
 
     }
@@ -219,7 +221,8 @@ namespace POS.DTO
         public string locationcode { get; set; }
         public string accountabilitycenter { get; set; }
         public string assigneduserid { get; set; }
-        public string invoiceId { get; set; }
+        public string invoiceno { get; set; }
+
 
 
     }
@@ -230,7 +233,8 @@ namespace POS.DTO
         public string itemId { get; set; }
         public decimal quantity { get; set; }
         public decimal unitPrice { get; set; }
-        public decimal discountAmount { get; set; }
+        //public decimal discountAmount { get; set; }
+        public decimal discountPercent { get; set; }
         public decimal totalTaxAmount { get; set; }
         public string itemno { get; set; }
 
@@ -259,8 +263,8 @@ namespace POS.DTO
         public string itemId { get; set; }
         public decimal quantity { get; set; }
         public decimal unitPrice { get; set; }
-        public decimal discountAmount { get; set; }
-        public decimal totalTaxAmount { get; set; }
+        public decimal discountPercent { get; set; }
+        //public decimal totalTaxAmount { get; set; }
         //public decimal netAmount { get; set; }
         //public string itemId { get; set; }
         //public string quantity { get; set; }

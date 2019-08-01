@@ -1,9 +1,13 @@
-﻿
+﻿@using Microsoft.AspNetCore.Http
+@using Newtonsoft.Json
+@{
+    POS.DTO.Store store = Context.Session.GetString("Store") == null ? null : JsonConvert.DeserializeObject<POS.DTO.Store>(Context.Session.GetString("Store"));
+}
 <style>
     /* for menu permission */
-/*.role-menu{
-    display:none;
-}*/
+    /*.role-menu{
+        display:none;
+    }*/
 </style>
 
 <nav class="pcoded-navbar">
@@ -20,7 +24,7 @@
         </ul>
         <div class="pcoded-navigatio-lavel" data-i18n="nav.category.navigation">Transaction</div>
         <ul class="pcoded-item pcoded-left-item">
-            <li class="pcoded role-menu Sales_Invoice">
+            <li class="pcoded role-menu Sales_Invoice @(store != null && store.INITIAL == "WHS" ? "sr-only": "")">
                 <a asp-controller="SalesInvoice" asp-action="Landing" asp-route-id="">
                     <span class="pcoded-micon"><i class="ti-home"></i></span>
                     <span class="pcoded-mtext" data-i18n="nav.dash.main">Sales Invoice</span>
@@ -28,7 +32,7 @@
 
                 </a>
             </li>
-            <li class="pcoded role-menu Tax_Invoice">
+            <li class="pcoded role-menu Tax_Invoice @(store != null && store.INITIAL == "WHS" ? "sr-only": "")">
                 <a asp-controller="SalesInvoice" asp-action="Landing" asp-route-mode="tax">
                     <span class="pcoded-micon"><i class="ti-layout"></i></span>
                     <span class="pcoded-mtext" data-i18n="nav.page_layout.main">Tax Invoice</span>
@@ -70,7 +74,7 @@
         </ul>
         <div class="pcoded-navigatio-lavel" data-i18n="nav.category.pages">Others</div>
         <ul class="pcoded-item pcoded-left-item">
-            
+
 
             <li class="pcoded-hasmenu role-menu Setup">
                 <a href="javascript:void(0)">
@@ -179,7 +183,7 @@
                             <span class="pcoded-mcaret"></span>
                         </a>
                     </li>
-                    <li class="role-menu Wholesale_Tax_Invoice_Report">
+                    <li class="role-menu Wholesale_Tax_Invoice_Report @(store != null && store.INITIAL != "WHS" ? "sr-only": "")">
                         <a asp-controller="Reports" asp-action="WholeSaleTaxInvoice">
                             <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
                             <span class="pcoded-mtext">Wholesale Tax Invoice Report</span>
@@ -232,16 +236,16 @@
                 </ul>
             </li>
         </ul>
-       
+
         <div class="pcoded-navigatio-lavel">Support</div>
         <ul class="pcoded-item pcoded-left-item">
             @*<li class="role-menu Documentation">
-                <a href="#" target="_blank">
-                    <span class="pcoded-micon"><i class="ti-file"></i></span>
-                    <span class="pcoded-mtext" data-i18n="nav.documentation.main">Documentation</span>
-                    <span class="pcoded-mcaret"></span>
-                </a>
-            </li>*@
+                    <a href="#" target="_blank">
+                        <span class="pcoded-micon"><i class="ti-file"></i></span>
+                        <span class="pcoded-mtext" data-i18n="nav.documentation.main">Documentation</span>
+                        <span class="pcoded-mcaret"></span>
+                    </a>
+                </li>*@
             <li class="role-menu Shortcuts">
                 <a asp-controller="Settings" asp-action="Shortcuts">
                     <span class="pcoded-micon"><i class="ti-layout-list-post"></i></span>

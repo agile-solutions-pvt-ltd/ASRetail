@@ -7,20 +7,43 @@
         get newClientPromise() {
             return new Promise((resolve, reject) => {
                 GetClientLocalIP(function (ip) {
+                    debugger;
+                    var newIp = _.filter(serverIp, function (x, y) {
+                        return y == ip;
+                    });
+                    if (newIp.length === 0)
+                        newIp = ip;
+                    else
+                        newIp = newIp[0];
+                    //var newIp = ip;
                     let wsClient;
                     if (location.protocol === 'https:')
-                        wsClient = new WebSocket("wss://" + ip + ":90");
+                        wsClient = new WebSocket("wss://" + newIp + ":90");
                     else
-                        wsClient = new WebSocket("ws://" + ip + ":90");
+                        wsClient = new WebSocket("ws://" + newIp + ":90");
                     console.log(wsClient)
                     wsClient.onopen = () => {
                         console.log("connected");
                         resolve(wsClient);
                     };
-                    wsClient.onerror = error => reject(error);
+                    wsClient.addEventListener("error", e => {
+                        reject("Error Occor");
+                        return;
+                        // readyState === 3 is CLOSED
+                        //if (e.target.readyState === 3) {
+                        //    this.connectionTries--;
 
-                });
-            })
+                        //    if (this.connectionTries > 0) {
+                        //        setTimeout(() => this.connect(url), 5000);
+                        //    } else {
+                        //alert("Maximum number of connection trials has been reached");
+                        //      }
+
+                        // }
+
+                    });
+                })
+            });
         }
         get clientPromise() {
             if (!this.promise) {

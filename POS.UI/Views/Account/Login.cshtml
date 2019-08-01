@@ -73,7 +73,7 @@
                             </div>
                             <div class="form-group">
                                 <div class="col-md-offset-2 col-md-10">
-                                    <button type="submit" class="btn btn-default">Log in</button>
+                                    <button type="submit" class="btn btn-primary">Log in</button>
                                 </div>
                             </div>
                             <p>
@@ -92,23 +92,23 @@
 @section Scripts {
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 <script>
-    //GetClientLocalIP(function (ip) {
+    GetClientLocalIP(function (ip) {
         
-    //            $(".ipAddress").text(ip);
-    //            $.ajax({
-    //                url: window.location.origin + "/Terminal/GetClientComputerName?ip=" + ip,
-    //                async: false,
-    //                complete: function (data) {
+                $(".ipAddress").text(ip);
+                $.ajax({
+                    url: window.location.origin + "/Terminal/GetTerminalInfo?ip=" + ip,
+                    async: false,
+                    complete: function (data) {
                         
-    //                    if (data.status === 200) {
-    //                        if (data.responseJSON.terminalId !== undefined)
-    //                            $("#TerminalId").val(data.responseJSON.terminalId);
-    //                           $("#TerminalName").val(data.responseJSON.terminalName);
-    //                    }
+                        if (data.status === 200) {
+                            if (data.responseJSON.terminalId !== undefined)
+                                $("#TerminalId").val(data.responseJSON.terminalId);
+                               $("#TerminalName").val(data.responseJSON.terminalName);
+                        }
                         
-    //                }
-    //            });
+                    }
+                });
 
-    //        });
+            });
 </script>
 }

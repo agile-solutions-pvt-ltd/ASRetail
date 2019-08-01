@@ -21,9 +21,11 @@ namespace POS.DTO
         public string Unit { get; set; }
         public decimal? Rate { get; set; }
         public decimal RateExcludeVat { get; set; } = 0;
+        public decimal RateExcludeVatWithoutRoundoff { get; set; } = 0;
         public decimal? Quantity { get; set; }
         public decimal? Gross_Amount { get; set; }
         public decimal? Discount { get; set; }
+        public decimal DiscountPercent { get; set; }
         public decimal PromoDiscount { get; set; } = 0;
         public decimal MembershipDiscount { get; set; } = 0;
         public bool Is_Discountable { get; set; }

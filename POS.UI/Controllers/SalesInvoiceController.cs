@@ -267,193 +267,214 @@ namespace POS.UI.Controllers
                     return NotFound();
 
 
-                //using (var trans = _context.Database.BeginTransaction()) {
-                //    try
-                //    {
-                //    } catch (Exception ex)
-                //    {
-                //        trans.Rollback();
-                //    }
-                //};
-
-                //get store info
-                Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
-                //convert to sales invoice and save
-                SalesInvoice salesInvoice = _mapper.Map<SalesInvoice>(salesInvoiceTmp);
-
-                salesInvoice.Total_Bill_Discount = model.billDiscount;
-                salesInvoice.Total_Payable_Amount = model.totalPayable;
-                salesInvoice.Total_Net_Amount_Roundup = model.totalNetAmountRoundUp;
-                salesInvoice.Tender_Amount = model.tenderAmount;
-                salesInvoice.Change_Amount = model.changeAmount;
-                salesInvoice.Invoice_Id = _context.SalesInvoice.Where(x => x.Trans_Type == salesInvoice.Trans_Type).Select(x => x.Invoice_Id).DefaultIfEmpty(0).Max() + 1;
-                salesInvoice.Invoice_Number = SalesInvoiceNumberFormat(store, salesInvoice.Invoice_Id, salesInvoice.Trans_Type);
-                _context.SalesInvoice.Add(salesInvoice);
-
-
-                //get invoice items temp convert to sales invoice item and save them
-                IList<SalesInvoiceItemsTmp> itemtmp = _context.SalesInvoiceItemsTmp.Where(x => x.Invoice_Id == salesInvoiceTmp.Id).ToList();
-                foreach (var item in itemtmp)
+                using (var trans = _context.Database.BeginTransaction())
                 {
-                    item.Invoice = null;
-                    SalesInvoiceItems salesItem = _mapper.Map<SalesInvoiceItems>(item);
-                    salesItem.Id = 0;
-                    salesItem.Invoice_Id = salesInvoice.Id;
-                    salesItem.Invoice_Number = salesInvoice.Invoice_Number;
-                    _context.SalesInvoiceItems.Add(salesItem);
-                }
-                _context.SaveChanges();
-
-                //check session
-                Settlement oldSettlement = _context.Settlement.FirstOrDefault(x => x.UserId == salesInvoice.Created_By && x.Status == "Open");
-                //save bill amount information
-                foreach (var item in model.bill)
-                {
-                    item.Invoice_Number = salesInvoice.Invoice_Number;
-                    item.Invoice_Type = salesInvoice.Trans_Type;
-                    item.Terminal = HttpContext.Session.GetString("Terminal");
-                    if (item.Trans_Mode == "Cash")
-                        item.Amount = item.Amount - salesInvoice.Change_Amount;
-                    item.IsNavSync = false;
-
-
-                    _context.SalesInvoiceBill.Add(item);
-
-
-                    //if credit note amount is used then update credit note table
-                    if (item.Trans_Mode == "Credit Note")
+                    SalesInvoice salesInvoice = new SalesInvoice();
+                    try
                     {
-                        CreditNote creditNote = _context.CreditNote.FirstOrDefault(x => x.Credit_Note_Number == item.Account);
-                        if (creditNote != null)
+                        //get store info
+                        Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
+                        //convert to sales invoice and save
+                       
+                        
+                        //if (_context.ChangeTracker.HasChanges(.Any(x => x.Id == model.salesInvoiceId))
+                        //    salesInvoice = _context.SalesInvoice.FirstOrDefault(x => x.Id == model.salesInvoiceId);
+                        //else
+                            salesInvoice = _mapper.Map<SalesInvoice>(salesInvoiceTmp);
+                        salesInvoice.Id = Guid.NewGuid();
+
+                        salesInvoice.Total_Bill_Discount = model.billDiscount;
+                        salesInvoice.Total_Payable_Amount = model.totalPayable;
+                        salesInvoice.Total_Net_Amount_Roundup = model.totalNetAmountRoundUp;
+                        salesInvoice.Tender_Amount = model.tenderAmount;
+                        salesInvoice.Change_Amount = model.changeAmount;
+                        salesInvoice.Invoice_Id = _context.SalesInvoice.Where(x => x.Trans_Type == salesInvoice.Trans_Type).Select(x => x.Invoice_Id).DefaultIfEmpty(0).Max() + 1;
+                        salesInvoice.Invoice_Number = SalesInvoiceNumberFormat(store, salesInvoice.Invoice_Id, salesInvoice.Trans_Type);
+                        _context.SalesInvoice.Add(salesInvoice);
+
+
+                        //get invoice items temp convert to sales invoice item and save them
+                        IList<SalesInvoiceItemsTmp> itemtmp = _context.SalesInvoiceItemsTmp.Where(x => x.Invoice_Id == salesInvoiceTmp.Id).ToList();
+                        foreach (var item in itemtmp)
                         {
-                            creditNote.Created_By = User.Identity.Name;
-                            creditNote.Created_Date = DateTime.Now;
-                            creditNote.Remarks = "Claimed";
-                            _context.Entry(creditNote).State = EntityState.Modified;
+                            item.Invoice = null;
+                            SalesInvoiceItems salesItem = _mapper.Map<SalesInvoiceItems>(item);
+                            salesItem.Id = 0;
+                            salesItem.Invoice_Id = salesInvoice.Id;
+                            salesItem.Invoice_Number = salesInvoice.Invoice_Number;
+                            _context.SalesInvoiceItems.Add(salesItem);
                         }
+                        _context.SaveChanges();
+
+                        //check session
+                        Settlement oldSettlement = _context.Settlement.FirstOrDefault(x => x.UserId == salesInvoice.Created_By && x.Status == "Open");
+                        string sessionId = oldSettlement != null ? oldSettlement.SessionId : Guid.NewGuid().ToString();
+                        string crNumber = "";
+                        //save bill amount information
+                        foreach (var item in model.bill)
+                        {
+                            item.Invoice_Id = salesInvoice.Id;
+                            item.Invoice_Number = salesInvoice.Invoice_Number;
+                            item.Invoice_Type = salesInvoice.Trans_Type;
+                            item.Terminal = HttpContext.Session.GetString("Terminal");
+                            if (item.Trans_Mode == "Cash")
+                                item.Amount = item.Amount - salesInvoice.Change_Amount;
+                            item.IsNavSync = false;
+
+
+                            _context.SalesInvoiceBill.Add(item);
+
+
+                            //if credit note amount is used then update credit note table
+                            if (item.Trans_Mode == "Credit Note")
+                            {
+                                CreditNote creditNote = _context.CreditNote.FirstOrDefault(x => x.Credit_Note_Number == item.Account);
+                                crNumber = item.Account;
+                                if (creditNote != null)
+                                {
+                                    creditNote.Created_By = User.Identity.Name;
+                                    creditNote.Created_Date = DateTime.Now;
+                                    creditNote.Remarks = "Claimed";
+                                    _context.Entry(creditNote).State = EntityState.Modified;
+                                }
+                            }
+
+
+                            //save to settlement table                           
+                            decimal totalAmount = 0;
+                            if (item.Trans_Mode == "Cash")
+                                totalAmount = item.Amount;
+                            else
+                                totalAmount = item.Amount;
+
+                            Settlement settlement = new Settlement()
+                            {
+                                SessionId = sessionId,
+
+                                TransactionDate = DateTime.Now,
+                                PaymentMode = item.Trans_Mode,
+                                Amount = item.Amount,
+                                Status = "Open",
+                                VerifiedBy = "",
+                                VerifiedDate = DateTime.Now,
+                                TransactionNumber = salesInvoice.Invoice_Number,
+                                Remarks = "",
+                                TerminalId = Convert.ToInt32(HttpContext.Session.GetString("TerminalId")),
+                                UserId = salesInvoice.Created_By
+
+                            };
+                            _context.Settlement.Add(settlement);
+                        }
+
+                        //save to print table
+                        InvoicePrint print = new InvoicePrint()
+                        {
+                            InvoiceNumber = salesInvoice.Invoice_Number,
+                            Type = salesInvoice.Trans_Type,
+                            FirstPrintedDate = DateTime.Now,
+                            FirstPrintedBy = User.Identity.Name,
+                            PrintCount = 1
+                        };
+                        _context.InvoicePrint.Add(print);
+
+
+
+                        _context.SaveChanges();
+
+                        //if everything seems good, then delete salesInvoiceTmp
+                        _context.Remove(salesInvoiceTmp);
+
+                        //total amount excludevat
+                        decimal totalRateExcludeVat = 0;
+                        foreach (var i in salesInvoice.SalesInvoiceItems)
+                        {
+                            totalRateExcludeVat += i.RateExcludeVat * i.Quantity.Value;
+                        }
+                        // salesInvoice.SalesInvoiceItems.Select(x => x.RateExcludeVat).Sum();
+
+                        //save to invoiceMaterialview
+                        InvoiceMaterializedView view = new InvoiceMaterializedView()
+                        {
+                            BillNo = salesInvoice.Invoice_Number,
+                            DocumentType = salesInvoice.Trans_Type + " Invoice",
+                            FiscalYear = store.FISCAL_YEAR,
+                            LocationCode = store.INITIAL,
+                            BillDate = salesInvoice.Trans_Date_Ad.Value,
+                            PostingTime = salesInvoice.Trans_Time.Value,
+                            CustomerCode = salesInvoice.Customer_Id,
+                            CustomerName = salesInvoice.Customer_Name,
+                            Vatno = salesInvoice.Customer_Vat,
+                            Amount = totalRateExcludeVat,
+                            Discount = salesInvoice.TOTAL_DISCOUNT_EXC_VAT,
+                            TaxableAmount = salesInvoice.TaxableAmount,
+                            NonTaxableAmount = salesInvoice.NonTaxableAmount,
+                            TaxAmount = salesInvoice.Total_Vat.Value,
+                            TotalAmount = salesInvoice.Total_Net_Amount.Value,
+                            IsBillActive = true,
+                            IsBillPrinted = true,
+                            PrintedBy = User.Identity.Name,
+                            PrintedTime = DateTime.Now,
+                            EnteredBy = salesInvoice.Created_By,
+                            SyncStatus = "Not Started",
+                            SyncedDate = DateTime.Now,
+                            SyncedTime = DateTime.Now.TimeOfDay,
+                            SyncWithIrd = false,
+                            IsRealTime = false
+                        };
+                        NavSalesInvoice navSalesInvoice = new NavSalesInvoice()
+                        {
+                            id = salesInvoice.Id.ToString(),
+                            number = salesInvoice.Invoice_Number,
+                            postingno = salesInvoice.Invoice_Number,
+                            shippingno = salesInvoice.Invoice_Number,
+                            orderDate = salesInvoice.Trans_Date_Ad.Value.ToString("yyyy-MM-dd"),
+                            customerNumber = salesInvoice.MemberId,
+                            customerName = salesInvoice.Customer_Name,
+                            vatregistrationnumber = salesInvoice.Customer_Vat,
+                            locationcode = store.INITIAL,
+                            accountabilitycenter = store.INITIAL,
+                            assigneduserid = salesInvoice.Created_By,
+                            externalDocumentNumber = crNumber,
+                            amountrounded = salesInvoice.Total_Net_Amount == salesInvoice.Total_Payable_Amount
+
+                        };
+
+
+
+                        _context.InvoiceMaterializedView.Add(view);
+                        _context.SaveChanges();
+
+                        trans.Commit();
+                        //*********** background task
+                        //Send data to IRD
+                        BackgroundJob.Enqueue(() => SendDataToIRD(salesInvoice, store));
+                        //Send data to NAV
+                        NavPostData navPostData = new NavPostData(_context, _mapper);
+                        BackgroundJob.Enqueue(() => navPostData.PostSalesInvoice(navSalesInvoice));
+
+
+
+                        //TempData["StatusMessage"] = "Bill Payment Successfull !!";
+                        return Ok(new { StatusMessage = "Bill Payment Successfull !!", InvoiceData = salesInvoice, StoreData = store, BillData = model.bill });
                     }
-
-
-                    //save to settlement table
-
-                    string sessionId = oldSettlement != null ? oldSettlement.SessionId : Guid.NewGuid().ToString();
-                    decimal totalAmount = 0;
-                    if (item.Trans_Mode == "Cash")
-                        totalAmount = item.Amount;
-                    else
-                        totalAmount = item.Amount;
-
-                    Settlement settlement = new Settlement()
+                    catch (Exception ex)
                     {
-                        SessionId = sessionId,
-
-                        TransactionDate = DateTime.Now,
-                        PaymentMode = item.Trans_Mode,
-                        Amount = item.Amount,
-                        Status = "Open",
-                        VerifiedBy = "",
-                        VerifiedDate = DateTime.Now,
-                        TransactionNumber = salesInvoice.Invoice_Number,
-                        Remarks = "",
-                        TerminalId = Convert.ToInt32(HttpContext.Session.GetString("TerminalId")),
-                        UserId = salesInvoice.Created_By
-
-                    };
-                    _context.Settlement.Add(settlement);
-                }
-
-                //save to print table
-                InvoicePrint print = new InvoicePrint()
-                {
-                    InvoiceNumber = salesInvoice.Invoice_Number,
-                    Type = salesInvoice.Trans_Type,
-                    FirstPrintedDate = DateTime.Now,
-                    FirstPrintedBy = User.Identity.Name,
-                    PrintCount = 1
-                };
-                _context.InvoicePrint.Add(print);
-
-
-                
-                _context.SaveChanges();
-
-                //if everything seems good, then delete salesInvoiceTmp
-                _context.Remove(salesInvoiceTmp);
-
-                //total amount excludevat
-                decimal totalRateExcludeVat = 0;
-                foreach (var i in salesInvoice.SalesInvoiceItems)
-                {
-                    totalRateExcludeVat += i.RateExcludeVat * i.Quantity.Value;
-                }
-                // salesInvoice.SalesInvoiceItems.Select(x => x.RateExcludeVat).Sum();
-
-                //save to invoiceMaterialview
-                InvoiceMaterializedView view = new InvoiceMaterializedView()
-                {
-                    BillNo = salesInvoice.Invoice_Number,
-                    DocumentType = salesInvoice.Trans_Type + " Invoice",
-                    FiscalYear = store.FISCAL_YEAR,
-                    LocationCode = store.INITIAL,
-                    BillDate = salesInvoice.Trans_Date_Ad.Value,
-                    PostingTime = salesInvoice.Trans_Time.Value,
-                    CustomerCode = salesInvoice.Customer_Id,
-                    CustomerName = salesInvoice.Customer_Name,
-                    Vatno = salesInvoice.Customer_Vat,
-                    Amount = totalRateExcludeVat,
-                    Discount = salesInvoice.TOTAL_DISCOUNT_EXC_VAT,
-                    TaxableAmount = salesInvoice.TaxableAmount,
-                    NonTaxableAmount = salesInvoice.NonTaxableAmount,
-                    TaxAmount = salesInvoice.Total_Vat.Value,
-                    TotalAmount = salesInvoice.Total_Net_Amount.Value,
-                    IsBillActive = true,
-                    IsBillPrinted = true,
-                    PrintedBy = User.Identity.Name,
-                    PrintedTime = DateTime.Now,
-                    EnteredBy = salesInvoice.Created_By,
-                    SyncStatus = "Not Started",
-                    SyncedDate = DateTime.Now,
-                    SyncedTime = DateTime.Now.TimeOfDay,
-                    SyncWithIrd = false,
-                    IsRealTime = false
-                };
-                NavSalesInvoice navSalesInvoice = new NavSalesInvoice()
-                {
-                    id = salesInvoice.Id.ToString(),
-                    number = salesInvoice.Invoice_Number,
-                    postingno = salesInvoice.Invoice_Number,
-                    shippingno = salesInvoice.Invoice_Number,
-                    orderDate = salesInvoice.Trans_Date_Ad.Value.ToString("yyyy-MM-dd"),
-                    customerNumber = salesInvoice.MemberId,
-                    customerName = salesInvoice.Customer_Name,
-                    vatregistrationnumber = salesInvoice.Customer_Vat,
-                    locationcode = store.INITIAL,
-                    accountabilitycenter = store.INITIAL,
-                    assigneduserid = salesInvoice.Created_By
-
+                        trans.Rollback();
+                        if (ex.Message.Contains("UniqueInvoiceNumber") || ex.InnerException.Message.Contains("UniqueInvoiceNumber"))
+                        {
+                            _context.Entry(salesInvoice).State = EntityState.Detached;
+                            return Billing(model);
+                        }
+                        else
+                            return BadRequest(ex.Message);
+                    }
                 };
 
-
-
-                _context.InvoiceMaterializedView.Add(view);
-                _context.SaveChanges();
-
-                //*********** background task
-                //Send data to IRD
-                BackgroundJob.Enqueue(() => SendDataToIRD(salesInvoice, store));
-                //Send data to NAV
-                NavPostData navPostData = new NavPostData(_context, _mapper);
-                BackgroundJob.Enqueue(() => navPostData.PostSalesInvoice(navSalesInvoice));
-
-
-
-                //TempData["StatusMessage"] = "Bill Payment Successfull !!";
-                return Ok(new { StatusMessage = "Bill Payment Successfull !!", InvoiceData = salesInvoice, StoreData = store, BillData = model.bill });
+               
             }
             catch (Exception ex)
             {
-                if (ex.Message.Contains("UniqueInvoiceNumber") || ex.InnerException.Message.Contains("UniqueInvoiceNumber"))
-                    return Billing(model);
+                
                 return BadRequest(ex.Message);
             }
 

@@ -4,6 +4,7 @@ using Hangfire.Storage;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using POS.Core;
 using POS.DTO;
 using POS.UI.Helper;
@@ -19,22 +20,21 @@ namespace POS.UI.Sync
     {
 
         private readonly EntityCore _context;
-        private readonly EntityCore _contextInsert;
         private readonly IMapper _mapper;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private IMemoryCache _cache;
+        public IConfiguration Configuration { get; }
 
 
-
-        public NavSync(EntityCore context, IMapper mapper, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, IMemoryCache memoryCache)
+        public NavSync(EntityCore context, IMapper mapper, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, IMemoryCache memoryCache, IConfiguration configuration)
         {
             _context = context;
             _mapper = mapper;
             _userManager = userManager;
             _roleManager = roleManager;
             _cache = memoryCache;
-            _contextInsert = context;
+            Configuration = configuration;
             _context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
@@ -553,16 +553,35 @@ namespace POS.UI.Sync
                     if (response.StatusCode == HttpStatusCode.OK)
                     {
 
-                        List<ItemBarCode> item = _mapper.Map<List<ItemBarCode>>(response.Data.value).ToList();
-                        if (item.Count() > 0)
+                        //DbContextOptions<EntityCore> options = new DbContextOptions<EntityCore>();
+                        //options.ContextType
+                        using(var context = _context)
                         {
-                            _context.ItemBarCode.RemoveRange(_context.ItemBarCode.Where(x => item.Any(y => y.BarCode == x.BarCode)));
-                            _context.SaveChanges();
+                            List<ItemBarCode> item = _mapper.Map<List<ItemBarCode>>(response.Data.value).ToList();
+                            if (item.Count() > 0)
+                            {
+                                context.ItemBarCode.RemoveRange(context.ItemBarCode.Where(x => item.Any(y => y.BarCode == x.BarCode)));
+                                _context.SaveChanges();
 
-                            _context.ItemBarCode.AddRange(item);
-                            _context.SaveChanges();
+                                context.ItemBarCode.AddRange(item);
+                                context.SaveChanges();
 
+                            }
+                            ////update update number
+                            if (response.Data.value.Count() > 0)
+                            {
+                                services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
+                                services.LastSyncDate = DateTime.Now;
+                                context.Entry(services).State = EntityState.Modified;
+
+
+                            }
+                            context.SaveChanges();
                         }
+                        //var context = _context;
+                       // context.ChangeTracker.Context;
+                       
+
                         //if (item.Count() > 0)
                         //{
                         //    var ids = item.Select(x => x.BarCode).ToArray();
@@ -619,15 +638,7 @@ namespace POS.UI.Sync
                         //}
 
                         //_context.SaveChanges();
-                        ////update update number
-                        if (response.Data.value.Count() > 0)
-                        {
-                            services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
-                            services.LastSyncDate = DateTime.Now;
 
-
-                        }
-                        _context.SaveChanges();
                         if (response.Data.value.Count() > 0 && response.Data.value.Count() < 10)
                         {
                             config.SyncLog.Item = "Last Sync :" + DateTime.Now.ToShortDateString();
@@ -655,6 +666,7 @@ namespace POS.UI.Sync
                 catch (Exception ex)
                 {
                     config.SyncLog.Item = "Error :" + ex.InnerException.Message;
+                    _cache.Set("IsItemBarCodeSyncIsInProcess", false);
                     ConfigJSON.Write(config);
                     return false;
                 }

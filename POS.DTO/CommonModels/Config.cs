@@ -33,6 +33,7 @@ namespace POS.DTO
         public Config()
         {
             LoggedInUsers = new List<string>();
+            SyncLog = new SyncLog();
         }
     }
 

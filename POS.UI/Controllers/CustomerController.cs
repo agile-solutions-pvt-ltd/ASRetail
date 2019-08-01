@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json;
 using POS.Core;
 using POS.DTO;
 using POS.UI.Helper;
@@ -238,7 +240,7 @@ namespace POS.UI.Controllers
             {
                 customer.Code = Guid.NewGuid().ToString();
                 customer.Member_Id = _context.Customer.Where(x => x.Is_Member == true && x.Member_Id != null).Select(x => x.Member_Id).DefaultIfEmpty(0).Max() + 1;
-                Store store = _context.Store.FirstOrDefault();
+                Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
                 customer.Membership_Number = store.INITIAL + "-" + Convert.ToInt32(customer.Member_Id).ToString("000000");
                 customer.Created_By = User.Identity.Name;
                 customer.Registration_Date = DateTime.Now;
@@ -435,7 +437,7 @@ namespace POS.UI.Controllers
                     customer.Code = Guid.NewGuid().ToString();
                     customer.Is_Member = true;
                     customer.Member_Id = _context.Customer.Where(x => x.Is_Member == true && x.Member_Id != null).Select(x => x.Member_Id).DefaultIfEmpty(0).Max() + 1;
-                    Store store = _context.Store.FirstOrDefault();
+                    Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
                     customer.Membership_Number = store.INITIAL + "-" + Convert.ToInt32(customer.Member_Id).ToString("000000");
                     customer.Created_By = User.Identity.Name;
                     customer.Registration_Date = DateTime.Now;

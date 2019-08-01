@@ -85,7 +85,7 @@
                             <div class="col-md-2 mr-4">
                                 <div class="checkbox">
                                     <label>
-                                        <input type="checkbox" @(ViewBag.API.StopInvoicePosting == true ? "" : "checked='Checked'") id="postToNav" data-val="true" value="true" /> Stop Invoice Posting
+                                        <input type="checkbox" @(ViewBag.API.StopInvoicePosting == false ? "" : "checked=Checked") id="postToNav" data-val="true" value="true" /> Stop Invoice Posting
                                     </label>
                                 </div>
                             </div>
@@ -163,6 +163,7 @@
 
 
         $("#Save").on("click", function () {
+            debugger;
             var final = {
                 IRDBaseUrl: $("#IRDBaseUrl").val(),
                 IRDBillUrl: $("#IRDBillUrl").val(),
@@ -174,7 +175,7 @@
                 NavUserName: $("#NavUserName").val(),
                 NavPassword: $("#NavPassword").val(),
                 Location: $("#Location").val(),
-                StopInvoicePosting: $("#postToNav").val()
+                StopInvoicePosting: $("#postToNav").is(":checked")
             };
 
             $.ajax({

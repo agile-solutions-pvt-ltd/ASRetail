@@ -218,5 +218,30 @@ namespace POS.UI.Controllers
         }
 
 
+
+        [AllowAnonymous]
+        public IActionResult GetTerminalInfo(string ip)
+        {
+            try
+            {                 
+                int terminalId = 0;
+                //check if terminal is assigned
+                TerminalMapping terminalMapping = _context.TerminalMapping.FirstOrDefault(x => x.IPAddress == ip);
+                Terminal terminal = new Terminal();
+                if (terminalMapping != null)
+                    terminal = _context.Terminal.FirstOrDefault(x => x.Id == terminalMapping.TerminalId);
+
+                return Ok(new { pcName = "", terminalId = terminalMapping.TerminalId.ToString(), terminalName = terminal?.Name });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
+
+
+
+        }
+
+
     }
 }

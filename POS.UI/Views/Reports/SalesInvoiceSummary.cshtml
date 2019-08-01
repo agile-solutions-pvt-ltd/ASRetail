@@ -54,8 +54,7 @@
     </div>
 </div>
 
-@section Scripts {
-    <script src="~/lib/nepali.datepicker/nepali.datepicker.v2.2.min.js"></script>
+@section Scripts {  
     <script src="~/lib/kendo-ui/kendo.all.min.js"></script>
 
     <script type="text/javascript">
@@ -145,6 +144,7 @@
                         }
                     },
                     // pageSize: 100,
+                    group:[{ field: "date", dir: "desc" },{ field: "created_By" }],
                     sort: { field: "date", dir: "desc" },
                 },
                 height: 400,
