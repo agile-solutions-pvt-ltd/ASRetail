@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using POS.Core;
 using POS.DTO;
 using POS.UI.Sync;
@@ -39,7 +40,7 @@ namespace POS.UI.Controllers
             {
                 try
                 {
-                    Store store = _context.Store.FirstOrDefault();
+                    Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store")); ;
                     creditNote.Id = Guid.NewGuid();
                     creditNote.Credit_Note_Id = _context.CreditNote.Select(x => x.Credit_Note_Id).DefaultIfEmpty(0).Max() + 1;
                     creditNote.Credit_Note_Number = "CN-" + creditNote.Credit_Note_Id.ToString("0000") + "-" + store.FISCAL_YEAR;
@@ -53,7 +54,7 @@ namespace POS.UI.Controllers
                     foreach (var item in creditNote.CreditNoteItems)
                     {
                         item.Credit_Note_Id = creditNote.Id;
-                        item.Credit_Note_Number = creditNote.Credit_Note_Number;
+                        item.Credit_Note_Number = creditNote.Credit_Note_Number;                        
                         _context.CreditNoteItem.Add(item);
                     }
 
@@ -118,7 +119,7 @@ namespace POS.UI.Controllers
                         locationcode = store.INITIAL,
                         accountabilitycenter = store.INITIAL,
                         assigneduserid = creditNote.Created_By,
-                        invoiceId = creditNote.Reference_Number_Id
+                        invoiceno = creditNote.Reference_Number
 
                     };
                     _context.InvoiceMaterializedView.Add(view);

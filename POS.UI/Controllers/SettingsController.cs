@@ -1,9 +1,12 @@
 ﻿using AutoMapper;
+using Hangfire;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using POS.Core;
 using POS.DTO;
 using POS.UI.Helper;
@@ -104,7 +107,7 @@ namespace POS.UI.Controllers
         {
             if (!string.IsNullOrEmpty(name))
             {
-                NavSync sync = new NavSync(_context, _mapper, _userManager, _roleManager, _cache);
+                NavSync sync = new NavSync(_context, _mapper, _userManager, _roleManager, _cache,Configuration);
                 Type t = sync.GetType();
                 MethodInfo method = t.GetMethod(name);
                 var result = (bool)method.Invoke(sync, null);
@@ -118,7 +121,20 @@ namespace POS.UI.Controllers
         }
 
 
-
+        public IActionResult PostInvoiceToNAV()
+        {
+            NavPostData sync = new NavPostData(_context, _mapper);
+            Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
+            sync.PostSalesInvoice(store);
+           
+            BackgroundJob.Enqueue(() => sync.PostSalesInvoice(store));
+            var data = new
+            {
+                Status = 200,
+                Message = "Success"
+            };
+            return Ok(data);
+        }
 
 
         ////////********** scheduling jobs
@@ -144,9 +160,11 @@ namespace POS.UI.Controllers
         public IActionResult NAVTestConnection()
         {
             Config config = ConfigJSON.Read();
-            NavSync sync = new NavSync(_context, _mapper, _userManager, _roleManager, _cache);
+            NavSync sync = new NavSync(_context, _mapper, _userManager, _roleManager, _cache,Configuration);
             var result = sync.TestNavConnection();
 
+            if (result is string && result != "Success")
+                return StatusCode(500, result);
             if (result.Count() > 0)
                 return Ok(result);
             else

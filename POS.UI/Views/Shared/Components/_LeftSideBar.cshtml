@@ -40,7 +40,7 @@
                     <span class="pcoded-mcaret"></span>
                 </a>
             </li>
-            <li class="pcoded role-menu Credit_Landing @(store != null && store.INITIAL != "WHS" ? "sr-only": "")">
+            <li class="pcoded role-menu Credit_Landing">
                 <a asp-controller="SalesInvoice" asp-action="CrLanding" asp-route-mode="tax">
                     <span class="pcoded-micon"><i class="ti-layout-cta-right"></i></span>
                     <span class="pcoded-mtext" data-i18n="nav.navigate.main">Credit Invoice</span>
@@ -183,7 +183,7 @@
                             <span class="pcoded-mcaret"></span>
                         </a>
                     </li>
-                    <li class="role-menu Wholesale_Tax_Invoice_Report">
+                    <li class="role-menu Wholesale_Tax_Invoice_Report @(store != null && store.INITIAL != "WHS" ? "sr-only": "")">
                         <a asp-controller="Reports" asp-action="WholeSaleTaxInvoice">
                             <span class="pcoded-micon"><i class="ti-angle-right"></i></span>
                             <span class="pcoded-mtext">Wholesale Tax Invoice Report</span>

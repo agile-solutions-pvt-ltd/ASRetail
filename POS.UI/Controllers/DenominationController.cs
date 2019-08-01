@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using POS.Core;
 using POS.DTO;
 using System.Collections.Generic;
@@ -118,7 +119,7 @@ namespace POS.UI.Controllers
             }
             // TempData["StatusMessage"] = TempData["StatusMessage"];
             ViewData["Terminal_Id"] = new SelectList(_context.Terminal, "Id", "Name", denomination.Terminal_Id);
-            ViewData["Store"] = _context.Store.FirstOrDefault();
+            ViewData["Store"] = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
             return View(denomination);
         }
 

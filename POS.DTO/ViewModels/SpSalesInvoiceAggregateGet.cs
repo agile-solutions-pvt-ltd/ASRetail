@@ -8,6 +8,8 @@ namespace POS.DTO
    public class SpSalesInvoiceAggregateGet
     {
         [Key]
+        public int SN { get; set; }
+
         public DateTime Trans_Date_AD { get; set; }
 
         public string Created_By { get; set; }

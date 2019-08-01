@@ -1,20 +1,18 @@
 {
-  "Environment": "300000 item cached",
+  "Environment": "successfully login",
   "ClientPort": "1111",
   "IRDBaseUrl": "http://103.1.92.174:9050",
   "IRDBillUrl": "api/bill",
   "NavApiBaseUrl": "http://10.10.10.25:7098",
-  "NavPath": "poslive/api/beta/",
-  "NavCompanyId": "3b456591-ecf6-4723-9c94-092d0ecedf61",
+  "NavPath": "longrun/api/beta/",
+  "NavCompanyId": "8c36765d-3615-431a-aec9-21dba898f678",
   "IRDUserName": "Test_CBMS",
   "IRDPassword": "test@321",
   "NavUserName": "web.user",
   "NavPassword": "W3b@2019",
-  "StopInvoicePosting": false,
-  "Location": "BIR",
-  "LoggedInUsers": [
-    "Admin"
-  ],
+  "StopInvoicePosting": true,
+  "Location": "SDB",
+  "LoggedInUsers": [],
   "SchedulerDuration": {
     "Default": "100000",
     "Store": "100000",
@@ -35,21 +33,21 @@
     "MenuPermission": "100000"
   },
   "SyncLog": {
-    "Store": "",
-    "Customer": "",
-    "ItemCategory": "",
-    "ProductGroup": "",
+    "Store": null,
+    "Customer": null,
+    "ItemCategory": null,
+    "ProductGroup": null,
     "ItemType": null,
-    "Item": "",
-    "ItemPrice": "",
-    "ItemDiscount": "",
-    "ItemBarCode": "",
-    "Terminal": "",
-    "User": "",
-    "UserRole": "",
+    "Item": null,
+    "ItemPrice": null,
+    "ItemDiscount": null,
+    "ItemBarCode": null,
+    "Terminal": null,
+    "User": null,
+    "UserRole": null,
     "UserPermission": null,
-    "Status": "",
-    "Menu": "",
-    "MenuPermission": ""
+    "Status": null,
+    "Menu": null,
+    "MenuPermission": null
   }
 }

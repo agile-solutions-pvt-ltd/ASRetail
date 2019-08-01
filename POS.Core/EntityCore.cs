@@ -7,17 +7,23 @@ using System.Text;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Protocols;
 
 namespace POS.Core
 {
     public class EntityCore : IdentityDbContext
     {
+
+        //public IConfiguration Configuration { get; }
+
+
         //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         //{
-        //    optionsBuilder.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+        //    optionsBuilder.UseSqlServer("DefaultConnection");
         //}
         //public EntityCore() : base()
         //{
+           
 
         //}
 

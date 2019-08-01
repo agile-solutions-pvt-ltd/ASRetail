@@ -314,8 +314,8 @@
         //})[0];
         var selectedItem = customerList[0];
         if (selectedItem) {
-            $("#customerPan").text(selectedItem.vat);
-            $("#customerAddress").text(selectedItem.address);
+            $("#customerPan").text(selectedItem.vat || selectedItem.Vat);
+            $("#customerAddress").text(selectedItem.address || selectedItem.Address);
         } else {
             $("#customerPan").text("");
             $("#customerAddress").text("");
@@ -362,6 +362,7 @@
             //trigger credit
             $(".payment-mode-panel").hide();
             $("#credit-panel").show();
+            $(".payment-mode[data-shortcut='f3']").trigger("click");
             $("#customer").val(customerList[0].name);
             customerChangeEvent();
 
@@ -406,6 +407,7 @@
                     showErrorMessage(data.responseJSON.message);
                 }
                 else if (data.status === 200) {
+                    debugger;
                     $(".onetimewarning").show();
                     $("#creditNoteAmount").val(data.responseJSON.total_Net_Amount);
                     $("#creditNoteAmount").focus();
@@ -522,7 +524,7 @@
                             printCount: 0
                         };
                         printer.PrintInvoice(result.responseJSON, function () {
-                            window.location.href = "/SalesInvoice/CrLanding?StatusMessage=" + result.responseJSON.statusMessage;
+                            window.location.href = "/SalesInvoice/CrLanding?mode=tax&StatusMessage=" + result.responseJSON.statusMessage;
                         });
                     } else {
                         printer.PrintInvoice(result.responseJSON, function () {

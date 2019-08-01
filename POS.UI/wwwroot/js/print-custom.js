@@ -7,12 +7,14 @@
         get newClientPromise() {
             return new Promise((resolve, reject) => {
                 GetClientLocalIP(function (ip) {
-
+                    debugger;
                     var newIp = _.filter(serverIp, function (x, y) {                        
                         return y == ip;
                     });
-                    if (_.isEmpty(newIp))
+                    if (newIp.length === 0)
                         newIp = ip;
+                    else
+                        newIp = newIp[0];
                     //var newIp = ip;
                     let wsClient;
                     if (location.protocol === 'https:')
@@ -25,6 +27,8 @@
                         resolve(wsClient);
                     };
                     wsClient.addEventListener("error", e => {
+                        reject("Error Occor");
+                        return;
                         // readyState === 3 is CLOSED
                         //if (e.target.readyState === 3) {
                         //    this.connectionTries--;
@@ -32,7 +36,7 @@
                         //    if (this.connectionTries > 0) {
                         //        setTimeout(() => this.connect(url), 5000);
                         //    } else {
-                        alert("Maximum number of connection trials has been reached");
+                        //alert("Maximum number of connection trials has been reached");
                         //      }
 
                         // }
@@ -75,38 +79,21 @@
 
         //}
         window.wsSingleton = new Ws()
-        if (data.invoiceData.trans_Type === "Sales") {
-            //if (typeof ws === 'undefined')
-            //    PrintSalesInvoiceBrowser(data, callback);
-            //else
+        if (data.invoiceData.trans_Type === "Sales") {           
             PrintSalesInvoice(data, callback);
         }
         else {
-            if (typeof ws === 'undefined') {
-                debugger;
-                if (data.copy !== undefined && data.copy.printCount == 0) {
-                    //print double
-                    PrintTaxInvoiceBrowser(data, function () {
-                        data.copy.printCount = 1;
-                        PrintTaxInvoiceBrowser(data, callback);
-                    });
+            if (data.copy !== undefined && data.copy.printCount == 0) {
+                //print double
+                PrintTaxInvoice(data, function () {
+                    data.copy.printCount = 1;
+                    PrintTaxInvoice(data, callback);
+                });
 
-                }
-                else {
-                    //print single
-                    PrintTaxInvoiceBrowser(data, callback);
-                }
             }
             else {
-                if (data.copy !== undefined) {
-                    //print double
-                    PrintTaxInvoice(data, callback);
-                    PrintTaxInvoice(data, callback);
-                }
-                else {
-                    //print single
-                    PrintTaxInvoice(data, callback);
-                }
+                //print single
+                PrintTaxInvoice(data, callback);
             }
 
         }
@@ -270,7 +257,7 @@
     let PrintTaxInvoiceBrowser = (data, callback) => {
         debugger;
         var url = "";
-        var companyInitital = data.storeData.initial || data.storeData.Initial;
+        var companyInitital = data.storeData.initial || data.storeData.INITIAL;
         if (data.billData !== null && data.billData.length > 0 && data.billData[0].trans_Mode === "Credit" && companyInitital === "WHS") {
             url = window.location.origin + "/Print/NewTaxInvoice";
             maximumCharAllowInItemName = 40;
@@ -488,7 +475,7 @@
         //Final Data
         var finalBill = header + itemHeader + item + itemTotal + footer;
 
-        printwsBill(finalBill, callback);
+        printwsBill(finalBill, callback, data, PrintSalesInvoiceBrowser);
 
     };
     let PrintSalesInvoiceBrowser = (data, callback) => {
@@ -588,64 +575,7 @@
         });
     };
 
-    let printwsBill = (str, callback, data, errorcallback, ) => {
-        debugger;
-        //var ws;
-        //ws = new WebSocket('ws://127.0.0.1:90');
-        //var state;
-        //ws.addEventListener('open', ws_open(str), false);
-        //ws.addEventListener('close', ws_close(str), false);
-        //function ws_open(text) {
-        //    // alert("Are you sure to print?");
-        //    console.log("printcalled");
-        //    ws.onopen = () => ws.send(text);
-        //    // ws.send(text);
-        //    if (callback !== undefined)
-        //        callback();
-        //}
-        //function ws_close(text) {
-        //    if (errorcallback !== undefined)
-        //        errorcallback(data, callback);
-        //}
-        try {
-            window.wsSingleton = new Ws()
-            window.wsSingleton.clientPromise
-                .then(wsClient => {
-                    wsClient.send(str);
-                    //console.log('sended')
-
-                    if (callback !== undefined)
-                        callback();
-                })
-                .catch((error) => {
-                    alert("error");
-                    if (errorcallback !== undefined)
-                        errorcallback();
-                });
-
-
-        } catch{
-            alert("error");
-        }
-
-
-
-        //var ws;
-        //ws = new WebSocket('ws://127.0.0.1:90');
-        //var state;       
-        //ws.addEventListener('open', ws_open(str), false);
-
-        //function ws_open(text) {
-        //    // alert("Are you sure to print?");
-        //    console.log("printcalled");
-        //    ws.onopen = () => ws.send(text);
-        //    // ws.send(text);
-        //    if (callback !== undefined)
-        //        callback();
-        //}
-
-
-    };
+   
 
     let PrintCreditNoteInvoice = (data, callback) => {
 
@@ -974,6 +904,65 @@
         });
     };
 
+
+    let printwsBill = (str, callback, data, errorcallback, ) => {
+        debugger;
+        //var ws;
+        //ws = new WebSocket('ws://127.0.0.1:90');
+        //var state;
+        //ws.addEventListener('open', ws_open(str), false);
+        //ws.addEventListener('close', ws_close(str), false);
+        //function ws_open(text) {
+        //    // alert("Are you sure to print?");
+        //    console.log("printcalled");
+        //    ws.onopen = () => ws.send(text);
+        //    // ws.send(text);
+        //    if (callback !== undefined)
+        //        callback();
+        //}
+        //function ws_close(text) {
+        //    if (errorcallback !== undefined)
+        //        errorcallback(data, callback);
+        //}
+        try {
+            window.wsSingleton = new Ws()
+            window.wsSingleton.clientPromise
+                .then(wsClient => {
+                    wsClient.send(str);
+                    //console.log('sended')
+
+                    if (callback !== undefined)
+                        callback();
+                })
+                .catch((error) => {
+                    //alert("error");
+                    if (errorcallback !== undefined)
+                        errorcallback(data,callback);
+                });
+
+
+        } catch{
+            alert("error");
+        }
+
+
+
+        //var ws;
+        //ws = new WebSocket('ws://127.0.0.1:90');
+        //var state;       
+        //ws.addEventListener('open', ws_open(str), false);
+
+        //function ws_open(text) {
+        //    // alert("Are you sure to print?");
+        //    console.log("printcalled");
+        //    ws.onopen = () => ws.send(text);
+        //    // ws.send(text);
+        //    if (callback !== undefined)
+        //        callback();
+        //}
+
+
+    };
 
 
 

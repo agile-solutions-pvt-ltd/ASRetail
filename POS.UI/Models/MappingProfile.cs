@@ -124,7 +124,8 @@ namespace POS.DTO
                .ForMember(dest => dest.generalbuspostinggrp, opts => opts.MapFrom(src => "LOCAL"))
                 .ForMember(dest => dest.Customer_Posting_Group, opts => opts.MapFrom(src => "MEMBER"))
                  .ForMember(dest => dest.Customer_Price_Group, opts => opts.MapFrom(src => src.CustomerPriceGroup))
-                .ForMember(dest => dest.Customer_Disc_Group, opts => opts.MapFrom(src => src.CustomerDiscGroup));
+                .ForMember(dest => dest.Customer_Disc_Group, opts => opts.MapFrom(src => src.CustomerDiscGroup))
+                .ForMember(dest => dest.Member_Disc_Group, opts => opts.MapFrom(src => src.MembershipDiscGroup));
 
 
             CreateMap<NavRole, AspNetRoles>()

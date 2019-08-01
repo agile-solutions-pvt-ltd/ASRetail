@@ -16,11 +16,12 @@
         setTimeout(() => {
             $(".alert").hide();
             //update url too
+            debugger;
             if (GetUrlParameters("StatusMessage") !== undefined)
                 if (GetUrlParameters("mode") === undefined)
                     history.pushState({}, null, window.location.origin + "/SalesInvoice/Landing");
                 else
-                    history.pushState({}, null, window.location.origin + "/SalesInvoice/Landing?Mode=") + GetUrlParameters("mode");
+                    history.pushState({}, null, window.location.origin + "/SalesInvoice/Landing?Mode=" + GetUrlParameters("mode"));
 
         }, 3000);
 
@@ -131,7 +132,7 @@
             //continue
             if (evt.keyCode === 13) {
                 let searchInfo = $(".search-input").val();
-                if (searchInfo !== "" && searchInfo.length >= 3)
+                if (searchInfo !== "" && searchInfo.length >= 0)
                     SearchMember(searchInfo);
                 else {
                     $('#memberTable tbody').html('');

@@ -368,6 +368,7 @@ where b.BarCode = {0} or i.Code = {0}";
                     }
                     catch (Exception ex)
                     {
+                        break;
 
                     }
                 }

@@ -48,9 +48,9 @@
                                         <label class="control-label col-md-2">IP Address :</label> <br />
                                         <label class="control-label col-md-8 ipAddress font-weight-bold">Please Wait, Analysing Your Device ...</label>
                                     </div>
-                                    <div class="form-row">
+                                    <div class="form-row sr-only">
                                         <label class="control-label col-md-2">Computer Name :</label> <br />
-                                        <label class="control-label col-md-8 computerName font-weight-bold">Please Wait, Analysing Your Device ...</label>
+                                        <label class="control-label col-md-8 computerName font-weight-bold"></label>
                                     </div>
                                     <div class="br"><hr /></div>
                                     <div class="form-row">
@@ -99,6 +99,18 @@
             GetClientLocalIP(function (ip) {
                 
                 $(".ipAddress").text(ip);
+                 $.ajax({
+                    url: window.location.origin + "/Terminal/GetTerminalInfo?ip=" + ip,
+                    async: false,
+                    complete: function (data) {
+                        
+                        if (data.status === 200) {
+                            if (data.responseJSON.terminalId !== undefined)
+                                $("#Terminal_Id").val(data.responseJSON.terminalId);
+                        }
+                        
+                    }
+                });
                 //$.ajax({
                 //    url: window.location.origin + "/Terminal/GetClientComputerName?ip=" + ip,
                 //    async: false,
@@ -115,35 +127,35 @@
                 //        }
                 //    }
                 //});
-                $.ajax({
-                    url: "http://127.0.0.1:1111/POSClient/GetComputerName",
-                    async: true,
-                     complete: function (data) {
-                         debugger;
-                        if (data.status === 200) {
-                            console.log(data.responseJSON.pcName);
-                        }
+                //$.ajax({
+                //    url: "http://127.0.0.1:1111/POSClient/GetComputerName",
+                //    async: true,
+                //     complete: function (data) {
+                //         debugger;
+                //        if (data.status === 200) {
+                //            console.log(data.responseJSON.pcName);
+                //        }
                         
-                    }
-                });
+                //    }
+                //});
 
-                 $.ajax({
-                    url: "http://localhost:1111/POSClient/GetComputerName",
-                    async: true,
-                     complete: function (data) {
-                         debugger;
-                        if (data.status === 200) {
+                // $.ajax({
+                //    url: "http://localhost:1111/POSClient/GetComputerName",
+                //    async: true,
+                //     complete: function (data) {
+                //         debugger;
+                //        if (data.status === 200) {
                             
-                            $(".computerName").text(data.responseJSON.pcName);
-                            if (data.responseJSON.terminalId !== undefined)
-                                $("#Terminal_Id").val(data.responseJSON.terminalId);
-                        }
-                        else {
-                            $("#StatusMessageError").html("Error: Getting Computer Name");
-                            setTimeout(function () { $("#StatusMessageError").text(''); }, 3000);
-                        }
-                    }
-                });
+                //            $(".computerName").text(data.responseJSON.pcName);
+                //            if (data.responseJSON.terminalId !== undefined)
+                //                $("#Terminal_Id").val(data.responseJSON.terminalId);
+                //        }
+                //        else {
+                //            $("#StatusMessageError").html("Error: Getting Computer Name");
+                //            setTimeout(function () { $("#StatusMessageError").text(''); }, 3000);
+                //        }
+                //    }
+                //});
 
             });
 

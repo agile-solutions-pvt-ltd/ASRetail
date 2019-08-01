@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using POS.Core;
 using POS.DTO;
 using System;
@@ -79,7 +81,7 @@ namespace POS.UI.Controllers
         {
            
             IEnumerable<SettlementViewModel> settlementData = _context.SettlementViewModel.Where(x => x.SessionId == session).ToList();
-            var store = _context.Store.FirstOrDefault();
+            var store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
             return Ok(new { SettlementData = settlementData, Store = store });
         }
 
@@ -108,7 +110,7 @@ namespace POS.UI.Controllers
             if (ModelState.IsValid)
             {
                 IList<Settlement> settlement = _context.Settlement.Where(x => x.SessionId == data.Settlement.SessionId).ToList();
-                var store = _context.Store.FirstOrDefault();
+                var store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
                 using (var trans = _context.Database.BeginTransaction())
                 {
                     try
