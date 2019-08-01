@@ -1,22 +1,20 @@
-﻿
-
-
-@model IEnumerable<POS.DTO.SalesInvoice>
-
+﻿@model IEnumerable<POS.DTO.SalesInvoice>
 
 @{
     ViewData["Title"] = "Sales Invoice Summary";
 }
 
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 
 <!-- Load Pako ZLIB library to enable PDF compression -->
 <script src="~/lib/kendo-ui/pako_deflate.min.js"></script>
+
 <div class="page-wrapper">
     <div class="page-header">
         <div class="page-header-title">
             <h4>@ViewData["Title"]</h4>
-
         </div>
+
         <div class="page-header-breadcrumb">
             <ul class="breadcrumb-title">
                 <li class="breadcrumb-item">
@@ -24,29 +22,31 @@
                         <i class="icofont icofont-home"></i>
                     </a>
                 </li>
+
                 <li class="breadcrumb-item">
                     <a href="#!">Report</a>
                 </li>
+
                 <li class="breadcrumb-item">
                     <a href="#!">@ViewData["Title"]</a>
                 </li>
-
             </ul>
         </div>
     </div>
-    <div class="page-body">
 
+    <div class="page-body">
         <div class="row">
             <div class="col-sm-12">
-
                 <div class="card">
                     <div class="card-block">
                         @*Your content here*@
-                        <p>StartDate: <input type="text" id="startdatepicker"> EndDate: <input type="text" id="enddatepicker"> <button class="button" onclick="DateFilter()">Preview</button></p>
-
+                        <p>
+                            StartDate: <input type="text" id="startdatepicker" />
+                            EndDate: <input type="text" id="enddatepicker" />
+                            <button class="button" onclick="DateFilter()">Preview</button>
+                        </p>
 
                         <div id="grid"></div>
-
                     </div>
                 </div>
             </div>
@@ -54,76 +54,59 @@
     </div>
 </div>
 
-
-
-
 @section Scripts {
     <script src="~/lib/nepali.datepicker/nepali.datepicker.v2.2.min.js"></script>
     <script src="~/lib/kendo-ui/kendo.all.min.js"></script>
 
-
-    <script>
+    <script type="text/javascript">
         var startdate = new Date();
         var dd = String(startdate.getDate()).padStart(2, '0');
         var mm = String(startdate.getMonth() + 1).padStart(2, '0'); //January is 0!
         var yyyy = startdate.getFullYear();
-
         startdate = mm + '/' + dd + '/' + yyyy;
-
-
         var enddate = new Date();
         enddate = startdate;
-        console.log("FirstDate", startdate);
-        console.log("EndDate", enddate);
 
         function printInvoice(evt) {
             var invoiceData = $("#grid").data("kendoGrid").dataItem(evt.closest("tr"));
+
             $.ajax({
                 url: window.location.origin + "/Print/GetPrintCount?invoiceNumber=" + invoiceData.invoice_Number,
                 type: 'POST',
                 complete: function (result) {
 
-                    if (result.status === 200)
-
+                    if (result.status === 200) {
                         var data = {
                             invoiceData: invoiceData,
                             storeData: store,
                             copy: result.responseJSON.printCount,
                             paymentMode: result.responseJSON.paymentMode
                         };
-                    printer.PrintInvoice(data, function () {
-                        ////update printcount
-                        //$.ajax({
-                        //    url: window.location.origin + "/Print/UpdatePrintCount?invoiceNumber=" + data.invoiceData.invoice_Number,
-                        //    type: 'POST',
-                        //    complete: function (result) {
-                        //    }
-                        //});
-                    });
+                        printer.PrintInvoice(data, function () {
+                            ////update printcount
+                            //$.ajax({
+                            //    url: window.location.origin + "/Print/UpdatePrintCount?invoiceNumber=" + data.invoiceData.invoice_Number,
+                            //    type: 'POST',
+                            //    complete: function (result) {
+                            //    }
+                            //});
+                        });
+                    }
                 }
             });
-
-
         }
+
         function DateFilter() {
-
-            //console.log("StartDate", startdate);
-            //console.log("EndDate", enddate);
-
             clearGrid();
             startup();
         }
+
         $(function () {
             $("#startdatepicker").datepicker({
                 onSelect: function (date) {
                     //ate = new date();
                     startdate = date;
-                    console.log(startdate);
-
-
                 }
-
-
             }).on("change", function () {
                 startdate = this.value;
             });
@@ -132,22 +115,22 @@
             $("#enddatepicker").datepicker({
                 onSelect: function (date) {
                     enddate = date;
-                    console.log(enddate);
                 }
             }).on("change", function () {
                 enddate = this.value;
             });
             $('#enddatepicker').datepicker('setDate', 'enddate');
         });
+
         function clearGrid() {
             $("#grid").data("kendoGrid").destroy(); // destroy the Grid
             $("#grid").empty();
         }
+
         function startup() {
 
             $("#grid").kendoGrid({
                 dataSource: {
-                    type: "json",
                     transport: {
                         read: window.location.origin + "/Reports/SalesInvoiceSummaryApi?StartDate=" + startdate + "&EndDate=" + enddate
                     },
@@ -155,18 +138,14 @@
                         model: {
                             fields: {
                                 date: { type: "date" },
-
                             }
                         },
                         data: function (data) {
-                            debugger;
                             return data;
                         }
-
                     },
                     // pageSize: 100,
                     sort: { field: "date", dir: "desc" },
-
                 },
                 height: 400,
                 filterable: true,
@@ -177,67 +156,40 @@
                     {
                         title: "User",
                         field: "created_By"
-
-
                     },
                     {
                         title: "Date",
                         field: "date",
                         format: "{0:MM/dd/yyyy}",
-
-
                     },
                     {
                         title: "Terminal",
                         field: "terminal"
-
-
                     },
                     {
                         title: "PayMode",
                         field: "trans_Mode"
-
-
                     },
-
-
-
                     {
                         field: "amount",
                         title: "Amount",
                         attributes: {
                             "class": "p-1 text-right"
                         },
-
                         template: "#: CurrencyFormat(amount) #",
-
                     },
-
-
-
                 ]
             });
             //$(".k-grid-content").css("overflow-y", "hidden").mCustomScrollbar();
             // All your functions in here.
-
         }
+
         $(document).ready(function () {
-
-
-
-
             //var g = $("#SalesInvoiceTable").data("kendoGrid");
             //g.dataSource.pageSize(10);
             //g.dataSource.group({ field: "Date" });
             //PageSlimScroll();
-
-
             startup();
-
-
-
         });
     </script>
-
 }
-

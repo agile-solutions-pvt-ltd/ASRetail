@@ -5,9 +5,6 @@
 }
 
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-<link rel="stylesheet" href="/resources/demos/style.css">
-<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
 <style>
     .button {
@@ -74,6 +71,10 @@
                                 </div>
                             </div>
                         </script>
+
+                        <script type="x/kendo-template" id="item-template">
+                            <div class="items"></div>
+                        </script>
                     </div>
                 </div>
             </div>
@@ -84,7 +85,8 @@
 @section Scripts {
     <script src="~/lib/kendo-ui/kendo.all.min.js"></script>
     <script type="text/javascript">
-         var store = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Store));
+        var store = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Store));
+
         /*
             This demo renders the grid in "DejaVu Sans" font family, which is
             declared in kendo.common.css. It also declares the paths to the
@@ -103,13 +105,12 @@
         var dd = String(startdate.getDate()).padStart(2, '0');
         var mm = String(startdate.getMonth() + 1).padStart(2, '0'); //January is 0!
         var yyyy = startdate.getFullYear();
-
         startdate = mm + '/' + dd + '/' + yyyy;
-
         var enddate = new Date();
         enddate = startdate;
 
         function DateFilter() {
+            $("#grid").data("kendoGrid").destroy();
             startup();
         };
 
@@ -136,6 +137,7 @@
         function printInvoice(evt) {
             $(evt).addClass('disabled-link').removeAttr('onclick');
             var invoiceData = $("#grid").data("kendoGrid").dataItem(evt.closest("tr"));
+
             $.ajax({
                 url: window.location.origin + "/Print/GetPrintCount?invoiceNumber=" + invoiceData.invoice_Number,
                 type: 'POST',
@@ -159,6 +161,27 @@
             });
         };
 
+        function detailInit(e) {
+            var detailRow = e.detailRow;
+            detailRow.find(".items").kendoGrid({
+                dataSource: {
+                    data: e.data.salesInvoiceItems,
+                    pageSize: 20,
+                },
+                scrollable: false,
+                sortable: true,
+                pageable: true,
+                columns: [
+                    { field: "itemCode", title: "Item Code", width: "15%" },
+                    { field: "name", title: "Item Name" },
+                    { field: "quantity", title: "Quantity", width: "10%" },
+                    { field: "rate", title: "Rate", width: "15%" },
+                    { field: "discount", title: "Discount", width: "10%" },
+                    { field: "gross_Amount", title: "Amount", width: "15%" }
+                ]
+            });
+        }
+
         function startup() {
             $("#grid").kendoGrid({
                 toolbar: ["pdf", "excel"],
@@ -178,7 +201,6 @@
                     filterable: true
                 },
                 dataSource: {
-                    type: "json",
                     transport: {
                         read: window.location.origin + "/Reports/WholeSaleTaxInvoiceApi?startdate=" + startdate + "&enddate=" + enddate
                     },
@@ -220,6 +242,8 @@
                 sortable: true,
                 pageable: true,
                 resizable: true,
+                detailTemplate: kendo.template($("#item-template").html()),
+                detailInit: detailInit,
                 columns: [
                     {
                         title: "Membership No.",

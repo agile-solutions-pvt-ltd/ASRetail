@@ -5,9 +5,7 @@
 }
 
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-<link rel="stylesheet" href="/resources/demos/style.css">
-<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
 <style>
     .button {
         background-color: #4CAF50;
@@ -21,6 +19,7 @@
         margin: 4px 2px;
         cursor: pointer;
     }
+
     .disabled-link {
         color: Gray;
     }
@@ -30,8 +29,8 @@
     <div class="page-header">
         <div class="page-header-title">
             <h4>@ViewData["Title"]</h4>
-
         </div>
+
         <div class="page-header-breadcrumb">
             <ul class="breadcrumb-title">
                 <li class="breadcrumb-item">
@@ -39,25 +38,32 @@
                         <i class="icofont icofont-home"></i>
                     </a>
                 </li>
+
                 <li class="breadcrumb-item">
                     <a href="#!">Report</a>
                 </li>
+
                 <li class="breadcrumb-item">
                     <a href="#!">@ViewData["Title"]</a>
                 </li>
-
             </ul>
         </div>
     </div>
+
     <div class="page-body">
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
                     <div class="card-block">
                         @*Your content here*@
-                        <p>StartDate: <input type="text" id="startdatepicker"> EndDate: <input type="text" id="enddatepicker"> <button class="button" onclick="DateFilter()">Preview</button></p>
+                        <p>
+                            StartDate: <input type="text" id="startdatepicker" />
+                            EndDate: <input type="text" id="enddatepicker" />
+                            <button class="button" onclick="DateFilter()">Preview</button>
+                        </p>
 
                         <div id="grid"></div>
+
                         <script type="x/kendo-template" id="page-template">
                             <div class="page-template">
                                 <div class="header">
@@ -70,6 +76,10 @@
                                 </div>
                             </div>
                         </script>
+
+                        <script type="x/kendo-template" id="item-template">
+                            <div class="items"></div>
+                        </script>
                     </div>
                 </div>
             </div>
@@ -78,13 +88,12 @@
 </div>
 
 
-
-
 @section Scripts {
     <script src="~/lib/kendo-ui/kendo.all.min.js"></script>
-    <script>
+    <script type="text/javascript">
 
-         var store = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Store));
+        var store = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Store));
+
         /*
             This demo renders the grid in "DejaVu Sans" font family, which is
             declared in kendo.common.css. It also declares the paths to the
@@ -98,17 +107,18 @@
             "DejaVu Sans|Italic": "https://kendo.cdn.telerik.com/2016.2.607/styles/fonts/DejaVu/DejaVuSans-Oblique.ttf",
             "WebComponentsIcons": "https://kendo.cdn.telerik.com/2017.1.223/styles/fonts/glyphs/WebComponentsIcons.ttf"
         });
-    </script>
-    <script>
+
         function printInvoice(evt) {
             $(evt).addClass('disabled-link').removeAttr('onclick');
             var invoiceData = $("#grid").data("kendoGrid").dataItem(evt.closest("tr"));
+
             var data = {
                 invoiceData: invoiceData,
                 storeData: store,
                 copy: true,
                 paymentMode: ""
             };
+
             printer.PrintCreditNoteInvoice(data, function () {
                 //update printcount
                 //
@@ -124,36 +134,26 @@
                 $(evt).removeClass('disabled-link').attr('onclick', 'printInvoice(this)');
             }, 5000);
         }
+
         var startdate = new Date();
         var dd = String(startdate.getDate()).padStart(2, '0');
         var mm = String(startdate.getMonth() + 1).padStart(2, '0'); //January is 0!
         var yyyy = startdate.getFullYear();
-
         startdate = mm + '/' + dd + '/' + yyyy;
-
-
         var enddate = new Date();
         enddate = startdate;
-        console.log("FirstDate", startdate);
-        console.log("EndDate", enddate);
+
         function DateFilter() {
-
-            console.log("StartDate", startdate);
-            console.log("EndDate", enddate);
-
+            $("#grid").data("kendoGrid").destroy();
             startup();
         }
+
         $(function () {
             $("#startdatepicker").datepicker({
                 onSelect: function (date) {
                     //ate = new date();
                     startdate = date;
-                    console.log(startdate);
-
-
                 }
-
-
             }).on("change", function () {
                 startdate = this.value;
             });
@@ -170,8 +170,28 @@
             $('#enddatepicker').datepicker('setDate', 'enddate');
         });
 
-        function startup() {
+        function detailInit(e) {
+            var detailRow = e.detailRow;
+            detailRow.find(".items").kendoGrid({
+                dataSource: {
+                    data: e.data.creditNoteItems,
+                    pageSize: 20,
+                },
+                scrollable: false,
+                sortable: true,
+                pageable: true,
+                columns: [
+                    { field: "itemCode", title: "Item Code", width: "15%" },
+                    { field: "name", title: "Item Name" },
+                    { field: "quantity", title: "Quantity", width: "10%" },
+                    { field: "rate", title: "Rate", width: "15%" },
+                    { field: "discount", title: "Discount", width: "10%" },
+                    { field: "gross_Amount", title: "Amount", width: "15%" }
+                ]
+            });
+        }
 
+        function startup() {
             $("#grid").kendoGrid({
                 toolbar: ["pdf", "excel"],
                 pdf: {
@@ -190,7 +210,6 @@
                     filterable: true
                 },
                 dataSource: {
-                    type: "json",
                     transport: {
                         read: window.location.origin + "/Reports/CreditNoteApi?startdate=" + startdate + "&enddate=" + enddate
                     },
@@ -229,25 +248,25 @@
                 sortable: true,
                 pageable: true,
                 resizable: true,
-
+                detailTemplate: kendo.template($("#item-template").html()),
+                detailInit: detailInit,
                 columns: [
                     {
                         title: "Invoice Number",
                         field: "credit_Note_Number",
                         filterable: false,
-
                     },
                     {
                         title: "Ref Number",
                         field: "reference_Number",
                         filterable: false,
-
                     },
                     {
                         field: "trans_Date_Ad",
                         title: "Date",
                         format: "{0:MM/dd/yyyy}",
-                    }, {
+                    },
+                    {
                         field: "trans_Date_Bs",
                         title: "BS",
                         footerAttributes: {
@@ -275,9 +294,7 @@
                         template: "#: CurrencyFormat(total_Gross_Amount) #",
                         groupFooterTemplate: "#: CurrencyFormat(sum) #",
                         footerTemplate: "#: CurrencyFormat(sum) #",
-
                     },
-
                     {
                         field: "total_Discount",
                         title: "Discount",
@@ -314,30 +331,25 @@
                         title: "Credit Note",
                         field: "credit_Note",
                         filterable: false,
-
                     },
                     {
                         title: "Status",
                         field: "remarks",
                         filterable: false,
-
                     },
                     {
-
                         title: "Action",
                         attributes: {
                             "class": "p-1 text-right"
                         },
                         template: '<a href="javascript:void(0)" class="print" onclick="printInvoice(this)">Print</a>'
-
                     }
                 ]
             });
            // $(".k-grid-content").css("overflow-y", "hidden").mCustomScrollbar();
         }
+
         $(document).ready(function () {
-
-
             startup();
             //var g = $("#SalesInvoiceTable").data("kendoGrid");
             //g.dataSource.pageSize(10);

@@ -39,6 +39,12 @@ namespace POS.UI.Controllers
         {
             return View();
         }
+
+        public IActionResult WholeSaleCreditNote()
+        {
+            return View();
+        }
+
         public IActionResult Denomination()
         {
             return View();
