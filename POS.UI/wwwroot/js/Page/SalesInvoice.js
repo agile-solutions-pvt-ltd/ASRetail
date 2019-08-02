@@ -2012,8 +2012,9 @@ const invoice = (function () {
                     //    window.location.href = url;
                     //}
                     //else
-                    window.location.href = window.location.origin + result.responseJSON.redirectUrl;
-                    console.log("windows Url", window.location.href);
+                    //window.location.href = window.location.origin + result.responseJSON.redirectUrl;
+                    //console.log("windows Url", window.location.href);
+                    StatusNotify("success", "Saved Successfully");
                 }
             }
         });
