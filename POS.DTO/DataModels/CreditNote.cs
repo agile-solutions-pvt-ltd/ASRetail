@@ -67,6 +67,7 @@ namespace POS.DTO
         public int SyncErrorCount { get; set; } = 0;
         public DateTime? NavSyncDate { get; set; }
 
+        public bool isRedeem { get; set; }
 
         public ICollection<CreditNoteItems> CreditNoteItems { get; set; }
 
