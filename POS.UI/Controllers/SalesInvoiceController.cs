@@ -85,72 +85,80 @@ namespace POS.UI.Controllers
             Customer customer = model.Customer;
             if (ModelState.IsValid)
             {
-                //if that salesinvoice already exist, than track first
-                SalesInvoiceTmp oldData = new SalesInvoiceTmp();
-                bool isExistOldSalesInvoice = false;
-                if (salesInvoiceTmp.Id != null)
+
+                try
                 {
-                    oldData = await _context.SalesInvoiceTmp.FirstOrDefaultAsync(x => x.Id == salesInvoiceTmp.Id);
-                    if (oldData != null) isExistOldSalesInvoice = true;
-                }
+                    //if that salesinvoice already exist, than track first
+                    SalesInvoiceTmp oldData = new SalesInvoiceTmp();
+                    bool isExistOldSalesInvoice = false;
+                    if (salesInvoiceTmp.Id != null)
+                    {
+                        oldData = await _context.SalesInvoiceTmp.FirstOrDefaultAsync(x => x.Id == salesInvoiceTmp.Id);
+                        if (oldData != null) isExistOldSalesInvoice = true;
+                    }
 
-                //add membership
-                if (!string.IsNullOrEmpty(customer.Name) && !string.IsNullOrEmpty(customer.Mobile1) && customer.Is_Member == true)
+                    //add membership
+                    if (!string.IsNullOrEmpty(customer.Name) && !string.IsNullOrEmpty(customer.Mobile1) && customer.Is_Member == true)
+                    {
+                        Customer member = AddCustomer(customer);
+                        //_context.SaveChanges();
+                        salesInvoiceTmp.Customer_Id = member.Code;
+                        salesInvoiceTmp.MemberId = member.Membership_Number;
+                    }
+
+
+                    //now processed to new save invoice
+                    salesInvoiceTmp.Id = Guid.NewGuid();
+                    salesInvoiceTmp.Trans_Time = DateTime.Now.TimeOfDay;
+                    salesInvoiceTmp.Division = "Divisioin";
+                    salesInvoiceTmp.Terminal = HttpContext.Session.GetString("Terminal");
+                    salesInvoiceTmp.Created_Date = DateTime.Now;
+                    salesInvoiceTmp.Created_By = User.Identity.Name;
+
+
+
+                    _context.Add(salesInvoiceTmp);
+
+                    foreach (var item in salesInvoiceTmp.SalesInvoiceItems)
+                    {
+                        item.Invoice_Id = salesInvoiceTmp.Id;
+                        item.Invoice_Number = salesInvoiceTmp.Invoice_Number;
+                        _context.SalesInvoiceItemsTmp.Add(item);
+                    }
+
+
+
+
+
+                    await _context.SaveChangesAsync();
+
+                    //if everything goes right then delete old sales invoice in background
+                    if (isExistOldSalesInvoice)
+                    {
+                        _context.SalesInvoiceTmp.Remove(oldData);
+                        _context.SaveChanges();
+                    }
+
+
+
+                    //for serverside return
+                    //if (salesInvoiceTmp.Trans_Type == "Hold")
+                    //    return RedirectToAction("Index");
+                    //else
+                    //    return RedirectToAction("Billing", new { id = salesInvoiceTmp.Id });
+                    //for api return
+                    if (salesInvoiceTmp.Trans_Type == "Save")
+                        return Ok(new { redirectUrl = "" });
+                    if (salesInvoiceTmp.Trans_Type == "Hold" || salesInvoiceTmp.Trans_Type == "Save")
+                        return Ok(new { redirectUrl = "/SalesInvoice/Landing" });
+                    else if (salesInvoiceTmp.Trans_Type == "Tax")
+                        return Ok(new { RedirectUrl = "/SalesInvoice/Billing/" + salesInvoiceTmp.Id + "?M=" + salesInvoiceTmp.MemberId + "&Mode=tax" });
+                    else
+                        return Ok(new { RedirectUrl = "/SalesInvoice/Billing/" + salesInvoiceTmp.Id + "?M=" + salesInvoiceTmp.MemberId });
+                }catch(Exception ex)
                 {
-                    Customer member = AddCustomer(customer);
-                    //_context.SaveChanges();
-                    salesInvoiceTmp.Customer_Id = member.Code;
-                    salesInvoiceTmp.MemberId = member.Membership_Number;
+                    return StatusCode(500, ex.InnerException);
                 }
-
-
-                //now processed to new save invoice
-                salesInvoiceTmp.Id = Guid.NewGuid();
-                salesInvoiceTmp.Trans_Time = DateTime.Now.TimeOfDay;
-                salesInvoiceTmp.Division = "Divisioin";
-                salesInvoiceTmp.Terminal = HttpContext.Session.GetString("Terminal");
-                salesInvoiceTmp.Created_Date = DateTime.Now;
-                salesInvoiceTmp.Created_By = User.Identity.Name;
-
-
-
-                _context.Add(salesInvoiceTmp);
-
-                foreach (var item in salesInvoiceTmp.SalesInvoiceItems)
-                {
-                    item.Invoice_Id = salesInvoiceTmp.Id;
-                    item.Invoice_Number = salesInvoiceTmp.Invoice_Number;
-                    _context.SalesInvoiceItemsTmp.Add(item);
-                }
-
-
-
-
-
-                await _context.SaveChangesAsync();
-
-                //if everything goes right then delete old sales invoice in background
-                if (isExistOldSalesInvoice)
-                {
-                    _context.SalesInvoiceTmp.Remove(oldData);
-                    _context.SaveChanges();
-                }
-
-
-
-                //for serverside return
-                //if (salesInvoiceTmp.Trans_Type == "Hold")
-                //    return RedirectToAction("Index");
-                //else
-                //    return RedirectToAction("Billing", new { id = salesInvoiceTmp.Id });
-                //for api return
-
-                if (salesInvoiceTmp.Trans_Type == "Hold" || salesInvoiceTmp.Trans_Type=="Save")
-                    return Ok(new { redirectUrl = "/SalesInvoice/Landing" });
-                else if (salesInvoiceTmp.Trans_Type == "Tax")
-                    return Ok(new { RedirectUrl = "/SalesInvoice/Billing/" + salesInvoiceTmp.Id + "?M=" + salesInvoiceTmp.MemberId + "&Mode=tax" });
-                else
-                    return Ok(new { RedirectUrl = "/SalesInvoice/Billing/" + salesInvoiceTmp.Id + "?M=" + salesInvoiceTmp.MemberId });
             }
             return View(salesInvoiceTmp);
         }
@@ -435,7 +443,7 @@ namespace POS.UI.Controllers
                             accountabilitycenter = store.INITIAL,
                             assigneduserid = salesInvoice.Created_By,
                             externalDocumentNumber = crNumber,
-                            amountrounded = salesInvoice.Total_Net_Amount == salesInvoice.Total_Payable_Amount
+                            amountrounded = salesInvoice.Total_Net_Amount != salesInvoice.Total_Payable_Amount
 
                         };
 

@@ -76,12 +76,12 @@
         //    }
 
         //}
-        window.wsSingleton = new Ws()
+       
         if (data.invoiceData.trans_Type === "Sales") {
             PrintSalesInvoice(data, callback);
         }
         else {
-            if (data.copy !== undefined && data.copy.printCount == 0) {
+            if ((data.copy !== undefined || data.copy !== null) && data.copy.printCount == 0) {
                 //print double
                 PrintTaxInvoice(data, function () {
                     data.copy.printCount = 1;

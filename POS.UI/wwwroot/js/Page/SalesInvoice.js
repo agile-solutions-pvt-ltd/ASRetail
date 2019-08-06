@@ -2011,10 +2011,16 @@ const invoice = (function () {
                     //    let url = SetUrlParameters(window.location.origin + "/SalesInvoice", [m, mode]);
                     //    window.location.href = url;
                     //}
-                    //else
-                    //window.location.href = window.location.origin + result.responseJSON.redirectUrl;
-                    //console.log("windows Url", window.location.href);
-                    StatusNotify("success", "Saved Successfully");
+                    debugger;
+                    if (result.responseJSON.redirectUrl === "") {
+                        StatusNotify("success", "Saved Successfully");
+                    } else {
+
+                        window.location.href = window.location.origin + result.responseJSON.redirectUrl;
+                    }
+                   // console.log("windows Url", window.location.href);
+
+                    
                 }
             }
         });

@@ -132,10 +132,11 @@ namespace POS.UI
             //        DisableGlobalLocks = true
             //    }));
 
-            //services.AddHangfireServer();
-            services.AddHangfire(opt => opt.UseSqlServerStorage(Configuration.GetConnectionString("DefaultConnection"),
+            //services.AddHangfireServer();            
+            services.AddHangfire(opt => opt.UseSqlServerStorage(Configuration.GetConnectionString("HangFireConnection"),
     new SqlServerStorageOptions
     {
+        PrepareSchemaIfNecessary = true,
         CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
         QueuePollInterval = TimeSpan.FromMinutes(30),
         UseRecommendedIsolationLevel = true,

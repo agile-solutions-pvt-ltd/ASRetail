@@ -5,6 +5,7 @@
     var invoiceExpiredDays = 30;
     var table = document.getElementById("item_table").getElementsByTagName('tbody')[0];
     let $form = $('form#Credit_Note_Form');
+    let invoicePayableAmount = 0;
     let taxPercent = 13;
 
     let init = () => {
@@ -128,6 +129,7 @@
                     $("#Reference_Number").val(data.invoiceData.invoice_Number);
                     $("#Trans_Type").val(data.invoiceData.trans_Type);
                     $("#totalNetAmount").text(CurrencyFormat(data.invoiceData.total_Payable_Amount));
+                    invoicePayableAmount = data.invoiceData.total_Payable_Amount;
 
                 }
             });
@@ -606,10 +608,14 @@
         $("#Total_Vat").val(CurrencyUnFormat($("#totalTax").text()));
         $("#Total_Net_Amount").val(CurrencyUnFormat($("#totalNetAmount").text()));
 
+
+
         //validate
         if (!$('form#Credit_Note_Form').valid()) {
             return false;
         }
+
+      
 
         debugger;
         //get items
@@ -645,6 +651,9 @@
         var data = $('form#Credit_Note_Form').serializeObject();
 
         data.Customer_Id = $("#Customer_Id").val();
+        debugger;
+        //check roundup
+        data.IsRoundup = parseFloat($("#totalNetAmount").text()) === parseFloat(invoicePayableAmount)
 
         //add membership discount
 

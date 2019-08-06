@@ -19,6 +19,8 @@ namespace POS.DTO
         public string NavPassword { get; set; }
         // public string IRDBillUrl { get; set; }
         public bool StopInvoicePosting { get; set; }
+        public bool StopCreditNotePosting { get; set; }
+        public bool StopCustomerPosting { get; set; }
 
 
         public string Location { get; set; }

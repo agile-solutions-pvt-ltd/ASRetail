@@ -70,12 +70,15 @@ namespace POS.UI.Controllers
         public IActionResult UpdatePrintCount(string invoiceNumber)
         {
             var printCount = _context.InvoicePrint.FirstOrDefault(x => x.InvoiceNumber == invoiceNumber);
-            printCount.PrintCount += 1;
-            printCount.PrintedBy = User.Identity.Name;
-            printCount.PrintedDate = DateTime.Now;
+            if (printCount != null)
+            {
+                printCount.PrintCount += 1;
+                printCount.PrintedBy = User.Identity.Name;
+                printCount.PrintedDate = DateTime.Now;
 
-            _context.Entry(printCount).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-            _context.SaveChanges();
+                _context.Entry(printCount).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                _context.SaveChanges();
+            }
             return Ok();
         }
 
