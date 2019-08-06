@@ -69,6 +69,7 @@ namespace POS.DTO
         public bool IsRoundup { get; set; } = false;
         public bool IsNavPosted { get; set; }
 
+        public bool isRedeem { get; set; }
 
         public ICollection<CreditNoteItems> CreditNoteItems { get; set; }
 

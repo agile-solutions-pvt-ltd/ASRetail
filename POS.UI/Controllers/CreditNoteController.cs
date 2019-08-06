@@ -49,6 +49,12 @@ namespace POS.UI.Controllers
                     creditNote.Terminal = HttpContext.Session.GetString("Terminal");
                     creditNote.Created_Date = DateTime.Now;
                     creditNote.Created_By = User.Identity.Name;
+                    creditNote.isRedeem = creditNote.isRedeem;
+
+                    if (creditNote.isRedeem == true)
+                    {
+                        creditNote.Remarks = "Claimed";
+                    }
                     _context.Add(creditNote);
 
                     foreach (var item in creditNote.CreditNoteItems)
@@ -106,6 +112,10 @@ namespace POS.UI.Controllers
                         SyncWithIrd = false,
                         IsRealTime = false
                     };
+
+                    InvoiceMaterializedView invoiceMaterializedView = _context.InvoiceMaterializedView.FirstOrDefault(x => x.BillNo == creditNote.Reference_Number.Trim());
+                    invoiceMaterializedView.IsBillActive = false;
+                    _context.Entry(invoiceMaterializedView).State = EntityState.Modified;
 
                     NavCreditMemo navCreditMemo = new NavCreditMemo()
                     {

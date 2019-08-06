@@ -5,11 +5,21 @@
     var invoiceExpiredDays = 30;
     var table = document.getElementById("item_table").getElementsByTagName('tbody')[0];
     let $form = $('form#Credit_Note_Form');
-    let invoicePayableAmount = 0;
     let taxPercent = 13;
-
+   
     let init = () => {
+        console.log("isredeem", document.getElementById('isRedeemed').value)
+        $('input[type="checkbox"]').click(function () {
+            if ($(this).prop("checked") == true) {
+                document.getElementById('isRedeemed').value = 'true';
 
+                console.log("isredeem", document.getElementById('isRedeemed').value)
+            }
+            else if ($(this).prop("checked") == false) {
+                document.getElementById('isRedeemed').value = 'false';
+                console.log("isredeem", document.getElementById('isRedeemed').value)
+            }
+        });
         //focus on ref number
         $("#Reference_Number").focus();
 
@@ -129,7 +139,6 @@
                     $("#Reference_Number").val(data.invoiceData.invoice_Number);
                     $("#Trans_Type").val(data.invoiceData.trans_Type);
                     $("#totalNetAmount").text(CurrencyFormat(data.invoiceData.total_Payable_Amount));
-                    invoicePayableAmount = data.invoiceData.total_Payable_Amount;
 
                 }
             });
@@ -608,16 +617,13 @@
         $("#Total_Vat").val(CurrencyUnFormat($("#totalTax").text()));
         $("#Total_Net_Amount").val(CurrencyUnFormat($("#totalNetAmount").text()));
 
-
-
         //validate
         if (!$('form#Credit_Note_Form').valid()) {
             return false;
         }
 
-      
-
         debugger;
+        console.log("isredeem", document.getElementById('isRedeemed').value)
         //get items
         var table = $("#item_table");
         var invoiceItems = [];
@@ -643,7 +649,9 @@
                 MembershipDiscount: parseFloat($(this).find('td input.Discount').data("membershipdiscount") || 0),
                 Tax: $(this).find('td input.Tax').val(),
                 Is_Vatable: $(this).find('td input.Tax').data("isvatable"),
-                Net_Amount: $(this).find('td input.NetAmount').val()
+                Net_Amount: $(this).find('td input.NetAmount').val(),
+                
+               
             });
         });
 
@@ -651,10 +659,7 @@
         var data = $('form#Credit_Note_Form').serializeObject();
 
         data.Customer_Id = $("#Customer_Id").val();
-        debugger;
-        //check roundup
-        data.IsRoundup = parseFloat($("#totalNetAmount").text()) === parseFloat(invoicePayableAmount)
-
+        data.isRedeem = document.getElementById('isRedeemed').value;
         //add membership discount
 
         data.MembershipDiscount = calcTotalMembershipDiscount();

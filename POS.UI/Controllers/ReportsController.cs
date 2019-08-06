@@ -18,6 +18,7 @@ namespace POS.UI.Controllers
             _context = context;
         }
 
+        [RolewiseAuthorized]
         public IActionResult SalesInvoice()
         {
 
@@ -36,7 +37,7 @@ namespace POS.UI.Controllers
            // IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Type == "Sales").Include(x => x.SalesInvoiceItems).OrderByDescending(x => x.Trans_Date_Ad);
             return Ok(salesInvoiceList);
         }
-
+        [RolewiseAuthorized]
         public IActionResult TaxInvoice()
         {
             //IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Type == "Tax").OrderByDescending(x => x.Trans_Date_Ad);
@@ -51,7 +52,7 @@ namespace POS.UI.Controllers
             IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Type == "Tax" && x.Trans_Date_Ad >= _startDate && x.Trans_Date_Ad <= _endDate).Include(x => x.SalesInvoiceItems).OrderByDescending(x => x.Trans_Date_Ad);
             return Ok(salesInvoiceList);
         }
-
+        [RolewiseAuthorized]
         public IActionResult CreditNote()
         {
             // IQueryable<CreditNote> creditNoteList = _context.CreditNote.OrderByDescending(x => x.Trans_Date_Ad);
@@ -67,7 +68,7 @@ namespace POS.UI.Controllers
             return Ok(creditNoteList);
         }
 
-
+        [RolewiseAuthorized]
         public IActionResult SalesVatBook(DateTime? StartDate = null, DateTime? EndDate = null,string TransType=null)
         {
             ViewData["Store"] = _context.Store.FirstOrDefault();
@@ -86,7 +87,7 @@ namespace POS.UI.Controllers
             return View(salesInvoiceList);
 
         }
-
+        [RolewiseAuthorized]
         public IActionResult InvoiceMaterial(DateTime? StartDate = null, DateTime? EndDate = null)
         {
             ViewData["Store"] = _context.Store.FirstOrDefault();
@@ -97,7 +98,7 @@ namespace POS.UI.Controllers
                 salesInvoiceList = salesInvoiceList.Where(x => x.BillDate <= EndDate);
             return View(salesInvoiceList);
         }
-
+        [RolewiseAuthorized]
         // Niroj Start
         public IActionResult InvoiceSales()
         {
@@ -120,6 +121,7 @@ namespace POS.UI.Controllers
 
             return Ok(salesInvoiceList);
         }
+        [RolewiseAuthorized]
         public IActionResult SalesInvoiceUserwise()
         {
             //IQueryable<SalesInvoice> salesInvoiceList =_context.SalesInvoice.Where(x => x.Trans_Type == "Sales").OrderByDescending(x => x.Trans_Date_Ad);
@@ -127,7 +129,7 @@ namespace POS.UI.Controllers
             return View();
         }
 
-
+        [RolewiseAuthorized]
         public IActionResult SalesInvoiceAggregate()
         {
             //IQueryable<SalesInvoice> salesInvoiceList =_context.SalesInvoice.Where(x => x.Trans_Type == "Sales").OrderByDescending(x => x.Trans_Date_Ad);
@@ -146,7 +148,7 @@ namespace POS.UI.Controllers
         }
         //Niroj End
 
-
+        [RolewiseAuthorized]
         public IActionResult SalesInvoiceSummary()
         {
             //IQueryable<SalesInvoice> salesInvoiceList =_context.SalesInvoice.Where(x => x.Trans_Type == "Sales").OrderByDescending(x => x.Trans_Date_Ad);
@@ -164,7 +166,7 @@ namespace POS.UI.Controllers
             return Ok(salesInvoiceList);
         }
 
-
+        [RolewiseAuthorized]
         //Author - Santosh Sapkota
         public IActionResult WholeSaleTaxInvoice()
         {
