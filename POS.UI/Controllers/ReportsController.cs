@@ -1,10 +1,15 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using POS.Core;
 using POS.DTO;
+using POS.UI.Helper;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace POS.UI.Controllers
 {
@@ -12,10 +17,16 @@ namespace POS.UI.Controllers
     public class ReportsController : Controller
     {
         private readonly EntityCore _context;
+        private readonly IMapper _mapper;
+        private IMemoryCache _cache;
+        private readonly IKendoGrid _kendoGrid;
 
-        public ReportsController(EntityCore context)
+        public ReportsController(EntityCore context, IMapper mapper, IMemoryCache memoryCache, IKendoGrid kendoGrid)
         {
             _context = context;
+            _mapper = mapper;
+            _cache = memoryCache;
+            _kendoGrid = kendoGrid;
         }
 
         [RolewiseAuthorized]
@@ -26,17 +37,49 @@ namespace POS.UI.Controllers
             ViewData["Store"] = _context.Store.FirstOrDefault();
             return View();
         }
-        public IActionResult SalesInvoiceApi(DateTime? startdate = null, DateTime? enddate = null)
+        [HttpPost]
+        public async Task<IActionResult> SalesInvoiceApi(int pageSize, int skip, Filter filter, IEnumerable<Sort> sort,DateTime? startdate = null, DateTime? enddate = null)
+
+
+
+
         {
 
             //ViewBag.StartDate = _startDate.ToShortDateString();
             //ViewBag.EndDate = _endDate.ToShortDateString();
             DateTime _startDate = startdate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
             DateTime _endDate = enddate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
-            IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Date_Ad >= _startDate && x.Trans_Date_Ad <= _endDate && x.Trans_Type=="Sales").Include(x=>x.SalesInvoiceItems).OrderByDescending(x => x.Trans_Date_Ad);
-           // IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Type == "Sales").Include(x => x.SalesInvoiceItems).OrderByDescending(x => x.Trans_Date_Ad);
-            return Ok(salesInvoiceList);
+            string _TransType = "Sales";
+            var salesInvoiceContext = _context.SpSalesInvoiceSel.Where(x => x.Trans_Date_AD >= _startDate && x.Trans_Date_AD <= _endDate && x.Trans_Type == _TransType).Include(x => x.SalesInvoiceItems).AsQueryable();
+
+            //var salesInvoiceContext = _context.SalesInvoice.Where(x => x.Trans_Date_Ad >= _startDate && x.Trans_Date_Ad <= _endDate && x.Trans_Type=="Sales").Include(x=>x.SalesInvoiceItems).OrderByDescending(x => x.Trans_Date_Ad).AsQueryable();
+          
+
+            var queryable = _kendoGrid.Filter(salesInvoiceContext, filter);
+
+            // Calculate the total number of records (needed for paging)
+            var total = queryable.Count();
+
+            var grossAmountTotal = queryable.Sum(x => x.Total_Gross_Amount);
+
+            var discountTotal = queryable.Sum(x => x.Total_Discount);
+
+            var netTotal = queryable.Sum(x => x.Total_Net_Amount);
+
+
+
+            // Sort the data
+            queryable = _kendoGrid.Sort(queryable, sort);
+
+            // Finally page the data
+            var salesInvoiceList = await queryable.Skip(skip).Take(pageSize).ToListAsync();
+          
+
+            return Json(new { data = salesInvoiceList, total = total, grossAmountTotal= grossAmountTotal, discountTotal= discountTotal, netTotal= netTotal });
+           // return Ok(salesInvoiceContext);
+           
         }
+
         [RolewiseAuthorized]
         public IActionResult TaxInvoice()
         {
@@ -45,12 +88,38 @@ namespace POS.UI.Controllers
             return View();
         }
 
-        public IActionResult TaxInvoiceApi(DateTime? startdate = null, DateTime? enddate = null)
+        public async Task<IActionResult> TaxInvoiceApi(int pageSize, int skip, Filter filter, IEnumerable<Sort> sort, DateTime? startdate = null, DateTime? enddate = null)
         {
             DateTime _startDate = startdate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
             DateTime _endDate = enddate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
-            IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Type == "Tax" && x.Trans_Date_Ad >= _startDate && x.Trans_Date_Ad <= _endDate).Include(x => x.SalesInvoiceItems).OrderByDescending(x => x.Trans_Date_Ad);
-            return Ok(salesInvoiceList);
+         
+            string _TransType = "Tax";
+            var salesInvoiceContext = _context.SpSalesInvoiceSel.Where(x => x.Trans_Date_AD >= _startDate && x.Trans_Date_AD <= _endDate && x.Trans_Type == _TransType).Include(x => x.SalesInvoiceItems).AsQueryable();
+
+            //var salesInvoiceContext = _context.SalesInvoice.Where(x => x.Trans_Date_Ad >= _startDate && x.Trans_Date_Ad <= _endDate && x.Trans_Type=="Sales").Include(x=>x.SalesInvoiceItems).OrderByDescending(x => x.Trans_Date_Ad).AsQueryable();
+
+
+            var queryable = _kendoGrid.Filter(salesInvoiceContext, filter);
+
+            // Calculate the total number of records (needed for paging)
+            var total = queryable.Count();
+
+            var grossAmountTotal = queryable.Sum(x => x.Total_Gross_Amount);
+
+            var discountTotal = queryable.Sum(x => x.Total_Discount);
+
+            var netTotal = queryable.Sum(x => x.Total_Net_Amount);
+
+
+
+            // Sort the data
+            queryable = _kendoGrid.Sort(queryable, sort);
+
+            // Finally page the data
+            var salesInvoiceList = await queryable.Skip(skip).Take(pageSize).ToListAsync();
+
+
+            return Json(new { data = salesInvoiceList, total = total, grossAmountTotal = grossAmountTotal, discountTotal = discountTotal, netTotal = netTotal });
         }
         [RolewiseAuthorized]
         public IActionResult CreditNote()
@@ -68,7 +137,7 @@ namespace POS.UI.Controllers
             return Ok(creditNoteList);
         }
 
-        [RolewiseAuthorized]
+      
         public IActionResult SalesVatBook(DateTime? StartDate = null, DateTime? EndDate = null,string TransType=null)
         {
             ViewData["Store"] = _context.Store.FirstOrDefault();
@@ -87,15 +156,14 @@ namespace POS.UI.Controllers
             return View(salesInvoiceList);
 
         }
-        [RolewiseAuthorized]
+        
         public IActionResult InvoiceMaterial(DateTime? StartDate = null, DateTime? EndDate = null)
         {
             ViewData["Store"] = _context.Store.FirstOrDefault();
-            IQueryable<InvoiceMaterializedView> salesInvoiceList = _context.InvoiceMaterializedView.OrderByDescending(x => x.BillNo);
-            if (StartDate != null)
-                salesInvoiceList = salesInvoiceList.Where(x => x.BillDate >= StartDate);
-            if (EndDate != null)
-                salesInvoiceList = salesInvoiceList.Where(x => x.BillDate <= EndDate);
+            DateTime _startDate = StartDate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+            DateTime _endDate = EndDate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+            IQueryable<InvoiceMaterializedView> salesInvoiceList = _context.InvoiceMaterializedView.Where(x => x.BillDate >= _startDate && x.BillDate <= _endDate).OrderByDescending(x => x.BillNo);
+           
             return View(salesInvoiceList);
         }
         [RolewiseAuthorized]

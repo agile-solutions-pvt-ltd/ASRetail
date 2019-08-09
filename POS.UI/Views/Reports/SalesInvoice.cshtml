@@ -209,7 +209,153 @@
         }
 
         function startup() {
+           
+            //$("#grid").kendoGrid({
+            //    toolbar: ["pdf", "excel"],
+            //    pdf: {
+            //        allPages: true,
+            //        avoidLinks: true,
+            //        paperSize: "A4",
+            //        margin: { top: "2cm", left: "1cm", right: "1cm", bottom: "1cm" },
+            //        landscape: true,
+            //        repeatHeaders: true,
+            //        template: $("#page-template").html(),
+            //        scale: 0.8
+            //    },
+            //    excel: {
+            //        fileName: "ABBREVIATED TAX INVOICE Report.xlsx",
+            //        proxyURL: window.location.origin + "/Reports/Excel_Export_Save",
+            //        filterable: true
+            //    },
+            //    dataSource: {
+            //        transport: {
+            //            read: window.location.origin + "/Reports/SalesInvoiceApi?startdate=" + startdate + "&enddate=" + enddate,
+            //            dataType: "json",
+            //            type: "POST"
+
+            //        },
+            //        schema: {
+            //            model: {
+            //                fields: {
+            //                    trans_Date_Ad: { type: "date" },
+            //                    total_Gross_Amount: { type: "number" },
+            //                    total_Discount: { type: "number" },
+            //                    total_Net_Amount: { type: "number" }
+            //                }
+            //            },
+            //            data: function (data) {
+            //                return data;
+            //            }
+            //        },
+
+                    
+            //        pageSize: 100,
+            //        group: {
+            //            field: "trans_Date_Ad", aggregates: [
+            //                { field: "trans_Date_Bs", aggregate: "count" },
+            //                { field: "total_Gross_Amount", aggregate: "sum" },
+            //                { field: "total_Discount", aggregate: "sum" },
+            //                { field: "total_Net_Amount", aggregate: "sum" }
+            //            ],
+            //            dir: "desc"
+            //        },
+            //        aggregate: [
+            //            { field: "total_Gross_Amount", aggregate: "sum" },
+            //            { field: "total_Discount", aggregate: "sum" },
+            //            { field: "total_Net_Amount", aggregate: "sum" }
+            //        ],
+            //    },
+            //    height: 550,
+            //    filterable: true,
+            //    sortable: true,
+            //    pageable: {
+            //        pageSizes: [100, 200, 400,500,1000, "all"],
+            //        numeric: false
+            //    },
+            //    resizable: true,
+            //    detailTemplate: kendo.template($("#item-template").html()),
+            //    detailInit: detailInit,
+            //    columns: [
+            //        {
+            //            title: "Invoice Number",
+            //            field: "invoice_Number"
+            //        },
+            //        {
+            //            field: "trans_Date_Ad",
+            //            title: "Date",
+            //            format: "{0:MM/dd/yyyy}",
+            //        }, {
+            //            field: "trans_Date_Bs",
+            //            title: "BS",
+            //            footerAttributes: {
+            //                "class": "p-1 text-right"
+            //            },
+            //            groupFotterAttributes: {
+            //                "class": "p-1 text-right"
+            //            },
+            //            groupFooterTemplate: "Count: #: count #",
+            //            footerTemplate: "Total"
+            //        },
+            //        {
+            //            field: "total_Gross_Amount",
+            //            title: "Gross Amount",
+            //            attributes: {
+            //                "class": "p-1 text-right"
+            //            },
+            //            footerAttributes: {
+            //                "class": "p-1 text-right"
+            //            },
+            //            groupFotterAttributes: {
+            //                "class": "p-1 text-right"
+            //            },
+            //            template: "#: CurrencyFormat(total_Gross_Amount) #",
+            //            groupFooterTemplate: "#: CurrencyFormat(sum) #",
+            //            footerTemplate: "#: CurrencyFormat(sum) #",
+            //        },
+            //        {
+            //            field: "total_Discount",
+            //            title: "Discount",
+            //            attributes: {
+            //                "class": "p-1 text-right"
+            //            },
+            //            footerAttributes: {
+            //                "class": "p-1 text-right"
+            //            },
+            //            groupFotterAttributes: {
+            //                "class": "p-1 text-right"
+            //            },
+            //            template: "#: CurrencyFormat(total_Discount) #",
+            //            groupFooterTemplate: "#: CurrencyFormat(sum) #",
+            //            footerTemplate: "#: CurrencyFormat(sum) #",
+            //        },
+            //        {
+            //            field: "total_Net_Amount",
+            //            title: "Net Amount",
+            //            attributes: {
+            //                "class": "p-1 text-right"
+            //            },
+            //            footerAttributes: {
+            //                "class": "p-1 text-right"
+            //            },
+            //            groupFotterAttributes: {
+            //                "class": "p-1 text-right"
+            //            },
+            //            template: "#: CurrencyFormat(total_Net_Amount) #",
+            //            groupFooterTemplate: "#: CurrencyFormat(sum) #",
+            //            footerTemplate: "#: CurrencyFormat(sum) #",
+            //        },
+            //        {
+            //            title: "Action",
+            //            attributes: {
+            //                "class": "p-1 text-right"
+            //            },
+            //            template: '<a href="javascript:void(0)" class="print" onclick="printInvoice(this)">Print</a>'
+            //        }
+            //    ]
+            //});
+           
             $("#grid").kendoGrid({
+                height: CalcGridHeight(),
                 toolbar: ["pdf", "excel"],
                 pdf: {
                     allPages: true,
@@ -228,56 +374,97 @@
                 },
                 dataSource: {
                     transport: {
-                        read: window.location.origin + "/Reports/SalesInvoiceApi?startdate=" + startdate + "&enddate=" + enddate
+                        read: {
+                            url: "/Reports/SalesInvoiceApi?startdate=" + startdate + "&enddate=" + enddate,
+                            dataType: "json",
+                            type: "POST"
+                        },
                     },
                     schema: {
                         model: {
                             fields: {
-                                trans_Date_Ad: { type: "date" },
+                                trans_Date_AD: { type: "date" },
                                 total_Gross_Amount: { type: "number" },
                                 total_Discount: { type: "number" },
-                                total_Net_Amount: { type: "number" }
+                                total_Net_Amount: { type: "number" },
+                                card: { type: "number" },
+                                cash: { type: "number" },
+                                credit: { type: "number" },
+                                credit_Note: { type: "number" }
+                                
                             }
                         },
-                        data: function (data) {
-                            return data;
+                        data: "data",
+                        total: "total",
+                        
+                        aggregates: function (response) {
+                            return response.grossAmountTotal;
                         }
+                        
+                       
                     },
                     pageSize: 100,
-                    sort: { field: "invoice_Number", dir: "desc" },
+                    serverPaging: true,
+                    serverFiltering: true,
+                    serverSorting: true,
+                    serverAggregates: true,
                     group: {
-                        field: "trans_Date_Ad", aggregates: [
-                            { field: "trans_Date_Bs", aggregate: "count" },
+                        field: "trans_Date_AD", aggregates: [
+                            { field: "trans_Date_BS", aggregate: "count" },
                             { field: "total_Gross_Amount", aggregate: "sum" },
                             { field: "total_Discount", aggregate: "sum" },
-                            { field: "total_Net_Amount", aggregate: "sum" }
+                            { field: "total_Net_Amount", aggregate: "sum" },
+                            { field: "card", aggregate: "sum" },
+                            { field: "cash", aggregate: "sum" },
+                            { field: "credit", aggregate: "sum" },
+                            { field: "credit_Note", aggregate: "sum" }
+                            
+
+
+
                         ],
                         dir: "desc"
                     },
                     aggregate: [
                         { field: "total_Gross_Amount", aggregate: "sum" },
                         { field: "total_Discount", aggregate: "sum" },
-                        { field: "total_Net_Amount", aggregate: "sum" }
-                    ],
+                        { field: "total_Net_Amount", aggregate: "sum" },
+                        { field: "card", aggregate: "sum" },
+                        { field: "cash", aggregate: "sum" },
+                        { field: "credit", aggregate: "sum" },
+                        { field: "credit_Note", aggregate: "sum" },
+                        { field: "grossAmountTotal", aggregate: "max" },
+
+
+
+                    ]
+
+                
                 },
-                height: 550,
                 filterable: true,
                 sortable: true,
-                pageable: true,
-                resizable: true,
-                detailTemplate: kendo.template($("#item-template").html()),
-                detailInit: detailInit,
+                pageable: {
+                    messages: {
+                        empty: "No items to display"
+                    },
+                    refresh: true,
+                    pageSizes: [100, 200, 400, 500, 1000],
+                    buttonCount: 5
+                },
+                    resizable: true,
+            detailTemplate: kendo.template($("#item-template").html()),
+             detailInit: detailInit,
                 columns: [
                     {
                         title: "Invoice Number",
                         field: "invoice_Number"
                     },
                     {
-                        field: "trans_Date_Ad",
+                        field: "trans_Date_AD",
                         title: "Date",
                         format: "{0:MM/dd/yyyy}",
                     }, {
-                        field: "trans_Date_Bs",
+                        field: "trans_Date_BS",
                         title: "BS",
                         footerAttributes: {
                             "class": "p-1 text-right"
@@ -286,7 +473,71 @@
                             "class": "p-1 text-right"
                         },
                         groupFooterTemplate: "Count: #: count #",
-                        footerTemplate: "Total"
+                        //footerTemplate: "Total"
+                    },
+                    {
+                        field: "card",
+                        title: "Card",
+                        attributes: {
+                            "class": "p-1 text-right"
+                        },
+                        footerAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        groupFotterAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        template: "#: CurrencyFormat(card) #",
+                        groupFooterTemplate: "#: CurrencyFormat(sum) #",
+                        //footerTemplate: "#: CurrencyFormat(sum) #",
+                    },
+                    {
+                        field: "cash",
+                        title: "Cash",
+                        attributes: {
+                            "class": "p-1 text-right"
+                        },
+                        footerAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        groupFotterAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        template: "#: CurrencyFormat(cash) #",
+                        groupFooterTemplate: "#: CurrencyFormat(sum) #",
+                        //footerTemplate: "#: CurrencyFormat(sum) #",
+                    },
+                    {
+                        field: "credit",
+                        title: "Credit",
+                        attributes: {
+                            "class": "p-1 text-right"
+                        },
+                        footerAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        groupFotterAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        template: "#: CurrencyFormat(credit) #",
+                        groupFooterTemplate: "#: CurrencyFormat(sum) #",
+                        //footerTemplate: "#: CurrencyFormat(sum) #",
+                    },
+                    {
+                        field: "credit_Note",
+                        title: "Credit Note",
+                        attributes: {
+                            "class": "p-1 text-right"
+                        },
+                        footerAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        groupFotterAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        template: "#: CurrencyFormat(credit_Note) #",
+                        groupFooterTemplate: "#: CurrencyFormat(sum) #",
+                        //footerTemplate: "#: CurrencyFormat(sum) #",
                     },
                     {
                         field: "total_Gross_Amount",
@@ -302,7 +553,9 @@
                         },
                         template: "#: CurrencyFormat(total_Gross_Amount) #",
                         groupFooterTemplate: "#: CurrencyFormat(sum) #",
-                        footerTemplate: "#: CurrencyFormat(sum) #",
+                        //footerTemplate: "#: CurrencyFormat(aggregates) #",
+
+                        
                     },
                     {
                         field: "total_Discount",
@@ -318,7 +571,7 @@
                         },
                         template: "#: CurrencyFormat(total_Discount) #",
                         groupFooterTemplate: "#: CurrencyFormat(sum) #",
-                        footerTemplate: "#: CurrencyFormat(sum) #",
+                        //footerTemplate: "#: CurrencyFormat(sum) #",
                     },
                     {
                         field: "total_Net_Amount",
@@ -334,7 +587,7 @@
                         },
                         template: "#: CurrencyFormat(total_Net_Amount) #",
                         groupFooterTemplate: "#: CurrencyFormat(sum) #",
-                        footerTemplate: "#: CurrencyFormat(sum) #",
+                        //footerTemplate: "#: CurrencyFormat(sum) #",
                     },
                     {
                         title: "Action",
@@ -343,8 +596,9 @@
                         },
                         template: '<a href="javascript:void(0)" class="print" onclick="printInvoice(this)">Print</a>'
                     }
-                ]
+                ],
             });
+            $("#grid").data("kendoGrid").refresh();
             // $(".k-grid-content").css("overflow-y", "hidden").mCustomScrollbar();
         }
 
@@ -356,6 +610,7 @@
                 url: window.location.origin + "/Print/GetPrintCount?invoiceNumber=" + invoiceData.invoice_Number,
                 type: 'POST',
                 complete: function (result) {
+                    debugger;
                     if (result.status === 200) {
                         var data = {
                             invoiceData: invoiceData,

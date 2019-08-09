@@ -200,6 +200,7 @@
 
         function startup() {
             $("#grid").kendoGrid({
+                height: CalcGridHeight(),
                 toolbar: ["pdf", "excel"],
                 pdf: {
                     allPages: true,
@@ -212,76 +213,176 @@
                     scale: 0.8
                 },
                 excel: {
-                    fileName: "TAX INVOICE Report.xlsx",
+                    fileName: "ABBREVIATED TAX INVOICE Report.xlsx",
                     proxyURL: window.location.origin + "/Reports/Excel_Export_Save",
                     filterable: true
                 },
                 dataSource: {
                     transport: {
-                        read: window.location.origin + "/Reports/TaxInvoiceApi?startdate=" + startdate + "&enddate=" + enddate
+                        read: {
+                            url: "/Reports/TaxInvoiceApi?startdate=" + startdate + "&enddate=" + enddate,
+                            dataType: "json",
+                            type: "POST"
+                        },
                     },
                     schema: {
                         model: {
                             fields: {
-                                trans_Date_Ad: { type: "date" },
+                                trans_Date_AD: { type: "date" },
                                 total_Gross_Amount: { type: "number" },
                                 total_Discount: { type: "number" },
-                                total_Vat: { type: "number" },
-                                total_Net_Amount: { type: "number" }
+                                total_Net_Amount: { type: "number" },
+                                card: { type: "number" },
+                                cash: { type: "number" },
+                                credit: { type: "number" },
+                                credit_Note: { type: "number" }
+
                             }
                         },
-                        data: function (data) {
-                            return data;
-                        }
+                        data: "data",
+                        total: "total",
+                        grossAmountTotal: "grossAmountTotal"
+
+
                     },
                     pageSize: 100,
-                    sort: { field: "invoice_Number", dir: "desc" },
+                    serverPaging: true,
+                    serverFiltering: true,
+                    serverSorting: true,
+                    serverAggregates: true,
                     group: {
-                        field: "trans_Date_Ad", aggregates: [
-                            { field: "trans_Date_Bs", aggregate: "count" },
+                        field: "trans_Date_AD", aggregates: [
+                            { field: "trans_Date_BS", aggregate: "count" },
                             { field: "total_Gross_Amount", aggregate: "sum" },
                             { field: "total_Discount", aggregate: "sum" },
-                            { field: "total_Vat", aggregate: "sum" },
-                            { field: "total_Net_Amount", aggregate: "sum" }
+                            { field: "total_Net_Amount", aggregate: "sum" },
+                            { field: "card", aggregate: "sum" },
+                            { field: "cash", aggregate: "sum" },
+                            { field: "credit", aggregate: "sum" },
+                            { field: "credit_Note", aggregate: "sum" }
+
+
+
+
                         ],
                         dir: "desc"
                     },
                     aggregate: [
                         { field: "total_Gross_Amount", aggregate: "sum" },
                         { field: "total_Discount", aggregate: "sum" },
-                        { field: "total_Vat", aggregate: "sum" },
-                        { field: "total_Net_Amount", aggregate: "sum" }
+                        { field: "total_Net_Amount", aggregate: "sum" },
+                        { field: "card", aggregate: "sum" },
+                        { field: "cash", aggregate: "sum" },
+                        { field: "credit", aggregate: "sum" },
+                        { field: "credit_Note", aggregate: "sum" },
+                        { field: "grossAmountTotal", aggregate: "sum" },
+
+
+
+
+
+
+
                     ],
+
                 },
-                height: 550,
                 filterable: true,
                 sortable: true,
-                pageable: true,
+                pageable: {
+                    messages: {
+                        empty: "No items to display"
+                    },
+                    refresh: true,
+                    pageSizes: [100, 200, 400, 500, 1000],
+                    buttonCount: 5
+                },
                 resizable: true,
                 detailTemplate: kendo.template($("#item-template").html()),
                 detailInit: detailInit,
                 columns: [
                     {
                         title: "Invoice Number",
-                        field: "invoice_Number",
-                        //filterable: false,
+                        field: "invoice_Number"
                     },
                     {
-                        field: "trans_Date_Ad",
+                        field: "trans_Date_AD",
                         title: "Date",
                         format: "{0:MM/dd/yyyy}",
                     }, {
-                        field: "trans_Date_Bs",
+                        field: "trans_Date_BS",
                         title: "BS",
                         footerAttributes: {
                             "class": "p-1 text-right"
-
                         },
                         groupFotterAttributes: {
                             "class": "p-1 text-right"
                         },
                         groupFooterTemplate: "Count: #: count #",
-                        footerTemplate: "Total"
+                        //footerTemplate: "Total"
+                    },
+                    {
+                        field: "card",
+                        title: "Card",
+                        attributes: {
+                            "class": "p-1 text-right"
+                        },
+                        footerAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        groupFotterAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        template: "#: CurrencyFormat(card) #",
+                        groupFooterTemplate: "#: CurrencyFormat(sum) #",
+                        //footerTemplate: "#: CurrencyFormat(sum) #",
+                    },
+                    {
+                        field: "cash",
+                        title: "Cash",
+                        attributes: {
+                            "class": "p-1 text-right"
+                        },
+                        footerAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        groupFotterAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        template: "#: CurrencyFormat(cash) #",
+                        groupFooterTemplate: "#: CurrencyFormat(sum) #",
+                        //footerTemplate: "#: CurrencyFormat(sum) #",
+                    },
+                    {
+                        field: "credit",
+                        title: "Credit",
+                        attributes: {
+                            "class": "p-1 text-right"
+                        },
+                        footerAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        groupFotterAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        template: "#: CurrencyFormat(credit) #",
+                        groupFooterTemplate: "#: CurrencyFormat(sum) #",
+                        //footerTemplate: "#: CurrencyFormat(sum) #",
+                    },
+                    {
+                        field: "credit_Note",
+                        title: "Credit Note",
+                        attributes: {
+                            "class": "p-1 text-right"
+                        },
+                        footerAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        groupFotterAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        template: "#: CurrencyFormat(credit_Note) #",
+                        groupFooterTemplate: "#: CurrencyFormat(sum) #",
+                        //footerTemplate: "#: CurrencyFormat(sum) #",
                     },
                     {
                         field: "total_Gross_Amount",
@@ -297,7 +398,9 @@
                         },
                         template: "#: CurrencyFormat(total_Gross_Amount) #",
                         groupFooterTemplate: "#: CurrencyFormat(sum) #",
-                        footerTemplate: "#: CurrencyFormat(sum) #",
+                        //footerTemplate: "#: CurrencyFormat(sum) #",
+
+
                     },
                     {
                         field: "total_Discount",
@@ -313,23 +416,7 @@
                         },
                         template: "#: CurrencyFormat(total_Discount) #",
                         groupFooterTemplate: "#: CurrencyFormat(sum) #",
-                        footerTemplate: "#: CurrencyFormat(sum) #",
-                    },
-                    {
-                        field: "total_Vat",
-                        title: "Tax",
-                        attributes: {
-                            "class": "p-1 text-right"
-                        },
-                        footerAttributes: {
-                            "class": "p-1 text-right"
-                        },
-                        groupFotterAttributes: {
-                            "class": "p-1 text-right"
-                        },
-                        template: "#: CurrencyFormat(total_Vat) #",
-                        groupFooterTemplate: "#: CurrencyFormat(sum) #",
-                        footerTemplate: "#: CurrencyFormat(sum) #",
+                        //footerTemplate: "#: CurrencyFormat(sum) #",
                     },
                     {
                         field: "total_Net_Amount",
@@ -345,7 +432,7 @@
                         },
                         template: "#: CurrencyFormat(total_Net_Amount) #",
                         groupFooterTemplate: "#: CurrencyFormat(sum) #",
-                        footerTemplate: "#: CurrencyFormat(sum) #",
+                        //footerTemplate: "#: CurrencyFormat(sum) #",
                     },
                     {
                         title: "Action",
@@ -353,8 +440,8 @@
                             "class": "p-1 text-right"
                         },
                         template: '<a href="javascript:void(0)" class="print" onclick="printInvoice(this)">Print</a>'
-                    },
-                ]
+                    }
+                ],
             });
             // $(".k-grid-content").css("overflow-y", "hidden").mCustomScrollbar();
         }
