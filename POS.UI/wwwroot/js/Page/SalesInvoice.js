@@ -467,8 +467,10 @@ const invoice = (function () {
         //    tax = (grossAmount - discount) * taxPercent / 100;
         //}
         //later calculations
+        debugger;
         var rate = result.rate || result.Rate || 0;
         var originalRate = rate == 0 ? "" : "data-original-rate=" + rate;
+        var popupRate = (result.Invoice_Number != undefined && result.Invoice_Number.indexOf("TI-") > -1 && isVatable == true ? result.RateExcludeVatWithoutRoundoff * 1.13 : rate).toFixed(2);
         var discount = 0;
         var grossAmount = 0;
         var tax = 0;
@@ -490,7 +492,7 @@ const invoice = (function () {
         $("<span class='barcode'>" + barCode + "</span>").appendTo(cell2);
         $("<span class='itemName' data-item-id='" + itemId + "' data-item-code= '" + itemCode + "'>" + itemName + "</span>").appendTo(cell3);
         $("<span>" + unit + "</span>").appendTo(cell4);
-        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Rate" type="number" min="0" onfocusout="invoice.calcTotal()" name="Rate"  data-popup-rate="'+rate+'" ' + rateDisabled + ' " value=' + rate.toFixed(2) + ' ' + originalRate+'>').appendTo(cell5);
+        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Rate" type="number" min="0" onfocusout="invoice.calcTotal()" name="Rate"  data-popup-rate="'+popupRate+'" ' + rateDisabled + ' " value=' + rate.toFixed(2) + ' ' + originalRate+'>').appendTo(cell5);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Quantity" type="number" min="0.01" onfocusout="invoice.calcAll()" name="Quantity" value=' + quantity.toString() + '>').appendTo(cell6);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right GrossAmount" type="number" name="GrossAmount" disabled value=' + grossAmount.toFixed(2) + '>').appendTo(cell7);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Discount" type="number" data-isDiscountable="' + isDiscountable + '" ' + discountDisabled + ' min="0" ' + discountLimit + ' onfocusout="invoice.calcTotal(this)" name="Discount" data-original-percent="' + discount.toFixed(2) + '" data-original-value="' + discount.toFixed(2) + '" value=' + discount.toFixed(2) + '>').appendTo(cell8);
@@ -679,6 +681,7 @@ const invoice = (function () {
     let loadPausedTransactionData = (data) => {
         
         if (getUrlParameters() !== 0 && salesInvoiceTmpData.SalesInvoiceItems !== null) {
+            kendo.ui.progress($("#item_table"), true);
             getItemReferenceData(function () {
                 debugger;
                 //flat discount
@@ -709,7 +712,7 @@ const invoice = (function () {
                         addRowWithData(x);
                     });
                 }
-
+                kendo.ui.progress($("#item_table"), false);
             });
 
         }
@@ -1016,7 +1019,7 @@ const invoice = (function () {
         var todayDate = new Date();
         todayDate = new Date(todayDate.toDateString()); //remove timespan
         var membershipNumber = $("#membershipId").val();
-
+        debugger;
 
         var selectedItem = _.filter(selectedItems, function (x) {
             return x.code === itemCode;
@@ -1162,11 +1165,11 @@ const invoice = (function () {
                 // 1. calc quantity
                 var quantity = parseFloat($(this).find(".Quantity").val());
                 // 2. calc tax include Rate
-                var rateIncludeTax = calcRate(itemCode, quantity, $(this));               
+                var rateIncludeTax = calcRate(itemCode, quantity, $(this));
                 // 3. calc unit tax
                 var tax = calculateReverseTax(rateIncludeTax, taxPercent, taxable);
                 // 4. calc tax exclude rate
-                var rateExcludeTax = rateIncludeTax - tax;                
+                var rateExcludeTax = rateIncludeTax - tax;
                 // 5. calc rate
                 var rate = transType === "Tax" ? rateExcludeTax : rateIncludeTax;
                 // 5. calc discount
@@ -1256,11 +1259,14 @@ const invoice = (function () {
                 if (taxable)
                     totalTaxableAmount += parseFloat(parseFloat((rateExcludeTax * quantity).toFixed(2)) - parseFloat((discountExcVat * quantity).toFixed(2)).toFixed(2))// parseFloat(((rateExcludeTax - discountExcVat) * quantity).toFixed(2));
                 else {
-                    totalNonTaxableAmount += parseFloat((rateExcludeTax * quantity).toFixed(2));
+                    totalNonTaxableAmount += parseFloat(parseFloat((rateExcludeTax * quantity).toFixed(2)) - parseFloat((discountExcVat * quantity).toFixed(2)).toFixed(2))
                 }
 
             });
         }
+        //calctotal tax
+        totalTax = totalTaxableAmount * 13 / 100;
+        totalNetAmount = totalTaxableAmount + totalNonTaxableAmount + totalTax;
         //assign total
         $("#totalQuantity").text(CurrencyFormat(totalQuantity));
         $("#totalGrossAmount").text(CurrencyFormat(totalGrossAmount));
@@ -1409,7 +1415,10 @@ const invoice = (function () {
         }
         return tax;
     };
-
+    let calcLineDiscount = (row) => {
+        debugger;
+        let maxDiscountPercent = $(row).find(".Discount").data("max-discount");
+    };
     let calcTotalMembershipDiscount = () => {
 
         var totalAmount = 0;
@@ -2018,9 +2027,12 @@ const invoice = (function () {
 
                         window.location.href = window.location.origin + result.responseJSON.redirectUrl;
                     }
-                   // console.log("windows Url", window.location.href);
+                    // console.log("windows Url", window.location.href);
 
-                    
+
+                }
+                else {
+                    StatusNotify("error", result.responseText);
                 }
             }
         });
@@ -2131,6 +2143,7 @@ const invoice = (function () {
         deleteInvoice: deleteInvoice,
         calcTotal: calcTotal,
         calcAll,
+        calcLineDiscount,
         quantityKeyPress,
         addRowGetUpdateData
     };

@@ -91,7 +91,11 @@ namespace POS.UI.Controllers
         public IActionResult InvoiceMaterial(DateTime? StartDate = null, DateTime? EndDate = null)
         {
             ViewData["Store"] = _context.Store.FirstOrDefault();
-            IQueryable<InvoiceMaterializedView> salesInvoiceList = _context.InvoiceMaterializedView.OrderByDescending(x => x.BillNo);
+            DateTime _startDate = StartDate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+            DateTime _endDate = EndDate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+            IQueryable<InvoiceMaterializedView> salesInvoiceList = _context.InvoiceMaterializedView.Where(x => x.BillDate >= _startDate && x.BillDate <= _endDate).OrderByDescending(x => x.BillNo);
+
+            //IQueryable<InvoiceMaterializedView> salesInvoiceList = _context.InvoiceMaterializedView.OrderByDescending(x => x.BillNo);
             if (StartDate != null)
                 salesInvoiceList = salesInvoiceList.Where(x => x.BillDate >= StartDate);
             if (EndDate != null)

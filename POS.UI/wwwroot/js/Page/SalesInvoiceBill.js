@@ -85,12 +85,11 @@
             url: window.location.origin + "/Customer/GetCustomerByNumber?MembershipNumber=" + GetUrlParameters("M"),
             dataType: "json",
             contentType: "application/json; charset=utf-8",
-            complete: function (result) {
-                debugger;
+            complete: function (result) {               
                 if (result.status === 200) {
                     if (result.responseJSON.length > 0) {
                         customerList = result.responseJSON;
-                        $("#customer").val(result.responseJSON[0].name);
+                       // $("#customer").val(result.responseJSON[0].name);
                     }
                 }
                 $("#customer").attr("readonly", true);
@@ -146,7 +145,9 @@
         vat = parseFloat(CurrencyUnFormat($("#vatSpan").text()));
         if ($("#Trans_Mode").val() !== "Tax")
             vat = 0;
-        var totalPayableAmount = totalGrossAmount - promoDiscount - loyaltyDiscount + vat;
+        debugger;
+        //var totalPayableAmount = totalGrossAmount - promoDiscount - loyaltyDiscount + vat;
+        var totalPayableAmount = parseFloat($("#TotalNetAmount").val());
 
 
         //assign
@@ -313,12 +314,14 @@
         //    return x.Code === selectedValue;
         //})[0];
         var selectedItem = customerList[0];
-        if (selectedItem) {
+        
+        if (selectedItem && (selectedItem.type == "1" || selectedItem.Type == "1")) {
             $("#customerPan").text(selectedItem.vat || selectedItem.Vat);
             $("#customerAddress").text(selectedItem.address || selectedItem.Address);
         } else {
             $("#customerPan").text("");
             $("#customerAddress").text("");
+            $()
         }
     };
     let getPermissions = (Callback) => {
@@ -353,7 +356,7 @@
     };
 
     let paymentMethodForWholesaleCustomer = () => {
-
+        debugger;
         if (customerList[0].CustomerPriceGroup === "WSP" || customerList[0].customerPriceGroup === "WSP" || customerList[0].Type === "1" || customerList[0].type === "1") {
             $("#cash").remove();
             $("#card").remove();
@@ -363,7 +366,8 @@
             $(".payment-mode-panel").hide();
             $("#credit-panel").show();
             $(".payment-mode[data-shortcut='f3']").trigger("click");
-            $("#customer").val(customerList[0].name);
+            debugger;
+            $("#customer").val(customerList[0].name || customerList[0].Name);
             customerChangeEvent();
 
             //select default customer           
@@ -474,10 +478,12 @@
 
         if (parseFloat(CurrencyUnFormat($("#changeAmount").text())) < 0) {
             bootbox.alert("Tender amount is less then bill amount !!");
+            $("#SaveButton").attr("disabled", false);
             return false;
         }
         if (table.rows.length === 0) {
             bootbox.alert("Tender amount is less then bill amount !!");
+            $("#SaveButton").attr("disabled", false);
             return false;
         }
 

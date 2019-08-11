@@ -67,6 +67,11 @@ namespace POS.UI.Controllers
         {
             if (ModelState.IsValid)
             {
+
+                if (denomination.Date.ToShortDateString() != System.DateTime.Now.ToShortDateString())
+                {
+                    return StatusCode(400, "Date not Up-to-Date !!");
+                }
                 //check if Session present
                 denomination.User_Id = User.Identity.Name;
                 IList<Settlement> settlementData = _context.Settlement.Where(x => x.UserId == denomination.User_Id).ToList();

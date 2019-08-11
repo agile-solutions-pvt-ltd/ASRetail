@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using POS.Core;
 using POS.DTO;
@@ -22,11 +23,13 @@ namespace POS.UI.Controllers
         private readonly EntityCore _context;
         private readonly IMapper _mapper;
         private IMemoryCache _cache;
-        public SalesInvoiceController(EntityCore context, IMapper mapper, IMemoryCache memoryCache)
+        private ILogger _logger;
+        public SalesInvoiceController(EntityCore context, IMapper mapper, IMemoryCache memoryCache,ILogger logger)
         {
             _context = context;
             _mapper = mapper;
             _cache = memoryCache;
+            _logger = logger;
         }
 
 
@@ -83,9 +86,13 @@ namespace POS.UI.Controllers
         {
             SalesInvoiceTmp salesInvoiceTmp = model.SalesInvoice;
             Customer customer = model.Customer;
+
             if (ModelState.IsValid)
             {
-
+                if(model.SalesInvoice.Trans_Date_Ad.Value.ToShortDateString() != DateTime.Now.ToShortDateString())
+                {
+                    return StatusCode(400, "Date is not Up-to-Date !!");
+                }
                 try
                 {
                     //if that salesinvoice already exist, than track first
@@ -317,7 +324,7 @@ namespace POS.UI.Controllers
                         //check session
                         Settlement oldSettlement = _context.Settlement.FirstOrDefault(x => x.UserId == salesInvoice.Created_By && x.Status == "Open");
                         string sessionId = oldSettlement != null ? oldSettlement.SessionId : Guid.NewGuid().ToString();
-                        string crNumber = "";
+                        string crNumber = salesInvoice.Invoice_Number;
                         //save bill amount information
                         foreach (var item in model.bill)
                         {
@@ -457,7 +464,7 @@ namespace POS.UI.Controllers
                         //Send data to IRD
                         BackgroundJob.Enqueue(() => SendDataToIRD(salesInvoice, store));
                         //Send data to NAV
-                        NavPostData navPostData = new NavPostData(_context, _mapper);
+                        NavPostData navPostData = new NavPostData(_context, _mapper,_logger);
                         BackgroundJob.Enqueue(() => navPostData.PostSalesInvoice(navSalesInvoice));
 
 
@@ -516,7 +523,7 @@ namespace POS.UI.Controllers
                 customer.CustomerDiscGroup = "RSP";
                 _context.Add(customer);
                 _context.SaveChanges();
-                NavPostData navPost = new NavPostData(_context, _mapper);
+                NavPostData navPost = new NavPostData(_context, _mapper, _logger);
                 BackgroundJob.Enqueue(() => navPost.PostCustomer());
                 return customer;
 

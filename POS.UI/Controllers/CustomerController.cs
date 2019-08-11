@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using POS.Core;
 using POS.DTO;
@@ -25,12 +26,14 @@ namespace POS.UI.Controllers
         private readonly IMapper _mapper;
         private IMemoryCache _cache;
         private readonly IKendoGrid _kendoGrid;
-        public CustomerController(EntityCore context, IMapper mapper, IMemoryCache memoryCache, IKendoGrid kendoGrid)
+        private ILogger _logger;
+        public CustomerController(EntityCore context, IMapper mapper, IMemoryCache memoryCache, IKendoGrid kendoGrid,ILogger logger)
         {
             _context = context;
             _mapper = mapper;
             _cache = memoryCache;
             _kendoGrid = kendoGrid;
+            _logger = logger;
         }
 
 
@@ -223,7 +226,7 @@ namespace POS.UI.Controllers
             {
                 if (AddCustomer(customer))
                 {
-                    NavPostData navPost = new NavPostData(_context, _mapper);
+                    NavPostData navPost = new NavPostData(_context, _mapper,_logger);
                     BackgroundJob.Enqueue(() => navPost.PostCustomer());
                     TempData["StatusMessage"] = "Customer Created Successfully !!";
                 }
@@ -382,6 +385,15 @@ namespace POS.UI.Controllers
         public IActionResult SearchMembership(string text, string customer = "")
         {
             IEnumerable<Customer> customers;
+            //_cache.TryGetValue("Customers", out customers);
+            //if (customers == null)
+            //{
+            //    //update cache
+            //    BackgroundJob.Enqueue(() => UpdateCacheCustomer());
+            //    customers = GetItemsRawData(code).ToList();
+            //}
+
+
             if (!_cache.TryGetValue("Customers", out customers))
             {
                 // Key not in cache, so get data.
@@ -461,7 +473,7 @@ namespace POS.UI.Controllers
                     customers.Add(customer);
                     _cache.Set("Customer", customers);
 
-                    NavPostData navPost = new NavPostData(_context, _mapper);
+                    NavPostData navPost = new NavPostData(_context, _mapper,_logger);
                     BackgroundJob.Enqueue(() => navPost.PostCustomer());
                     return Ok(new { StatusMessage = "Membership Created Successfully !!", Membership = customer });
                 }

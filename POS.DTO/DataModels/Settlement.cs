@@ -24,7 +24,7 @@ namespace POS.DTO
         public string VerifiedBy { get; set; }
         public DateTime VerifiedDate { get; set; }
         public decimal AdjustmentAmount { get; set; }
-        public decimal ShortExcessAmount { get; set; }
+        public decimal ShortExcessAmount { get; set; }       
         public string Remarks { get; set; }
 
         [ForeignKey("UserId")]

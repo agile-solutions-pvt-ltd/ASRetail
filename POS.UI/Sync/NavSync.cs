@@ -702,7 +702,22 @@ namespace POS.UI.Sync
                     if (response.StatusCode == HttpStatusCode.OK)
                     {
                         List<ItemPrice> item = _mapper.Map<List<ItemPrice>>(response.Data.value);
-                        _context.ItemPrice.RemoveRange(_context.ItemPrice.Where(x => item.Any(y => y.Id == x.Id)));
+                        var listOfItemCodeToRemove = item.Select(x => x.ItemCode).ToList();
+                        var listOfItemToRemove = _context.ItemPrice.Where(x => listOfItemCodeToRemove.Contains(x.ItemCode));
+                        foreach(var i in listOfItemToRemove)
+                        {
+                            try
+                            {
+                                _context.ItemPrice.Remove(i);
+                            }
+                            catch {
+                                item.Remove(i);
+                                _context.Entry(i).State = EntityState.Detached;
+                            }
+                        }
+
+                       
+                       // _context.ItemPrice.RemoveRange(listOfItemToRemove);
                         _context.SaveChanges();
 
                         _context.ItemPrice.AddRange(item);
@@ -710,8 +725,10 @@ namespace POS.UI.Sync
                         //update update number
                         if (response.Data.value.Count() > 0)
                         {
+                            var _services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Item Price");
                             services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
                             services.LastSyncDate = DateTime.Now;
+                            _context.Entry(services).State = EntityState.Modified;
 
 
                         }
@@ -740,8 +757,9 @@ namespace POS.UI.Sync
                         return false;
                     }
                 }
-                catch
+                catch(Exception ex)
                 {
+                    _cache.Set("IsItemPriceSyncIsInProcess", false);
                     return false;
                 }
             }

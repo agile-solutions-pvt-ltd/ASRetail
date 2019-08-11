@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Hangfire;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using POS.Core;
 using POS.DTO;
@@ -18,10 +19,12 @@ namespace POS.UI.Sync
 
         private readonly EntityCore _context;
         private readonly IMapper _mapper;
-        public NavPostData(EntityCore context, IMapper mapper)
+        private readonly ILogger _logger;
+        public NavPostData(EntityCore context, IMapper mapper, ILogger logger)
         {
             _context = context;
             _mapper = mapper;
+            _logger = logger;
         }
 
         public bool PostSalesInvoice(NavSalesInvoice invoice)
@@ -44,7 +47,7 @@ namespace POS.UI.Sync
                 IRestResponse<SyncModel<NavSalesInvoice>> response = client.Execute<SyncModel<NavSalesInvoice>>(request);
 
 
-                 if (response.StatusCode == HttpStatusCode.Created || response.StatusCode == HttpStatusCode.OK)
+                if (response.StatusCode == HttpStatusCode.Created || response.StatusCode == HttpStatusCode.OK || response.Content.Contains("already exists"))
                 {
                     //update sync status
                     SalesInvoice sInvoice = _context.SalesInvoice.FirstOrDefault(x => x.Invoice_Number == invoice.number);
@@ -61,6 +64,7 @@ namespace POS.UI.Sync
                 }
                 else
                 {
+                    _logger.LogError("Error Invoice:: Invoice Number= " + invoice.number + " Message= " + response.Content + "  " + DateTime.Now.ToString());
                     //update values
                     SalesInvoice sInvoice = _context.SalesInvoice.FirstOrDefault(x => x.Invoice_Number == invoice.number);
                     if (sInvoice.SyncErrorCount < 3)
@@ -69,7 +73,7 @@ namespace POS.UI.Sync
                         _context.Entry(sInvoice).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                         _context.SaveChanges();
                         //run scheduler after 1 minute
-                       // BackgroundJob.Schedule(() => PostSalesInvoice(invoice), TimeSpan.FromMinutes(sInvoice.SyncErrorCount * 5));
+                        // BackgroundJob.Schedule(() => PostSalesInvoice(invoice), TimeSpan.FromMinutes(sInvoice.SyncErrorCount * 5));
                     }
 
                     return false;
@@ -81,12 +85,21 @@ namespace POS.UI.Sync
         public bool PostSalesInvoice(Store store)
         {
             Config config = ConfigJSON.Read();
-            
-            var unSyncInvoice = _context.SalesInvoice.Where(x => x.IsNavSync == false).OrderBy(x=>x.Trans_Date_Ad);
-            int errorCount = 0,successCount = 0;
-           foreach(var salesInvoice in unSyncInvoice)
+            if (config.StopInvoicePosting)
+                return true;
+            var unSyncInvoice = _context.SalesInvoice.Where(x => x.IsNavSync == false).OrderBy(x => x.Trans_Date_Ad);
+            NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "SalesInvoicePost");
+            int errorCount = 0, successCount = 0;
+            foreach (var salesInvoice in unSyncInvoice)
             {
-                NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "SalesInvoicePost");
+               
+                var crNumber = "";
+                var bill = _context.SalesInvoiceBill.FirstOrDefault(x => x.Invoice_Number == salesInvoice.Invoice_Number && x.Trans_Mode == "CreditNote");
+                if (bill != null)
+                    crNumber = bill.Account;
+                else
+                    crNumber = salesInvoice.Invoice_Number;
+
                 string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
                 var client = NAV.NAVClient(url, config);
                 var request = new RestRequest(Method.POST);
@@ -97,6 +110,7 @@ namespace POS.UI.Sync
                 {
                     id = salesInvoice.Id.ToString(),
                     number = salesInvoice.Invoice_Number,
+                    externalDocumentNumber = crNumber,
                     postingno = salesInvoice.Invoice_Number,
                     shippingno = salesInvoice.Invoice_Number,
                     orderDate = salesInvoice.Trans_Date_Ad.Value.ToString("yyyy-MM-dd"),
@@ -107,7 +121,7 @@ namespace POS.UI.Sync
                     accountabilitycenter = store.INITIAL,
                     assigneduserid = salesInvoice.Created_By,
                     amountrounded = salesInvoice.Total_Net_Amount != salesInvoice.Total_Payable_Amount
-                    
+
 
                 };
 
@@ -118,7 +132,7 @@ namespace POS.UI.Sync
                 IRestResponse<SyncModel<NavSalesInvoice>> response = client.Execute<SyncModel<NavSalesInvoice>>(request);
 
 
-                if (response.StatusCode == HttpStatusCode.Created || response.StatusCode == HttpStatusCode.OK)
+                if (response.StatusCode == HttpStatusCode.Created || response.StatusCode == HttpStatusCode.OK || response.Content.Contains("already exists"))
                 {
                     //update sync status
                     SalesInvoice sInvoice = _context.SalesInvoice.FirstOrDefault(x => x.Invoice_Number == invoice.number);
@@ -133,11 +147,14 @@ namespace POS.UI.Sync
 
                     successCount += 1;
                     config.Environment = "Success " + successCount + " - Error " + errorCount;
+                    _logger.LogInformation("Post Invoice " + invoice.number + " to NAV Successfully   " + DateTime.Now.ToString());
                     ConfigJSON.Write(config);
-                   // return true;
+                    // return true;
                 }
                 else
                 {
+
+                    _logger.LogError("Error Invoice:: Invoice Number= " + invoice.number + " Message= " + response.Content +"  " + DateTime.Now.ToString());
                     ////update values
                     //SalesInvoice sInvoice = _context.SalesInvoice.FirstOrDefault(x => x.Invoice_Number == invoice.number);
                     //if (sInvoice.SyncErrorCount < 3)
@@ -151,39 +168,14 @@ namespace POS.UI.Sync
                     errorCount += 1;
                     config.Environment = "Success " + successCount + " - Error " + errorCount;
                     ConfigJSON.Write(config);
-                   // return false;
+                    // return false;
+
                 }
             }
             config.Environment += " Finished";
             ConfigJSON.Write(config);
             return true;
-        }
-        public bool PostTaxInvoice(SalesInvoice invoice)
-        {
-            Config config = ConfigJSON.Read();
-            if (config.StopInvoicePosting)
-                return true;
-
-            NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "TaxInvoicePost");
-            string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
-            var client = NAV.NAVClient(url, config);
-            var request = new RestRequest(Method.POST);
-
-            request.AddHeader("Content-Type", "application/json");
-
-
-            request.RequestFormat = DataFormat.Json;
-            request.AddJsonBody(invoice);
-
-            IRestResponse response = client.Execute(request);
-
-            if (response.StatusCode == HttpStatusCode.OK)
-                return true;
-            else
-            {
-                return false;
-            }
-        }
+        }       
         public bool PostCreditNote(NavCreditMemo creditNote)
         {
 
@@ -214,12 +206,13 @@ namespace POS.UI.Sync
 
 
                 _context.SaveChanges();
-
+                _logger.LogInformation("Post Credit Note " + creditNote.number + " to NAV Successfully   " + DateTime.Now.ToString());
                 PostCreditNoteItem(sInvoice.Credit_Note_Number);
                 return true;
             }
             else
             {
+                _logger.LogError("Error Credit Note:: Credit Note= " + creditNote.number + " Message= " + response.Content + "  " + DateTime.Now.ToString());
                 //update values
                 //CreditNote sInvoice = _context.CreditNote.FirstOrDefault(x => x.Credit_Note_Number == creditNote.number);
                 //if (sInvoice.SyncErrorCount < 3)
@@ -233,21 +226,92 @@ namespace POS.UI.Sync
                 return false;
             }
         }
-        public void PostCustomer()
+        public bool PostCreditNote(Store store)
         {
+
             Config config = ConfigJSON.Read();
-            if (config.StopCustomerPosting)
+            if (config.StopCreditNotePosting)
+                return true;
+
+            NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "CreditNotePost");
+            var unSyncInvoice = _context.CreditNote.Where(x => x.IsNavSync == false).OrderBy(x => x.Trans_Date_Ad);
+            foreach (var credit in unSyncInvoice)
             {
-                NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Customer");
                 string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
                 var client = NAV.NAVClient(url, config);
+
                 var request = new RestRequest(Method.POST);
 
                 request.AddHeader("Content-Type", "application/json");
 
+                NavCreditMemo creditNote = new NavCreditMemo()
+                {
+                    id = credit.Id.ToString(),
+                    number = credit.Credit_Note_Number,
+                    postingno = credit.Credit_Note_Number,
+                    creditMemoDate = credit.Trans_Date_Ad.Value.ToString("yyyy-MM-dd"),
+                    customerNumber = credit.MemberId,
+                    customerName = credit.Customer_Name,
+                    vatregistrationnumber = credit.Customer_Vat,
+                    locationcode = store.INITIAL,
+                    accountabilitycenter = store.INITIAL,
+                    assigneduserid = credit.Created_By,
+                    externalDocumentNumber = credit.Reference_Number,
+                    amountrounded = credit.IsRoundup,
+                    returnremarks = credit.Credit_Note
+
+                };
+                request.RequestFormat = DataFormat.Json;
+                var temp = JsonConvert.SerializeObject(creditNote);
+                request.AddJsonBody(temp);
+
+                IRestResponse response = client.Execute(request);
+
+                if (response.StatusCode == HttpStatusCode.Created)
+                {
+                    //update sync status
+                    CreditNote sInvoice = _context.CreditNote.FirstOrDefault(x => x.Credit_Note_Number == creditNote.number);
+                    sInvoice.IsNavSync = true;
+                    sInvoice.NavSyncDate = DateTime.Now;
+                    _context.Entry(sInvoice).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+
+
+                    _context.SaveChanges();
+                    _logger.LogInformation("Post Credit Note " + creditNote.number + " to NAV Successfully   " + DateTime.Now.ToString());
+                    PostCreditNoteItem(sInvoice.Credit_Note_Number);
+                    return true;
+                }
+                else
+                {
+                    _logger.LogError("Error Credit Note:: Credit Note= " + creditNote.number + " Message= " + response.Content + "  " + DateTime.Now.ToString());
+                    //update values
+                    //CreditNote sInvoice = _context.CreditNote.FirstOrDefault(x => x.Credit_Note_Number == creditNote.number);
+                    //if (sInvoice.SyncErrorCount < 3)
+                    //{
+                    //    sInvoice.SyncErrorCount = sInvoice.SyncErrorCount + 1;
+                    //    _context.Entry(sInvoice).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                    //    _context.SaveChanges();
+                    //    //run scheduler after 1 minute
+                    //    BackgroundJob.Schedule(() => PostSalesInvoice(invoice), TimeSpan.FromMinutes(sInvoice.SyncErrorCount * 5));
+                    //}
+                    return false;
+                }
+            }
+            return true;
+        }
+        public void PostCustomer()
+        {
+            Config config = ConfigJSON.Read();
+            if (!config.StopCustomerPosting)
+            {
+                NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Customer");
+                string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
+                var client = NAV.NAVClient(url, config);
+
+
                 List<Customer> customers = _context.Customer.Where(x => x.Is_Member == true && x.IsNavSync == false).ToList();
                 var navCustomers = _mapper.Map<List<NavCustomerPOST>>(customers);
-                request.RequestFormat = DataFormat.Json;
+
 
                 foreach (var cus in navCustomers)
                 {
@@ -257,6 +321,9 @@ namespace POS.UI.Sync
                     //you can add multiple settings and then use it
                     var obj = JsonConvert.SerializeObject(cus, Formatting.Indented, settings);
 
+                    var request = new RestRequest(Method.POST);
+                    request.RequestFormat = DataFormat.Json;
+                    request.AddHeader("Content-Type", "application/json");
                     request.AddJsonBody(obj);
                     IRestResponse<SyncModel<NavCustomer>> response = client.Execute<SyncModel<NavCustomer>>(request);
                     if (response.StatusCode == HttpStatusCode.Created)
@@ -274,6 +341,8 @@ namespace POS.UI.Sync
                         //    services.LastSyncDate = DateTime.Now;
                         //}
                         _context.SaveChanges();
+                        _logger.LogInformation("Post Customer " + cus.number + " to NAV Successfully   " + DateTime.Now.ToString());
+
                     }
                     else
                     {
@@ -287,7 +356,12 @@ namespace POS.UI.Sync
                             updatedCustomer.NavSyncDate = DateTime.Now;
 
                             _context.SaveChanges();
+                            _logger.LogInformation("Customer already exist No=" + cus.number + " " + DateTime.Now.ToString());
                             continue;
+                        }
+                        else
+                        {
+                            _logger.LogError("Error Customer:: Customer No.= " + cus.number + " Message= " + response.Content + "  " + DateTime.Now.ToString());
                         }
 
                     }
@@ -336,7 +410,7 @@ namespace POS.UI.Sync
                 {
                     lineno = lineNo * 10000,
                     amount = i.Amount,
-                    paymenttype = i.Trans_Mode == "CreditNote" ? "" : i.Trans_Mode, //for creditNote payment type should be blank
+                    paymenttype = i.Trans_Mode,// == "CreditNote" ? "" : i.Trans_Mode, //for creditNote payment type should be blank
                     locationcode = config.Location,
                     documentno = i.Invoice_Number
                 };
@@ -354,7 +428,7 @@ namespace POS.UI.Sync
 
                 IRestResponse response = client.Execute(request);
 
-                if (response.StatusCode == HttpStatusCode.Created)
+                if (response.StatusCode == HttpStatusCode.Created || response.Content.Contains("already exists"))
                 {
                     //update sync status
                     i.IsNavSync = true;
@@ -362,6 +436,10 @@ namespace POS.UI.Sync
                     _context.Entry(i).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
 
 
+                }
+                else
+                {
+                    _logger.LogError("Error Invoice Bill, Invoice= " + i.Invoice_Number.ToString() + " Message= " + response.Content + "  " + DateTime.Now.ToString());
                 }
 
             }
@@ -383,7 +461,7 @@ namespace POS.UI.Sync
             var items = _context.SalesInvoiceItems.Where(x => x.Invoice_Number == invoiceNumber);
             foreach (var item in items)
             {
-               
+
                 NavSalesItems navSalesItem = new NavSalesItems()
                 {
 
@@ -411,7 +489,7 @@ namespace POS.UI.Sync
 
                 IRestResponse response = client.Execute(request);
 
-                if (response.StatusCode == HttpStatusCode.Created)
+                if (response.StatusCode == HttpStatusCode.Created || response.Content.Contains("already exists"))
                 {
                     //update sync status
                     item.IsNavSync = true;
@@ -420,13 +498,16 @@ namespace POS.UI.Sync
                     _context.SaveChanges();
 
                 }
-
+                else
+                {
+                    _logger.LogError("Error Invoice Item, invoice Number= " + items.FirstOrDefault().Invoice_Number.ToString() + " Message= " + response.Content + "  " + DateTime.Now.ToString());
+                }
 
             }
 
             if (items.Where(x => x.IsNavSync == false).Count() == 0)
             {
-                PostSalesInvoiceCompletedSignalToNav(config,items.FirstOrDefault().Invoice_Id.Value);
+                PostSalesInvoiceCompletedSignalToNav(config, items.FirstOrDefault().Invoice_Id.Value);
             }
             //var allUnSyncItemList = _context.SalesInvoiceItems.Where(x => x.IsNavSync == false).Select(x => x.Invoice_Number).Distinct();
             ////var itemList = _context.SalesInvoiceItems.Where(x=> all)
@@ -524,7 +605,7 @@ namespace POS.UI.Sync
 
                     IRestResponse response = client.Execute(request);
 
-                    if (response.StatusCode == HttpStatusCode.Created)
+                    if (response.StatusCode == HttpStatusCode.Created || response.Content.Contains("already exists"))
                     {
                         //update sync status
                         item.IsNavSync = true;
@@ -533,10 +614,14 @@ namespace POS.UI.Sync
                         _context.SaveChanges();
 
                     }
+                    else
+                    {
+                        _logger.LogError("Error Credit Note Item, Credit Note= " + items.FirstOrDefault().Credit_Note_Number.ToString() + " Message= " + response.Content + "  " + DateTime.Now.ToString());
+                    }
 
 
                 }
-                PostCreditInvoiceCompletedSignalToNav(config,items.FirstOrDefault().Credit_Note_Id.Value);
+                PostCreditInvoiceCompletedSignalToNav(config, items.FirstOrDefault().Credit_Note_Id.Value);
 
 
             }
@@ -553,7 +638,7 @@ namespace POS.UI.Sync
             NavIntegrationService serviceforSalesInvoiceItem = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "CreditNotePostItem");
             string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
 
-            
+
             var items = _context.CreditNoteItem.Where(x => x.Credit_Note_Number == invoiceNumber);
             foreach (var item in items)
             {
@@ -583,7 +668,7 @@ namespace POS.UI.Sync
 
                 IRestResponse response = client.Execute(request);
 
-                if (response.StatusCode == HttpStatusCode.Created)
+                if (response.StatusCode == HttpStatusCode.Created || response.Content.Contains("already exists"))
                 {
                     //update sync status
                     item.IsNavSync = true;
@@ -592,14 +677,18 @@ namespace POS.UI.Sync
                     _context.SaveChanges();
 
                 }
+                else
+                {
+                    _logger.LogError("Error Credit Note Item, Credit Note= " + items.FirstOrDefault().Credit_Note_Number.ToString() + " Message= " + response.Content + "  " + DateTime.Now.ToString());
+                }
 
 
             }
             if (items.Where(x => x.IsNavSync == false).Count() == 0)
             {
-                PostCreditInvoiceCompletedSignalToNav(config,items.FirstOrDefault().Credit_Note_Id.Value);
+                PostCreditInvoiceCompletedSignalToNav(config, items.FirstOrDefault().Credit_Note_Id.Value);
             }
-           
+
 
 
 
@@ -612,7 +701,7 @@ namespace POS.UI.Sync
 
         //********* Final POST
         public void PostSalesInvoiceCompletedSignalToNav(Config config, Guid invoiceId)
-        {           
+        {
             var url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/salesOrders";
             var newUrl = url + $"({invoiceId.ToString()})/Microsoft.NAV.Post";
             var client = NAV.NAVClient(newUrl, config);
@@ -621,7 +710,7 @@ namespace POS.UI.Sync
             request.AddHeader("Content-Type", "application/json");
 
             IRestResponse response = client.Execute(request);
-            if(response.Content == "")
+            if (response.Content == "" || response.Content.Contains("already exists"))
             {
                 //posted successfully                
                 SalesInvoice _invoice = _context.SalesInvoice.FirstOrDefault(x => x.Id == invoiceId);
@@ -632,13 +721,16 @@ namespace POS.UI.Sync
                     _context.SaveChanges();
                 }
             }
-
+            else
+            {
+                _logger.LogError("Error Sale Invoice post, InvoiceId= " + invoiceId + " Message= " + response.Content + "  " + DateTime.Now.ToString());
+            }
 
 
 
         }
         public void PostCreditInvoiceCompletedSignalToNav(Config config, Guid invoiceId)
-        {           
+        {
             var url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/salesCreditMemos";
             var newUrl = url + $"({invoiceId.ToString()})/Microsoft.NAV.Cancel";
             var client = NAV.NAVClient(newUrl, config);
@@ -657,6 +749,10 @@ namespace POS.UI.Sync
                     _context.Entry(_invoice).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                     _context.SaveChanges();
                 }
+            }
+            else
+            {
+                _logger.LogError("Error Credit Note post, Credit Note= " + invoiceId + " Message= " + response.Content + "  " + DateTime.Now.ToString());
             }
 
 

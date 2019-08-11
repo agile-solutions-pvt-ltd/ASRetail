@@ -8,7 +8,7 @@
     let taxPercent = 13;
    
     let init = () => {
-        console.log("isredeem", document.getElementById('isRedeemed').value)
+        //console.log("isredeem", document.getElementById('isRedeemed').value)
         $('input[type="checkbox"]').click(function () {
             if ($(this).prop("checked") == true) {
                 document.getElementById('isRedeemed').value = 'true';
@@ -120,6 +120,7 @@
         AssignKeyEvent();
     };
     let loadInvoice = (invoiceNumber) => {
+        kendo.ui.progress($("#item_table"), true);
         if (validateInvoiceNumber(invoiceNumber)) {
             getInvoice(invoiceNumber, function (data) {
                 if (validateInvoiceData(data.invoiceData)) {
@@ -139,7 +140,7 @@
                     $("#Reference_Number").val(data.invoiceData.invoice_Number);
                     $("#Trans_Type").val(data.invoiceData.trans_Type);
                     $("#totalNetAmount").text(CurrencyFormat(data.invoiceData.total_Payable_Amount));
-
+                    kendo.ui.progress($("#item_table"), false);
                 }
             });
         }
@@ -151,6 +152,7 @@
             complete: function (data) {
 
                 if (data.status !== 200) {
+                    kendo.ui.progress($("#item_table"), false);
                     $("#itemNotFoundLabel").show();
                     setTimeout(function () { $("#itemNotFoundLabel").hide(); }, 9000);
 
@@ -172,11 +174,13 @@
 
         if (data.remarks === "Return") {
             displayError("Error: Already Return !! \n You can only return one time of this purchase !!");
+            kendo.ui.progress($("#item_table"), false);
             return false;
         }
 
         if (transDate < compareDate) {
-            displayError("Expired: You can only return within " + invoiceExpiredDays +" days of purchase !!");
+            displayError("Expired: You can only return within " + invoiceExpiredDays + " days of purchase !!");
+            kendo.ui.progress($("#item_table"), false);
             return false;
         }
 
@@ -603,6 +607,9 @@
                 if (result) {
                     SaveCreditNote();
                 }
+                else {
+                    $("#SaveButton").attr("disabled", false);
+                }
                
 
             }
@@ -619,11 +626,12 @@
 
         //validate
         if (!$('form#Credit_Note_Form').valid()) {
+            $("#SaveButton").attr("disabled", false);
             return false;
         }
 
         debugger;
-        console.log("isredeem", document.getElementById('isRedeemed').value)
+        //console.log("isredeem", document.getElementById('isRedeemed').value)
         //get items
         var table = $("#item_table");
         var invoiceItems = [];

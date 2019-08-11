@@ -223,6 +223,7 @@ namespace POS.DTO
         public string assigneduserid { get; set; }
         public string externalDocumentNumber { get; set; }
         public bool amountrounded { get; set; }
+        public string returnremarks { get; set; }
 
 
 

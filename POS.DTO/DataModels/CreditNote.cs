@@ -66,6 +66,7 @@ namespace POS.DTO
         public bool IsNavSync { get; set; }
         public int SyncErrorCount { get; set; } = 0;
         public DateTime? NavSyncDate { get; set; }
+        [NotMapped]
         public bool IsRoundup { get; set; } = false;
         public bool IsNavPosted { get; set; }
 

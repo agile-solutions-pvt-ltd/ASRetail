@@ -29,19 +29,27 @@ namespace POS.UI.Controllers
 
 
         // GET: Customer
-        public IActionResult SyncCompletedCustomers()
+        public IActionResult UpdateCacheCustomer()
         {
             try
             {
-                _cache.Remove("Customers");
-                IEnumerable<Customer> customers;
-                if (!_cache.TryGetValue("Customers", out customers))
+                IList<Customer> customers;
+                _cache.TryGetValue("Customers", out customers);
+                if (customers == null)
                 {
-                    // Key not in cache, so get data.
+                    //update cache
                     customers = _context.Customer.ToList();
-
                     _cache.Set("Customers", customers);
                 }
+                else
+                {
+                    var customerIds = customers.Select(x => x.Membership_Number).ToList();
+                    var newCustomer= _context.Customer.Where(x => customerIds.Contains(x.Membership_Number)).ToList();
+                    var totalCustomer = customers.Concat(newCustomer);
+                    _cache.Set("Customers", customers);
+
+                }
+               
                 var data =new  {
                     Status=  200,
                     Message= "Success"

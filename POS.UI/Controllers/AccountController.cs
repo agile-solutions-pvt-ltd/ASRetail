@@ -61,9 +61,14 @@ namespace POS.UI.Controllers
         public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
         {
             ViewData["ReturnUrl"] = null;
-            _logger.LogInformation("access login page");
+            _logger.LogInformation("access login page");           
             if (ModelState.IsValid)
             {
+                if (model.ClientDate.ToShortDateString() != DateTime.Now.ToShortDateString())
+                {
+                    ModelState.AddModelError(string.Empty, "Date Not Up-to-Date !!");
+                    return View(model);
+                }
                 //first try to login with username
                 IdentityUser user = await _userManager.FindByNameAsync(model.Email);
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);

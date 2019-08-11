@@ -22,5 +22,7 @@ namespace POS.DTO
         [NotMapped]
         public int TerminalId { get; set; }
         public string TerminalName { get; set; }
+        [NotMapped]
+        public DateTime ClientDate { get; set; }
     }
 }

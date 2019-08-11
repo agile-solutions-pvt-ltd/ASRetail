@@ -81,7 +81,7 @@
             PrintSalesInvoice(data, callback);
         }
         else {
-            if ((data.copy !== undefined || data.copy !== null) && data.copy.printCount == 0) {
+            if (!_.isEmpty(data.copy) && data.copy.printCount == 0) {
                 //print double
                 PrintTaxInvoice(data, function () {
                     data.copy.printCount = 1;
@@ -578,7 +578,7 @@
     };
 
     let PrintCreditNoteInvoice = (data, callback) => {
-
+        debugger;
         var url = ""
         var companyInitital = data.storeData.initial || data.storeData.INITIAL;
         if (companyInitital === "WHS") {
