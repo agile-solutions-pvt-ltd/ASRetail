@@ -82,6 +82,8 @@ namespace POS.Core
        
         public virtual DbSet<SpSalesInvoiceAggregateGet> SpSalesInvoiceAggregateGet { get; set; }
 
+        public virtual DbSet<SalesInvoiceViewModel> SpSalesInvoiceSel { get; set; }
+
         
         public virtual DbSet<SalesVatBookReport> SalesVatBookReport { get; set; }
 
