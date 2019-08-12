@@ -137,7 +137,7 @@ namespace POS.UI.Controllers
             return Ok(creditNoteList);
         }
 
-      
+      [RolewiseAuthorized]
         public IActionResult SalesVatBook(DateTime? StartDate = null, DateTime? EndDate = null,string TransType=null)
         {
             ViewData["Store"] = _context.Store.FirstOrDefault();
@@ -157,6 +157,7 @@ namespace POS.UI.Controllers
 
         }
         
+        [RolewiseAuthorized]
         public IActionResult InvoiceMaterial(DateTime? StartDate = null, DateTime? EndDate = null)
         {
             ViewData["Store"] = _context.Store.FirstOrDefault();

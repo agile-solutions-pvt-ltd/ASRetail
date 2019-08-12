@@ -147,9 +147,14 @@ const invoice = (function () {
 
     // #region GetData
     let GetItems = (code, callback) => {
+        var membershipNumber = $("#membershipId").val();       
+        let customer = _.filter(customerList, (x) => { return x.membership_Number === membershipNumber; })[0];
         $.ajax({
-            url: window.location.origin + "/item/GetItems/?code=" + code,
+            url: window.location.origin + "/item/GetItems/?code=" + code + "&memberDiscountCategory=" + customer.membershipDiscGroup,
             type: "GET",
+            contentType:"application/json",
+           // headers: { 'Accept-Encoding': 'deflate' },
+           
             success: function (data) {
                 if (data.length === 0) {
                     $("#itemNotFoundLabel").show();
@@ -857,9 +862,10 @@ const invoice = (function () {
 
         ///*** if location is MRP then only check mrp discount
         var lineDiscountRows = [];
-        if ((selectedItem[0].locationwisePriceGroup === "MRP" && customer.customerDiscGroup !== "WSP") || selectedItem[0].locationwisePriceGroup === "WSP") {
+        debugger;
+        if ((store.CustomerPriceGroup === "MRP" && customer.customerDiscGroup !== "WSP") || store.CustomerPriceGroup === "WSP") {
             lineDiscountRows = _.filter(selectedItem, function (x) {
-                return x.discountType === "Customer Disc. Group" && x.discountSalesGroupCode === selectedItem[0].locationwisePriceGroup;
+                return x.discountType === "Customer Disc. Group" && x.discountSalesGroupCode === store.CustomerPriceGroup;
             });
         }
         else {
@@ -907,7 +913,8 @@ const invoice = (function () {
         if (discount <= 0) {
             //check if location is present
             var filterByLoc = _.filter(filterByTime, function (x) {
-                return x.location === x.discountLocation;
+                debugger;
+                return store.INITIAL === x.discountLocation;
             });
             var filterByItemCategory = [];
             if (filterByLoc.length > 0)
@@ -1040,7 +1047,8 @@ const invoice = (function () {
         let customer = _.filter(customerList, (x) => { return x.membership_Number === membershipNumber; })[0];
         if (filterByDate.length !== 0) {
             //check if location has mrp value
-            if (filterByDate[0].locationwisePriceGroup === "MRP")
+            debugger;
+            if (store.CustomerPriceGroup === "MRP")
                 if (customer.customerPriceGroup !== "WSP") //if customer is not wholesale then convert into mrp customer
                     customer.customerPriceGroup = "MRP";
 
@@ -1163,7 +1171,7 @@ const invoice = (function () {
 
                 //calculations     
                 // 1. calc quantity
-                var quantity = parseFloat($(this).find(".Quantity").val());
+                var quantity = parseFloat(parseFloat($(this).find(".Quantity").val()).toFixed(2));
                 // 2. calc tax include Rate
                 var rateIncludeTax = calcRate(itemCode, quantity, $(this));
                 // 3. calc unit tax
@@ -1233,6 +1241,7 @@ const invoice = (function () {
 
 
                 //assign value
+                $(this).find(".Quantity").val(quantity.toFixed(2));
                 $(this).find(".Rate").val(rate.toFixed(2));
                 $(this).find(".Rate").data("RateExcludedVat", rateExcludeTax.toFixed(2));
                 $(this).find(".Rate").data("RateExcludedVatWithoutRoundoff", rateExcludeTax);
@@ -1499,10 +1508,11 @@ const invoice = (function () {
                     callback: function (result) {
                         if (result) {
                             if (mode === "tax")
-                                window.location.href = window.location.origin + "/SalesInvoice/Landing?mode=tax";
+                                setTimeout(() => { location.assign(window.location.origin + "/SalesInvoice/Landing?mode=tax") }, 100);
                             else
-                                window.location.href = window.location.origin + "/SalesInvoice/Landing";
+                                setTimeout(() => { location.assign(window.location.origin + "/SalesInvoice/Landing") }, 100);
                         }
+                        return false;
                     }
                 }).one("shown.bs.modal", function () {
                     //temporary paused the shortcut events
@@ -1515,10 +1525,13 @@ const invoice = (function () {
             }
 
             else {
+                debugger;
                 if (mode === "tax")
-                    window.location.href = window.location.origin + "/SalesInvoice/Landing?mode=tax";
+                    setTimeout(() => { location.assign(window.location.origin + "/SalesInvoice/Landing?mode=tax") }, 100);
                 else
-                    window.location.href = window.location.origin + "/SalesInvoice/Landing";
+                    setTimeout(() => { location.assign(window.location.origin + "/SalesInvoice/Landing") },100);
+                
+                return false;
             }
         }
 
@@ -1813,7 +1826,7 @@ const invoice = (function () {
             e.preventDefault(); e.stopPropagation();
             changeSelectedRow("up");
         });
-        Mousetrap.bindGlobal('esc', function () {
+        Mousetrap.bindGlobal(['ctrl+esc','esc'], function () {
             
             handleBackButtonEvent();
         });

@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 namespace POS.UI.Controllers
 {
     
-    [Authorize]
+    //[Authorize]
     public class ItemController : Controller
     {
         private readonly EntityCore _context;
@@ -290,8 +290,8 @@ namespace POS.UI.Controllers
         }
 
 
-        [ResponseCache(Duration = 60, VaryByQueryKeys = new string[] { "code","cacheId" })]
-        public IEnumerable<ItemViewModel> GetItems(string code)
+       // [ResponseCache(Duration = 60, VaryByQueryKeys = new string[] { "code","cacheId" })]
+        public IEnumerable<ItemViewModel> GetItems(string code, string memberDiscountCategory)
         {
             
             IList<ItemViewModel> items;
@@ -303,7 +303,44 @@ namespace POS.UI.Controllers
                 items = GetItemsRawData(code).ToList();
             }
 
-            var result = items.Where(x => x.Code == code || x.Bar_Code == code);
+            var result = items.Where(x => (x.Code == code || x.Bar_Code == code)
+            && (x.RateStartDate == null || Convert.ToDateTime(x.RateStartDate.Value.ToShortDateString()) <= Convert.ToDateTime(DateTime.Now.ToShortDateString()))
+            && (x.RateEndDate == null || Convert.ToDateTime(x.RateEndDate.Value.ToShortDateString()) >= Convert.ToDateTime(DateTime.Now.ToShortDateString()))
+            && (x.DiscountStartDate == null || Convert.ToDateTime(x.DiscountStartDate.Value.ToShortDateString()) <= Convert.ToDateTime(DateTime.Now.ToShortDateString()))
+            && (x.DiscountEndDate == null || Convert.ToDateTime(x.DiscountEndDate.Value.ToShortDateString()) >= Convert.ToDateTime(DateTime.Now.ToShortDateString())));
+            ////result.ToList().ForEach(x => { x.Bar_Code = result.FirstOrDefault().Bar_Code; x.SN = 1; });
+            //result.ToList().Distinct();
+            ///result.Select(x=> new ItemViewModel() { x.Bar_Code = x.Bar_Code,x.Code,x.Discount,x.DiscountEndTime})
+            //var temp = result.Select(x => x.Bar_Code).Distinct();
+            //IList<ItemViewModel> resulttemp = result.Select(x => new ItemViewModel
+            // {
+            //    //Bar_Code= x.Bar_Code,
+            //    Code =x.Code,
+            //   //Discount=  x.Discount,
+            //   //DiscountEndDate=  x.DiscountEndDate,
+            //   //DiscountEndTime = x.DiscountEndTime,
+            //   //DiscountItemType = x.DiscountItemType,
+            //   //DiscountLocation = x.DiscountLocation,
+            //   //DiscountMinimumQuantity = x.DiscountMinimumQuantity,
+            //   //DiscountSalesGroupCode = x.DiscountSalesGroupCode,
+            //   //DiscountStartDate = x.DiscountStartDate,
+            //   //DiscountStartTime = x.DiscountStartTime,
+            //   //DiscountType = x.DiscountType,
+            //   //Is_Discountable = x.Is_Discountable,
+            //   //Is_Vatable = x.Is_Vatable,
+            //   //ItemId = x.ItemId,
+            //   //KeyInWeight = x.KeyInWeight,
+            //   //Name = x.Name,
+            //   //No_Discount = x.No_Discount,
+            //   //Rate = x.Rate,
+            //   //RateEndDate = x.RateEndDate,
+            //   //RateMinimumQuantity = x.RateMinimumQuantity,
+            //   //RateStartDate = x.RateStartDate,
+            //   //SalesCode = x.SalesCode,
+            //   //SalesType = x.SalesType,
+            //   //SN = x.SN,
+            //   //Unit = x.Unit
+            // }).Distinct().ToList();
             return result;
         }
 
@@ -314,19 +351,17 @@ namespace POS.UI.Controllers
             string query = @"SELECT 
         ROW_NUMBER() OVER(PARTITION BY Bar_Code order by Rate) AS SN ,
        i.Code,i.Id as ItemId,i.Name,i.KeyInWeight,
-       ISNULL(b.BarCode,0) as Bar_Code,b.Unit,  
-       ISNULL(q.Quantity,0) as Quantity, 
+       ISNULL(b.BarCode,0) as Bar_Code,b.Unit,
 	   ISNULL(d.DiscountPercent,0) as Discount,d.MinimumQuantity as DiscountMinimumQuantity, d.StartDate as DiscountStartDate, d.EndDate as DiscountEndDate, d.StartTime as DiscountStartTime, d.EndTime as DiscountEndTime,d.SalesType as DiscountType,d.SalesCode as DiscountSalesGroupCode,d.ItemType as DiscountItemType, d.Location as DiscountLocation,ISNULL(p.AllowLineDiscount,1) as Is_Discountable,i.No_Discount,
 	   ISNULL(p.UnitPrice,0) as Rate,p.MinimumQuantity as RateMinimumQuantity, p.StartDate as RateStartDate, p.EndDate as RateEndDate, p.SalesType, p.SalesCode,
-	   i.Is_Vatable,
-	   s.INITIAL as Location, s.CustomerPriceGroup as LocationwisePriceGroup
+	   i.Is_Vatable
 FROM ITEM i
 left join ITEM_BARCODE b on i.Code = b.ItemCode and b.IsActive = 1
-left join ITEM_QUANTITY q on i.Code = q.ItemCode
-left join ITEM_PRICE p on i.Code = p.ItemCode
+inner join ITEM_PRICE p on i.Code = p.ItemCode
 left join ITEM_DISCOUNT d on i.Code = d.ItemCode Or (d.ItemType = 'Item Disc. Group' and  d.ItemCode =  i.DiscountGroup)
-cross join STORE s
-where b.BarCode = {0} or i.Code = {0}";
+where (p.StartDate is null or CONVERT(date,p.StartDate) <= CONVERT(date, GETDATE())) and (p.EndDate is null or CONVERT(date, p.EndDate) >= CONVERT(date,getdate()))
+      and (d.StartDate is null or CONVERT(date,d.StartDate) <= CONVERT(date, GETDATE())) and (d.EndDate is null or CONVERT(date, d.EndDate) >= CONVERT(date,getdate()))
+      and (b.BarCode = {0} or i.Code = {0})";
 
             IEnumerable<ItemViewModel> data = _context.ItemViewModel.FromSql(query, code).ToList();
             return data;

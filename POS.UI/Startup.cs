@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,7 @@ using POS.DTO;
 using POS.UI.Helper;
 using POS.UI.Models;
 using System;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -97,7 +99,12 @@ namespace POS.UI
 
 
             services.AddAutoMapper();
-
+            services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
+            services.AddResponseCompression(options =>
+            {
+                options.Providers.Add<GzipCompressionProvider>();
+                options.EnableForHttps = true;
+            });
 
             services.AddMemoryCache();
             services.AddResponseCaching();
@@ -163,7 +170,7 @@ namespace POS.UI
             app.UseStaticFiles();           
             app.UseSession();
             app.UseCookiePolicy();
-
+            app.UseResponseCompression();
 
 
 

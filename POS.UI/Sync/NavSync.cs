@@ -430,6 +430,8 @@ namespace POS.UI.Sync
                         //also sync itemfoc
                         // ItemFOCSync();
                         _cache.Set("IsItemSyncIsInProcess", false);
+                        config.SyncLog.Item = "Last Sync : " + DateTime.Now.ToString("dd MMM, yyyy hh:mm tt");
+                        ConfigJSON.Write(config);
                         return true;
                     }
                     else
@@ -442,7 +444,7 @@ namespace POS.UI.Sync
                 }
                 catch (Exception ex)
                 {
-                    config.SyncLog.Item = "Error :" + ex.InnerException;
+                    config.SyncLog.Item = "Error :" + ex.InnerException == null ? ex.Message : ex.InnerException.Message;
                     ConfigJSON.Write(config);
                     return false;
                 }
@@ -505,6 +507,8 @@ namespace POS.UI.Sync
                             return CustomerSync();
 
                         _cache.Set("IsCustomerSyncIsInProcess", false);
+                        config.SyncLog.Customer = "Last Sync : " + DateTime.Now.ToString("dd MMM, yyyy hh:mm tt");
+                        ConfigJSON.Write(config);
                         return true;
 
                     }
@@ -516,7 +520,7 @@ namespace POS.UI.Sync
                 }
                 catch (Exception ex)
                 {
-                    config.SyncLog.Item = "Error :" + ex.InnerException.Message;
+                    config.SyncLog.Customer = "Error :" + ex.InnerException.Message;
                     ConfigJSON.Write(config);
                     return false;
                 }
@@ -549,111 +553,57 @@ namespace POS.UI.Sync
                     // IRestResponse response = client.Execute(request);
                     IRestResponse<SyncModel<NavBarCode>> response = client.Execute<SyncModel<NavBarCode>>(request);
 
-
                     if (response.StatusCode == HttpStatusCode.OK)
                     {
-
-                        //DbContextOptions<EntityCore> options = new DbContextOptions<EntityCore>();
-                        //options.ContextType
-                        using(var context = _context)
+                        List<ItemBarCode> item = _mapper.Map<List<ItemBarCode>>(response.Data.value);
+                        var listOfItemCodeToRemove = item.Select(x => x.ItemCode).ToList();
+                        var listOfItemToRemove = _context.ItemBarCode.Where(x => listOfItemCodeToRemove.Contains(x.ItemCode));
+                        foreach (var i in listOfItemToRemove)
                         {
-                            List<ItemBarCode> item = _mapper.Map<List<ItemBarCode>>(response.Data.value).ToList();
-                            if (item.Count() > 0)
+                            try
                             {
-                                context.ItemBarCode.RemoveRange(context.ItemBarCode.Where(x => item.Any(y => y.BarCode == x.BarCode)));
-                                _context.SaveChanges();
-
-                                context.ItemBarCode.AddRange(item);
-                                context.SaveChanges();
-
+                                _context.ItemBarCode.Remove(i);
                             }
-                            ////update update number
-                            if (response.Data.value.Count() > 0)
+                            catch
                             {
-                                services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
-                                services.LastSyncDate = DateTime.Now;
-                                context.Entry(services).State = EntityState.Modified;
-
-
+                                item.Remove(i);
+                                _context.Entry(i).State = EntityState.Detached;
                             }
-                            context.SaveChanges();
                         }
-                        //var context = _context;
-                       // context.ChangeTracker.Context;
-                       
+                        // _context.ItemPrice.RemoveRange(listOfItemToRemove);
+                        _context.SaveChanges();
 
-                        //if (item.Count() > 0)
-                        //{
-                        //    var ids = item.Select(x => x.BarCode).ToArray();
-                        //    var idsStr = String.Join("','", ids);
-                        //    string sql = "delete from ITEM_BARCODE where barcode in ('" + idsStr + "')";
-                        //    using (var tran = _context.Database.BeginTransaction())
-                        //    {
-                        //        var a = _context.Database.ExecuteSqlCommand(sql);
-                        //        tran.Commit();
-                        //    }
-                        //    ItemBarCode itemBarcode = new ItemBarCode();
-                        //    _context.Entry(itemBarcode).State = EntityState.Detached;
-                        //    var d = item.GroupBy(a => a.BarCode).Where(grp => grp.Count() > 1).Select(grp => grp.Key).Select(a => a);
-                        //    List<string> lstBarcode = new List<string>();
-                        //    foreach (var i in item)
-                        //    {
-                        //        _context.Entry(i).State = EntityState.Detached;
-                        //        if (!lstBarcode.Contains(i.BarCode))
-                        //        {
-                        //            lstBarcode.Add(i.BarCode);
-                        //            _context.ItemBarCode.Add(i);
-                        //        }
-                        //    }
-                        //    // _context.ItemBarCode.AddRange(item);
-                        //    _context.SaveChanges();
-                        //}
+                        _context.ItemBarCode.AddRange(item);
+                        _context.SaveChanges();
+                        //update update number
+                        if (response.Data.value.Count() > 0)
+                        {
+                            // var _services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Item Price");
+                            services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
+                            services.LastSyncDate = DateTime.Now;
+                            _context.Entry(services).State = EntityState.Modified;
+                            _context.SaveChanges();
+                            _context.Entry(services).State = EntityState.Detached;
 
-                        //foreach (var i in response.Data.value)
-                        //{
-                        //    try
-                        //    {
-                        //        _context.Entry(_mapper.Map<ItemBarCode>(i)).State = EntityState.Unchanged;
-                        //        services.LastUpdateNumber = i.Update_No;
-                        //        services.LastSyncDate = DateTime.Now;
-                        //        _context.SaveChanges();
-
-
-                        //        _context.ItemBarCode.Add(_mapper.Map<ItemBarCode>(i));
-                        //        _context.SaveChanges();
-
-                        //    }
-                        //    catch(Exception ex)
-                        //    {
-
-                        //    }
-                        //}
-                        //foreach(var t in item)
-                        //{
-                        //    try
-                        //    {
-                        //        _context.ItemBarCode.Add(t);
-                        //    }
-                        //    catch { }
-                        //}
-
-                        //_context.SaveChanges();
+                        }
 
                         if (response.Data.value.Count() > 0 && response.Data.value.Count() < 10)
                         {
-                            config.SyncLog.Item = "Last Sync :" + DateTime.Now.ToShortDateString();
-                            ConfigJSON.Write(config);
                             //update cache
-                            _cache.Set("IsItemBarCodeSyncIsInProcess", false);
+                            _cache.Set("IsItemCacheInProcess", false);
                             BackgroundJob.Enqueue(() => UpdateCacheItemViewModel());
                         }
+
                         if (response.Data.value.Count() >= 10)
                         {
                             _cache.Set("IsItemBarCodeSyncIsInProcess", false);
                             return ItemBarCodeSync();
                         }
 
+
                         _cache.Set("IsItemBarCodeSyncIsInProcess", false);
+                        config.SyncLog.ItemBarCode = "Last Sync : " + DateTime.Now.ToString("dd MMM, yyyy hh:mm tt");
+                        ConfigJSON.Write(config);
                         return true;
 
                     }
@@ -665,7 +615,7 @@ namespace POS.UI.Sync
                 }
                 catch (Exception ex)
                 {
-                    config.SyncLog.Item = "Error :" + ex.InnerException.Message;
+                    config.SyncLog.ItemBarCode = "Error :" + ex.InnerException.Message;
                     _cache.Set("IsItemBarCodeSyncIsInProcess", false);
                     ConfigJSON.Write(config);
                     return false;
@@ -715,8 +665,6 @@ namespace POS.UI.Sync
                                 _context.Entry(i).State = EntityState.Detached;
                             }
                         }
-
-                       
                        // _context.ItemPrice.RemoveRange(listOfItemToRemove);
                         _context.SaveChanges();
 
@@ -725,14 +673,15 @@ namespace POS.UI.Sync
                         //update update number
                         if (response.Data.value.Count() > 0)
                         {
-                            var _services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Item Price");
+                           // var _services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Item Price");
                             services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
                             services.LastSyncDate = DateTime.Now;
                             _context.Entry(services).State = EntityState.Modified;
-
+                            _context.SaveChanges();
+                            _context.Entry(services).State = EntityState.Detached;
 
                         }
-                        _context.SaveChanges();
+                       
                         if (response.Data.value.Count() > 0 && response.Data.value.Count() < 10)
                         {
                             //update cache
@@ -748,6 +697,8 @@ namespace POS.UI.Sync
 
 
                         _cache.Set("IsItemPriceSyncIsInProcess", false);
+                        config.SyncLog.ItemPrice = "Last Sync : " + DateTime.Now.ToString("dd MMM, yyyy hh:mm tt");
+                        ConfigJSON.Write(config);
                         return true;
 
                     }
@@ -770,58 +721,95 @@ namespace POS.UI.Sync
         }
         public bool ItemDiscountSync()
         {
-            try
+            bool IsItemDiscountSyncIsInProcess = false;
+            _cache.TryGetValue("IsItemDiscountSyncIsInProcess", out IsItemDiscountSyncIsInProcess);
+            if (!IsItemDiscountSyncIsInProcess)
             {
-                Config config = ConfigJSON.Read();
-                NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "ItemDiscount");
-                string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
-                //access update number data only
-                url += "?$top=1&$filter=Update_No gt " + services.LastUpdateNumber;
-                url += " and Available_for_Import eq true";
-                url += $" and (Location_Code eq '' or Location_Code eq '{config.Location}')";
-                var client = NAV.NAVClient(url, config);
-                var request = new RestRequest(Method.GET);
-
-                // IRestResponse response = client.Execute(request);
-                IRestResponse<SyncModel<NavItemDiscount>> response = client.Execute<SyncModel<NavItemDiscount>>(request);
-
-
-                if (response.StatusCode == HttpStatusCode.OK)
+                try
                 {
+                    _cache.Set("IsItemPriceSyncIsInProcess", true);
+                    Config config = ConfigJSON.Read();
+                    NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "ItemDiscount");
+                    string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
+                    //access update number data only
+                    url += "?$top=10&$filter=Update_No gt " + services.LastUpdateNumber;
+                    //url += " and Available_for_Import eq true";
+                    url += $" and (Location_Code eq '' or Location_Code eq '{config.Location}')";
+                    var client = NAV.NAVClient(url, config);
+                    var request = new RestRequest(Method.GET);
 
-                    List<ItemDiscount> item = _mapper.Map<List<ItemDiscount>>(response.Data.value);
-                    var itemguidList = item.Select(x => x.Id);
-                    var removeItemList = _context.ItemDiscount.Where(x => itemguidList.Contains(x.Id));
-                    _context.ItemDiscount.RemoveRange(removeItemList);
-                    _context.SaveChanges();
+                    // IRestResponse response = client.Execute(request);
+                    IRestResponse<SyncModel<NavItemDiscount>> response = client.Execute<SyncModel<NavItemDiscount>>(request);
 
-                    _context.ItemDiscount.AddRange(item);
-                    //update update number
-                    _context.SaveChanges();
-                    if (response.Data.value.Count() > 0)
+
+                    if (response.StatusCode == HttpStatusCode.OK)
                     {
-                        services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
-                        services.LastSyncDate = DateTime.Now;
-                    }
-                    _context.SaveChanges();
+                        List<ItemDiscount> item = _mapper.Map<List<ItemDiscount>>(response.Data.value);
+                        var listOfItemCodeToRemove = item.Select(x => x.ItemCode).ToList();
+                        var listOfItemToRemove = _context.ItemDiscount.Where(x => listOfItemCodeToRemove.Contains(x.ItemCode));
+                        foreach (var i in listOfItemToRemove)
+                        {
+                            try
+                            {
+                                _context.ItemDiscount.Remove(i);
+                            }
+                            catch
+                            {
+                                item.Remove(i);
+                                _context.Entry(i).State = EntityState.Detached;
+                            }
+                        }
+                        // _context.ItemPrice.RemoveRange(listOfItemToRemove);
+                        _context.SaveChanges();
 
-                    if (response.Data.value.Count() > 0 && response.Data.value.Count() < 1)
+                        _context.ItemDiscount.AddRange(item);
+                        _context.SaveChanges();
+                        //update update number
+                        if (response.Data.value.Count() > 0)
+                        {
+                            // var _services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Item Price");
+                            services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
+                            services.LastSyncDate = DateTime.Now;
+                            _context.Entry(services).State = EntityState.Modified;
+                            _context.SaveChanges();
+                            _context.Entry(services).State = EntityState.Detached;
+
+                        }
+
+                        if (response.Data.value.Count() > 0 && response.Data.value.Count() < 10)
+                        {
+                            //update cache
+                            _cache.Set("IsItemCacheInProcess", false);
+                            BackgroundJob.Enqueue(() => UpdateCacheItemViewModel());
+                        }
+
+                        if (response.Data.value.Count() >= 10)
+                        {
+                            _cache.Set("IsItemDiscountSyncIsInProcess", false);
+                            return ItemDiscountSync();
+                        }
+
+
+                        _cache.Set("IsItemDiscountSyncIsInProcess", false);
+                        config.SyncLog.ItemDiscount = "Last Sync : " + DateTime.Now.ToString("dd MMM, yyyy hh:mm tt");
+                        ConfigJSON.Write(config);
+                        return true;
+
+                    }
+                    else
                     {
-                        //update cache
-                        _cache.Set("IsItemCacheInProcess", false);
-                        BackgroundJob.Enqueue(() => UpdateCacheItemViewModel());
+                        _cache.Set("IsItemDiscountSyncIsInProcess", false);
+                        return false;
                     }
-
-                    if (response.Data.value.Count() >= 1)
-                        return ItemDiscountSync();
-                    return true;
                 }
-                else
+                catch (Exception ex)
+                {
                     return false;
+                }
             }
-            catch (Exception ex)
+            else
             {
-                return false;
+                return true;
             }
 
         }
@@ -844,18 +832,23 @@ namespace POS.UI.Sync
             {
 
                 List<Terminal> item = _mapper.Map<List<Terminal>>(response.Data.value);
-                _context.Terminal.RemoveRange(_context.Terminal.Where(x => item.Any(y => y.Initial == x.Initial)));
+                var listOfItemCodeToRemove = item.Select(x => x.Initial).ToList();
+                var listOfItemToRemove = _context.Terminal.Where(x => listOfItemCodeToRemove.Contains(x.Initial));
+                _context.Terminal.RemoveRange(listOfItemToRemove);
                 _context.SaveChanges();
 
                 _context.Terminal.AddRange(item);
-
+                _context.SaveChanges();
                 //update update number
                 if (response.Data.value.Count() > 0)
                 {
                     services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
                     services.LastSyncDate = DateTime.Now;
+                    _context.SaveChanges();
+                    _context.Entry(services).State = EntityState.Detached;
                 }
-                _context.SaveChanges();
+                config.SyncLog.Terminal = "Last Sync : " + DateTime.Now.ToString("dd MMM, yyyy hh:mm tt");
+                ConfigJSON.Write(config);
                 return true;
 
             }
@@ -880,44 +873,63 @@ namespace POS.UI.Sync
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
+                bool isError = false;
                 foreach (var ur in response.Data.value)
                 {
-                    ur.User_ID = ur.User_ID.Substring(ur.User_ID.IndexOf("\\") + 1);
-                    var user = new ApplicationUser { UserName = ur.User_ID, Email = ur.User_ID + "@saleways.com" };
-                    var checkUserExist = _userManager.FindByNameAsync(ur.User_ID);
-                    if (checkUserExist.Result == null)
+                    try
                     {
-                        var task = _userManager.CreateAsync(user, "1234");
-                        var result = task.Result;
-                        if (result.Succeeded)
+                        _context.Database.OpenConnection();
+                        ur.User_ID = ur.User_ID.Substring(ur.User_ID.IndexOf("\\") + 1);
+                        var user = new ApplicationUser { UserName = ur.User_ID, Email = ur.User_ID + "@saleways.com" };
+                        var checkUser = _userManager.FindByNameAsync(ur.User_ID).Result;
+                        if (checkUser == null)
                         {
-                            //update update number
-                            if (response.Data.value.Count() > 0)
+                            var task = _userManager.CreateAsync(user, "1234");
+                            var result = task.Result;
+                            if (result.Succeeded)
                             {
-                                services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
-                                services.LastSyncDate = DateTime.Now;
+                                //continue
+
+                            }
+                        }
+                        if (checkUser == null)
+                            checkUser = _userManager.FindByNameAsync(ur.User_ID).Result;
+                        if (checkUser != null && !string.IsNullOrEmpty(ur.Role_ID))
+                        {
+                            var roles = _userManager.GetRolesAsync(checkUser).Result;
+                            if (roles.Count() > 0)
+                            {
+                                var userRoles = _userManager.RemoveFromRolesAsync(checkUser, roles.ToArray());
+                                userRoles.Wait();
+
                             }
 
+                            var userNewRoles = _userManager.AddToRoleAsync(checkUser, ur.Role_ID);
+                            userNewRoles.Wait();
+                            _context.Database.CloseConnection();
+
                         }
-                    }
-                    IdentityUser user1 = _userManager.FindByNameAsync(ur.User_ID).Result;
-                    if (user1 != null && !string.IsNullOrEmpty(ur.Role_ID))
+                    }catch(Exception ex)
                     {
-                        var roles = _userManager.GetRolesAsync(user1).Result;
-                        if (roles.Count() > 0)
-                        {
-                            var userRoles = _userManager.RemoveFromRolesAsync(user1, roles.ToArray());
-                            userRoles.Wait();
-
-                        }
-                          
-                        var userNewRoles = _userManager.AddToRoleAsync(user1, ur.Role_ID);
-                        userNewRoles.Wait();
-
+                        isError = true;
+                        _context.Database.CloseConnection();
                     }
-
+                   
                 }
-                _context.SaveChanges();
+               
+
+                    if (response.Data.value.Count() > 0 && isError == false)
+                {
+                    services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
+                    services.LastSyncDate = DateTime.Now;
+                    _context.Entry(services).State = EntityState.Modified;
+                    _context.SaveChanges();
+                    _context.Entry(services).State = EntityState.Detached;
+                   
+                }
+                // _context.SaveChanges();
+                config.SyncLog.User = "Last Sync : " + DateTime.Now.ToString("dd MMM, yyyy hh:mm tt");
+                ConfigJSON.Write(config);
                 return true;
 
             }
@@ -970,8 +982,13 @@ namespace POS.UI.Sync
                 {
                     services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
                     services.LastSyncDate = DateTime.Now;
+                    _context.Entry(services).State = EntityState.Modified;
+                    _context.SaveChanges();
+                    _context.Entry(services).State = EntityState.Detached;
                 }
-                _context.SaveChanges();
+                config.SyncLog.UserRole = "Last Sync : " + DateTime.Now.ToString("dd MMM, yyyy hh:mm tt");
+                ConfigJSON.Write(config);
+
                 return true;
 
             }
@@ -1006,8 +1023,14 @@ namespace POS.UI.Sync
                 {
                     services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
                     services.LastSyncDate = DateTime.Now;
+                    _context.Entry(services).State = EntityState.Modified;
+                    _context.SaveChanges();
+                    _context.Entry(services).State = EntityState.Detached;
                 }
-                _context.SaveChanges();
+
+                config.SyncLog.Menu = "Last Sync : " + DateTime.Now.ToString("dd MMM, yyyy hh:mm tt");
+                ConfigJSON.Write(config);
+
                 return true;
             }
             else
@@ -1040,8 +1063,12 @@ namespace POS.UI.Sync
                 {
                     services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
                     services.LastSyncDate = DateTime.Now;
+                    _context.Entry(services).State = EntityState.Modified;
+                    _context.SaveChanges();
+                    _context.Entry(services).State = EntityState.Detached;
                 }
-                _context.SaveChanges();
+                config.SyncLog.MenuPermission = "Last Sync : " + DateTime.Now.ToString("dd MMM, yyyy hh:mm tt");
+                ConfigJSON.Write(config);
                 return true;
             }
             else
@@ -1189,7 +1216,7 @@ namespace POS.UI.Sync
                         itemsTemp = _context.Customer.AsNoTracking().Skip(skip).Take(count).ToList();
                         if (itemsTemp.Count() == 0 && itemsTotal.Count() > 0)
                         {
-                            _cache.Set("Customer", itemsTotal);
+                            _cache.Set("Customers", itemsTotal);
                             break;
                         }
 

@@ -28,7 +28,7 @@ namespace POS.UI.Controllers
         private IMemoryCache _cache;
         public IConfiguration Configuration { get; }
         private ILogger _logger;
-        public SettingsController(EntityCore context, IConfiguration configuration, IMapper mapper, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, IMemoryCache memoryCache,ILogger logger)
+        public SettingsController(EntityCore context, IConfiguration configuration, IMapper mapper, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, IMemoryCache memoryCache, ILoggerFactory loggerFactory)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -36,7 +36,7 @@ namespace POS.UI.Controllers
             _mapper = mapper;
             _cache = memoryCache;
             Configuration = configuration;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<SettingsController>();
         }
 
 

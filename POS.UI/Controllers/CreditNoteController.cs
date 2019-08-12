@@ -21,11 +21,11 @@ namespace POS.UI.Controllers
         private readonly EntityCore _context;
         private readonly IMapper _mapper;
         private ILogger _logger;
-        public CreditNoteController(EntityCore context, IMapper mapper, ILogger logger)
+        public CreditNoteController(EntityCore context, IMapper mapper, ILoggerFactory loggerFactory)
         {
             _mapper = mapper;
             _context = context;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<CreditInvoiceController>();
         }
 
 

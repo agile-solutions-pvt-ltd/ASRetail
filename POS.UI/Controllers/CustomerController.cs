@@ -27,13 +27,13 @@ namespace POS.UI.Controllers
         private IMemoryCache _cache;
         private readonly IKendoGrid _kendoGrid;
         private ILogger _logger;
-        public CustomerController(EntityCore context, IMapper mapper, IMemoryCache memoryCache, IKendoGrid kendoGrid,ILogger logger)
+        public CustomerController(EntityCore context, IMapper mapper, IMemoryCache memoryCache, IKendoGrid kendoGrid,ILoggerFactory loggerFactory)
         {
             _context = context;
             _mapper = mapper;
             _cache = memoryCache;
             _kendoGrid = kendoGrid;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<CustomerController>();
         }
 
 

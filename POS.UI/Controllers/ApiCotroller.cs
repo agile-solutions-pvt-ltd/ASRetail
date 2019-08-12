@@ -33,22 +33,7 @@ namespace POS.UI.Controllers
         {
             try
             {
-                IList<Customer> customers;
-                _cache.TryGetValue("Customers", out customers);
-                if (customers == null)
-                {
-                    //update cache
-                    customers = _context.Customer.ToList();
-                    _cache.Set("Customers", customers);
-                }
-                else
-                {
-                    var customerIds = customers.Select(x => x.Membership_Number).ToList();
-                    var newCustomer= _context.Customer.Where(x => customerIds.Contains(x.Membership_Number)).ToList();
-                    var totalCustomer = customers.Concat(newCustomer);
-                    _cache.Set("Customers", customers);
-
-                }
+                BackgroundJob.Enqueue(() => UpdateCacheCustomerBackground());
                
                 var data =new  {
                     Status=  200,
@@ -66,12 +51,41 @@ namespace POS.UI.Controllers
                 return StatusCode(500, data);
             }
         }
-        // GET: Customer
-        public IActionResult SyncCompletedItems()
+        public void UpdateCacheCustomerBackground()
+        {
+            _cache.Remove("Customers");
+            //update cache
+            IList<Customer> itemsTotal = new List<Customer>();
+            IList<Customer> itemsTemp = new List<Customer>();
+            int count = 100000, skip = 0;
+            for (; ; )
+            {
+                try
+                {
+                    itemsTemp = _context.Customer.AsNoTracking().Skip(skip).Take(count).ToList();
+                    if (itemsTemp.Count() == 0 && itemsTotal.Count() > 0)
+                    {
+                        _cache.Set("Customers", itemsTotal);
+                        break;
+                    }
+
+                    itemsTotal = itemsTotal.Concat(itemsTemp).ToList();
+                    skip = skip + count;
+                }
+                catch
+                {
+                    break;
+                }
+            }
+        }
+
+        // GET: Items
+        public IActionResult UpdateCacheItems()
         {
             try
             {
-                _cache.Remove("ItemViewModel");
+                BackgroundJob.Enqueue(() => UpdateCacheItemBackground());
+
                 var data = new
                 {
                     Status = 200,
@@ -87,6 +101,38 @@ namespace POS.UI.Controllers
                     Message = "Error :" + ex.Message
                 };
                 return StatusCode(500, data);
+            }
+        }
+        public void UpdateCacheItemBackground()
+        {
+            _cache.Remove("ItemViewModel");
+            //update cache
+            IList<ItemViewModel> itemsTotal = new List<ItemViewModel>();
+            IList<ItemViewModel> itemsTemp = new List<ItemViewModel>();
+            int count = 100000, skip = 0;
+            for (; ; )
+            {
+                try
+                {
+                    _context.Database.SetCommandTimeout(180);
+                    // itemsTemp = _context.ItemViewModel.FromSql("SPItemViewModel @p0, @p1", count, skip).ToList();
+                    itemsTemp = _context.ItemViewModel.Skip(skip).Take(count).ToList();
+                    if (itemsTemp.Count() == 0 && itemsTotal.Count() > 0)
+                    {
+                        _cache.Set("ItemViewModel", itemsTotal);
+                        break;
+                    }
+                   
+                    itemsTotal = itemsTotal.Concat(itemsTemp).ToList();
+                    skip = skip + count;
+                   
+
+                }
+                catch (Exception ex)
+                {
+                    break;
+
+                }
             }
         }
 

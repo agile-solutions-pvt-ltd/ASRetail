@@ -282,14 +282,15 @@
     };
     let handleBackButtonEvent = () => {
         if (!_.isEmpty(getUrlParameters())) {
-
+            debugger;
             var id = getUrlParameters();
             var mode = GetUrlParameters("mode");
             var member = GetUrlParameters("M");
             if (mode === "tax")
-                window.location.href = window.location.origin + "/SalesInvoice/Index/" + id + "?Mode=tax&M=" + member;
+                setTimeout(() => { location.assign(window.location.origin + "/SalesInvoice/Index/" + id + "?Mode=tax&M=" + member) }, 100);
             else
-                window.location.href = window.location.origin + "/SalesInvoice/Index/" + id + "?M=" + member;
+                setTimeout(() => { location.assign(window.location.origin + "/SalesInvoice/Index/" + id + "?M=" + member) }, 100);;
+            return;
         }
     };
     let getUrlParameters = () => {
@@ -530,7 +531,7 @@
                             printCount: 0
                         };
                         printer.PrintInvoice(result.responseJSON, function () {
-                            window.location.href = "/SalesInvoice/CrLanding?mode=tax&StatusMessage=" + result.responseJSON.statusMessage;
+                            window.location.href = "/SalesInvoice/CrLanding?mode=tax&type=credit&StatusMessage=" + result.responseJSON.statusMessage;
                         });
                     } else {
                         printer.PrintInvoice(result.responseJSON, function () {

@@ -5,14 +5,14 @@
   "IRDBillUrl": "api/bill",
   "NavApiBaseUrl": "http://10.10.10.25:7098",
   "NavPath": "longrun/api/beta/",
-  "NavCompanyId": "6309d4b4-bbd0-4423-ba36-d8624e8092f4",
+  "NavCompanyId": "f8fb9d33-70b6-4576-a9a5-d549d0bf215d",
   "IRDUserName": "Test_CBMS",
   "IRDPassword": "test@321",
   "NavUserName": "web.user",
   "NavPassword": "W3b@2019",
   "StopInvoicePosting": false,
-  "StopCreditNotePosting": true,
-  "StopCustomerPosting": true,
+  "StopCreditNotePosting": false,
+  "StopCustomerPosting": false,
   "Location": "SDB",
   "LoggedInUsers": [
     "Admin"
@@ -42,16 +42,16 @@
     "ItemCategory": null,
     "ProductGroup": null,
     "ItemType": null,
-    "Item": null,
+    "Item": "Error :",
     "ItemPrice": null,
-    "ItemDiscount": null,
-    "ItemBarCode": null,
-    "Terminal": null,
-    "User": null,
-    "UserRole": null,
+    "ItemDiscount": "Last Sync : 12 Aug, 2019 02:01 AM",
+    "ItemBarCode": "Last Sync : 12 Aug, 2019 01:59 AM",
+    "Terminal": "Last Sync : 12 Aug, 2019 01:58 AM",
+    "User": "Last Sync : 12 Aug, 2019 01:51 AM",
+    "UserRole": "Last Sync : 12 Aug, 2019 01:58 AM",
     "UserPermission": null,
     "Status": null,
-    "Menu": null,
-    "MenuPermission": null
+    "Menu": "Last Sync : 12 Aug, 2019 01:58 AM",
+    "MenuPermission": "Last Sync : 12 Aug, 2019 01:58 AM"
   }
 }

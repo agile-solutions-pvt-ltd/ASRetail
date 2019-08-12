@@ -14,7 +14,7 @@ namespace POS.DTO
         public string Bar_Code { get; set; }
         public string Name { get; set; }
         public string Unit { get; set; }
-        public decimal Quantity { get; set; }
+        //public decimal Quantity { get; set; }
         public decimal Discount { get; set; }
         public decimal? DiscountMinimumQuantity { get; set; }
         public DateTime? DiscountStartDate { get; set; }
@@ -35,8 +35,8 @@ namespace POS.DTO
         public bool No_Discount { get; set; }
         public bool Is_Vatable { get; set; }
         public bool KeyInWeight { get; set; }
-        public string Location { get; set; }
-        public string LocationwisePriceGroup { get; set; }
+        //public string Location { get; set; }
+        //public string LocationwisePriceGroup { get; set; }
 
     }
 }

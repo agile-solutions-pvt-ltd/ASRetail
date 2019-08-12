@@ -404,8 +404,8 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
     <script>
-
-       // var customerList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Customer));
+        debugger;
+    var store = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Store));
     var salesInvoiceTmpData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
     </script>
     <script src="~/js/Page/SalesInvoice.js" asp-append-version="true"></script>

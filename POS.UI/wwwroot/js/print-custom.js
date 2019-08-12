@@ -84,6 +84,7 @@
             if (!_.isEmpty(data.copy) && data.copy.printCount == 0) {
                 //print double
                 PrintTaxInvoice(data, function () {
+                    debugger;
                     data.copy.printCount = 1;
                     PrintTaxInvoice(data, callback);
                 });
@@ -491,7 +492,7 @@
                     let printText = $(result.responseText).find("#printbody").html();
                     //replace all variables
 
-
+                    debugger;
                     var paymentMode = _.pluck(data.billData, "trans_Mode").join(", ");
                     if (paymentMode === "") {
                         paymentMode = data.paymentMode;
@@ -884,7 +885,7 @@
         $("#tempprint").html(printText);
         if (printItemText !== undefined)
             $("#tempprint").find("#items").html(printItemText);
-
+        debugger;
 
         //
 
@@ -905,10 +906,12 @@
             printable: 'tempprint',
             type: 'html',
             targetStyles: ['*'],
-            onLoadingEnd: function () {
+            onLoadingEnd: function () {               
                 $("#tempprint").remove();
+
                 if (callback !== undefined)
-                    callback();
+                    setTimeout(callback, 100);
+                   
 
 
             }

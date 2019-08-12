@@ -20,6 +20,8 @@
             if (GetUrlParameters("StatusMessage") !== undefined)
                 if (GetUrlParameters("mode") === undefined)
                     history.pushState({}, null, window.location.origin + "/SalesInvoice/Landing");
+                else if (GetUrlParameters("type") == "credit")
+                    history.pushState({}, null, window.location.origin + "/SalesInvoice/CrLanding?Mode=" + GetUrlParameters("mode"));
                 else
                     history.pushState({}, null, window.location.origin + "/SalesInvoice/Landing?Mode=" + GetUrlParameters("mode"));
 

@@ -197,7 +197,7 @@
         //isFirstTimeLoadItem = false;
         $.each(table.rows, function (i, v) {
             if (parseFloat($(this).find(".Quantity").val()) >= parseFloat($(this).find(".Quantity").attr("max"))) {
-                displayError("Return quantity cannot be greater than sales quantity !!");
+               // displayError("Return quantity cannot be greater than sales quantity !!");
                 $(this).find(".Quantity").val($(this).find(".Quantity").attr("max"));
                 isValid = false;
                 return false;

@@ -24,12 +24,12 @@ namespace POS.UI.Controllers
         private readonly IMapper _mapper;
         private IMemoryCache _cache;
         private ILogger _logger;
-        public SalesInvoiceController(EntityCore context, IMapper mapper, IMemoryCache memoryCache,ILogger logger)
+        public SalesInvoiceController(EntityCore context, IMapper mapper, IMemoryCache memoryCache, ILoggerFactory loggerFactory)
         {
             _context = context;
             _mapper = mapper;
             _cache = memoryCache;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<SalesInvoiceController>();
         }
 
 
@@ -38,6 +38,7 @@ namespace POS.UI.Controllers
         public IActionResult Index(Guid? id, string StatusMessage)
         {
             SalesInvoiceTmp tmp;
+            var store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
             if (id != null)
             {
                 tmp = _context.SalesInvoiceTmp.Include(x => x.SalesInvoiceItems).FirstOrDefault(x => x.Id == id);
@@ -52,7 +53,7 @@ namespace POS.UI.Controllers
             {
 
                 // var store = _context.Store.FirstOrDefault();
-                var store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
+               
                 int invoiceId = 0;
                 if (Request.Query["Mode"].ToString() != null && Request.Query["Mode"].ToString() == "tax")
                     invoiceId = _context.SalesInvoice.Where(x => x.Trans_Type == "Tax").Select(x => x.Invoice_Id).DefaultIfEmpty(0).Max() + 1;
@@ -64,7 +65,7 @@ namespace POS.UI.Controllers
                 };
             }
             TempData["StatusMessage"] = StatusMessage;
-
+            ViewData["Store"] = store;
 
             //for customer
             //display only ismember data later
