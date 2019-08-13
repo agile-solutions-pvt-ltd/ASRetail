@@ -388,7 +388,8 @@ where (p.StartDate is null or CONVERT(date,p.StartDate) <= CONVERT(date, GETDATE
                 {
                     try
                     {
-                        itemsTemp = _context.ItemViewModel.FromSql("SPItemViewModel @p0, @p1", count, skip).ToList();
+                        //itemsTemp = _context.ItemViewModel.FromSql("SPItemViewModel @p0, @p1", count, skip).ToList();
+                        itemsTemp = _context.ItemViewModel.Skip(skip).Take(count).ToList();
                         if (itemsTemp.Count() == 0 && itemsTotal.Count() > 0)
                         {
                             _cache.Set("ItemViewModel", itemsTotal);

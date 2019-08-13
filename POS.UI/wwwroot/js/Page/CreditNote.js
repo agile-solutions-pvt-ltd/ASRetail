@@ -528,7 +528,7 @@
 
         var membershipDiscount = calcDiscount(result.membershipDiscount || 0, quantity);
 
-
+        row.title = "Item Code: " + itemCode;
         $('<i class="sn font-weight-bold">' + table.rows.length + '</i>').appendTo(cell1);
         $("<span class='barcode'>" + barCode + "</span>").appendTo(cell2);
         $("<span class='itemName' data-item-id='" + itemId + "' data-item-code= '" + itemCode + "'>" + itemName + "</span>").appendTo(cell3);

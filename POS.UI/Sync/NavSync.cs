@@ -373,44 +373,60 @@ namespace POS.UI.Sync
                     {
                         List<Item> item = _mapper.Map<List<Item>>(response.Data.value);
 
-                        var listOfItemsToUpdate = _context.Item.Where(x => item.Any(y => y.Code == x.Code));
-
-                        foreach (var i in listOfItemsToUpdate)
+                        var listOfItemCodeToRemove = item.Select(x => x.Code).ToList();
+                        var listOfItemToRemove = _context.Item.Where(x => listOfItemCodeToRemove.Contains(x.Code));
+                        foreach (var i in listOfItemToRemove)
                         {
-                            var newItem = item.FirstOrDefault(x => x.Code == i.Code);
-                            i.Name = newItem.Name;
-                            i.DiscountGroup = newItem.DiscountGroup;
-                            i.Bar_Code = newItem.Bar_Code;
-                            i.Code = newItem.Code;
-                            i.Discount = newItem.Discount;
-                            i.Is_Active = newItem.Is_Active;
-                            i.Is_Discountable = newItem.Is_Discountable;
-                            i.Is_Vatable = newItem.Is_Vatable;
-                            i.KeyInWeight = newItem.KeyInWeight;
-                            i.No_Discount = newItem.No_Discount;
-                            i.Parent_Code = newItem.Parent_Code;
-                            i.Rate = newItem.Rate;
-                            i.Remarks = newItem.Remarks;
-                            i.Type = newItem.Type;
-                            i.Unit = newItem.Unit;
-                            i.VendorNumber = newItem.VendorNumber;
-                            _context.Entry(i).State = EntityState.Modified;
-
-
+                            try
+                            {
+                                _context.Item.Remove(i);
+                            }
+                            catch
+                            {
+                                item.Remove(i);
+                                _context.Entry(i).State = EntityState.Detached;
+                            }
                         }
-                        var listOfItemsCodesToUpdate = item.Select(x => x.Code).ToList();
-                        var listOfItemsToAdd = item.Where(x => !listOfItemsCodesToUpdate.Contains(x.Code));
-                        _context.Item.AddRange(listOfItemsToAdd);
+
+                        //var listOfItemsToUpdate = _context.Item.Where(x => item.Any(y => y.Code == x.Code));
+
+                        //foreach (var i in listOfItemsToUpdate)
+                        //{
+                        //    var newItem = item.FirstOrDefault(x => x.Code == i.Code);
+                        //    i.Name = newItem.Name;
+                        //    i.DiscountGroup = newItem.DiscountGroup;
+                        //    i.Bar_Code = newItem.Bar_Code;
+                        //    i.Code = newItem.Code;
+                        //    i.Discount = newItem.Discount;
+                        //    i.Is_Active = newItem.Is_Active;
+                        //    i.Is_Discountable = newItem.Is_Discountable;
+                        //    i.Is_Vatable = newItem.Is_Vatable;
+                        //    i.KeyInWeight = newItem.KeyInWeight;
+                        //    i.No_Discount = newItem.No_Discount;
+                        //    i.Parent_Code = newItem.Parent_Code;
+                        //    i.Rate = newItem.Rate;
+                        //    i.Remarks = newItem.Remarks;
+                        //    i.Type = newItem.Type;
+                        //    i.Unit = newItem.Unit;
+                        //    i.VendorNumber = newItem.VendorNumber;
+                        //    _context.Entry(i).State = EntityState.Modified;
+
+
+                        //}
+                        //var listOfItemsCodesToUpdate = item.Select(x => x.Code).ToList();
+                        //var listOfItemsToAdd = item.Where(x => !listOfItemsCodesToUpdate.Contains(x.Code));
+                        //_context.Item.AddRange(listOfItemsToAdd);
                         _context.SaveChanges();
                         //update update number
                         if (response.Data.value.Count() > 0)
                         {
                             //var maxUpdateNuber
-                            NavIntegrationService services1 = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Item");
+                            //NavIntegrationService services1 = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Item");
                             services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
                             services.LastSyncDate = DateTime.Now;
                             _context.Entry(services).State = EntityState.Modified;
                             _context.SaveChanges();
+                            _context.Entry(services).State = EntityState.Detached;
                         }
 
 

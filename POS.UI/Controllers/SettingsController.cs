@@ -13,6 +13,7 @@ using POS.DTO;
 using POS.UI.Helper;
 using POS.UI.Sync;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -93,6 +94,21 @@ namespace POS.UI.Controllers
         public IActionResult SchedulerSetup()
         {
             ViewData["Scheduler"] = ConfigJSON.Read();
+            IList<Customer> customer;
+            _cache.TryGetValue("Customers", out customer);
+            if (customer != null)
+                ViewData["IsCustomerCache"] = true;
+            else
+                ViewData["IsCustomerCache"] = false;
+
+            IList<ItemViewModel> item;
+            _cache.TryGetValue("ItemViewModel", out item);
+            if (item != null)
+                ViewData["IsItemCache"] = true;
+            else
+                ViewData["IsItemCache"] = false;
+
+
             return View();
         }
 
@@ -129,8 +145,9 @@ namespace POS.UI.Controllers
             NavPostData sync = new NavPostData(_context, _mapper, _logger);
             Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
             //sync.PostSalesInvoice(store);
-           
+            //sync.PostSalesInvoice(store);
             BackgroundJob.Enqueue(() => sync.PostSalesInvoice(store));
+            BackgroundJob.Enqueue(() => Console.WriteLine("test from background"));
             var data = new
             {
                 Status = 200,

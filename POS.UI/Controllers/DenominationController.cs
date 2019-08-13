@@ -40,6 +40,8 @@ namespace POS.UI.Controllers
 
             var denomination = await _context.Denomination.FindAsync(id);
             TempData["Startingdate"] = denomination.Date.ToShortDateString();
+            var terminal = HttpContext.Session.GetString("TerminalId");
+            ViewData["Terminal_Id"] = new SelectList(_context.Terminal, "Id", "Name", terminal);
             if (denomination == null)
             {
                 return NotFound();

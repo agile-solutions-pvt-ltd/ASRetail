@@ -4,6 +4,7 @@
     var htmlParent = "";
     var transAmount = {};
     var denominationAmount = {};
+    var adjustmentAmount = {};
     var startdate = "";
     var enddate = "";
     var test = "";
@@ -34,7 +35,7 @@
    
     //********* Private Methos *****************//
     let init = () => {
-
+      
        
         var startdate = document.getElementById("startdatepicker").value;
         var enddate = document.getElementById("enddatepicker").value;
@@ -118,14 +119,14 @@
         return date.getFullYear() + "/" + month + "/" + date.getDate() + " " + hours + ':' + minutes + ' ' + ampm;
     };
     let calcShortExcessAmount = (e) => {
-
+        debugger;
         //for first time
         if (e === undefined) {            
             let shortExcessAmount = {
-                card: CurrencyFormat(denominationAmount[0].card - parseFloat(CurrencyUnFormat(transAmount.cardAmount.toString()))),
-                credit: CurrencyFormat(denominationAmount[0].credit - parseFloat(CurrencyUnFormat(transAmount.creditAmount.toString()))),
-                creditNote: CurrencyFormat(denominationAmount[0].creditNote - parseFloat(CurrencyUnFormat(transAmount.creditNoteAmount.toString()))),
-                cash: CurrencyFormat(denominationAmount[0].denominationCash - parseFloat(CurrencyUnFormat(transAmount.cashAmount.toString())))
+                card: CurrencyFormat(denominationAmount[0].card - parseFloat(CurrencyUnFormat(transAmount.cardAmount.toString())) + adjustmentAmount.cardAmount),
+                credit: CurrencyFormat(denominationAmount[0].credit - parseFloat(CurrencyUnFormat(transAmount.creditAmount.toString())) + adjustmentAmount.creditAmount),
+                creditNote: CurrencyFormat(denominationAmount[0].creditNote - parseFloat(CurrencyUnFormat(transAmount.creditNoteAmount.toString())) + adjustmentAmount.creditNoteAmount),
+                cash: CurrencyFormat(denominationAmount[0].denominationCash - parseFloat(CurrencyUnFormat(transAmount.cashAmount.toString())) + adjustmentAmount.cashAmount)
             };
             return shortExcessAmount;
         }
@@ -238,18 +239,28 @@
         html = html.replace("$denominationId", CurrencyFormat(data[0].denominationId));
 
         //for adjustment amount
+        adjustmentAmount = {
+            cardAmount: 0,
+            creditAmount: 0,
+            creditNoteAmount: 0,
+            cashAmount: 0
+        };
         _.each(data, function (x) {
             if (x.paymentMode === "Card") {
                 html = html.replace("$adjCardAmount", x.adjustmentAmount);
+                adjustmentAmount.cardAmount = x.adjustmentAmount;
             }
             else if (x.paymentMode === "Credit") {
                 html = html.replace("$adjCreditAmount", x.adjustmentAmount);
+                adjustmentAmount.creditAmount = x.adjustmentAmount;
             }
             else if (x.paymentMode === "Credit Note") {
                 html = html.replace("$adjCreditNoteAmount", x.adjustmentAmount);
+                adjustmentAmount.creditNoteAmount = x.adjustmentAmount;
             }
             else if (x.paymentMode === "Cash") {
                 html = html.replace("$adjCashAmount", x.adjustmentAmount);
+                adjustmentAmount.cashAmount = x.adjustmentAmount;
             }
 
         });
@@ -299,6 +310,7 @@
         return html;
     };
     let getSettlementData = (callback) => {
+        $(".theme-loader").css({ "background-color": "", "display": "block" });   
         var url = window.location.origin + "/Settlement/GetSettlement?startdate=" + $("#startdatepicker").val() + "&enddate=" + $("#enddatepicker").val() + "&status=" + $("#VerifyList").val();
             //$("#enddatepicker").val();
         if ($("#VerifyList").val()=="verified") {
@@ -314,11 +326,12 @@
             url: url,
             type: "GET",
             complete: function (result) {
-                $("#theme-loader").css({ "background-color":"", "display":"block"});               
+                           
                 if (result.status === 200) {
                     callback(result.responseJSON);
-                    $(".theme-loader").css({ "background-color": "#fff", "display": "none" });
+                   
                 }
+               // $(".theme-loader").css({ "background-color": "#fff", "display": "none" });
             }
         });
     };

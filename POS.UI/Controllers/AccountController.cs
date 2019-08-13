@@ -766,7 +766,7 @@ namespace POS.UI.Controllers
             RoleWisePermissionCommon data = new RoleWisePermissionCommon();
             if (id != null)
             {
-                var role = _context.UserViewModel.FirstOrDefault(x => x.RoleId == id);
+                var role = _context.UserViewModel.FirstOrDefault(x => x.RoleId == id|| x.Role == id);
                 data.roleWiseUserPermission = _context.RoleWisePermission.FirstOrDefault(x => x.RoleId == id || x.RoleId == role.Role);
                 data.roleWiseMenuPermissions = _context.RoleWiseMenuPermission.Where(x => x.RoleId == id || x.RoleId == role.Role).ToList();
             }
@@ -786,7 +786,7 @@ namespace POS.UI.Controllers
                 RoleWisePermission oldPermission = _context.RoleWisePermission.FirstOrDefault(x => x.RoleId == permission.roleWiseUserPermission.RoleId);
                 if (oldPermission != null)
                     _context.RoleWisePermission.Remove(oldPermission);
-                List<RoleWiseMenuPermission> oldMenuPermission = _context.RoleWiseMenuPermission.Where(x => x.RoleId == permission.roleWiseUserPermission.RoleId).ToList();
+                List<RoleWiseMenuPermission> oldMenuPermission = _context.RoleWiseMenuPermission.Where(x => x.RoleId == permission.roleWiseMenuPermissions.FirstOrDefault().RoleId).ToList();
                 if (oldMenuPermission != null)
                     _context.RoleWiseMenuPermission.RemoveRange(oldMenuPermission);
 
