@@ -43,7 +43,7 @@ namespace POS.UI.Controllers
                     Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store")); ;
                     creditNote.Id = Guid.NewGuid();
                     creditNote.Credit_Note_Id = _context.CreditNote.Select(x => x.Credit_Note_Id).DefaultIfEmpty(0).Max() + 1;
-                    creditNote.Credit_Note_Number = "CN-" + creditNote.Credit_Note_Id.ToString("0000") + "-" + store.FISCAL_YEAR;
+                    creditNote.Credit_Note_Number = "CN-" + creditNote.Credit_Note_Id.ToString("0000") + "-" + store.INITIAL+'-'+ store.FISCAL_YEAR;
                     creditNote.Trans_Time = DateTime.Now.TimeOfDay;
                     creditNote.Division = "Divisioin";
                     creditNote.Terminal = HttpContext.Session.GetString("Terminal");
