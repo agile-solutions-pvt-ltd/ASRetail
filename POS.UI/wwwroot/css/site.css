@@ -1,11 +1,11 @@
-﻿
-html, body {
+﻿html, body {
     height: 100%;
 }
 
-.br{
-    padding-top:5px;
+.br {
+    padding-top: 5px;
 }
+
 
 /*Remove arrow in number textbox*/
 input[type=number]::-webkit-inner-spin-button,
@@ -15,26 +15,3 @@ input[type=number]::-webkit-outer-spin-button {
     appearance: none;
     margin: 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -19,8 +19,4 @@ Thumbs.db
 obj/
 [Rr]elease*/
 _ReSharper*/
-/POS.UI/wwwroot
-/POS.UI/Views/Settings
-/POS.DTO/ViewModels
-/.vs/POS/v15/Server/sqlite3
-/.vs/config
+.vs\POS\v16\Server\sqlite3/

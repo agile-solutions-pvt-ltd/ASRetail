@@ -221,7 +221,9 @@ namespace POS.DTO
         public string locationcode { get; set; }
         public string accountabilitycenter { get; set; }
         public string assigneduserid { get; set; }
-        public string invoiceno { get; set; }
+        public string externalDocumentNumber { get; set; }
+        public bool amountrounded { get; set; }
+        public string returnremarks { get; set; }
 
 
 

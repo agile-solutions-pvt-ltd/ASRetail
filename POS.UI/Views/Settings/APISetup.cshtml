@@ -93,6 +93,31 @@
                                 <input type="button" id="NavConnectionTest" class="btn btn-sm btn-primary" value="Test Connection" />
                             </div>
                         </div>
+                        <div class="br"></div>
+                        <div class="row">
+                            <label class="col-md-2"></label>
+                            <div class="col-md-4">
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" @(ViewBag.API.StopCreditNotePosting == false ? "" : "checked=Checked") id="CNpostToNav" data-val="true" value="true" /> Stop Credit Note Posting
+                                    </label>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="br"></div>
+                        <div class="row">
+                            <label class="col-md-2"></label>
+                            <div class="col-md-4">
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" @(ViewBag.API.StopCustomerPosting == false ? "" : "checked=Checked") id="CustomerpostToNav" data-val="true" value="true" /> Stop Customer Posting
+                                    </label>
+                                </div>
+                            </div>
+
+                        </div>
+
 
 
 
@@ -107,9 +132,16 @@
                         </div>
                         <div class="br"></div>
                         <div class="row">
-                            <label class="col-md-2">Path</label>
+                            <label class="col-md-2">Invoice Path</label>
                             <div class="col-md-4">
                                 <input type="text" id="IRDBillUrl" class="form-control form-control-sm" value="@ViewBag.API.IRDBillUrl" />
+                            </div>
+                        </div>
+                        <div class="br"></div>
+                        <div class="row">
+                            <label class="col-md-2">Credit Note Path</label>
+                            <div class="col-md-4">
+                                <input type="text" id="IRDBillCreditNoteUrl" class="form-control form-control-sm" value="@ViewBag.API.IRDBillCreditNoteUrl" />
                             </div>
                         </div>
                         <div class="br"></div>
@@ -167,6 +199,7 @@
             var final = {
                 IRDBaseUrl: $("#IRDBaseUrl").val(),
                 IRDBillUrl: $("#IRDBillUrl").val(),
+                IRDBillCreditNoteUrl : $("#IRDBillCreditNoteUrl").val(),
                 IRDUserName: $("#IRDUserName").val(),
                 IRDPassword: $("#IRDPassword").val(),
                 NavApiBaseUrl: $("#NavApiBaseUrl").val(),
@@ -175,7 +208,9 @@
                 NavUserName: $("#NavUserName").val(),
                 NavPassword: $("#NavPassword").val(),
                 Location: $("#Location").val(),
-                StopInvoicePosting: $("#postToNav").is(":checked")
+                StopInvoicePosting: $("#postToNav").is(":checked"),
+                StopCreditNotePosting: $("#CNpostToNav").is(":checked"),
+                StopCustomerPosting: $("#CustomerpostToNav").is(":checked")
             };
 
             $.ajax({

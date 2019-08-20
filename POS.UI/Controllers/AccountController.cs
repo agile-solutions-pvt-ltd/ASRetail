@@ -61,9 +61,14 @@ namespace POS.UI.Controllers
         public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
         {
             ViewData["ReturnUrl"] = null;
-            _logger.LogInformation("access login page");
+            _logger.LogInformation("access login page");           
             if (ModelState.IsValid)
             {
+                if (model.ClientDate.ToShortDateString() != DateTime.Now.ToShortDateString())
+                {
+                    ModelState.AddModelError(string.Empty, "Date Not Up-to-Date !!");
+                    return View(model);
+                }
                 //first try to login with username
                 IdentityUser user = await _userManager.FindByNameAsync(model.Email);
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
@@ -761,7 +766,7 @@ namespace POS.UI.Controllers
             RoleWisePermissionCommon data = new RoleWisePermissionCommon();
             if (id != null)
             {
-                var role = _context.UserViewModel.FirstOrDefault(x => x.RoleId == id);
+                var role = _context.UserViewModel.FirstOrDefault(x => x.RoleId == id|| x.Role == id);
                 data.roleWiseUserPermission = _context.RoleWisePermission.FirstOrDefault(x => x.RoleId == id || x.RoleId == role.Role);
                 data.roleWiseMenuPermissions = _context.RoleWiseMenuPermission.Where(x => x.RoleId == id || x.RoleId == role.Role).ToList();
             }
@@ -781,7 +786,7 @@ namespace POS.UI.Controllers
                 RoleWisePermission oldPermission = _context.RoleWisePermission.FirstOrDefault(x => x.RoleId == permission.roleWiseUserPermission.RoleId);
                 if (oldPermission != null)
                     _context.RoleWisePermission.Remove(oldPermission);
-                List<RoleWiseMenuPermission> oldMenuPermission = _context.RoleWiseMenuPermission.Where(x => x.RoleId == permission.roleWiseUserPermission.RoleId).ToList();
+                List<RoleWiseMenuPermission> oldMenuPermission = _context.RoleWiseMenuPermission.Where(x => x.RoleId == permission.roleWiseMenuPermissions.FirstOrDefault().RoleId).ToList();
                 if (oldMenuPermission != null)
                     _context.RoleWiseMenuPermission.RemoveRange(oldMenuPermission);
 

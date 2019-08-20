@@ -12,8 +12,8 @@ namespace POS.DTO
         public int Invoice_Id { get; set; }
         [Key]
         public string Invoice_Number { get; set; }
-        public DateTime Trans_Date_AD { get; set; }
-        public string Trans_Date_BS { get; set; }
+        public DateTime Trans_Date_Ad { get; set; }
+        public string Trans_Date_Bs { get; set; }
         public string Trans_Time { get; set; }
         public string Trans_Type { get; set; }
         public string Chalan_Number { get; set; }

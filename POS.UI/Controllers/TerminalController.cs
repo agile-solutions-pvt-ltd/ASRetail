@@ -171,9 +171,9 @@ namespace POS.UI.Controllers
             if (ModelState.IsValid)
             {
                 //first remove if mapped to terminal
-                IEnumerable<TerminalMapping> oldMapping = _context.TerminalMapping.Where(x => x.PCName == terminalMapping.PCName);
+                IEnumerable<TerminalMapping> oldMapping = _context.TerminalMapping.Where(x => x.IPAddress == terminalMapping.IPAddress);
                 _context.TerminalMapping.RemoveRange(oldMapping);
-
+                _context.SaveChanges();
 
                 terminalMapping.AssignedBy = User.Identity.Name; ;
                 terminalMapping.AssignedDate = DateTime.Now;
@@ -229,9 +229,12 @@ namespace POS.UI.Controllers
                 TerminalMapping terminalMapping = _context.TerminalMapping.FirstOrDefault(x => x.IPAddress == ip);
                 Terminal terminal = new Terminal();
                 if (terminalMapping != null)
+                {
                     terminal = _context.Terminal.FirstOrDefault(x => x.Id == terminalMapping.TerminalId);
+                    terminalId = terminal.Id;
+                }
 
-                return Ok(new { pcName = "", terminalId = terminalMapping.TerminalId.ToString(), terminalName = terminal?.Name });
+                return Ok(new { pcName = "", terminalId = terminalId, terminalName = terminal?.Name });
             }
             catch (Exception ex)
             {

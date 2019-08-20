@@ -10,7 +10,6 @@ namespace POS.DTO
     public partial class ItemPrice
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Key]
         public string Id { get; set; }
         public decimal UnitPrice { get; set; }                    
         public string ItemCode { get; set; }  

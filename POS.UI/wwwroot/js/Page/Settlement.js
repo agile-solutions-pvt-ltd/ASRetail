@@ -4,6 +4,7 @@
     var htmlParent = "";
     var transAmount = {};
     var denominationAmount = {};
+    var adjustmentAmount = {};
     var startdate = "";
     var enddate = "";
     var test = "";
@@ -34,7 +35,7 @@
    
     //********* Private Methos *****************//
     let init = () => {
-
+      
        
         var startdate = document.getElementById("startdatepicker").value;
         var enddate = document.getElementById("enddatepicker").value;
@@ -43,8 +44,7 @@
         enddate = formatDate(enddate);
 
 
-        console.log("startdate", startdate)
-        debugger;
+       // console.log("startdate", startdate)       
         $("#startdatepicker").datepicker({
                 onSelect: function (date) {
                     startdate = date;
@@ -119,14 +119,14 @@
         return date.getFullYear() + "/" + month + "/" + date.getDate() + " " + hours + ':' + minutes + ' ' + ampm;
     };
     let calcShortExcessAmount = (e) => {
-
+        debugger;
         //for first time
         if (e === undefined) {            
             let shortExcessAmount = {
-                card: CurrencyFormat(denominationAmount[0].card - parseFloat(CurrencyUnFormat(transAmount.cardAmount.toString()))),
-                credit: CurrencyFormat(denominationAmount[0].credit - parseFloat(CurrencyUnFormat(transAmount.creditAmount.toString()))),
-                creditNote: CurrencyFormat(denominationAmount[0].creditNote - parseFloat(CurrencyUnFormat(transAmount.creditNoteAmount.toString()))),
-                cash: CurrencyFormat(denominationAmount[0].denominationCash - parseFloat(CurrencyUnFormat(transAmount.cashAmount.toString())))
+                card: CurrencyFormat(denominationAmount[0].card - parseFloat(CurrencyUnFormat(transAmount.cardAmount.toString())) + adjustmentAmount.cardAmount),
+                credit: CurrencyFormat(denominationAmount[0].credit - parseFloat(CurrencyUnFormat(transAmount.creditAmount.toString())) + adjustmentAmount.creditAmount),
+                creditNote: CurrencyFormat(denominationAmount[0].creditNote - parseFloat(CurrencyUnFormat(transAmount.creditNoteAmount.toString())) + adjustmentAmount.creditNoteAmount),
+                cash: CurrencyFormat(denominationAmount[0].denominationCash - parseFloat(CurrencyUnFormat(transAmount.cashAmount.toString())) + adjustmentAmount.cashAmount)
             };
             return shortExcessAmount;
         }
@@ -179,6 +179,7 @@
         //        $("#settlement-payment-row").prepend(paymentNodeHtml);
 
         //});
+       
         transAmount = {
             cardAmount: 0,
             creditAmount: 0,
@@ -186,7 +187,7 @@
             cashAmount: 0
         };
         denominationAmount = data;
-        debugger;        _.each(data, function (x) {
+         _.each(data, function (x) {
             if (x.paymentMode === "Card") {                
                 transAmount.cardAmount += parseFloat(x.totalAmount);
             }
@@ -210,7 +211,7 @@
 
 
 
-        var shortExcessAmount = calcShortExcessAmount();
+        //var shortExcessAmount = calcShortExcessAmount();
 
 
         if (htmlParent === "") {
@@ -237,15 +238,79 @@
         html = html.replace("$denoCashAmount", CurrencyFormat(data[0].denominationCash));
         html = html.replace("$denominationId", CurrencyFormat(data[0].denominationId));
 
+        //for adjustment amount
+        adjustmentAmount = {
+            cardAmount: 0,
+            creditAmount: 0,
+            creditNoteAmount: 0,
+            cashAmount: 0
+        };
+        _.each(data, function (x) {
+            if (x.paymentMode === "Card") {
+                html = html.replace("$adjCardAmount", x.adjustmentAmount);
+                adjustmentAmount.cardAmount = x.adjustmentAmount;
+            }
+            else if (x.paymentMode === "Credit") {
+                html = html.replace("$adjCreditAmount", x.adjustmentAmount);
+                adjustmentAmount.creditAmount = x.adjustmentAmount;
+            }
+            else if (x.paymentMode === "Credit Note") {
+                html = html.replace("$adjCreditNoteAmount", x.adjustmentAmount);
+                adjustmentAmount.creditNoteAmount = x.adjustmentAmount;
+            }
+            else if (x.paymentMode === "Cash") {
+                html = html.replace("$adjCashAmount", x.adjustmentAmount);
+                adjustmentAmount.cashAmount = x.adjustmentAmount;
+            }
+
+        });
+        //if not found then assign zero
+        html = html.replace("$adjCardAmount", 0);
+        html = html.replace("$adjCreditAmount", 0);
+        html = html.replace("$adjCreditNoteAmount", 0);
+        html = html.replace("$adjCashAmount", 0);
+
+        var shortExcessAmount = calcShortExcessAmount();
         html = html.replace("$shortAccessCardAmount", shortExcessAmount.card);
         html = html.replace("$shortAccessCreditAmount", shortExcessAmount.credit);
         html = html.replace("$shortAccessCreditNoteAmount", shortExcessAmount.creditNote);
         html = html.replace("$shortAccessCashAmount", shortExcessAmount.cash);
+        //if (GetUrlParameters("status") == "verified") {
+        //    //for shortexcess amount
+        //    _.each(data, function (x) {
+        //        if (x.paymentMode === "Card") {
+        //            html = html.replace("$shortAccessCardAmount", x.shortExcessAmount);
+        //        }
+        //        else if (x.paymentMode === "Credit") {
+        //            html = html.replace("$shortAccessCreditAmount", x.shortExcessAmount);
+        //        }
+        //        else if (x.paymentMode === "Credit Note") {
+        //            html = html.replace("$shortAccessCreditNoteAmount", x.shortExcessAmount);
+        //        }
+        //        else if (x.paymentMode === "Cash") {
+        //            html = html.replace("$shortAccessCashAmount", x.shortExcessAmount);
+        //        }
+
+        //    });
+        //    //if not found then assign zero       
+        //    html = html.replace("$shortAccessCardAmount", "0");
+        //    html = html.replace("$shortAccessCreditAmount", "0");
+        //    html = html.replace("$shortAccessCreditNoteAmount", "0");
+        //    html = html.replace("$shortAccessCashAmount", "0");
+        //}
+        //else {
+        //    var shortExcessAmount = calcShortExcessAmount();
+        //    html = html.replace("$shortAccessCardAmount", shortExcessAmount.card);
+        //    html = html.replace("$shortAccessCreditAmount", shortExcessAmount.credit);
+        //    html = html.replace("$shortAccessCreditNoteAmount", shortExcessAmount.creditNote);
+        //    html = html.replace("$shortAccessCashAmount", shortExcessAmount.cash);
+        //}
 
 
         return html;
     };
     let getSettlementData = (callback) => {
+        $(".theme-loader").css({ "background-color": "", "display": "block" });   
         var url = window.location.origin + "/Settlement/GetSettlement?startdate=" + $("#startdatepicker").val() + "&enddate=" + $("#enddatepicker").val() + "&status=" + $("#VerifyList").val();
             //$("#enddatepicker").val();
         if ($("#VerifyList").val()=="verified") {
@@ -261,9 +326,12 @@
             url: url,
             type: "GET",
             complete: function (result) {
+                           
                 if (result.status === 200) {
                     callback(result.responseJSON);
+                   
                 }
+               // $(".theme-loader").css({ "background-color": "#fff", "display": "none" });
             }
         });
     };

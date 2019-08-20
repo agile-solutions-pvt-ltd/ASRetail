@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using POS.Core;
 using POS.DTO;
@@ -22,11 +23,13 @@ namespace POS.UI.Controllers
         private readonly EntityCore _context;
         private readonly IMapper _mapper;
         private IMemoryCache _cache;
-        public SalesInvoiceController(EntityCore context, IMapper mapper, IMemoryCache memoryCache)
+        private ILogger _logger;
+        public SalesInvoiceController(EntityCore context, IMapper mapper, IMemoryCache memoryCache, ILoggerFactory loggerFactory)
         {
             _context = context;
             _mapper = mapper;
             _cache = memoryCache;
+            _logger = loggerFactory.CreateLogger<SalesInvoiceController>();
         }
 
 
@@ -35,6 +38,7 @@ namespace POS.UI.Controllers
         public IActionResult Index(Guid? id, string StatusMessage)
         {
             SalesInvoiceTmp tmp;
+            var store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
             if (id != null)
             {
                 tmp = _context.SalesInvoiceTmp.Include(x => x.SalesInvoiceItems).FirstOrDefault(x => x.Id == id);
@@ -49,7 +53,7 @@ namespace POS.UI.Controllers
             {
 
                 // var store = _context.Store.FirstOrDefault();
-                var store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
+               
                 int invoiceId = 0;
                 if (Request.Query["Mode"].ToString() != null && Request.Query["Mode"].ToString() == "tax")
                     invoiceId = _context.SalesInvoice.Where(x => x.Trans_Type == "Tax").Select(x => x.Invoice_Id).DefaultIfEmpty(0).Max() + 1;
@@ -61,7 +65,7 @@ namespace POS.UI.Controllers
                 };
             }
             TempData["StatusMessage"] = StatusMessage;
-
+            ViewData["Store"] = store;
 
             //for customer
             //display only ismember data later
@@ -83,74 +87,86 @@ namespace POS.UI.Controllers
         {
             SalesInvoiceTmp salesInvoiceTmp = model.SalesInvoice;
             Customer customer = model.Customer;
+
             if (ModelState.IsValid)
             {
-                //if that salesinvoice already exist, than track first
-                SalesInvoiceTmp oldData = new SalesInvoiceTmp();
-                bool isExistOldSalesInvoice = false;
-                if (salesInvoiceTmp.Id != null)
+                if(model.SalesInvoice.Trans_Date_Ad.Value.ToShortDateString() != DateTime.Now.ToShortDateString())
                 {
-                    oldData = await _context.SalesInvoiceTmp.FirstOrDefaultAsync(x => x.Id == salesInvoiceTmp.Id);
-                    if (oldData != null) isExistOldSalesInvoice = true;
+                    return StatusCode(400, "Date is not Up-to-Date !!");
                 }
-
-                //add membership
-                if (!string.IsNullOrEmpty(customer.Name) && !string.IsNullOrEmpty(customer.Mobile1) && customer.Is_Member == true)
+                try
                 {
-                    Customer member = AddCustomer(customer);
-                    //_context.SaveChanges();
-                    salesInvoiceTmp.Customer_Id = member.Code;
-                    salesInvoiceTmp.MemberId = member.Membership_Number;
-                }
+                    //if that salesinvoice already exist, than track first
+                    SalesInvoiceTmp oldData = new SalesInvoiceTmp();
+                    bool isExistOldSalesInvoice = false;
+                    if (salesInvoiceTmp.Id != null)
+                    {
+                        oldData = await _context.SalesInvoiceTmp.FirstOrDefaultAsync(x => x.Id == salesInvoiceTmp.Id);
+                        if (oldData != null) isExistOldSalesInvoice = true;
+                    }
+
+                    //add membership
+                    if (!string.IsNullOrEmpty(customer.Name) && !string.IsNullOrEmpty(customer.Mobile1) && customer.Is_Member == true)
+                    {
+                        Customer member = AddCustomer(customer);
+                        //_context.SaveChanges();
+                        salesInvoiceTmp.Customer_Id = member.Code;
+                        salesInvoiceTmp.MemberId = member.Membership_Number;
+                    }
 
 
-                //now processed to new save invoice
-                salesInvoiceTmp.Id = Guid.NewGuid();
-                salesInvoiceTmp.Trans_Time = DateTime.Now.TimeOfDay;
-                salesInvoiceTmp.Division = "Divisioin";
-                salesInvoiceTmp.Terminal = HttpContext.Session.GetString("Terminal");
-                salesInvoiceTmp.Created_Date = DateTime.Now;
-                salesInvoiceTmp.Created_By = User.Identity.Name;
+                    //now processed to new save invoice
+                    salesInvoiceTmp.Id = Guid.NewGuid();
+                    salesInvoiceTmp.Trans_Time = DateTime.Now.TimeOfDay;
+                    salesInvoiceTmp.Division = "Divisioin";
+                    salesInvoiceTmp.Terminal = HttpContext.Session.GetString("Terminal");
+                    salesInvoiceTmp.Created_Date = DateTime.Now;
+                    salesInvoiceTmp.Created_By = User.Identity.Name;
 
 
 
-                _context.Add(salesInvoiceTmp);
+                    _context.Add(salesInvoiceTmp);
 
-                foreach (var item in salesInvoiceTmp.SalesInvoiceItems)
+                    foreach (var item in salesInvoiceTmp.SalesInvoiceItems)
+                    {
+                        item.Invoice_Id = salesInvoiceTmp.Id;
+                        item.Invoice_Number = salesInvoiceTmp.Invoice_Number;
+                        _context.SalesInvoiceItemsTmp.Add(item);
+                    }
+
+
+
+
+
+                    await _context.SaveChangesAsync();
+
+                    //if everything goes right then delete old sales invoice in background
+                    if (isExistOldSalesInvoice)
+                    {
+                        _context.SalesInvoiceTmp.Remove(oldData);
+                        _context.SaveChanges();
+                    }
+
+
+
+                    //for serverside return
+                    //if (salesInvoiceTmp.Trans_Type == "Hold")
+                    //    return RedirectToAction("Index");
+                    //else
+                    //    return RedirectToAction("Billing", new { id = salesInvoiceTmp.Id });
+                    //for api return
+                    if (salesInvoiceTmp.Trans_Type == "Save")
+                        return Ok(new { redirectUrl = "" });
+                    if (salesInvoiceTmp.Trans_Type == "Hold" || salesInvoiceTmp.Trans_Type == "Save")
+                        return Ok(new { redirectUrl = "/SalesInvoice/Landing" });
+                    else if (salesInvoiceTmp.Trans_Type == "Tax")
+                        return Ok(new { RedirectUrl = "/SalesInvoice/Billing/" + salesInvoiceTmp.Id + "?M=" + salesInvoiceTmp.MemberId + "&Mode=tax" });
+                    else
+                        return Ok(new { RedirectUrl = "/SalesInvoice/Billing/" + salesInvoiceTmp.Id + "?M=" + salesInvoiceTmp.MemberId });
+                }catch(Exception ex)
                 {
-                    item.Invoice_Id = salesInvoiceTmp.Id;
-                    item.Invoice_Number = salesInvoiceTmp.Invoice_Number;
-                    _context.SalesInvoiceItemsTmp.Add(item);
+                    return StatusCode(500, ex.InnerException);
                 }
-
-
-
-
-
-                await _context.SaveChangesAsync();
-
-                //if everything goes right then delete old sales invoice in background
-                if (isExistOldSalesInvoice)
-                {
-                    _context.SalesInvoiceTmp.Remove(oldData);
-                    _context.SaveChanges();
-                }
-
-
-
-                //for serverside return
-                //if (salesInvoiceTmp.Trans_Type == "Hold")
-                //    return RedirectToAction("Index");
-                //else
-                //    return RedirectToAction("Billing", new { id = salesInvoiceTmp.Id });
-                //for api return
-
-                if (salesInvoiceTmp.Trans_Type == "Hold" || salesInvoiceTmp.Trans_Type=="Save")
-                    return Ok(new { redirectUrl = "/SalesInvoice/Landing" });
-                else if (salesInvoiceTmp.Trans_Type == "Tax")
-                    return Ok(new { RedirectUrl = "/SalesInvoice/Billing/" + salesInvoiceTmp.Id + "?M=" + salesInvoiceTmp.MemberId + "&Mode=tax" });
-                else
-                    return Ok(new { RedirectUrl = "/SalesInvoice/Billing/" + salesInvoiceTmp.Id + "?M=" + salesInvoiceTmp.MemberId });
             }
             return View(salesInvoiceTmp);
         }
@@ -309,7 +325,7 @@ namespace POS.UI.Controllers
                         //check session
                         Settlement oldSettlement = _context.Settlement.FirstOrDefault(x => x.UserId == salesInvoice.Created_By && x.Status == "Open");
                         string sessionId = oldSettlement != null ? oldSettlement.SessionId : Guid.NewGuid().ToString();
-                        string crNumber = "";
+                        string crNumber = salesInvoice.Invoice_Number;
                         //save bill amount information
                         foreach (var item in model.bill)
                         {
@@ -435,7 +451,7 @@ namespace POS.UI.Controllers
                             accountabilitycenter = store.INITIAL,
                             assigneduserid = salesInvoice.Created_By,
                             externalDocumentNumber = crNumber,
-                            amountrounded = salesInvoice.Total_Net_Amount == salesInvoice.Total_Payable_Amount
+                            amountrounded = salesInvoice.Total_Net_Amount != salesInvoice.Total_Payable_Amount
 
                         };
 

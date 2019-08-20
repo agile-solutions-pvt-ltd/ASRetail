@@ -45,11 +45,11 @@
                                 <span class="font-weight-bold">Scheduler Status</span> :  <span id="schedulerStatus">@ViewBag.Scheduler.SchedulerDuration.Status</span>
                                 @if (@ViewBag.Scheduler.SchedulerDuration.Status == "Not Started")
                                 {
-                                    <input type="button" value="Start Scheduler" class="btn btn-sm btn-success" onclick="SyncNow('StartAllScheduler')" />
+                                <input type="button" value="Start Scheduler" class="btn btn-sm btn-success" onclick="SyncNow('StartAllScheduler')" />
                                 }
                                 else
                                 {
-                                    <input type="button" value="Stop Scheduler" class="btn btn-sm btn-success" onclick="SyncNow('StopAllScheduler')" />
+                                <input type="button" value="Stop Scheduler" class="btn btn-sm btn-success" onclick="SyncNow('StopAllScheduler')" />
                                 }
                             </div>
                         </div>
@@ -63,7 +63,7 @@
                                             <th width="70%">Type</th>
                                             <th width="20%">Interval (min)</th>
                                             <th width="10%"></th>
-                                            <th >Message</th>
+                                            <th>Message</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -74,7 +74,13 @@
                                             <td>  @ViewBag.Scheduler.SyncLog.Store</td>
                                         </tr>
                                         <tr>
-                                            <td>Customer</td>
+                                            <td>
+                                                Customer
+                                                @if (@ViewBag.IsCustomerCache)
+                                {
+                                                <span class="pcoded-badge label label-primary">Cached</span>
+                                }
+                                            </td>
                                             <td> <input type="number" class="form-control form-control-sm interval interval-Customer" value="@ViewBag.Scheduler.SchedulerDuration.Customer" /></td>
                                             <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('CustomerSync')" /></td>
                                             <td>  @ViewBag.Scheduler.SyncLog.Customer</td>
@@ -92,7 +98,16 @@
                                             <td>  @ViewBag.Scheduler.SyncLog.ProductGroup</td>
                                         </tr>
                                         <tr>
-                                            <td>Items</td>
+
+                                            <td>
+                                                Items
+                                                @if (@ViewBag.IsItemCache)
+                                {
+                                                <span class="pcoded-badge label label-primary">Cached</span>
+                                }
+
+
+                                            </td>
                                             <td> <input type="number" class="form-control form-control-sm interval interval-Items" value="@ViewBag.Scheduler.SchedulerDuration.Item" /></td>
                                             <td> <input type="button" value="Sync Now" class="btn btn-sm btn-success" onclick="SyncNow('ItemSync')" /></td>
                                             <td>  @ViewBag.Scheduler.SyncLog.Item</td>
@@ -211,14 +226,14 @@
                     ItemType: $(".interval-ItemType").val(),
                     Item: $(".interval-Items").val(),
                     ItemPrice: $(".interval-ItemPrice").val(),
-                    ItemDiscount : $(".interval-ItemDiscount").val(),
+                    ItemDiscount: $(".interval-ItemDiscount").val(),
                     ItemBarCode: $(".interval-ItemBarCode").val(),
                     Terminal: $(".interval-Terminal").val(),
                     User: $(".interval-User").val(),
                     UserRole: $(".interval-UserRoles").val(),
                     UserPermission: $(".interval-UserPermission").val(),
                     Menu: $(".interval-Menu").val(),
-                    MenuPermission : $(".interval-MenuPermission").val(),
+                    MenuPermission: $(".interval-MenuPermission").val(),
                     Status: $("#schedulerStatus").text()
                 };
 

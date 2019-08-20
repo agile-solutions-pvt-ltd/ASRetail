@@ -242,6 +242,7 @@
                         { field: "total_Discount", aggregate: "sum" },
                         { field: "total_Net_Amount", aggregate: "sum" }
                     ],
+                     sort: [{ field: "credit_Note_Number", dir: "desc" }]
                 },
                 height: 550,
                 filterable: true,
@@ -254,12 +255,12 @@
                     {
                         title: "Invoice Number",
                         field: "credit_Note_Number",
-                        filterable: false,
+                        
                     },
                     {
                         title: "Ref Number",
                         field: "reference_Number",
-                        filterable: false,
+                       
                     },
                     {
                         field: "trans_Date_Ad",

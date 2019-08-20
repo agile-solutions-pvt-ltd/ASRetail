@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using POS.Core;
 using POS.DTO;
@@ -19,10 +20,12 @@ namespace POS.UI.Controllers
     {
         private readonly EntityCore _context;
         private readonly IMapper _mapper;
-        public CreditNoteController(EntityCore context, IMapper mapper)
+        private ILogger _logger;
+        public CreditNoteController(EntityCore context, IMapper mapper, ILoggerFactory loggerFactory)
         {
             _mapper = mapper;
             _context = context;
+            _logger = loggerFactory.CreateLogger<CreditInvoiceController>();
         }
 
 
@@ -81,7 +84,9 @@ namespace POS.UI.Controllers
                     SalesInvoice invoice = _context.SalesInvoice.FirstOrDefault(x => x.Invoice_Number == creditNote.Reference_Number.Trim());
                     invoice.Remarks = "Return";
                     _context.Entry(invoice).State = EntityState.Modified;
-
+                    InvoiceMaterializedView invoiceMaterializedViewOld = _context.InvoiceMaterializedView.FirstOrDefault(x => x.BillNo == creditNote.Reference_Number.Trim());
+                    invoiceMaterializedViewOld.IsBillActive = false;
+                    _context.Entry(invoiceMaterializedViewOld).State = EntityState.Modified;
 
 
                     InvoiceMaterializedView view = new InvoiceMaterializedView()
@@ -129,7 +134,9 @@ namespace POS.UI.Controllers
                         locationcode = store.INITIAL,
                         accountabilitycenter = store.INITIAL,
                         assigneduserid = creditNote.Created_By,
-                        invoiceno = creditNote.Reference_Number
+                        externalDocumentNumber = creditNote.Reference_Number,
+                        amountrounded = creditNote.IsRoundup,
+                        returnremarks = creditNote.Credit_Note
 
                     };
                     _context.InvoiceMaterializedView.Add(view);
@@ -137,7 +144,7 @@ namespace POS.UI.Controllers
 
                     //post to ird
                     //background task
-                    var jobId = BackgroundJob.Enqueue(() => SendDataToIRD(creditNote, store));
+                    BackgroundJob.Enqueue(() => SendDataToIRD(creditNote, store));
                     //Send data to NAV
                     NavPostData navPostData = new NavPostData(_context, _mapper);
                     BackgroundJob.Enqueue(() => navPostData.PostCreditNote(navCreditMemo));
@@ -177,7 +184,7 @@ namespace POS.UI.Controllers
                 {
                     return StatusCode(400, new { Message = "Already Claimed !!" });
                 }
-                else if (creditNote != null && creditNote.Trans_Date_Ad.Value < DateTime.Now.AddDays(-7))
+                else if (creditNote != null && creditNote.Trans_Date_Ad.Value < DateTime.Now.AddDays(-30))
                 {
                     return StatusCode(400, new { Message = "Credit Note Expired !!" });
                 }

@@ -33,8 +33,11 @@ namespace POS.UI.Helper
         public static void Write(Config model)
         {
             string json = JsonConvert.SerializeObject(model, Formatting.Indented);
-            //write string to file
-            System.IO.File.WriteAllText(_path, json);
+            if (!string.IsNullOrEmpty(json))
+            {
+                //write string to file
+                System.IO.File.WriteAllText(_path, json);
+            }
         }
     }
 }

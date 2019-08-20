@@ -54,7 +54,7 @@ namespace POS.Core
         public virtual DbSet<ItemBarCode> ItemBarCode { get; set; }
         public virtual DbSet<ItemPrice> ItemPrice { get; set; }
         public virtual DbSet<ItemDiscount> ItemDiscount { get; set; }
-
+        public virtual DbSet<ItemUpdateTrigger> ItemUpdateTrigger { get; set; }
 
 
 

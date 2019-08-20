@@ -6,12 +6,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using POS.Core;
 using POS.DTO;
 using POS.UI.Helper;
 using POS.UI.Sync;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -26,7 +28,8 @@ namespace POS.UI.Controllers
         private readonly IMapper _mapper;
         private IMemoryCache _cache;
         public IConfiguration Configuration { get; }
-        public SettingsController(EntityCore context, IConfiguration configuration, IMapper mapper, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, IMemoryCache memoryCache)
+        private ILogger _logger;
+        public SettingsController(EntityCore context, IConfiguration configuration, IMapper mapper, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, IMemoryCache memoryCache, ILoggerFactory loggerFactory)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -34,6 +37,7 @@ namespace POS.UI.Controllers
             _mapper = mapper;
             _cache = memoryCache;
             Configuration = configuration;
+            _logger = loggerFactory.CreateLogger<SettingsController>();
         }
 
 
@@ -90,6 +94,21 @@ namespace POS.UI.Controllers
         public IActionResult SchedulerSetup()
         {
             ViewData["Scheduler"] = ConfigJSON.Read();
+            IList<Customer> customer;
+            _cache.TryGetValue("Customers", out customer);
+            if (customer != null)
+                ViewData["IsCustomerCache"] = true;
+            else
+                ViewData["IsCustomerCache"] = false;
+
+            IList<ItemViewModel> item;
+            _cache.TryGetValue("ItemViewModel", out item);
+            if (item != null)
+                ViewData["IsItemCache"] = true;
+            else
+                ViewData["IsItemCache"] = false;
+
+
             return View();
         }
 
@@ -125,9 +144,10 @@ namespace POS.UI.Controllers
         {
             NavPostData sync = new NavPostData(_context, _mapper);
             Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
-            sync.PostSalesInvoice(store);
-           
+            //sync.PostSalesInvoice(store);
+            //sync.PostSalesInvoice(store);
             BackgroundJob.Enqueue(() => sync.PostSalesInvoice(store));
+           // BackgroundJob.Enqueue(() => Console.WriteLine("test from background"));
             var data = new
             {
                 Status = 200,
@@ -135,6 +155,32 @@ namespace POS.UI.Controllers
             };
             return Ok(data);
         }
+        public IActionResult PostCreditNoteToNAV()
+        {
+            NavPostData sync = new NavPostData(_context, _mapper);
+            Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
+            //sync.PostSalesInvoice(store);
+
+            BackgroundJob.Enqueue(() => sync.PostCreditNote(store));
+            var data = new
+            {
+                Status = 200,
+                Message = "Success"
+            };
+            return Ok(data);
+        }
+        public IActionResult PostCustomerToNAV()
+        {
+            NavPostData sync = new NavPostData(_context, _mapper);
+            BackgroundJob.Enqueue(() => sync.PostCustomer());
+            var data = new
+            {
+                Status = 200,
+                Message = "Success"
+            };
+            return Ok(data);
+        }
+
 
 
         ////////********** scheduling jobs

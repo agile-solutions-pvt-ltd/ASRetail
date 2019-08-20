@@ -40,6 +40,8 @@ namespace POS.UI.Controllers
 
             var denomination = await _context.Denomination.FindAsync(id);
             TempData["Startingdate"] = denomination.Date.ToShortDateString();
+            var terminal = HttpContext.Session.GetString("TerminalId");
+            ViewData["Terminal_Id"] = new SelectList(_context.Terminal, "Id", "Name", terminal);
             if (denomination == null)
             {
                 return NotFound();
@@ -67,6 +69,11 @@ namespace POS.UI.Controllers
         {
             if (ModelState.IsValid)
             {
+
+                if (denomination.Date.ToShortDateString() != System.DateTime.Now.ToShortDateString())
+                {
+                    return StatusCode(400, "Date not Up-to-Date !!");
+                }
                 //check if Session present
                 denomination.User_Id = User.Identity.Name;
                 IList<Settlement> settlementData = _context.Settlement.Where(x => x.UserId == denomination.User_Id).ToList();

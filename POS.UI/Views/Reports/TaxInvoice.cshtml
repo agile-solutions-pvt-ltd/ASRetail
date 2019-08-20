@@ -228,7 +228,7 @@
                     schema: {
                         model: {
                             fields: {
-                                trans_Date_AD: { type: "date" },
+                                trans_Date_Ad: { type: "date" },
                                 total_Gross_Amount: { type: "number" },
                                 total_Discount: { type: "number" },
                                 total_Net_Amount: { type: "number" },
@@ -251,8 +251,8 @@
                     serverSorting: true,
                     serverAggregates: true,
                     group: {
-                        field: "trans_Date_AD", aggregates: [
-                            { field: "trans_Date_BS", aggregate: "count" },
+                        field: "trans_Date_Ad", aggregates: [
+                            { field: "trans_Date_Bs", aggregate: "count" },
                             { field: "total_Gross_Amount", aggregate: "sum" },
                             { field: "total_Discount", aggregate: "sum" },
                             { field: "total_Net_Amount", aggregate: "sum" },
@@ -284,7 +284,7 @@
 
 
                     ],
-
+                    sort: [{ field: "invoice_Number", dir: "desc" }]
                 },
                 filterable: true,
                 sortable: true,
@@ -305,11 +305,11 @@
                         field: "invoice_Number"
                     },
                     {
-                        field: "trans_Date_AD",
+                        field: "trans_Date_Ad",
                         title: "Date",
                         format: "{0:MM/dd/yyyy}",
                     }, {
-                        field: "trans_Date_BS",
+                        field: "trans_Date_Bs",
                         title: "BS",
                         footerAttributes: {
                             "class": "p-1 text-right"

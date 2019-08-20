@@ -48,6 +48,7 @@
 
                             <input type="hidden" asp-for="TerminalId" value="0" />
                             <input type="hidden" asp-for="TerminalName" value="" />
+                           <input type="text" name="ClientDate" id="ClientDate" value="" class="sr-only"/>
                             <div asp-validation-summary="All" class="text-danger"></div>
                             <div class="form-group">
                                 <label class="col-md-12 control-label">UserName / Email</label>
@@ -92,6 +93,7 @@
 @section Scripts {
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 <script>
+    $("#ClientDate").val(FormatForDisplay(new Date()));
     GetClientLocalIP(function (ip) {
         
                 $(".ipAddress").text(ip);

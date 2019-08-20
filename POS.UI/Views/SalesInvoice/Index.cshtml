@@ -331,7 +331,7 @@
                                         <div class="col-md-12">
                                             <div class="form-group input-wrapper">
                                                 <input type="text" name="item_code" id="item_code" class="form-control" placeholder="Enter Bar Code ..." autocomplete="off">
-                                                <i class="fa fa-barcode input-icon"></i>
+                                                <i id="barcodeloading" class="fa fa-barcode input-icon"></i>
                                                 <label id="itemNotFoundLabel">Item Not Found !! Try different Bar Code !!!!</label>
                                             </div>
                                         </div>
@@ -403,9 +403,8 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
-    <script>
-
-       // var customerList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Customer));
+    <script>       
+    var store = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Store));
     var salesInvoiceTmpData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
     </script>
     <script src="~/js/Page/SalesInvoice.js" asp-append-version="true"></script>

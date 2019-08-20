@@ -3,12 +3,12 @@
     let salesItems = [];
     var isFirstTimeLoadItem = true;
     var invoiceExpiredDays = 30;
-    var table = document.getElementById("item_table").getElementsByTagName('tbody')[0];
+    var table = document.getElementById("item_table").getElementsByTagName('tbody')[0];   
     let $form = $('form#Credit_Note_Form');
     let taxPercent = 13;
    
     let init = () => {
-        console.log("isredeem", document.getElementById('isRedeemed').value)
+        //console.log("isredeem", document.getElementById('isRedeemed').value)
         $('input[type="checkbox"]').click(function () {
             if ($(this).prop("checked") == true) {
                 document.getElementById('isRedeemed').value = 'true';
@@ -120,10 +120,11 @@
         AssignKeyEvent();
     };
     let loadInvoice = (invoiceNumber) => {
+        kendo.ui.progress($("#item_table"), true);
         if (validateInvoiceNumber(invoiceNumber)) {
             getInvoice(invoiceNumber, function (data) {
-                if (validateInvoiceData(data.invoiceData)) {
-                    debugger;
+                if (validateInvoiceData(data.invoiceData)) {                   
+                    globalData = data;
                     salesItems = data.invoiceData.salesInvoiceItems;
                     resetTransactionData();
                     loadPausedTransactionData(data.invoiceData);
@@ -139,7 +140,7 @@
                     $("#Reference_Number").val(data.invoiceData.invoice_Number);
                     $("#Trans_Type").val(data.invoiceData.trans_Type);
                     $("#totalNetAmount").text(CurrencyFormat(data.invoiceData.total_Payable_Amount));
-
+                    kendo.ui.progress($("#item_table"), false);
                 }
             });
         }
@@ -151,6 +152,7 @@
             complete: function (data) {
 
                 if (data.status !== 200) {
+                    kendo.ui.progress($("#item_table"), false);
                     $("#itemNotFoundLabel").show();
                     setTimeout(function () { $("#itemNotFoundLabel").hide(); }, 9000);
 
@@ -172,11 +174,13 @@
 
         if (data.remarks === "Return") {
             displayError("Error: Already Return !! \n You can only return one time of this purchase !!");
+            kendo.ui.progress($("#item_table"), false);
             return false;
         }
 
         if (transDate < compareDate) {
-            displayError("Expired: You can only return within " + invoiceExpiredDays +" days of purchase !!");
+            displayError("Expired: You can only return within " + invoiceExpiredDays + " days of purchase !!");
+            kendo.ui.progress($("#item_table"), false);
             return false;
         }
 
@@ -193,7 +197,7 @@
         //isFirstTimeLoadItem = false;
         $.each(table.rows, function (i, v) {
             if (parseFloat($(this).find(".Quantity").val()) >= parseFloat($(this).find(".Quantity").attr("max"))) {
-                displayError("Return quantity cannot be greater than sales quantity !!");
+               // displayError("Return quantity cannot be greater than sales quantity !!");
                 $(this).find(".Quantity").val($(this).find(".Quantity").attr("max"));
                 isValid = false;
                 return false;
@@ -279,7 +283,7 @@
                 var promoDiscount = parseFloat($(this).find(".Discount").data("promodiscount") || 0);
                 var loyaltyDiscount = parseFloat($(this).find(".Discount").data("loyaltydiscount") || 0);
                 var discountPercent = parseFloat($(this).find(".Discount").data("discountpercent") || 0);
-                debugger;
+               
 
                 var tax = $(this).find(".Tax").val() || 0;
                 let taxable = $(this).find(".Tax").data("isvatable");
@@ -296,9 +300,9 @@
 
                     totalQuantity += quantity;
                     totalDiscount += parseFloat(discount.toFixed(2));
-                    totalTax += tax;
+                    //totalTax += tax;
                     totalGrossAmount += grossAmount;
-                    totalNetAmount += netAmount;
+                    //totalNetAmount += netAmount;
 
 
                     //calc taxable and non taxable
@@ -307,13 +311,22 @@
                     //else {
                     //    totalNonTaxableAmount += rate * quantity;
                     //}
+                   
 
                     //new logic
+                    //if (taxable)
+                    //    totalTaxableAmount += parseFloat(parseFloat((rateExcludeVat * quantity).toFixed(2)) - parseFloat(discount.toFixed(2)).toFixed(2))// parseFloat(((rateExcludeTax - discountExcVat) * quantity).toFixed(2));
+                    //else {
+                    //    totalNonTaxableAmount += parseFloat((rateExcludeVat * quantity).toFixed(2));
+                    //}
+
+                    //new new logic
+                    var grossRateN = parseFloat((rateExcludeVat * quantity).toFixed(2));
+                    var grossDiscountN = parseFloat((grossRateN * discountPercent / 100).toFixed(2));
                     if (taxable)
-                        totalTaxableAmount += parseFloat(parseFloat((rateExcludeVat * quantity).toFixed(2)) - parseFloat(discount.toFixed(2)).toFixed(2))// parseFloat(((rateExcludeTax - discountExcVat) * quantity).toFixed(2));
-                    else {
-                        totalNonTaxableAmount += parseFloat((rateExcludeVat * quantity).toFixed(2));
-                    }
+                        totalTaxableAmount += parseFloat(grossRateN - grossDiscountN);// parseFloat(((rateExcludeTax - discountExcVat) * quantity).toFixed(2));
+                    else
+                        totalNonTaxableAmount += parseFloat(grossRateN - grossDiscountN);
 
 
                     //for promo or loyalty discount
@@ -326,18 +339,23 @@
                     $(this).find(".GrossAmount").val(grossAmount.toFixed(2));
                     $(this).find(".NetAmount").val(netAmount.toFixed(2));
                     $(this).find(".Discount").val(discount.toFixed(2));
-                    
                     $(this).find(".Tax").val(tax.toFixed(2));
-                    //assign total
-                    $("#totalQuantity").text(NumberFormat(totalQuantity));
-                    $("#totalGrossAmount").text(CurrencyFormat(totalGrossAmount));
-                    $("#totalDiscount").text(CurrencyFormat(totalDiscount));
-                    $("#totalTax").text(CurrencyFormat(totalTax));
-                    $("#totalNetAmount").text(CurrencyFormat(totalNetAmount));
+                   
 
                 }
 
             });
+
+            totalTax = totalTaxableAmount * 13 / 100;
+            totalNetAmount = totalTaxableAmount + totalNonTaxableAmount + parseFloat(totalTax.toFixed(2));
+
+
+            //assign total
+            $("#totalQuantity").text(NumberFormat(totalQuantity));
+            $("#totalGrossAmount").text(CurrencyFormat(totalGrossAmount));
+            $("#totalDiscount").text(CurrencyFormat(totalDiscount));
+            $("#totalTax").text(CurrencyFormat(totalTax));
+            $("#totalNetAmount").text(CurrencyFormat(totalNetAmount));
         }
         else {
             //assign total
@@ -524,7 +542,7 @@
 
         var membershipDiscount = calcDiscount(result.membershipDiscount || 0, quantity);
 
-
+        row.title = "Item Code: " + itemCode;
         $('<i class="sn font-weight-bold">' + table.rows.length + '</i>').appendTo(cell1);
         $("<span class='barcode'>" + barCode + "</span>").appendTo(cell2);
         $("<span class='itemName' data-item-id='" + itemId + "' data-item-code= '" + itemCode + "'>" + itemName + "</span>").appendTo(cell3);
@@ -603,6 +621,9 @@
                 if (result) {
                     SaveCreditNote();
                 }
+                else {
+                    $("#SaveButton").attr("disabled", false);
+                }
                
 
             }
@@ -619,11 +640,12 @@
 
         //validate
         if (!$('form#Credit_Note_Form').valid()) {
+            $("#SaveButton").attr("disabled", false);
             return false;
         }
 
         debugger;
-        console.log("isredeem", document.getElementById('isRedeemed').value)
+        //console.log("isredeem", document.getElementById('isRedeemed').value)
         //get items
         var table = $("#item_table");
         var invoiceItems = [];

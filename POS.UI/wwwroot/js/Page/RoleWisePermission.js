@@ -109,7 +109,7 @@
         var selectedNodesFinal = [];
         _.each(selectedNodes, function (val) {
             selectedNodesFinal.push({
-                RoleId: $("#roleWiseUserPermission_RoleId").val(),
+                RoleId: $("#roleWiseUserPermission_RoleId :selected").text(),
                 MenuId: val.id
             });
         });
@@ -117,7 +117,7 @@
         let data = {
             roleWiseUserPermission: {
 
-                RoleId: $("#roleWiseUserPermission_RoleId").val(),
+                RoleId: $("#roleWiseUserPermission_RoleId :selected").text(),
                 Sales_Discount_Flat_Item: $("#roleWiseUserPermission_Sales_Discount_Flat_Item").is(":checked"),
                 Sales_Discount_Line_Item: $("#roleWiseUserPermission_Sales_Discount_Line_Item").is(":checked"),
                 Sales_Discount_Flat_Item_Limit: $("#roleWiseUserPermission_Sales_Discount_Flat_Item_Limit").val() || 0,

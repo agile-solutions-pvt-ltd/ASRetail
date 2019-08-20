@@ -119,7 +119,7 @@ namespace POS.DTO
               .ForMember(dest => dest.phoneNumber, opts => opts.MapFrom(src => src.Mobile1))
               .ForMember(dest => dest.taxRegistrationNumber, opts => opts.MapFrom(src => src.Vat))
               .ForMember(dest => dest.Address, opts => opts.MapFrom(src => src.Address))
-               .ForMember(dest => dest.Registration_Date, opts => opts.MapFrom(src => ((DateTime)src.Registration_Date).ToString("yyyy-MM-dd")))
+               .ForMember(dest => dest.Registration_Date, opts => opts.MapFrom(src => ((DateTime)src.Registration_Date.Value).ToString("yyyy-MM-dd")))
                 .ForMember(dest => dest.VAT_Bus_Posting_Group, opts => opts.MapFrom(src => "SALE-LOCAL"))
                .ForMember(dest => dest.generalbuspostinggrp, opts => opts.MapFrom(src => "LOCAL"))
                 .ForMember(dest => dest.Customer_Posting_Group, opts => opts.MapFrom(src => "MEMBER"))

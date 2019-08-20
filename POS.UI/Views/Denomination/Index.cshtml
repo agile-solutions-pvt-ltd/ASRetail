@@ -70,38 +70,38 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                
+
                                 @foreach (var item in Model)
                                 {
-                                <tr>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.Terminal.Name)
-                                    </td>
-                                    <td>
-                                        @item.Date.ToString("dd MMM, yyyy")
-                                    </td>
+                                    <tr>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Terminal.Name)
+                                        </td>
+                                        <td>
+                                            @item.Date.ToString("dd MMM, yyyy")
+                                        </td>
 
-                                    <td >
-                                        @Html.DisplayFor(modelItem => item.Card)
-                                    </td>
-                                    <td >
-                                        @Html.DisplayFor(modelItem => item.Credit)
-                                    </td>
-                                    <td >
-                                        @Html.DisplayFor(modelItem => item.CreditNote)
-                                    </td>
-                                    <td >
-                                        @Html.DisplayFor(modelItem => item.TotalCash)
-                                    </td>
-                                    <td >
-                                        @Html.DisplayFor(modelItem => item.Total)
-                                    </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Card)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Credit)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.CreditNote)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.TotalCash)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Total)
+                                        </td>
 
-                                    <td>
-                                        <a asp-action="Edit" asp-route-id="@item.Id">Details</a>
+                                        <td>
+                                            <a asp-action="Edit" asp-route-id="@item.Id">Details</a>
 
-                                    </td>
-                                </tr>
+                                        </td>
+                                    </tr>
                                 }
                             </tbody>
                         </table>
@@ -115,6 +115,7 @@
 
 
 @section Scripts {
+    <script src="~/lib/kendo-ui/kendo.all.min.js"></script>
     <script>
         var table = document.getElementById("grid").getElementsByTagName('tbody')[0];
         $.each(table.rows, function (i, v) {
