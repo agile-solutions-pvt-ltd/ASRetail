@@ -19,10 +19,12 @@ namespace POS.DTO
         public string NavUserName { get; set; }
         public string NavPassword { get; set; }
         // public string IRDBillUrl { get; set; }
+        public bool StopPostingIRD { get; set; } = false;
         public bool StopInvoicePosting { get; set; }
         public bool StopCreditNotePosting { get; set; }
         public bool StopCustomerPosting { get; set; }
-
+        public string OfficeHourStart { get; set; } = "16:00:00.3041840";
+        public string OfficeHourEnd { get; set; } = "21:00:00.3041840";
 
         public string Location { get; set; }
 

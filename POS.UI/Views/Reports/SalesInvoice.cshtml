@@ -1,58 +1,9 @@
 ﻿@model IEnumerable<POS.DTO.SalesInvoice>
-
 @{
     ViewData["Title"] = "Sales Invoice Reports";
 }
-
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-
-<style type="text/css">
-    .k-grid {
-        font-family: "DejaVu Sans", "Arial", sans-serif;
-    }
-
-    .disabled-link {
-        color: Gray;
-    }
-
-    /* Page Template for the exported PDF */
-    .page-template {
-        font-family: "DejaVu Sans", "Arial", sans-serif;
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        top: 0;
-        left: 0;
-    }
-
-        .page-template .header {
-            position: absolute;
-            top: 30px;
-            left: 30px;
-            right: 30px;
-            border-bottom: 1px solid #888;
-            color: #888;
-        }
-
-        .page-template .footer {
-            position: absolute;
-            bottom: 30px;
-            left: 30px;
-            right: 30px;
-            border-top: 1px solid #888;
-            text-align: center;
-            color: #888;
-        }
-
-        .page-template .watermark {
-            font-weight: bold;
-            font-size: 400%;
-            text-align: center;
-            margin-top: 30%;
-            color: #aaaaaa;
-            opacity: 0.1;
-            transform: rotate(-35deg) scale(1.7, 1.5);
-        }
+<style>
 
     .button {
         background-color: #4CAF50;
@@ -61,22 +12,21 @@
         padding: 6px 32px;
         text-align: center;
         text-decoration: none;
-        display: inline-block;
+        display: inline - block;
         font-size: 16px;
         margin: 4px 2px;
         cursor: pointer;
     }
+
+    .disabled-link {
+        color: Gray;
+    }
 </style>
-
-<!-- Load Pako ZLIB library to enable PDF compression -->
-<script src="~/lib/kendo-ui/pako_deflate.min.js"></script>
-
 <div class="page-wrapper">
     <div class="page-header">
         <div class="page-header-title">
             <h4>@ViewData["Title"]</h4>
         </div>
-
         <div class="page-header-breadcrumb">
             <ul class="breadcrumb-title">
                 <li class="breadcrumb-item">
@@ -84,18 +34,15 @@
                         <i class="icofont icofont-home"></i>
                     </a>
                 </li>
-
                 <li class="breadcrumb-item">
                     <a href="#!">Report</a>
                 </li>
-
                 <li class="breadcrumb-item">
                     <a href="#!">@ViewData["Title"]</a>
                 </li>
             </ul>
         </div>
     </div>
-
     <div class="page-body">
         <div class="row">
             <div class="col-sm-12">
@@ -107,14 +54,11 @@
                             EndDate: <input type="text" id="enddatepicker" />
                             <button class="button" onclick="DateFilter()">Preview</button>
                         </p>
-
                         <div id="grid"></div>
-
                         <script type="x/kendo-template" id="page-template">
                             <div class="page-template">
                                 <div class="header">
                                     <div style="float: right">Page #: pageNum # of #: totalPages #</div>
-
                                 </div>
                                 @*<div class="watermark">KENDO UI</div>*@
                                 <div class="footer">
@@ -122,7 +66,6 @@
                                 </div>
                             </div>
                         </script>
-
                         <script type="x/kendo-template" id="item-template">
                             <div class="items"></div>
                         </script>
@@ -132,10 +75,8 @@
         </div>
     </div>
 </div>
-
 @section Scripts {
     <script src="~/lib/kendo-ui/kendo.all.min.js"></script>
-
     <script type="text/javascript">
 
         var store = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Store));
@@ -170,6 +111,7 @@
         $(function () {
             $("#startdatepicker").datepicker({
                 onSelect: function (date) {
+                    //ate = new date();
                     startdate = date;
                 }
             }).on("change", function () {
@@ -187,6 +129,41 @@
             $('#enddatepicker').datepicker('setDate', 'enddate');
         });
 
+        function printInvoice(evt) {
+            $(evt).addClass('disabled-link').removeAttr('onclick');
+            var invoiceData = $("#grid").data("kendoGrid").dataItem(evt.closest("tr"));
+
+            $.ajax({
+                url: window.location.origin + "/Print/GetPrintCount?invoiceNumber=" + invoiceData.invoice_Number,
+                type: 'POST',
+                complete: function (result) {
+
+                    if (result.status === 200) {
+                        var data = {
+                            invoiceData: invoiceData,
+                            storeData: store,
+                            copy: result.responseJSON.printCount,
+                            billData: result.responseJSON.billData,
+                            paymentMode: result.responseJSON.paymentMode
+                        };
+
+                        printer.PrintInvoice(data, function () {
+                            ////update printcount
+                            //$.ajax({
+                            //    url: window.location.origin + "/Print/UpdatePrintCount?invoiceNumber=" + data.invoiceData.invoice_Number,
+                            //    type: 'POST',
+                            //    complete: function (result) {
+                            //    }
+                            //});
+                        });
+                    }
+                    setTimeout(function () {
+                        $(evt).removeClass('disabled-link').attr('onclick', 'printInvoice(this)');
+                    }, 5000);
+                }
+            });
+        }
+
         function detailInit(e) {
             var detailRow = e.detailRow;
             detailRow.find(".items").kendoGrid({
@@ -202,158 +179,13 @@
                     { field: "name", title: "Item Name" },
                     { field: "quantity", title: "Quantity", width: "10%" },
                     { field: "rate", title: "Rate", width: "15%" },
-                    { field: "discount", title: "Discount", width: "10%"},
+                    { field: "discount", title: "Discount", width: "10%" },
                     { field: "gross_Amount", title: "Amount", width: "15%" }
                 ]
             });
         }
 
         function startup() {
-           
-            //$("#grid").kendoGrid({
-            //    toolbar: ["pdf", "excel"],
-            //    pdf: {
-            //        allPages: true,
-            //        avoidLinks: true,
-            //        paperSize: "A4",
-            //        margin: { top: "2cm", left: "1cm", right: "1cm", bottom: "1cm" },
-            //        landscape: true,
-            //        repeatHeaders: true,
-            //        template: $("#page-template").html(),
-            //        scale: 0.8
-            //    },
-            //    excel: {
-            //        fileName: "ABBREVIATED TAX INVOICE Report.xlsx",
-            //        proxyURL: window.location.origin + "/Reports/Excel_Export_Save",
-            //        filterable: true
-            //    },
-            //    dataSource: {
-            //        transport: {
-            //            read: window.location.origin + "/Reports/SalesInvoiceApi?startdate=" + startdate + "&enddate=" + enddate,
-            //            dataType: "json",
-            //            type: "POST"
-
-            //        },
-            //        schema: {
-            //            model: {
-            //                fields: {
-            //                    trans_Date_Ad: { type: "date" },
-            //                    total_Gross_Amount: { type: "number" },
-            //                    total_Discount: { type: "number" },
-            //                    total_Net_Amount: { type: "number" }
-            //                }
-            //            },
-            //            data: function (data) {
-            //                return data;
-            //            }
-            //        },
-
-                    
-            //        pageSize: 100,
-            //        group: {
-            //            field: "trans_Date_Ad", aggregates: [
-            //                { field: "trans_Date_Bs", aggregate: "count" },
-            //                { field: "total_Gross_Amount", aggregate: "sum" },
-            //                { field: "total_Discount", aggregate: "sum" },
-            //                { field: "total_Net_Amount", aggregate: "sum" }
-            //            ],
-            //            dir: "desc"
-            //        },
-            //        aggregate: [
-            //            { field: "total_Gross_Amount", aggregate: "sum" },
-            //            { field: "total_Discount", aggregate: "sum" },
-            //            { field: "total_Net_Amount", aggregate: "sum" }
-            //        ],
-            //    },
-            //    height: 550,
-            //    filterable: true,
-            //    sortable: true,
-            //    pageable: {
-            //        pageSizes: [100, 200, 400,500,1000, "all"],
-            //        numeric: false
-            //    },
-            //    resizable: true,
-            //    detailTemplate: kendo.template($("#item-template").html()),
-            //    detailInit: detailInit,
-            //    columns: [
-            //        {
-            //            title: "Invoice Number",
-            //            field: "invoice_Number"
-            //        },
-            //        {
-            //            field: "trans_Date_Ad",
-            //            title: "Date",
-            //            format: "{0:MM/dd/yyyy}",
-            //        }, {
-            //            field: "trans_Date_Bs",
-            //            title: "BS",
-            //            footerAttributes: {
-            //                "class": "p-1 text-right"
-            //            },
-            //            groupFotterAttributes: {
-            //                "class": "p-1 text-right"
-            //            },
-            //            groupFooterTemplate: "Count: #: count #",
-            //            footerTemplate: "Total"
-            //        },
-            //        {
-            //            field: "total_Gross_Amount",
-            //            title: "Gross Amount",
-            //            attributes: {
-            //                "class": "p-1 text-right"
-            //            },
-            //            footerAttributes: {
-            //                "class": "p-1 text-right"
-            //            },
-            //            groupFotterAttributes: {
-            //                "class": "p-1 text-right"
-            //            },
-            //            template: "#: CurrencyFormat(total_Gross_Amount) #",
-            //            groupFooterTemplate: "#: CurrencyFormat(sum) #",
-            //            footerTemplate: "#: CurrencyFormat(sum) #",
-            //        },
-            //        {
-            //            field: "total_Discount",
-            //            title: "Discount",
-            //            attributes: {
-            //                "class": "p-1 text-right"
-            //            },
-            //            footerAttributes: {
-            //                "class": "p-1 text-right"
-            //            },
-            //            groupFotterAttributes: {
-            //                "class": "p-1 text-right"
-            //            },
-            //            template: "#: CurrencyFormat(total_Discount) #",
-            //            groupFooterTemplate: "#: CurrencyFormat(sum) #",
-            //            footerTemplate: "#: CurrencyFormat(sum) #",
-            //        },
-            //        {
-            //            field: "total_Net_Amount",
-            //            title: "Net Amount",
-            //            attributes: {
-            //                "class": "p-1 text-right"
-            //            },
-            //            footerAttributes: {
-            //                "class": "p-1 text-right"
-            //            },
-            //            groupFotterAttributes: {
-            //                "class": "p-1 text-right"
-            //            },
-            //            template: "#: CurrencyFormat(total_Net_Amount) #",
-            //            groupFooterTemplate: "#: CurrencyFormat(sum) #",
-            //            footerTemplate: "#: CurrencyFormat(sum) #",
-            //        },
-            //        {
-            //            title: "Action",
-            //            attributes: {
-            //                "class": "p-1 text-right"
-            //            },
-            //            template: '<a href="javascript:void(0)" class="print" onclick="printInvoice(this)">Print</a>'
-            //        }
-            //    ]
-            //});
-           
             $("#grid").kendoGrid({
                 height: CalcGridHeight(),
                 toolbar: ["pdf", "excel"],
@@ -370,9 +202,15 @@
                 excel: {
                     fileName: "ABBREVIATED TAX INVOICE Report.xlsx",
                     proxyURL: window.location.origin + "/Reports/Excel_Export_Save",
-                    filterable: true
+                    filterable: true,
+                    allPages: true
                 },
+                excelExport: function (e) {
+                    
+            kendo.ui.progress(this.element, false);
+          },
                 dataSource: {
+
                     transport: {
                         read: {
                             url: "/Reports/SalesInvoiceApi?startdate=" + startdate + "&enddate=" + enddate,
@@ -391,22 +229,19 @@
                                 cash: { type: "number" },
                                 credit: { type: "number" },
                                 credit_Note: { type: "number" }
-                                
+
                             }
                         },
                         data: "data",
                         total: "total",
-                        
-                        aggregates: function (response) {
-                            return response.grossAmountTotal;
-                        }
-                        
-                       
+                        grossAmountTotal: "grossAmountTotal"
+
+
                     },
-                    pageSize: 100,
+                    pageSize:25 ,
                     serverPaging: true,
-                    serverFiltering: true,
-                    serverSorting: true,
+                    serverFiltering: false,
+                    serverSorting: false,
                     serverAggregates: true,
                     group: {
                         field: "trans_Date_Ad", aggregates: [
@@ -418,7 +253,7 @@
                             { field: "cash", aggregate: "sum" },
                             { field: "credit", aggregate: "sum" },
                             { field: "credit_Note", aggregate: "sum" }
-                            
+
 
 
 
@@ -433,13 +268,16 @@
                         { field: "cash", aggregate: "sum" },
                         { field: "credit", aggregate: "sum" },
                         { field: "credit_Note", aggregate: "sum" },
-                        { field: "grossAmountTotal", aggregate: "max" },
+                        { field: "grossAmountTotal", aggregate: "sum" },
+
+
+
 
 
 
                     ],
                     sort: [{ field: "invoice_Number", dir: "desc" }]
-                
+
                 },
                 filterable: true,
                 sortable: true,
@@ -448,12 +286,12 @@
                         empty: "No items to display"
                     },
                     refresh: true,
-                    pageSizes: [100, 200, 400, 500, 1000],
+                    pageSizes: [25, 100, 200, 500, 1000],
                     buttonCount: 5
                 },
-                    resizable: true,
-            detailTemplate: kendo.template($("#item-template").html()),
-             detailInit: detailInit,
+                resizable: true,
+                detailTemplate: kendo.template($("#item-template").html()),
+                detailInit: detailInit,
                 columns: [
                     {
                         title: "Invoice Number",
@@ -463,6 +301,7 @@
                         field: "trans_Date_Ad",
                         title: "Date",
                         format: "{0:MM/dd/yyyy}",
+                       // groupHeaderTemplate:  "#= value # | date:localeShortDate + ' HH:mm:ss'"
                     }, {
                         field: "trans_Date_Bs",
                         title: "BS",
@@ -472,6 +311,7 @@
                         groupFotterAttributes: {
                             "class": "p-1 text-right"
                         },
+                       // groupHeaderTemplate: "Units In Stock: #= value # (Count: #= count#)"
                         groupFooterTemplate: "Count: #: count #",
                         //footerTemplate: "Total"
                     },
@@ -553,9 +393,9 @@
                         },
                         template: "#: CurrencyFormat(total_Gross_Amount) #",
                         groupFooterTemplate: "#: CurrencyFormat(sum) #",
-                        //footerTemplate: "#: CurrencyFormat(aggregates) #",
+                        //footerTemplate: "#: CurrencyFormat(sum) #",
 
-                        
+
                     },
                     {
                         field: "total_Discount",
@@ -598,50 +438,20 @@
                     }
                 ],
             });
-            $("#grid").data("kendoGrid").refresh();
             // $(".k-grid-content").css("overflow-y", "hidden").mCustomScrollbar();
-        }
+            $(".k-grid-excel")[0].onmousedown = function (e) {
 
-        function printInvoice(evt) {
-            $(evt).addClass('disabled-link').removeAttr('onclick');
-            var invoiceData = $("#grid").data("kendoGrid").dataItem(evt.closest("tr"));
-
-            $.ajax({
-                url: window.location.origin + "/Print/GetPrintCount?invoiceNumber=" + invoiceData.invoice_Number,
-                type: 'POST',
-                complete: function (result) {
-                    debugger;
-                    if (result.status === 200) {
-                        var data = {
-                            invoiceData: invoiceData,
-                            storeData: store,
-                            copy: result.responseJSON.printCount,
-                            paymentMode: result.responseJSON.paymentMode
-                        };
-
-                        printer.PrintInvoice(data, function () {
-                            ////update printcount
-                            //$.ajax({
-                            //    url: window.location.origin + "/Print/UpdatePrintCount?invoiceNumber=" + data.invoiceData.invoice_Number,
-                            //    type: 'POST',
-                            //    complete: function (result) {
-                            //    }
-                            //});
-                        });
-                    }
-                    setTimeout(function () {
-                        $(evt).removeClass('disabled-link').attr('onclick', 'printInvoice(this)');
-                    }, 5000);
-                }
-            });
+        $("#loadingDiv").show();
+      }
         }
 
         $(document).ready(function () {
-            startup();
             //var g = $("#SalesInvoiceTable").data("kendoGrid");
             //g.dataSource.pageSize(10);
             //g.dataSource.group({ field: "Date" });
             //PageSlimScroll();
+            startup();
         });
+
     </script>
 }

@@ -9,6 +9,7 @@ using POS.UI.Helper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace POS.UI.Controllers
@@ -38,10 +39,10 @@ namespace POS.UI.Controllers
             return View();
         }
         [HttpPost]
-        public async Task<IActionResult> SalesInvoiceApi(int pageSize, int skip, Filter filter, IEnumerable<Sort> sort,DateTime? startdate = null, DateTime? enddate = null)
+        public async Task<IActionResult> SalesInvoiceApi(int pageSize, int skip,DateTime? startdate = null, DateTime? enddate = null)
 
 
-
+             
 
         {
 
@@ -55,24 +56,38 @@ namespace POS.UI.Controllers
             //var salesInvoiceContext = _context.SalesInvoice.Where(x => x.Trans_Date_Ad >= _startDate && x.Trans_Date_Ad <= _endDate && x.Trans_Type=="Sales").Include(x=>x.SalesInvoiceItems).OrderByDescending(x => x.Trans_Date_Ad).AsQueryable();
           
 
-            var queryable = _kendoGrid.Filter(salesInvoiceContext, filter);
+            
 
             // Calculate the total number of records (needed for paging)
-            var total = queryable.Count();
+        
 
-            var grossAmountTotal = queryable.Sum(x => x.Total_Gross_Amount);
+            var role = ((ClaimsIdentity)User.Identity).Claims
+               .Where(c => c.Type == ClaimTypes.Role)
+               .Select(c => c.Value).FirstOrDefault();
+            Decimal total = 0, grossAmountTotal = 0, discountTotal = 0, netTotal = 0;
+            if (role != "CASHIER")
+            {
+                total = salesInvoiceContext.Count();
 
-            var discountTotal = queryable.Sum(x => x.Total_Discount);
 
-            var netTotal = queryable.Sum(x => x.Total_Net_Amount);
 
+                grossAmountTotal = salesInvoiceContext.Sum(x => x.Total_Gross_Amount);
+
+
+
+                discountTotal = salesInvoiceContext.Sum(x => x.Total_Discount);
+
+
+
+                netTotal = salesInvoiceContext.Sum(x => x.Total_Net_Amount);
+            }
 
 
             // Sort the data
-            queryable = _kendoGrid.Sort(queryable, sort);
+             //queryable = _kendoGrid.Sort(queryable, sort);
 
             // Finally page the data
-            var salesInvoiceList = await queryable.Skip(skip).Take(pageSize).ToListAsync();
+            var salesInvoiceList = await salesInvoiceContext.Skip(skip).Take(pageSize).ToListAsync();
           
 
             return Json(new { data = salesInvoiceList, total = total, grossAmountTotal= grossAmountTotal, discountTotal= discountTotal, netTotal= netTotal });
@@ -88,7 +103,7 @@ namespace POS.UI.Controllers
             return View();
         }
 
-        public async Task<IActionResult> TaxInvoiceApi(int pageSize, int skip, Filter filter, IEnumerable<Sort> sort, DateTime? startdate = null, DateTime? enddate = null)
+        public async Task<IActionResult> TaxInvoiceApi(int pageSize, int skip, Filter filter, DateTime? startdate = null, DateTime? enddate = null)
         {
             DateTime _startDate = startdate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
             DateTime _endDate = enddate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
@@ -102,18 +117,33 @@ namespace POS.UI.Controllers
             var queryable = _kendoGrid.Filter(salesInvoiceContext, filter);
 
             // Calculate the total number of records (needed for paging)
-            var total = queryable.Count();
+            var role = ((ClaimsIdentity)User.Identity).Claims
+               .Where(c => c.Type == ClaimTypes.Role)
+               .Select(c => c.Value).FirstOrDefault();
+            Decimal total = 0, grossAmountTotal = 0, discountTotal = 0, netTotal = 0;
+            if (role != "CASHIER")
+            {
+                total = queryable.Count();
 
-            var grossAmountTotal = queryable.Sum(x => x.Total_Gross_Amount);
 
-            var discountTotal = queryable.Sum(x => x.Total_Discount);
 
-            var netTotal = queryable.Sum(x => x.Total_Net_Amount);
+                grossAmountTotal = queryable.Sum(x => x.Total_Gross_Amount);
+
+
+
+                discountTotal = queryable.Sum(x => x.Total_Discount);
+
+
+
+                netTotal = queryable.Sum(x => x.Total_Net_Amount);
+            }
+
+
 
 
 
             // Sort the data
-            queryable = _kendoGrid.Sort(queryable, sort);
+          
 
             // Finally page the data
             var salesInvoiceList = await queryable.Skip(skip).Take(pageSize).ToListAsync();
@@ -248,6 +278,28 @@ namespace POS.UI.Controllers
             DateTime _endDate = enddate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
             IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.Where(x => x.Trans_Type == "Tax" && x.Trans_Date_Ad >= _startDate && x.Trans_Date_Ad <= _endDate).Include(x => x.SalesInvoiceItems).OrderByDescending(x => x.Trans_Date_Ad);
             return Ok(salesInvoiceList);
+        }
+        //[RolewiseAuthorized]
+
+        public IActionResult AbbreviatedSalesReport(DateTime? StartDate = null, DateTime? EndDate = null)
+
+        {
+            ViewData["Store"] = _context.Store.FirstOrDefault();
+            //IQueryable<SalesInvoice> salesInvoiceList = _context.SalesInvoice.OrderByDescending(x => x.Trans_Date_Ad);
+            //if (StartDate != null)
+            //    salesInvoiceList = salesInvoiceList.Where(x => x.Trans_Date_Ad >= StartDate);
+            //if (EndDate != null)
+            //    salesInvoiceList = salesInvoiceList.Where(x => x.Trans_Date_Ad <= EndDate);
+            //return View(salesInvoiceList);
+
+            DateTime _startDate = StartDate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day).AddDays(-7);
+            DateTime _endDate = EndDate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+
+            TempData["FromDate"] = _startDate.ToString("yyyy-MM-dd");
+            TempData["ToDate"] = _endDate.Date.ToString("yyyy-MM-dd");
+            IQueryable<AbbreviatedSalesReport> salesInvoiceList = _context.AbbreviatedSalesReport.FromSql($"SpAbbreviatedSalesReport {_startDate},{_endDate}");
+            return View(salesInvoiceList);
+
         }
 
         [HttpPost]

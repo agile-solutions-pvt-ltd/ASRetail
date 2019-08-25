@@ -1201,11 +1201,9 @@ const invoice = (function () {
                     discountExcVat = 0,
                     grossAmout = 0;
 
-
-                debugger;
+               
                 if ($(this).data("isChanged") != undefined && $(this).data("isChanged") == true) {
-
-
+                   
 
                     // 2. calc tax include Rate
                     rateIncludeTax = calcRate(itemCode, quantity, $(this));
@@ -1338,7 +1336,7 @@ const invoice = (function () {
 
             });
         }
-        debugger;
+        
         //calctotal tax
         totalTax = totalTaxableAmount * 13 / 100;
         totalNetAmount = totalTaxableAmount + totalNonTaxableAmount + parseFloat(totalTax.toFixed(2));
@@ -1981,7 +1979,7 @@ const invoice = (function () {
         //}
     };
     let SaveSalesInvoice = () => {
-
+        $("#NextButton").val("Please wait ..");
         //check sales limit
         if (transType.val() === "Sales" && parseFloat(CurrencyUnFormat($("#totalNetAmount").text())) >= salesTransactionLimit) {
             //if (confirm('Your Transaction Amount Is Greater Than Sale Limit. \n Do You Want To Convert To Tax Invoice?')) {

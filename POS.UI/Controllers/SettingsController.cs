@@ -94,17 +94,23 @@ namespace POS.UI.Controllers
         public IActionResult SchedulerSetup()
         {
             ViewData["Scheduler"] = ConfigJSON.Read();
-            IList<Customer> customer;
+            IList<CustomerViewModel> customer;
             _cache.TryGetValue("Customers", out customer);
             if (customer != null)
+            {
                 ViewData["IsCustomerCache"] = true;
+                ViewData["CustomerCacheCount"] = customer.Count();
+            }
             else
                 ViewData["IsCustomerCache"] = false;
 
             IList<ItemViewModel> item;
             _cache.TryGetValue("ItemViewModel", out item);
             if (item != null)
+            {
                 ViewData["IsItemCache"] = true;
+                ViewData["ItemCacheCount"] = item.Count();
+            }
             else
                 ViewData["IsItemCache"] = false;
 
@@ -180,8 +186,34 @@ namespace POS.UI.Controllers
             };
             return Ok(data);
         }
-
-
+        public IActionResult PostUnSyncInvoiceToNav()
+        {
+            NavPostData sync = new NavPostData(_context, _mapper);
+            Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
+            //sync.PostSalesInvoice(store);
+            //sync.PostSalesInvoice(store);
+            BackgroundJob.Enqueue(() => sync.PostCustomer());
+            BackgroundJob.Enqueue(() => sync.PostUnSyncInvoie(store));
+            // BackgroundJob.Enqueue(() => Console.WriteLine("test from background"));
+            var data = new
+            {
+                Status = 200,
+                Message = "Success"
+            };
+            return Ok(data);
+        }
+        public IActionResult PostUnSyncInvoiceToNavSchedulerStart()
+        {
+           // RecurringJob.AddOrUpdate(() => PostCustomerToNAV(), Cron.Daily);
+            RecurringJob.AddOrUpdate(() => PostUnSyncInvoiceToNav(), "15 17 * * *");
+           
+            var data = new
+            {
+                Status = 200,
+                Message = "Success"
+            };
+            return Ok(data);
+        }
 
         ////////********** scheduling jobs
         ///[HttpGet]
@@ -288,5 +320,9 @@ namespace POS.UI.Controllers
                 return BadRequest();
             }
         }
+
+
+
+
     }
 }

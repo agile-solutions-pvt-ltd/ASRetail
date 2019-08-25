@@ -1177,7 +1177,7 @@ namespace POS.UI.Sync
 
             _cache.TryGetValue("IsItemCacheInProcess", out IsItemCacheInProcess);
 
-            if (!IsItemCacheInProcess)
+            if(!IsItemCacheInProcess)
             {
                 _cache.Set("IsItemCacheInProcess", true);
                 //update cache

@@ -16,7 +16,7 @@
         setTimeout(() => {
             $(".alert").hide();
             //update url too
-            debugger;
+            
             if (GetUrlParameters("StatusMessage") !== undefined)
                 if (GetUrlParameters("mode") === undefined)
                     history.pushState({}, null, window.location.origin + "/SalesInvoice/Landing");
@@ -96,7 +96,7 @@
         });
     };
     let DisplayMember = (list) => {
-        debugger;
+        
         $('#memberTable tbody').html('');
         if (list.length > 0) {
             $('#memberTable').show();
@@ -197,7 +197,7 @@
         }
     };
     let SkipPage = () => {
-        debugger;
+        
         if ($(".bootbox.modal").is(":visible")) {
             $(".bootbox.modal").modal('hide')
         }

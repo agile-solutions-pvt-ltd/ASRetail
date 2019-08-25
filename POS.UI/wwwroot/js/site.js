@@ -82,28 +82,41 @@ $.fn.serializeObject = function () {
     });
     return o;
 };
-
 Number.prototype.toFixed = function (decimalPlaces) {
     //first roundoff
-    var factor = Math.pow(10, decimalPlaces + 9 || 0);
-    var v = (Math.round(this * factor) / factor).toString();
-    var firstResult = 0
-    if (v.indexOf('.') >= 0) {
-        firstResult = v + factor.toString().substr(v.length - v.indexOf('.'));
-    } else
-        firstResult = v + '.' + factor.toString().substr(1);
-
+    var firstResult = math.round(parseFloat(this), decimalPlaces + 9);
     //second roundoff
-    var factor = Math.pow(10, decimalPlaces || 0);
-    var v = (Math.round(firstResult * factor) / factor).toString();
-    var secondResult = 0
-    if (v.indexOf('.') >= 0) {
-        secondResult = v + factor.toString().substr(v.length - v.indexOf('.'));
-    } else
-        secondResult = v + '.' + factor.toString().substr(1);
-
+    var secondResult = math.round(firstResult, decimalPlaces);
+    return secondResult.toString();
+};
+Number.prototype.toFixedDecimal = function (decimalPlaces) {
+    //first roundoff
+    var firstResult = math.round(parseFloat(this), decimalPlaces + 9);
+    //second roundoff
+    var secondResult = math.round(firstResult, decimalPlaces);
     return secondResult;
 };
+//Number.prototype.toFixed = function (decimalPlaces) {
+//    //first roundoff
+//    var factor = Math.pow(10, decimalPlaces + 9 || 0);
+//    var v = (Math.round(this * factor) / factor).toString();
+//    var firstResult = 0;
+//    if (v.indexOf('.') >= 0) {
+//        firstResult = v + factor.toString().substr(v.length - v.indexOf('.'));
+//    } else
+//        firstResult = v + '.' + factor.toString().substr(1);
+
+//    //second roundoff
+//    var factor = Math.pow(10, decimalPlaces || 0);
+//    var v = (Math.round(firstResult * factor) / factor).toString();
+//    var secondResult = 0
+//    if (v.indexOf('.') >= 0) {
+//        secondResult = v + factor.toString().substr(v.length - v.indexOf('.'));
+//    } else
+//        secondResult = v + '.' + factor.toString().substr(1);
+
+//    return secondResult;
+//};
 
 
 function CurrencyFormat(amount) {

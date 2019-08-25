@@ -213,9 +213,10 @@
                     scale: 0.8
                 },
                 excel: {
-                    fileName: "ABBREVIATED TAX INVOICE Report.xlsx",
+                    fileName: "TAX INVOICE Report.xlsx",
                     proxyURL: window.location.origin + "/Reports/Excel_Export_Save",
-                    filterable: true
+                    filterable: true,
+                    allPages: true
                 },
                 dataSource: {
                     transport: {
@@ -245,10 +246,10 @@
 
 
                     },
-                    pageSize: 100,
+                    pageSize:25 ,
                     serverPaging: true,
-                    serverFiltering: true,
-                    serverSorting: true,
+                    serverFiltering: false,
+                    serverSorting: false,
                     serverAggregates: true,
                     group: {
                         field: "trans_Date_Ad", aggregates: [
@@ -293,7 +294,7 @@
                         empty: "No items to display"
                     },
                     refresh: true,
-                    pageSizes: [100, 200, 400, 500, 1000],
+                    pageSizes: [25, 100, 200, 500, 1000],
                     buttonCount: 5
                 },
                 resizable: true,

@@ -84,7 +84,7 @@
             if (!_.isEmpty(data.copy) && data.copy.printCount == 0) {
                 //print double
                 PrintTaxInvoice(data, function () {
-                    debugger;
+                    
                     data.copy.printCount = 1;
                     PrintTaxInvoice(data, callback);
                 });
@@ -250,7 +250,7 @@
 
         //Final Data
         var finalBill = header + itemHeader + item + itemTotal + footer;
-        debugger;
+        
         printwsBill(finalBill, callback, data, PrintTaxInvoiceBrowser);
 
     };
@@ -492,7 +492,7 @@
                     let printText = $(result.responseText).find("#printbody").html();
                     //replace all variables
 
-                    debugger;
+                    
                     var paymentMode = _.pluck(data.billData, "trans_Mode").join(", ");
                     if (paymentMode === "") {
                         paymentMode = data.paymentMode;
@@ -579,7 +579,7 @@
     };
 
     let PrintCreditNoteInvoice = (data, callback) => {
-        debugger;
+        
         var url = ""
         var companyInitital = data.storeData.initial || data.storeData.INITIAL;
         if (companyInitital === "WHS") {
@@ -885,7 +885,7 @@
         $("#tempprint").html(printText);
         if (printItemText !== undefined)
             $("#tempprint").find("#items").html(printItemText);
-        debugger;
+        
 
         //
 

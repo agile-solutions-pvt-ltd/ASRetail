@@ -87,6 +87,9 @@ namespace POS.Core
         
         public virtual DbSet<SalesVatBookReport> SalesVatBookReport { get; set; }
 
+        public virtual DbSet<AbbreviatedSalesReport> AbbreviatedSalesReport { get; set; }
+
+
 
         public virtual DbSet<Company> Company { get; set; }
         public virtual DbSet<NavIntegrationService> NavIntegrationService { get; set; }

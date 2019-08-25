@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using POS.Core;
 using POS.DTO;
+using POS.UI.Helper;
 using POS.UI.Sync;
 using System;
 using System.Linq;
@@ -146,8 +147,12 @@ namespace POS.UI.Controllers
                     //background task
                     BackgroundJob.Enqueue(() => SendDataToIRD(creditNote, store));
                     //Send data to NAV
-                    NavPostData navPostData = new NavPostData(_context, _mapper);
-                    BackgroundJob.Enqueue(() => navPostData.PostCreditNote(navCreditMemo));
+                    Config config = ConfigJSON.Read();
+                    if (!config.StopCreditNotePosting)
+                    {
+                        NavPostData navPostData = new NavPostData(_context, _mapper);
+                        BackgroundJob.Enqueue(() => navPostData.PostCreditNote(navCreditMemo));
+                    }
 
                     //for api return
                     TempData["StatusMessage"] = "Credit Note Added Successfully";

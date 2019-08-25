@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
+using MoreLinq;
 using POS.Core;
 using POS.DTO;
 using POS.UI.Helper;
@@ -301,9 +302,15 @@ namespace POS.UI.Controllers
                 _cache.TryGetValue("ItemViewModel", out items);
                 if (items == null)
                 {
-                    
                     //update cache
-                    BackgroundJob.Enqueue(() => UpdateCacheItemViewModel());
+                    bool IsItemCacheInProcess = false;
+                    _cache.TryGetValue("IsItemCacheInProcess", out IsItemCacheInProcess);
+
+                    if (!IsItemCacheInProcess)
+                    {
+                        BackgroundJob.Enqueue(() => UpdateCacheItemViewModel());
+                    }
+
                     //items = GetItemsRawData(code).ToList();
                     items = new List<ItemViewModel>();
                 }
@@ -311,6 +318,7 @@ namespace POS.UI.Controllers
             else
             {
                 items = GetItemsRawData(code).ToList();
+                getFromDataBase = true;
             }
 
             var result = items.Where(x => (x.Code == code || x.Bar_Code == code)
@@ -323,6 +331,21 @@ namespace POS.UI.Controllers
             if (result.Count() == 0 && getFromDataBase == false)
             {
                 return GetItems(code, true);
+            }
+            if (result.Count() > 0 && getFromDataBase == true)
+            {
+                //update item to cache
+                IList<ItemViewModel> itemInCache = new List<ItemViewModel>();
+                _cache.TryGetValue("ItemViewModel", out items);
+                if (items == null)
+                {
+                    _cache.Set("ItemViewModel", result);
+                }
+                else {
+                    items = items.Concat(result).Distinct().ToList();
+                    _cache.Set("ItemViewModel", items);
+                }
+
             }
             ////result.ToList().ForEach(x => { x.Bar_Code = result.FirstOrDefault().Bar_Code; x.SN = 1; });
             //result.ToList().Distinct();
@@ -375,9 +398,7 @@ FROM ITEM i
 left join ITEM_BARCODE b on i.Code = b.ItemCode and b.IsActive = 1
 inner join ITEM_PRICE p on i.Code = p.ItemCode
 left join ITEM_DISCOUNT d on i.Code = d.ItemCode Or (d.ItemType = 'Item Disc. Group' and  d.ItemCode =  i.DiscountGroup)
-where (p.StartDate is null or CONVERT(date,p.StartDate) <= CONVERT(date, GETDATE())) and (p.EndDate is null or CONVERT(date, p.EndDate) >= CONVERT(date,getdate()))
-      and (d.StartDate is null or CONVERT(date,d.StartDate) <= CONVERT(date, GETDATE())) and (d.EndDate is null or CONVERT(date, d.EndDate) >= CONVERT(date,getdate()))
-      and (b.BarCode = {0} or i.Code = {0})";
+where (b.BarCode = {0} or i.Code = {0})";
 
             IEnumerable<ItemViewModel> data = _context.ItemViewModel.FromSql(query, code);
             return data;
@@ -387,62 +408,63 @@ where (p.StartDate is null or CONVERT(date,p.StartDate) <= CONVERT(date, GETDATE
 
         public void UpdateCacheItemViewModel()
         {
-            bool IsItemCacheInProcess = false;           
-            _cache.TryGetValue("IsItemCacheInProcess", out IsItemCacheInProcess);
-
-            if (!IsItemCacheInProcess)
+            _cache.Set("IsItemCacheInProcess", true);
+            //update cache
+            Config config = ConfigJSON.Read();
+            //split data to 1lakh and save to cache
+            int count = 100000, skip = 0, errorCount = 0;
+            DateTime startDate = DateTime.Now;
+            //_context.ChangeTracker.AutoDetectChangesEnabled = false;
+            for (; ; )
             {
-                _cache.Set("IsItemCacheInProcess", true);
-                //update cache
-                Config config = ConfigJSON.Read();
-                //split data to 1lakh and save to cache
-                int count = 100000, skip = 0, errorCount = 0;
-                DateTime startDate = DateTime.Now;
-                //_context.ChangeTracker.AutoDetectChangesEnabled = false;
-                for (; ; )
+                try
                 {
-                    try
+                    IList<ItemViewModel> itemsTotal = new List<ItemViewModel>();
+                    _context.Database.SetCommandTimeout(TimeSpan.FromHours(1));
+                    //IList<ItemViewModel> itemsTemp = _context.ItemViewModel.FromSql("SPItemViewModel @p0, @p1", count, skip).ToList();
+                    IList<ItemViewModel> itemsTemp = _context.ItemViewModel.Skip(skip).Take(count).ToList();
+                    if (itemsTemp.Count() > 0)
                     {
-                        IList<ItemViewModel> itemsTotal= new List<ItemViewModel>();
-                        _context.Database.SetCommandTimeout(TimeSpan.FromHours(1));
-                        //IList<ItemViewModel> itemsTemp = _context.ItemViewModel.FromSql("SPItemViewModel @p0, @p1", count, skip).ToList();
-                        IList<ItemViewModel> itemsTemp = _context.ItemViewModel.Skip(skip).Take(count).ToList();
-                        if (itemsTemp.Count() > 0)
+                        _cache.TryGetValue("ItemViewModel", out itemsTotal);
+                        if (itemsTotal == null)
                         {
-                            _cache.TryGetValue("ItemViewModel", out itemsTotal);
-                            if (itemsTotal == null)
-                            {
-                                itemsTotal = new List<ItemViewModel>();
-                            }
-                            itemsTotal= itemsTotal.Concat(itemsTemp).ToList();
-                            _cache.Set("ItemViewModel", itemsTotal);
-                           
+                            itemsTotal = new List<ItemViewModel>();
                         }
-                        else
-                        {
-                            double totalTimeTake = (DateTime.Now - startDate).TotalMinutes;
-                            config.Environment = "Total Time take " + totalTimeTake + " Mins";
-                            ConfigJSON.Write(config);
-                            _cache.Set("IsItemCacheInProcess", false);
-                            break;
-                        }
-                        config.Environment = itemsTotal.Count() + " item cached";
-                       // itemsTotal = itemsTotal.Concat(itemsTemp).ToList();
-                        skip = skip + count;
-                       // config.Environment = itemsTotal.Count() + " item cached";
+                        itemsTotal = itemsTotal.Concat(itemsTemp).DistinctBy(x=> new {
+                            x.Bar_Code,x.Code,x.Discount,x.DiscountEndDate,x.DiscountEndTime,x.DiscountItemType,x.DiscountLocation,x.DiscountMinimumQuantity,
+                            x.DiscountSalesGroupCode,x.DiscountStartDate,x.DiscountStartTime,x.DiscountType,x.Name,x.Rate,x.RateEndDate,x.RateMinimumQuantity,
+                            x.RateStartDate,x.SalesCode,x.SalesType}).ToList();
+                        _cache.Set("ItemViewModel", itemsTotal);
+
+                    }
+                    else
+                    {
+                        double totalTimeTake = (DateTime.Now - startDate).TotalMinutes;
+                        config.Environment = "Total Time take " + totalTimeTake + " Mins";
                         ConfigJSON.Write(config);
-
+                        _cache.Set("IsItemCacheInProcess", false);
+                        break;
                     }
-                    catch (Exception ex)
-                    {
-                        if (errorCount > 5) 
-                            break;
-                        errorCount += 1;
+                    config.Environment = itemsTotal.Count() + " item cached";
+                    // itemsTotal = itemsTotal.Concat(itemsTemp).ToList();
+                    skip = skip + count;
+                    // config.Environment = itemsTotal.Count() + " item cached";
+                    ConfigJSON.Write(config);
 
-
-                    }
                 }
+                catch (Exception ex)
+                {
+                    if(ex.Message == "Invalid object name 'ItemViewModel'.")
+                    {
+                        _cache.Set("IsItemCacheInProcess", true);
+                        break;
+                    }
+                    if (errorCount > 5)
+                        break;
+                    errorCount += 1;
 
+
+                }
             }
 
 

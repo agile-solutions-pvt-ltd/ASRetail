@@ -17,7 +17,7 @@ namespace POS.UI.Helper
             var hangfireMonitor = JobStorage.Current.GetMonitoringApi();
 
             //RecurringJobs
-            JobStorage.Current.GetConnection().GetRecurringJobs().ForEach(xx => BackgroundJob.Delete(xx.Id));
+            //JobStorage.Current.GetConnection().GetRecurringJobs().ForEach(xx => BackgroundJob.Delete(xx.Id));
 
             //ProcessingJobs
             hangfireMonitor.ProcessingJobs(0, int.MaxValue).ForEach(xx => BackgroundJob.Delete(xx.Key));

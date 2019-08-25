@@ -69,11 +69,11 @@
                             <div class="form-row">
                                 <div class="form-group col-md-2">
                                     <label for="StartDate" class="control-label">Start Date</label>
-                                    <input id="StartDate" type="date" class="form-control form-control-sm" />
+                                    <input id="StartDate" type="date" class="form-control form-control-sm" value="@DateTime.Now.ToString("yyyy-MM-dd")"/>
                                 </div>
                                 <div class="form-group col-md-2">
                                     <label for="EndDate" class="control-label">End Date</label>
-                                    <input type="date" class="form-control form-control-sm" id="EndDate" />
+                                    <input type="date" class="form-control form-control-sm" id="EndDate" value="@DateTime.Now.ToString("yyyy-MM-dd")"/>
                                 </div>
                                 <div class="form-group col-md-2">
                                     <label for="Trans_type" class="control-label">Trans Type</label>
@@ -171,7 +171,7 @@
                                     {
                                         <tr>
                                             <td>
-                                                @Html.DisplayFor(modelItem => item.Trans_Date_AD)
+                                                @(item.Trans_Date_AD.ToShortDateString())
                                             </td>
                                             <td class="nowrap" style="text-wrap:none">
                                                 @Html.DisplayFor(modelItem => item.Invoice_Number)
@@ -183,10 +183,10 @@
                                                 @(item.Customer_Vat == "" ? "NA" : item.Customer_Vat)
                                             </td>
                                             <td class="text-right total-sale amount">
-                                                @Html.DisplayFor(modelItem => item.TaxableAmount)
+                                                @Html.DisplayFor(modelItem => item.TotalSale)
                                             </td>
                                             <td class="text-right exempt-sale">
-                                                0.00
+                                                @Html.DisplayFor(modelItem => item.NonTaxableAmount)
                                             </td>
                                             <td class="text-right zerotaxrate-sale">
                                                 0.00
@@ -284,6 +284,7 @@
             function CalcTable() {
                 let table = document.getElementById("grid").getElementsByTagName('tbody')[0];
                 let footerTotalSale = 0, footerExemptSale = 0, footerZeroTaxRateSale = 0, footerTaxableAmount = 0, footerVatAmount = 0, footerTotalAmount = 0;
+                
                 $.each(table.rows, function (i, v) {
 
                     let totalSale = parseFloat($(this).find(".total-sale").text());
@@ -308,6 +309,7 @@
                     footerTotalAmount += totalAmount;
 
                 });
+
                 $(".footer-total-sale").text(CurrencyFormat(footerTotalSale));
                 $(".footer-exempt-sale").text(CurrencyFormat(footerExemptSale));
                 $(".footer-zerotaxrate-sale").text(CurrencyFormat(footerZeroTaxRateSale));

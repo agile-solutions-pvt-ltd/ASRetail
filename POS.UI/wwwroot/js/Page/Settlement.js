@@ -119,7 +119,7 @@
         return date.getFullYear() + "/" + month + "/" + date.getDate() + " " + hours + ':' + minutes + ' ' + ampm;
     };
     let calcShortExcessAmount = (e) => {
-        debugger;
+        
         //for first time
         if (e === undefined) {            
             let shortExcessAmount = {

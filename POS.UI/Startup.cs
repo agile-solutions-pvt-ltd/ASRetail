@@ -115,7 +115,7 @@ namespace POS.UI
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                 .AddJsonOptions(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore); ;
 
-           
+
             services.AddSingleton<InMemoryCache>();
 
             services.AddSession(options =>
@@ -146,11 +146,11 @@ namespace POS.UI
     {
         PrepareSchemaIfNecessary = true,
         CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-        QueuePollInterval = TimeSpan.FromMinutes(30),
+        QueuePollInterval = TimeSpan.Zero,
         JobExpirationCheckInterval = TimeSpan.FromMinutes(30),
-            CountersAggregateInterval = TimeSpan.FromMinutes(5),
-            
-            UseRecommendedIsolationLevel = true,
+        CountersAggregateInterval = TimeSpan.FromMinutes(5),
+        
+        UseRecommendedIsolationLevel = true,
         UsePageLocksOnDequeue = true,
         DisableGlobalLocks = true
     }));
@@ -171,7 +171,7 @@ namespace POS.UI
             //}
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles();           
+            app.UseStaticFiles();
             app.UseSession();
             app.UseCookiePolicy();
             app.UseResponseCompression();
@@ -180,19 +180,23 @@ namespace POS.UI
 
 
             app.UseAuthentication();
-            app.UseHangfireServer();
+            
             app.UseResponseCaching();
-
+            var options = new BackgroundJobServerOptions {
+                WorkerCount = 2,//Environment.ProcessorCount,
+                HeartbeatInterval = TimeSpan.FromMinutes(5)
+            };
+            app.UseHangfireServer(options);
             app.UseHangfireDashboard(options: new DashboardOptions()
             {
                 Authorization = new IDashboardAuthorizationFilter[]
            {
                  new Helper.HangFireAuthorizationFilter()
            },
-                StatsPollingInterval = 30000
+                StatsPollingInterval = 600000
             });
-           
-           
+
+
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
@@ -214,7 +218,7 @@ namespace POS.UI
         }
 
 
-        
+
         private async Task CreateUserRoles(IServiceProvider serviceProvider)
         {
             var RoleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -257,5 +261,5 @@ namespace POS.UI
     }
 
 
-  
+
 }

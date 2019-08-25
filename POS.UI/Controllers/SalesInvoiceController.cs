@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using POS.Core;
 using POS.DTO;
+using POS.UI.Helper;
 using POS.UI.Sync;
 using System;
 using System.Collections.Generic;
@@ -53,7 +54,7 @@ namespace POS.UI.Controllers
             {
 
                 // var store = _context.Store.FirstOrDefault();
-               
+
                 int invoiceId = 0;
                 if (Request.Query["Mode"].ToString() != null && Request.Query["Mode"].ToString() == "tax")
                     invoiceId = _context.SalesInvoice.Where(x => x.Trans_Type == "Tax").Select(x => x.Invoice_Id).DefaultIfEmpty(0).Max() + 1;
@@ -90,7 +91,7 @@ namespace POS.UI.Controllers
 
             if (ModelState.IsValid)
             {
-                if(model.SalesInvoice.Trans_Date_Ad.Value.ToShortDateString() != DateTime.Now.ToShortDateString())
+                if (model.SalesInvoice.Trans_Date_Ad.Value.ToShortDateString() != DateTime.Now.ToShortDateString())
                 {
                     return StatusCode(400, "Date is not Up-to-Date !!");
                 }
@@ -163,7 +164,8 @@ namespace POS.UI.Controllers
                         return Ok(new { RedirectUrl = "/SalesInvoice/Billing/" + salesInvoiceTmp.Id + "?M=" + salesInvoiceTmp.MemberId + "&Mode=tax" });
                     else
                         return Ok(new { RedirectUrl = "/SalesInvoice/Billing/" + salesInvoiceTmp.Id + "?M=" + salesInvoiceTmp.MemberId });
-                }catch(Exception ex)
+                }
+                catch (Exception ex)
                 {
                     return StatusCode(500, ex.InnerException);
                 }
@@ -191,7 +193,7 @@ namespace POS.UI.Controllers
         }
 
 
-       [RolewiseAuthorized]
+        [RolewiseAuthorized]
         [HttpGet]
         public IActionResult CrLanding(string StatusMessage)
         {
@@ -225,28 +227,37 @@ namespace POS.UI.Controllers
 
         public IActionResult SavedTransactionListPartial()
         {
-           
+
             var trans = _context.SalesInvoiceTmp.Where(x => x.Trans_Type == "Save").ToList();
             return PartialView("_SavedTransactionListPartial", trans);
         }
 
 
-        public IActionResult GetItemReferenceData(Guid id)
+        public IActionResult GetItemReferenceData(Guid id, bool getFromDatabase = false)
         {
             //for item Reference Data           
             var item = _context.SalesInvoiceItemsTmp.Where(x => x.Invoice_Id == id).ToList();
             List<string> barCodeList = item.Select(x => x.Bar_Code).ToList();
             barCodeList = barCodeList.Concat(item.Select(x => x.ItemCode)).ToList();
             IList<ItemViewModel> items;
-            if (!_cache.TryGetValue("ItemViewModel", out items))
+            _cache.TryGetValue("ItemViewModel", out items);
+            if (items == null)
             {
                 // Key not in cache, so get data.
 
                 items = GetItemsRawDataByBarcodeList(barCodeList).ToList();
+                getFromDatabase = true;
 
 
             }
             var temp = items.Where(x => barCodeList.Contains(x.Bar_Code));
+            if (temp.Count() == 0 && getFromDatabase == false)
+                temp = GetItemsRawDataByBarcodeList(barCodeList).Where(x => barCodeList.Contains(x.Bar_Code));
+
+            temp = temp.Where(x => (x.RateStartDate == null || Convert.ToDateTime(x.RateStartDate.Value.ToShortDateString()) <= Convert.ToDateTime(DateTime.Now.ToShortDateString()))
+            && (x.RateEndDate == null || Convert.ToDateTime(x.RateEndDate.Value.ToShortDateString()) >= Convert.ToDateTime(DateTime.Now.ToShortDateString()))
+            && (x.DiscountStartDate == null || Convert.ToDateTime(x.DiscountStartDate.Value.ToShortDateString()) <= Convert.ToDateTime(DateTime.Now.ToShortDateString()))
+            && (x.DiscountEndDate == null || Convert.ToDateTime(x.DiscountEndDate.Value.ToShortDateString()) >= Convert.ToDateTime(DateTime.Now.ToShortDateString())));
             return Ok(temp);
         }
 
@@ -255,15 +266,37 @@ namespace POS.UI.Controllers
         {
             var salesInvoiceTMP = _context.SalesInvoiceTmp.FirstOrDefault(x => x.Id == id);
             ViewBag.SalesInvoiceTemp = salesInvoiceTMP;
-            IEnumerable<Customer> customers;
-            if (!_cache.TryGetValue("Customers", out customers))
+            IEnumerable<CustomerViewModel> customers;
+            _cache.TryGetValue("Customers", out customers);
+            if (customers == null)
             {
                 // Key not in cache, so get data.
-                customers = _context.Customer;
-                //Donot save from here
-               // _cache.Set("Customers", customers);
+                customers = _context.Customer
+                    .Where(x => x.Membership_Number == salesInvoiceTMP.MemberId)
+                    .Select(x => new CustomerViewModel
+                    {
+                        Address = x.Address,
+                        Barcode = x.Barcode,
+                        Code = x.Code,
+                        CustomerDiscGroup = x.CustomerDiscGroup,
+                        CustomerPriceGroup = x.CustomerPriceGroup,
+                        Is_Member = x.Is_Member,
+                        Is_Sale_Refused = x.Is_Sale_Refused,
+                        MembershipDiscGroup = x.MembershipDiscGroup,
+                        Membership_Number = x.Membership_Number,
+                        Membership_Number_Old = x.Membership_Number_Old,
+                        Member_Id = x.Member_Id,
+                        Mobile1 = x.Mobile1,
+                        Name = x.Name,
+                        Type = x.Type,
+                        Vat = x.Vat
+                    });
             }
-            ViewData["Customer"] = customers.Where(x => x.Membership_Number == salesInvoiceTMP.MemberId);
+            else
+                customers = customers.Where(x => x.Membership_Number == salesInvoiceTMP.MemberId);
+            ViewData["Customer"] = customers;
+
+
             return View();
         }
 
@@ -291,12 +324,12 @@ namespace POS.UI.Controllers
                         //get store info
                         Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
                         //convert to sales invoice and save
-                       
-                        
+
+
                         //if (_context.ChangeTracker.HasChanges(.Any(x => x.Id == model.salesInvoiceId))
                         //    salesInvoice = _context.SalesInvoice.FirstOrDefault(x => x.Id == model.salesInvoiceId);
                         //else
-                            salesInvoice = _mapper.Map<SalesInvoice>(salesInvoiceTmp);
+                        salesInvoice = _mapper.Map<SalesInvoice>(salesInvoiceTmp);
                         salesInvoice.Id = Guid.NewGuid();
 
                         salesInvoice.Total_Bill_Discount = model.billDiscount;
@@ -462,11 +495,17 @@ namespace POS.UI.Controllers
 
                         trans.Commit();
                         //*********** background task
+                        Config config = ConfigJSON.Read();
                         //Send data to IRD
-                        BackgroundJob.Enqueue(() => SendDataToIRD(salesInvoice, store));
+                        if (!config.StopPostingIRD)
+                            BackgroundJob.Enqueue(() => SendDataToIRD(salesInvoice, store));
                         //Send data to NAV
-                        NavPostData navPostData = new NavPostData(_context, _mapper);
-                        BackgroundJob.Enqueue(() => navPostData.PostSalesInvoice(navSalesInvoice));
+
+                        if (!config.StopInvoicePosting)
+                        {
+                            NavPostData navPostData = new NavPostData(_context, _mapper);
+                            BackgroundJob.Enqueue(() => navPostData.PostSalesInvoice(navSalesInvoice));
+                        }
 
 
 
@@ -486,11 +525,11 @@ namespace POS.UI.Controllers
                     }
                 };
 
-               
+
             }
             catch (Exception ex)
             {
-                
+
                 return BadRequest(ex.Message);
             }
 
@@ -625,18 +664,14 @@ namespace POS.UI.Controllers
             string query = @"SELECT Distinct
         ROW_NUMBER() OVER(PARTITION BY Bar_Code order by Rate) AS SN ,
        i.Code,i.Id as ItemId,i.Name,i.KeyInWeight,
-       ISNULL(b.BarCode,0) as Bar_Code,b.Unit,  
-       ISNULL(q.Quantity,0) as Quantity, 
+       ISNULL(b.BarCode,0) as Bar_Code,b.Unit, 
 	   ISNULL(d.DiscountPercent,0) as Discount,d.MinimumQuantity as DiscountMinimumQuantity, d.StartDate as DiscountStartDate, d.EndDate as DiscountEndDate, d.StartTime as DiscountStartTime, d.EndTime as DiscountEndTime,d.SalesType as DiscountType,d.SalesCode as DiscountSalesGroupCode,d.ItemType as DiscountItemType, d.Location as DiscountLocation,ISNULL(p.AllowLineDiscount,1) as Is_Discountable,i.No_Discount,
 	   ISNULL(p.UnitPrice,0) as Rate,p.MinimumQuantity as RateMinimumQuantity, p.StartDate as RateStartDate, p.EndDate as RateEndDate, p.SalesType, p.SalesCode,
-	   i.Is_Vatable,
-	   s.INITIAL as Location, s.CustomerPriceGroup as LocationwisePriceGroup
+	   i.Is_Vatable
 FROM ITEM i
 left join ITEM_BARCODE b on i.Code = b.ItemCode AND b.IsActive = 1
-left join ITEM_QUANTITY q on i.Code = q.ItemCode
-left join ITEM_PRICE p on i.Code = p.ItemCode
+inner join ITEM_PRICE p on i.Code = p.ItemCode
 left join ITEM_DISCOUNT d on i.Code = d.ItemCode Or (d.ItemType = 'Item Disc. Group' and  d.ItemCode =  i.DiscountGroup)
-cross join STORE s
 where b.BarCode in ('" + barcodeListString + "') OR i.Code in ('" + barcodeListString + "')";
 
             // string barcodeListString =string.Join("','",barcodes); 
