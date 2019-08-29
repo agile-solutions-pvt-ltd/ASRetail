@@ -10,6 +10,7 @@ using POS.DTO;
 using POS.UI.Helper;
 using POS.UI.Models;
 using System;
+using System.Data.SqlClient;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -291,8 +292,16 @@ namespace POS.UI.Controllers
         }
 
 
-        // [ResponseCache(Duration = 60, VaryByQueryKeys = new string[] { "code","cacheId" })]
         public IEnumerable<ItemViewModel> GetItems(string code, bool getFromDataBase = false)
+        {
+            var query = "exec Sp_GetItems @ItemCode";
+            IEnumerable<ItemViewModel> data = _context.ItemViewModel.FromSql(query, new SqlParameter("@ItemCode",code)).ToList();
+            return data;
+        }
+
+
+        // [ResponseCache(Duration = 60, VaryByQueryKeys = new string[] { "code","cacheId" })]
+        public IEnumerable<ItemViewModel> GetItems1(string code, bool getFromDataBase = false)
         {
 
 
