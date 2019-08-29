@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Hangfire;
 using Hangfire.Dashboard;
 using Hangfire.SqlServer;
@@ -141,29 +141,29 @@ namespace POS.UI
             //    }));
 
             //services.AddHangfireServer();            
-            services.AddHangfire(opt => opt.UseSqlServerStorage(Configuration.GetConnectionString("HangFireConnection"),
-    new SqlServerStorageOptions
-    {
-        PrepareSchemaIfNecessary = true,
-        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-        QueuePollInterval = TimeSpan.Zero,
-        JobExpirationCheckInterval = TimeSpan.FromMinutes(30),
-        CountersAggregateInterval = TimeSpan.FromMinutes(5),
+            //services.AddHangfire(opt => opt.UseSqlServerStorage(Configuration.GetConnectionString("HangFireConnection"),
+            //new SqlServerStorageOptions
+            //{
+            //    PrepareSchemaIfNecessary = true,
+            //    CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+            //    QueuePollInterval = TimeSpan.Zero,
+            //    JobExpirationCheckInterval = TimeSpan.FromMinutes(30),
+            //    CountersAggregateInterval = TimeSpan.FromMinutes(5),
         
-        UseRecommendedIsolationLevel = true,
-        UsePageLocksOnDequeue = true,
-        DisableGlobalLocks = true
-    }));
+            //    UseRecommendedIsolationLevel = true,
+            //    UsePageLocksOnDequeue = true,
+            //    DisableGlobalLocks = true
+            //}));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IServiceProvider service)
         {
             //if (env.IsDevelopment())
-            //{
-            //    app.UseDeveloperExceptionPage();
-            //    app.UseDatabaseErrorPage();
-            //}
+            {
+                app.UseDeveloperExceptionPage();
+                app.UseDatabaseErrorPage();
+            }
             //else
             //{
             //    app.UseExceptionHandler("/Home/Error");
@@ -182,19 +182,19 @@ namespace POS.UI
             app.UseAuthentication();
             
             app.UseResponseCaching();
-            var options = new BackgroundJobServerOptions {
-                WorkerCount = 2,//Environment.ProcessorCount,
-                HeartbeatInterval = TimeSpan.FromMinutes(5)
-            };
-            app.UseHangfireServer(options);
-            app.UseHangfireDashboard(options: new DashboardOptions()
-            {
-                Authorization = new IDashboardAuthorizationFilter[]
-           {
-                 new Helper.HangFireAuthorizationFilter()
-           },
-                StatsPollingInterval = 600000
-            });
+            //var options = new BackgroundJobServerOptions {
+            //    WorkerCount = 2,//Environment.ProcessorCount,
+            //    HeartbeatInterval = TimeSpan.FromMinutes(5)
+            //};
+           // app.UseHangfireServer(options);
+           // app.UseHangfireDashboard(options: new DashboardOptions()
+           // {
+           //     Authorization = new IDashboardAuthorizationFilter[]
+           //{
+           //      new Helper.HangFireAuthorizationFilter()
+           //},
+           //     StatsPollingInterval = 600000
+           // });
 
 
             app.UseMvc(routes =>
@@ -206,7 +206,7 @@ namespace POS.UI
 
             Task t = CreateUserRoles(service);
             t.Wait();
-            ClearAnyPendingJob();
+            //ClearAnyPendingJob();
 
 
 
