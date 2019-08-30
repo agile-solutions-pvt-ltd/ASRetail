@@ -105,18 +105,15 @@
 
         //Header Start here
         var header = "";
-        header += "         " + (data.storeData.COMPANY_NAME || data.storeData.companY_NAME) + "\r\n";
-        header += "         " + (data.storeData.ADDRESS || data.storeData.address) + "\r\n ";
-        header += "           Vat No.: " + (data.storeData.VAT || data.storeData.vat) + "\r\n";
-        header += "        " + (!_.isEmpty(data.copy) && (data.copy !== undefined && data.copy.printCount >= 1) ? "    INVOICE" : "    TAX INVOICE") + "\r\n";
-        header += (!_.isEmpty(data.copy) && data.copy.printCount > 1) ? "  (COPY OF ORIGINAL) (" + (data.copy.printCount - 1).toString() + ")\r\n\r\n" : "\r\n\r\n";
+        header += "\t" + (data.storeData.COMPANY_NAME || data.storeData.companY_NAME) + "\r\n";
+        header += "\t" + (data.storeData.ADDRESS || data.storeData.address) + "\r\n ";
+        header += "\t    Vat No.: " + (data.storeData.VAT || data.storeData.vat) + "\r\n";
+        header += "\t     " + (!_.isEmpty(data.copy) && (data.copy !== undefined && data.copy.printCount >= 1) ? "INVOICE" : "TAX INVOICE") + "\r\n";
+        header += (!_.isEmpty(data.copy) && data.copy.printCount > 1) ? "\t    (COPY OF ORIGINAL) (" + (data.copy.printCount - 1).toString() + ")\r\n\r\n" : "\r\n\r\n";
         header += "Bill #   : " + data.invoiceData.invoice_Number + "\r\n";
-        header += "Date     : " + FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)) + " (" + data.invoiceData.trans_Date_Bs + ") \r\n";
+        header += "Date     : " + FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)) + " (" + data.invoiceData.trans_Date_Bs + ")\r\n";
         if (data.invoiceData.memberId !== "POS") {
             header += "Bill To  : " + data.invoiceData.customer_Name + "  \r\n";
-            if (!_.isEmpty(data.invoiceData.customer_Vat)) {
-                header += "VAT      : " + data.invoiceData.customer_Vat + "\r\n";
-            }
             if (!_.isEmpty(data.invoiceData.customer_Address)) {
                 header += "Address  : " + data.invoiceData.customer_Address + " \r\n";
             }
@@ -124,14 +121,17 @@
                 header += "Mobile   : " + data.invoiceData.customer_Mobile + "\r\n";
             }
         }
+        if (!_.isEmpty(data.invoiceData.customer_Vat || (data.invoiceData.customer_Vat !== "NA"))) {
+            header += "VAT      : " + data.invoiceData.customer_Vat + "\r\n";
+        }
         header += "Pay Mode : " + paymentMode + "\r\n";
-        header += "--------------------------------------- \r\n";
+        header += "----------------------------------------\r\n";
         //Header end here
 
 
         //Item Header Start here
-        var itemHeader = "Particulars  Qty  Rate  P.Dis   Amount  \r\n";
-        itemHeader += "------------------------------------- \r\n";
+        var itemHeader = "Particulars  Qty    Rate  P.Dis   Amount\r\n";
+        itemHeader += "----------------------------------------\r\n";
         //Item Header End here
 
         //items start here
@@ -151,23 +151,23 @@
             }
             item += itemName;
             qty = parseFloat(v.quantity).toFixed(2);
-            while (qty.length < 6) {
-                qty = qty + ' ';  //adds a space before the d
+            while (qty.length < 4) {
+                qty = ' ' + qty;  //adds a space before the d
             }
             item += qty;
             rate = parseFloat(v.rate).toFixed(2);
-            while (rate.length < 9) {
-                rate = rate + ' ';  //adds a space before the d
+            while (rate.length < 8) {
+                rate = ' ' + rate;  //adds a space before the d
             }
             item += rate;
             dis = parseFloat(v.promoDiscount).toFixed(2);
-            while (dis.length < 6) {
-                dis = dis + ' ';  //adds a space before the d
+            while (dis.length < 7) {
+                dis = ' ' + dis;  //adds a space before the d
             }
             item += dis;
             amt = parseFloat(v.gross_Amount).toFixed(2);
             while (amt.length < 9) {
-                amt = amt + ' ';  //adds a space before the d
+                amt = ' ' + amt;  //adds a space before the d
             }
             item += amt;
             item += "\r\n";
@@ -177,71 +177,68 @@
         //Items end here
 
         //Adding Total Item
-        item += "            " + parseFloat(data.invoiceData.total_Quantity).toFixed(2) + "\r\n";
+        item += "\t      " + parseFloat(data.invoiceData.total_Quantity).toFixed(2) + "\r\n";
 
         //Items Total Start here
         let grossAmount = parseFloat(data.invoiceData.total_Gross_Amount).toFixed(2);
-        while (grossAmount.length < 7) {
+        while (grossAmount.length < 10) {
             grossAmount = ' ' + grossAmount;  //adds a space before the d
         }
         let promoDiscount = parseFloat(data.invoiceData.promoDiscount).toFixed(2);
-        while (promoDiscount.length < 7) {
+        while (promoDiscount.length < 10) {
             promoDiscount = ' ' + promoDiscount;  //adds a space before the d
         }
         let loyaltyDiscount = parseFloat(data.invoiceData.membershipDiscount).toFixed(2);
-        while (loyaltyDiscount.length < 7) {
+        while (loyaltyDiscount.length < 10) {
             loyaltyDiscount = ' ' + loyaltyDiscount;  //adds a space before the d
         }
         let taxable = parseFloat(data.invoiceData.taxableAmount).toFixed(2);
-        while (taxable.length < 7) {
+        while (taxable.length < 10) {
             taxable = ' ' + taxable;  //adds a space before the d
         }
         let nonTaxable = parseFloat(data.invoiceData.nonTaxableAmount).toFixed(2);
-        while (nonTaxable.length < 7) {
+        while (nonTaxable.length < 10) {
             nonTaxable = ' ' + nonTaxable;  //adds a space before the d
         }
         let vat = parseFloat(data.invoiceData.total_Vat).toFixed(2);
-        while (vat.length < 7) {
+        while (vat.length < 10) {
             vat = ' ' + vat;  //adds a space before the d
         }
-
-
-
         let netAmount = parseFloat(data.invoiceData.total_Payable_Amount).toFixed(2);
-        while (grossAmount.length < 7) {
+        while (netAmount.length < 10) {
             netAmount = ' ' + netAmount;  //adds a space before the d
         }
         let tender = parseFloat(data.invoiceData.tender_Amount).toFixed(2);
-        while (tender.length < 7) {
+        while (tender.length < 10) {
             tender = ' ' + tender;  //adds a space before the d
         }
         let change = parseFloat(data.invoiceData.change_Amount).toFixed(2);
-        while (change.length < 7) {
+        while (change.length < 10) {
             change = ' ' + change;  //adds a space before the d
         }
         var itemTotal = "";
-        itemTotal += "                ------------------------\r\n";
-        itemTotal += "                Gross Amount  : " + grossAmount + "\r\n";
-        itemTotal += "                Promo Disc.   : " + promoDiscount + "\r\n";
-        itemTotal += "                Loyalty Disc. : " + loyaltyDiscount + "\r\n";
-        itemTotal += "                Taxable       : " + taxable + "\r\n";
-        itemTotal += "                Non Taxable   : " + nonTaxable + "\r\n";
-        itemTotal += "                Vat (13%)     : " + vat + "\r\n";
-        itemTotal += "                Net Amount    : " + netAmount + "\r\n";
-        itemTotal += "                ------------------------\r\n";
-        itemTotal += "                Tender        : " + tender + "\r\n";
-        itemTotal += "                Change        : " + change + "\r\n";
-        itemTotal += "                ------------------------\r\n";
+        itemTotal += "\t      --------------------------\r\n";
+        itemTotal += "\t      Gross Amount  : " + grossAmount + "\r\n";
+        itemTotal += "\t      Promo Disc.   : " + promoDiscount + "\r\n";
+        itemTotal += "\t      Loyalty Disc. : " + loyaltyDiscount + "\r\n";
+        itemTotal += "\t      Taxable       : " + taxable + "\r\n";
+        itemTotal += "\t      Non Taxable   : " + nonTaxable + "\r\n";
+        itemTotal += "\t      Vat (13%)     : " + vat + "\r\n";
+        itemTotal += "\t      Net Amount    : " + netAmount + "\r\n";
+        itemTotal += "\t      --------------------------\r\n";
+        itemTotal += "\t      Tender        : " + tender + "\r\n";
+        itemTotal += "\t      Change        : " + change + "\r\n";
+        itemTotal += "\t      --------------------------\r\n";
         itemTotal += "Saving in this bill: Rs. " + parseFloat(data.invoiceData.total_Discount).toFixed(2) + "\r\n";
         //Items Total End Here
 
 
         //Footer start here
-        var footer = "--------------------------------------- \r\n";
+        var footer = "----------------------------------------\r\n";
         //footer += "Welcome to great shopping experience. Goods exchange within 7 days with original bill. contact: 01-5550422,23 \r\n";
-        footer += (data.storeData.PrintMessage || data.storeData.printMessage);
-        footer += "--------------------------------------- \r\n";
-        footer += "Counter : " + data.invoiceData.terminal + " (" + FormatForDisplayTime(data.invoiceData.trans_Time) + ") \r\n";
+        footer += (data.storeData.PrintMessage || data.storeData.printMessage) + "\r\n";
+        footer += "----------------------------------------\r\n";
+        footer += "Counter : " + data.invoiceData.terminal + " (" + FormatForDisplayTime(data.invoiceData.trans_Time) + ")\r\n";
         footer += "Cashier : " + data.invoiceData.created_By;
         footer += "\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n";
         //Footer end here
@@ -353,30 +350,30 @@
 
         //Header Start here
         var header = "";
-        header += "         " + (data.storeData.COMPANY_NAME || data.storeData.companY_NAME) + "\r\n";
-        header += "         " + (data.storeData.ADDRESS || data.storeData.address) + "\r\n ";
-        header += "           Vat No.: " + (data.storeData.VAT || data.storeData.vat) + "\r\n";
-        header += "       ABBREVIATED TAX INVOICE \r\n";
-        header += (_.isEmpty(data.copy) || data.copy.printCount === 0) ? "\r\n\r\n" : "    (COPY OF ORIGINAL) \r\n\r\n";
+        header += "\t" + (data.storeData.COMPANY_NAME || data.storeData.companY_NAME) + "\r\n";
+        header += "\t" + (data.storeData.ADDRESS || data.storeData.address) + "\r\n ";
+        header += "\t    Vat No.: " + (data.storeData.VAT || data.storeData.vat) + "\r\n";
+        header += "\t  ABBREVIATED TAX INVOICE \r\n";
+        header += (_.isEmpty(data.copy) || data.copy.printCount === 0) ? "\r\n\r\n" : "\t    (COPY OF ORIGINAL)\r\n\r\n";
         header += "Bill #   : " + data.invoiceData.invoice_Number + "\r\n";
-        header += "Date     : " + FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)) + " (" + data.invoiceData.trans_Date_Bs + ") \r\n";
+        header += "Date     : " + FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)) + " (" + data.invoiceData.trans_Date_Bs + ")\r\n";
         if (data.invoiceData.memberId !== "POS") {
-            header += "Bill To  : " + data.invoiceData.customer_Name + "  \r\n";
+            header += "Bill To  : " + data.invoiceData.customer_Name + "\r\n";
             if (!_.isEmpty(data.invoiceData.customer_Address)) {
-                header += "Address  : " + data.invoiceData.customer_Address + " \r\n";
+                header += "Address  : " + data.invoiceData.customer_Address + "\r\n";
             }
             if (!_.isEmpty(data.invoiceData.customer_Mobile)) {
                 header += "Mobile   : " + data.invoiceData.customer_Mobile + "\r\n";
             }
         }
         header += "Pay Mode : " + paymentMode + "\r\n";
-        header += "--------------------------------------- \r\n";
+        header += "----------------------------------------\r\n";
         //Header end here
 
 
         //Item Header Start here
-        var itemHeader = "Particulars  Qty  Rate  P.Dis   Amount  \r\n";
-        itemHeader += "------------------------------------- \r\n";
+        var itemHeader = "Particulars  Qty    Rate  P.Dis   Amount\r\n";
+        itemHeader += "----------------------------------------\r\n";
         //Item Header End here
 
         //items start here
@@ -396,23 +393,23 @@
             }
             item += itemName;
             qty = parseFloat(v.quantity).toFixed(2);
-            while (qty.length < 6) {
-                qty = qty + ' ';  //adds a space before the d
+            while (qty.length < 4) {
+                qty = ' ' + qty;  //adds a space before the d
             }
             item += qty;
             rate = parseFloat(v.rate).toFixed(2);
-            while (rate.length < 9) {
-                rate = rate + ' ';  //adds a space before the d
+            while (rate.length < 8) {
+                rate = ' ' + rate;  //adds a space before the d
             }
             item += rate;
             dis = parseFloat(v.promoDiscount).toFixed(2);
-            while (dis.length < 6) {
-                dis = dis + ' ';  //adds a space before the d
+            while (dis.length < 7) {
+                dis = ' ' + dis;  //adds a space before the d
             }
             item += dis;
             amt = parseFloat(v.gross_Amount).toFixed(2);
-            while (amt.length < 8) {
-                amt = amt + ' ';  //adds a space before the d
+            while (amt.length < 9) {
+                amt = ' ' + amt;  //adds a space before the d
             }
             item += amt;
             //item += "      ";
@@ -423,53 +420,53 @@
         //Items end here
 
         //Adding Total Item
-        item += "            " + parseFloat(data.invoiceData.total_Quantity).toFixed(2) + "\r\n";
+        item += "\t      " + parseFloat(data.invoiceData.total_Quantity).toFixed(2) + "\r\n";
 
         //Items Total Start here
         let grossAmount = parseFloat(data.invoiceData.total_Gross_Amount).toFixed(2);
-        while (grossAmount.length < 7) {
+        while (grossAmount.length < 10) {
             grossAmount = ' ' + grossAmount;  //adds a space before the d
         }
         let promoDiscount = parseFloat(data.invoiceData.promoDiscount).toFixed(2);
-        while (promoDiscount.length < 7) {
+        while (promoDiscount.length < 10) {
             promoDiscount = ' ' + promoDiscount;  //adds a space before the d
         }
         let loyaltyDiscount = parseFloat(data.invoiceData.membershipDiscount).toFixed(2);
-        while (loyaltyDiscount.length < 7) {
+        while (loyaltyDiscount.length < 10) {
             loyaltyDiscount = ' ' + loyaltyDiscount;  //adds a space before the d
         }
         let netAmount = parseFloat(data.invoiceData.total_Payable_Amount).toFixed(2);
-        while (grossAmount.length < 7) {
+        while (netAmount.length < 10) {
             netAmount = ' ' + netAmount;  //adds a space before the d
         }
         let tender = parseFloat(data.invoiceData.tender_Amount).toFixed(2);
-        while (tender.length < 7) {
+        while (tender.length < 10) {
             tender = ' ' + tender;  //adds a space before the d
         }
         let change = parseFloat(data.invoiceData.change_Amount).toFixed(2);
-        while (change.length < 7) {
+        while (change.length < 10) {
             change = ' ' + change;  //adds a space before the d
         }
         var itemTotal = "";
-        itemTotal += "                ------------------------\r\n";
-        itemTotal += "                Gross Amount  : " + grossAmount + "\r\n";
-        itemTotal += "                Promo Disc.   : " + promoDiscount + "\r\n";
-        itemTotal += "                Loyalty Disc. : " + loyaltyDiscount + "\r\n";
-        itemTotal += "                Net Amount    : " + netAmount + "\r\n";
-        itemTotal += "                ------------------------\r\n";
-        itemTotal += "                Tender        : " + tender + "\r\n";
-        itemTotal += "                Change        : " + change + "\r\n";
-        itemTotal += "                ------------------------\r\n";
+        itemTotal += "\t      --------------------------\r\n";
+        itemTotal += "\t      Gross Amount  : " + grossAmount + "\r\n";
+        itemTotal += "\t      Promo Disc.   : " + promoDiscount + "\r\n";
+        itemTotal += "\t      Loyalty Disc. : " + loyaltyDiscount + "\r\n";
+        itemTotal += "\t      Net Amount    : " + netAmount + "\r\n";
+        itemTotal += "\t      --------------------------\r\n";
+        itemTotal += "\t      Tender        : " + tender + "\r\n";
+        itemTotal += "\t      Change        : " + change + "\r\n";
+        itemTotal += "\t      --------------------------\r\n";
         itemTotal += "Saving in this bill: Rs. " + parseFloat(data.invoiceData.total_Discount).toFixed(2) + "\r\n";
         //Items Total End Here
 
 
         //Footer start here
-        var footer = "--------------------------------------- \r\n";
+        var footer = "----------------------------------------\r\n";
         //footer += "Welcome to great shopping experience. Goods exchange within 7 days with original bill. contact: 01-5550422,23 \r\n";
-        footer += (data.storeData.PrintMessage || data.storeData.printMessage);
-        footer += "--------------------------------------- \r\n";
-        footer += "Counter : " + data.invoiceData.terminal + " (" + FormatForDisplayTime(data.invoiceData.trans_Time) + ") \r\n";
+        footer += (data.storeData.PrintMessage || data.storeData.printMessage) + "\r\n";
+        footer += "----------------------------------------\r\n";
+        footer += "Counter : " + data.invoiceData.terminal + " (" + FormatForDisplayTime(data.invoiceData.trans_Time) + ")\r\n";
         footer += "Cashier : " + data.invoiceData.created_By;
         footer += "\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n";
         //Footer end here
@@ -579,6 +576,157 @@
     };
 
     let PrintCreditNoteInvoice = (data, callback) => {
+
+        //Header Start here
+        var header = "";
+        header += "\t" + (data.storeData.COMPANY_NAME || data.storeData.companY_NAME) + "\r\n";
+        header += "\t" + (data.storeData.ADDRESS || data.storeData.address) + "\r\n ";
+        header += "\t    Vat No.: " + (data.storeData.VAT || data.storeData.vat) + "\r\n";
+        header += "\t       CREDIT NOTE \r\n";
+        header += (data.copy === undefined || data.copy === false) ? "\r\n\r\n" : "\t    (COPY OF ORIGINAL)\r\n\r\n";
+        header += "Bill #   : " + data.invoiceData.credit_Note_Number + "\r\n";
+        header += "Ref No. #: " + data.invoiceData.reference_Number + "\r\n";
+        header += "Date     : " + FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)) + " (" + data.invoiceData.trans_Date_Bs + ")\r\n";
+        if (data.invoiceData.memberId !== "POS") {
+            header += "Bill To  : " + data.invoiceData.customer_Name + "\r\n";
+            if (!_.isEmpty(data.invoiceData.customer_Address)) {
+                header += "Address  : " + data.invoiceData.customer_Address + "\r\n";
+            }
+            if (!_.isEmpty(data.invoiceData.customer_Mobile)) {
+                header += "Mobile   : " + data.invoiceData.customer_Mobile + "\r\n";
+            }
+        }
+        if (!_.isEmpty(data.invoiceData.customer_Vat || (data.invoiceData.customer_Vat !== "NA"))) {
+            header += "VAT      : " + data.invoiceData.customer_Vat + "\r\n";
+        }
+        header += "Remarks  : " + data.invoiceData.credit_Note + "\r\n";
+        header += "Pay Mode : " + data.invoiceData.payment_Mode + "\r\n";
+        header += "----------------------------------------\r\n";
+        //Header end here
+
+
+        //Item Header Start here
+        var itemHeader = "Particulars  Qty    Rate  P.Dis   Amount\r\n";
+        itemHeader += "----------------------------------------\r\n";
+        //Item Header End here
+
+        //items start here
+        let printItems = "";
+        var space = ' ';
+        var spaceMain = ' ';
+        var itemName = '';
+        var qty = '';
+        var rate = '';
+        var dis = '';
+        var amt = '';
+        var item = "";
+        _.each(data.invoiceData.creditNoteItems, function (v, k) {
+            itemName = v.name.substring(0, maximumCharAllowInItemName);
+            while (itemName.length < 12) {
+                itemName = itemName + ' ';  //adds a space before the d
+            }
+            item += itemName;
+            qty = parseFloat(v.quantity).toFixed(2);
+            while (qty.length < 4) {
+                qty = ' ' + qty;  //adds a space before the d
+            }
+            item += qty;
+            rate = parseFloat(v.rate).toFixed(2);
+            while (rate.length < 8) {
+                rate = ' ' + rate;  //adds a space before the d
+            }
+            item += rate;
+            dis = parseFloat(v.promoDiscount).toFixed(2);
+            while (dis.length < 7) {
+                dis = ' ' + dis;  //adds a space before the d
+            }
+            item += dis;
+            amt = parseFloat(v.gross_Amount).toFixed(2);
+            while (amt.length < 9) {
+                amt = ' ' + amt;  //adds a space before the d
+            }
+            item += amt;
+            //item += "      ";
+            item += "\r\n";
+
+        });
+
+        //Items end here
+
+        //Adding Total Item
+        item += "\t      " + parseFloat(data.invoiceData.total_Quantity).toFixed(2) + "\r\n";
+
+        //Items Total Start here
+        let grossAmount = parseFloat(data.invoiceData.total_Gross_Amount).toFixed(2);
+        while (grossAmount.length < 10) {
+            grossAmount = ' ' + grossAmount;  //adds a space before the d
+        }
+        let promoDiscount = parseFloat(data.invoiceData.promoDiscount).toFixed(2);
+        while (promoDiscount.length < 10) {
+            promoDiscount = ' ' + promoDiscount;  //adds a space before the d
+        }
+        let loyaltyDiscount = parseFloat(data.invoiceData.membershipDiscount).toFixed(2);
+        while (loyaltyDiscount.length < 10) {
+            loyaltyDiscount = ' ' + loyaltyDiscount;  //adds a space before the d
+        }
+        let taxable = parseFloat(data.invoiceData.taxableAmount).toFixed(2);
+        while (taxable.length < 10) {
+            taxable = ' ' + taxable;  //adds a space before the d
+        }
+        let nonTaxable = parseFloat(data.invoiceData.nonTaxableAmount).toFixed(2);
+        while (nonTaxable.length < 10) {
+            nonTaxable = ' ' + nonTaxable;  //adds a space before the d
+        }
+        let vat = parseFloat(data.invoiceData.total_Vat).toFixed(2);
+        while (vat.length < 10) {
+            vat = ' ' + vat;  //adds a space before the d
+        }
+        let netAmount = parseFloat(data.invoiceData.total_Net_Amount).toFixed(2);
+        while (netAmount.length < 10) {
+            netAmount = ' ' + netAmount;  //adds a space before the d
+        }
+        let tender = parseFloat(data.invoiceData.tender_Amount).toFixed(2);
+        while (tender.length < 10) {
+            tender = ' ' + tender;  //adds a space before the d
+        }
+        let change = parseFloat(data.invoiceData.change_Amount).toFixed(2);
+        while (change.length < 10) {
+            change = ' ' + change;  //adds a space before the d
+        }
+        var itemTotal = "";
+        itemTotal += "\t      --------------------------\r\n";
+        itemTotal += "\t      Gross Amount  : " + grossAmount + "\r\n";
+        itemTotal += "\t      Promo Disc.   : " + promoDiscount + "\r\n";
+        itemTotal += "\t      Loyalty Disc. : " + loyaltyDiscount + "\r\n";
+        itemTotal += "\t      Taxable       : " + taxable + "\r\n";
+        itemTotal += "\t      Non Taxable   : " + nonTaxable + "\r\n";
+        itemTotal += "\t      Vat (13%)     : " + vat + "\r\n";
+        itemTotal += "\t      Net Amount    : " + netAmount + "\r\n";
+        itemTotal += "\t      --------------------------\r\n";
+        itemTotal += "\t      Tender        : " + tender + "\r\n";
+        itemTotal += "\t      Change        : " + change + "\r\n";
+        //Items Total End Here
+
+
+        //Footer start here
+        var footer = "----------------------------------------\r\n";
+        //footer += "Welcome to great shopping experience. Goods exchange within 7 days with original bill. contact: 01-5550422,23 \r\n";
+        footer += (data.storeData.PrintMessage || data.storeData.printMessage) + "\r\n";
+        footer += "----------------------------------------\r\n";
+        footer += "Counter : " + data.invoiceData.terminal + " (" + FormatForDisplayTime(data.invoiceData.trans_Time) + ")\r\n";
+        footer += "Cashier : " + data.invoiceData.created_By;
+        footer += "\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n";
+        //Footer end here
+
+
+
+        //Final Data
+        var finalBill = header + itemHeader + item + itemTotal + footer;
+
+        printwsBill(finalBill, callback, data, PrintCreditNoteInvoiceBrowser);
+    }
+
+    let PrintCreditNoteInvoiceBrowser = (data, callback) => {
         
         var url = ""
         var companyInitital = data.storeData.initial || data.storeData.INITIAL;
@@ -683,6 +831,7 @@
             }
         });
     };
+
     let PrintDenomination = (data, callback) => {
         //var bill = "";
         //bill += "       " + data.Store.COMPANY_NAME + "      ";
