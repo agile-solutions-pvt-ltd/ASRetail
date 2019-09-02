@@ -38,17 +38,17 @@ namespace POS.UI.Controllers
             //.Select(y => new Settlement{
             //    Id = x=>x.
             //    x.Sum(y => y.Amount));
-            
+
             String _status = status ?? new string("Closed");
             DateTime _startDate = startdate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
-           
-            DateTime _endDate = enddate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day) ;
+
+            DateTime _endDate = enddate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
             TempData["startdate"] = _startDate;
             TempData["enddate"] = _endDate;
             TempData["Status"] = _status;
-         
-                 _endDate = _endDate.AddHours(23);
- 
+
+            _endDate = _endDate.AddHours(23);
+
 
             IEnumerable<SettlementViewModel> settlement = _context.SettlementViewModel.Where(x => x.Status == _status && x.StartTransaction >= _startDate && x.EndTransaction <= _endDate);
             return View(settlement);
@@ -60,11 +60,12 @@ namespace POS.UI.Controllers
         {
             String _status = status ?? new string("Closed");
 
-            DateTime _startDate = startdate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month,DateTime.Now.Day);
+            DateTime _startDate = startdate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
             DateTime _endDate = enddate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
             _endDate = _endDate.AddHours(23);
-            if (_status == "verified") { 
-            IEnumerable<SettlementViewModel> settlement = _context.SettlementViewModel.Where(x => x.Status == _status && x.VerifiedDate >= _startDate && x.VerifiedDate <= _endDate).ToList();
+            if (_status == "verified")
+            {
+                IEnumerable<SettlementViewModel> settlement = _context.SettlementViewModel.Where(x => x.Status == _status && x.VerifiedDate >= _startDate && x.VerifiedDate <= _endDate).ToList();
                 return Ok(settlement);
             }
             else
@@ -73,32 +74,32 @@ namespace POS.UI.Controllers
                 return Ok(settlement);
 
             }
-           
+
         }
 
         [HttpGet]
         public IActionResult GetSettlementById(string session)
         {
-           
+
             IEnumerable<SettlementViewModel> settlementData = _context.SettlementViewModel.Where(x => x.SessionId == session).ToList();
             var store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
             return Ok(new { SettlementData = settlementData, Store = store });
         }
 
-//        [HttpGet]
-//        public IActionResult GetSettlementCashAmount(string userId, DateTime startDate, DateTime endDate)
-//        {
+        //        [HttpGet]
+        //        public IActionResult GetSettlementCashAmount(string userId, DateTime startDate, DateTime endDate)
+        //        {
 
-//            string query = $@"select si.Created_By, sib.Terminal, sum(si.Total_Payable_Amount) as Amount from
-//SALES_INVOICE si
-//inner join SALES_INVOICE_BILL sib on si.Invoice_Number = sib.Invoice_Number
-//where sib.Trans_Mode = 'Cash' and si.Created_By = 'SUHMITA.RAI' and
-//cast(si.Trans_Date_AD as Date) >= CAST('2019-07-19' as date) and Cast(si.trans_time as time) >= cast('2019-07-19T09:00:00.840' as time)
-//and cast(si.Trans_Date_AD as Date) <= CAST('2019-07-19' as date) and cast(si.Trans_Time as time) <= cast('2019-07-19T20:16:00.840' as time)
-//group by si.Created_By,sib.Terminal";
-//            var value = _context
-//            return Ok(new { CashAmount = settlementData, Store = store });
-//        }
+        //            string query = $@"select si.Created_By, sib.Terminal, sum(si.Total_Payable_Amount) as Amount from
+        //SALES_INVOICE si
+        //inner join SALES_INVOICE_BILL sib on si.Invoice_Number = sib.Invoice_Number
+        //where sib.Trans_Mode = 'Cash' and si.Created_By = 'SUHMITA.RAI' and
+        //cast(si.Trans_Date_AD as Date) >= CAST('2019-07-19' as date) and Cast(si.trans_time as time) >= cast('2019-07-19T09:00:00.840' as time)
+        //and cast(si.Trans_Date_AD as Date) <= CAST('2019-07-19' as date) and cast(si.Trans_Time as time) <= cast('2019-07-19T20:16:00.840' as time)
+        //group by si.Created_By,sib.Terminal";
+        //            var value = _context
+        //            return Ok(new { CashAmount = settlementData, Store = store });
+        //        }
 
 
 
@@ -114,7 +115,7 @@ namespace POS.UI.Controllers
                 using (var trans = _context.Database.BeginTransaction())
                 {
                     try
-                    {                        
+                    {
                         foreach (var item in settlement)
                         {
                             if (item.PaymentMode == "Cash")
@@ -149,13 +150,15 @@ namespace POS.UI.Controllers
                         var settlementData = _context.SettlementViewModel.Where(x => x.SessionId == settlement.FirstOrDefault().SessionId).ToList();
                         return Ok(new { SettlementData = settlementData, Store = store });
                     }
+#pragma warning disable CS0168 // The variable 'ex' is declared but never used
                     catch (Exception ex)
+#pragma warning restore CS0168 // The variable 'ex' is declared but never used
                     {
                         trans.Rollback();
                     }
                 };
-                
-                
+
+
             }
             return StatusCode(400);
         }

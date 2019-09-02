@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace POS.DTO
 {
@@ -10,10 +8,10 @@ namespace POS.DTO
         public ApplicationUser()
             : base()
         {
-            this.Id = Guid.NewGuid().ToString();           
-           
+            this.Id = Guid.NewGuid().ToString();
+
         }
 
-       
+
     }
 }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace POS.DTO 
+namespace POS.DTO
 {
     [Table("SALES_INVOICE")]
     [JsonObject(IsReference = true)]

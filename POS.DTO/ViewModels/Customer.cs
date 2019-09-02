@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace POS.DTO
@@ -20,7 +18,7 @@ namespace POS.DTO
         [Key]
         public string Membership_Number { get; set; }
         public string Membership_Number_Old { get; set; }
-        public string Barcode { get; set; }     
+        public string Barcode { get; set; }
         public string CustomerPriceGroup { get; set; }
         public string CustomerDiscGroup { get; set; }
         public string MembershipDiscGroup { get; set; }

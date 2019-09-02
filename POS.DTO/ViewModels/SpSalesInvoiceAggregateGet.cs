@@ -10,7 +10,7 @@ namespace POS.DTO
         public int SN { get; set; }
         public DateTime Trans_Date_AD { get; set; }
 
-       
+
         public string Created_By { get; set; }
 
         public decimal Card { get; set; }

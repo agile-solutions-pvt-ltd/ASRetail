@@ -1,6 +1,6 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
+using System;
 
 namespace POS.Core.Migrations
 {
@@ -47,7 +47,7 @@ namespace POS.Core.Migrations
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
                 });
 
-          
+
             migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new

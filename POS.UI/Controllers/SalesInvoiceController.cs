@@ -57,9 +57,15 @@ namespace POS.UI.Controllers
 
                 int invoiceId = 0;
                 if (Request.Query["Mode"].ToString() != null && Request.Query["Mode"].ToString() == "tax")
-                    invoiceId = _context.SalesInvoice.Where(x => x.Trans_Type == "Tax").Select(x => x.Invoice_Id).DefaultIfEmpty(0).Max() + 1;
+                {
+                    invoiceId = _context.SalesInvoice.Where(x => x.Trans_Type == "Tax").Max(x => x.Invoice_Id as int?) ?? 0;
+                    // invoiceId = _context.SalesInvoice.Where(x => x.Trans_Type == "Tax").Select(x => x.Invoice_Id).DefaultIfEmpty(0).Max() + 1;
+                }
                 else
-                    invoiceId = _context.SalesInvoice.Where(x => x.Trans_Type == "Sales").Select(x => x.Invoice_Id).DefaultIfEmpty(0).Max() + 1;
+                {
+                    invoiceId = _context.SalesInvoice.Where(x => x.Trans_Type == "Sales").Max(x => x.Invoice_Id as int?) ?? 0;
+                   // invoiceId = _context.SalesInvoice.Where(x => x.Trans_Type == "Sales").Select(x => x.Invoice_Id).DefaultIfEmpty(0).Max() + 1;
+                }
                 tmp = new SalesInvoiceTmp()
                 {
                     Invoice_Number = "SI-" + invoiceId.ToString("0000") + "-" + store.INITIAL + "-" + store.FISCAL_YEAR

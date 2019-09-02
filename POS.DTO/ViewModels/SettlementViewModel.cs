@@ -1,20 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
 namespace POS.DTO
 {
     [Table("SettlementView")]
-    public  class SettlementViewModel
+    public class SettlementViewModel
     {
         [Key]
         public Int64 Id { get; set; }
         public string SessionId { get; set; }
         public int TerminalId { get; set; }
-        public int DenominationId { get; set; }       
-       
+        public int DenominationId { get; set; }
+
         public string TerminalName { get; set; }
         public string UserId { get; set; }
         public string UserName { get; set; }

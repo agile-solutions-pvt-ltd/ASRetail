@@ -1201,9 +1201,9 @@ const invoice = (function () {
                     discountExcVat = 0,
                     grossAmout = 0;
 
-               
+
                 if ($(this).data("isChanged") != undefined && $(this).data("isChanged") == true) {
-                   
+
 
                     // 2. calc tax include Rate
                     rateIncludeTax = calcRate(itemCode, quantity, $(this));
@@ -1336,7 +1336,7 @@ const invoice = (function () {
 
             });
         }
-        
+
         //calctotal tax
         totalTax = totalTaxableAmount * 13 / 100;
         totalNetAmount = totalTaxableAmount + totalNonTaxableAmount + parseFloat(totalTax.toFixed(2));
@@ -1588,13 +1588,14 @@ const invoice = (function () {
                         }
                     },
                     callback: function (result) {
+                        debugger;
                         if (result) {
                             if (mode === "tax")
                                 setTimeout(() => { location.assign(window.location.origin + "/SalesInvoice/Landing?mode=tax") }, 100);
                             else
                                 setTimeout(() => { location.assign(window.location.origin + "/SalesInvoice/Landing") }, 100);
-                        }
-                        return false;
+                        } else
+                            return;
                     }
                 }).one("shown.bs.modal", function () {
                     //temporary paused the shortcut events
@@ -1980,6 +1981,9 @@ const invoice = (function () {
     };
     let SaveSalesInvoice = () => {
         $("#NextButton").val("Please wait ..");
+        ////first calc total
+        ////*** deu to slow computer donot process all calculation
+        calcTotal();
         //check sales limit
         if (transType.val() === "Sales" && parseFloat(CurrencyUnFormat($("#totalNetAmount").text())) >= salesTransactionLimit) {
             //if (confirm('Your Transaction Amount Is Greater Than Sale Limit. \n Do You Want To Convert To Tax Invoice?')) {
@@ -2008,10 +2012,12 @@ const invoice = (function () {
         //validate
         if (!$('form#Sales_Invoice_Form').valid()) {
             bootbox.alert("Something wrong, please check all values !!");
+            $("#NextButton").val("Next");
             return false;
         }
         if (tableRows === undefined || tableRows.rows.length === 0) {
             bootbox.alert("No Item selected !!");
+            $("#NextButton").val("Next");
             return false;
         }
         let checkQuantityAndRateZeroValue = false;
@@ -2022,11 +2028,13 @@ const invoice = (function () {
             let quantity = parseFloat($(this).find(".Quantity").val());
             if (rate === 0 || quantity === 0) {
                 checkQuantityAndRateZeroValue = true;
+                $("#NextButton").val("Next");
                 return false;
             }
         });
         if (checkQuantityAndRateZeroValue) {
             bootbox.alert("Item price or quantity must be greater than zero !!");
+            $("#NextButton").val("Next");
             return false;
         }
 
@@ -2131,6 +2139,7 @@ const invoice = (function () {
                 else {
                     StatusNotify("error", result.responseText);
                 }
+                $("#NextButton").val("Next");
             }
         });
 

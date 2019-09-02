@@ -12,14 +12,13 @@
   "NavUserName": "web.user",
   "NavPassword": "W3b@2019",
   "StopPostingIRD": false,
-  "StopInvoicePosting": false,
-  "StopCreditNotePosting": false,
-  "StopCustomerPosting": false,
-  "OfficeHourStart": "16:08:00.3041840",
+  "StopInvoicePosting": true,
+  "StopCreditNotePosting": true,
+  "StopCustomerPosting": true,
+  "OfficeHourStart": "16:00:00.3041840",
   "OfficeHourEnd": "21:00:00.3041840",
   "Location": "SDB",
   "LoggedInUsers": [
-    "URMILA.SHRESTHA",
     "Admin"
   ],
   "SchedulerDuration": {

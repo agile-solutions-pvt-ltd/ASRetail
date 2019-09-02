@@ -132,7 +132,7 @@ namespace POS.UI.Controllers
         {
             if (!string.IsNullOrEmpty(name))
             {
-                NavSync sync = new NavSync(_context, _mapper, _userManager, _roleManager, _cache,Configuration);
+                NavSync sync = new NavSync(_context, _mapper, _userManager, _roleManager, _cache, Configuration);
                 Type t = sync.GetType();
                 MethodInfo method = t.GetMethod(name);
                 var result = (bool)method.Invoke(sync, null);
@@ -145,7 +145,7 @@ namespace POS.UI.Controllers
             return StatusCode(400);
         }
 
-
+        [AutomaticRetry(Attempts = 0)]
         public IActionResult PostInvoiceToNAV()
         {
             NavPostData sync = new NavPostData(_context, _mapper);
@@ -153,7 +153,7 @@ namespace POS.UI.Controllers
             //sync.PostSalesInvoice(store);
             //sync.PostSalesInvoice(store);
             BackgroundJob.Enqueue(() => sync.PostSalesInvoice(store));
-           // BackgroundJob.Enqueue(() => Console.WriteLine("test from background"));
+            // BackgroundJob.Enqueue(() => Console.WriteLine("test from background"));
             var data = new
             {
                 Status = 200,
@@ -161,6 +161,7 @@ namespace POS.UI.Controllers
             };
             return Ok(data);
         }
+        [AutomaticRetry(Attempts = 0)]
         public IActionResult PostCreditNoteToNAV()
         {
             NavPostData sync = new NavPostData(_context, _mapper);
@@ -175,6 +176,7 @@ namespace POS.UI.Controllers
             };
             return Ok(data);
         }
+        [AutomaticRetry(Attempts = 0)]
         public IActionResult PostCustomerToNAV()
         {
             NavPostData sync = new NavPostData(_context, _mapper);
@@ -186,6 +188,7 @@ namespace POS.UI.Controllers
             };
             return Ok(data);
         }
+        [AutomaticRetry(Attempts = 0)]
         public IActionResult PostUnSyncInvoiceToNav()
         {
             NavPostData sync = new NavPostData(_context, _mapper);
@@ -204,9 +207,9 @@ namespace POS.UI.Controllers
         }
         public IActionResult PostUnSyncInvoiceToNavSchedulerStart()
         {
-           // RecurringJob.AddOrUpdate(() => PostCustomerToNAV(), Cron.Daily);
+            // RecurringJob.AddOrUpdate(() => PostCustomerToNAV(), Cron.Daily);
             RecurringJob.AddOrUpdate(() => PostUnSyncInvoiceToNav(), "15 17 * * *");
-           
+
             var data = new
             {
                 Status = 200,
@@ -234,11 +237,11 @@ namespace POS.UI.Controllers
             return Ok();
         }
 
-       
+
         public IActionResult NAVTestConnection()
         {
             Config config = ConfigJSON.Read();
-            NavSync sync = new NavSync(_context, _mapper, _userManager, _roleManager, _cache,Configuration);
+            NavSync sync = new NavSync(_context, _mapper, _userManager, _roleManager, _cache, Configuration);
             var result = sync.TestNavConnection();
 
             if (result is string && result != "Success")
@@ -290,17 +293,17 @@ namespace POS.UI.Controllers
         //transaction type: 1 = Sales, 2 = Tax Invoice, 2 = Credit Note Invoice
         public IActionResult NavUnsyncedInvoiceByTransaction(int transactionType)
         {
-            if(transactionType == 1)
+            if (transactionType == 1)
             {
                 var list = _context.SalesInvoice.Where(x => x.IsNavSync == false && x.Trans_Type == "Sales");
                 return Ok(list);
             }
-            else if(transactionType == 2)
+            else if (transactionType == 2)
             {
                 var list = _context.SalesInvoice.Where(x => x.IsNavSync == false && x.Trans_Type == "Tax");
                 return Ok(list);
             }
-            else if(transactionType == 3)
+            else if (transactionType == 3)
             {
                 var list = _context.CreditNote
                     .Where(x => x.IsNavSync == false)

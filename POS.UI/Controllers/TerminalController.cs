@@ -199,7 +199,9 @@ namespace POS.UI.Controllers
 
                 RestSharp.IRestResponse response = client.Execute(request);
                 string pcName = response.Content.Replace("\"", "");
+#pragma warning disable CS0219 // The variable 'terminalId' is assigned but its value is never used
                 int terminalId = 0;
+#pragma warning restore CS0219 // The variable 'terminalId' is assigned but its value is never used
                 //check if terminal is assigned
                 TerminalMapping terminalMapping = _context.TerminalMapping.FirstOrDefault(x => x.PCName == pcName);
                 Terminal terminal = new Terminal();
@@ -208,7 +210,9 @@ namespace POS.UI.Controllers
 
                 return Ok(new { pcName = pcName, terminalId = terminalMapping.TerminalId.ToString(), terminalName = terminal?.Name });
             }
+#pragma warning disable CS0168 // The variable 'ex' is declared but never used
             catch (Exception ex)
+#pragma warning restore CS0168 // The variable 'ex' is declared but never used
             {
                 return StatusCode(500);
             }
@@ -223,7 +227,7 @@ namespace POS.UI.Controllers
         public IActionResult GetTerminalInfo(string ip)
         {
             try
-            {                 
+            {
                 int terminalId = 0;
                 //check if terminal is assigned
                 TerminalMapping terminalMapping = _context.TerminalMapping.FirstOrDefault(x => x.IPAddress == ip);
@@ -236,7 +240,9 @@ namespace POS.UI.Controllers
 
                 return Ok(new { pcName = "", terminalId = terminalId, terminalName = terminal?.Name });
             }
+#pragma warning disable CS0168 // The variable 'ex' is declared but never used
             catch (Exception ex)
+#pragma warning restore CS0168 // The variable 'ex' is declared but never used
             {
                 return StatusCode(500);
             }

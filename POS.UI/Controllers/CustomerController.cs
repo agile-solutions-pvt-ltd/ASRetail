@@ -554,9 +554,10 @@ namespace POS.UI.Controllers
                         Vat = x.Vat
                     }).ToList();
 
-                      
+
                     }
-                    customers.Add(new CustomerViewModel() {
+                    customers.Add(new CustomerViewModel()
+                    {
                         Address = customer.Address,
                         Barcode = customer.Barcode,
                         Code = customer.Code,

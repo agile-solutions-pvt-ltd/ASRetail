@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace POS.DTO
 {
@@ -15,7 +13,7 @@ namespace POS.DTO
         public string invoice_number { get; set; }
         public string ref_invoice_number { get; set; }
         public string invoice_date { get; set; }
-       public string  credit_note_date { get; set; }
+        public string credit_note_date { get; set; }
         public string credit_note_number { get; set; }
         public string reason_for_return { get; set; }
         public double total_sales { get; set; }

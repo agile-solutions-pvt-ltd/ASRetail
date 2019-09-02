@@ -160,7 +160,7 @@ namespace Microsoft.EntityFrameworkCore
             }
         }
 
-        
+
         private static DbContext GetContext<TEntity>(this DbSet<TEntity> dbSet)
         where TEntity : class
         {

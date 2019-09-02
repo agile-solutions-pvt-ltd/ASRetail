@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace POS.DTO
 {
-   public class SalesInvoiceBillingViewModel
+    public class SalesInvoiceBillingViewModel
     {
         [Key]
         public Guid salesInvoiceId { get; set; }
@@ -17,6 +16,6 @@ namespace POS.DTO
 
 
         public List<SalesInvoiceBill> bill { get; set; }
-       
+
     }
 }

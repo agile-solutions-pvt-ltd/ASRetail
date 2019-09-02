@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
-
-namespace POS.DTO
+﻿namespace POS.DTO
 {
-   
-    public  class SettlementPostViewModel
+
+    public class SettlementPostViewModel
     {
         public Settlement Settlement { get; set; }
         public decimal AdjustmentCardAmount { get; set; } = 0;

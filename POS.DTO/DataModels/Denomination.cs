@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -10,7 +9,7 @@ namespace POS.DTO
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        [Display(Name ="User")]
+        [Display(Name = "User")]
         public string User_Id { get; set; }
         [Display(Name = "Terminal")]
         public int Terminal_Id { get; set; }
@@ -50,7 +49,7 @@ namespace POS.DTO
         [Display(Name = "IC")]
         public decimal? Ric { get; set; } = 0;
         public decimal? Other { get; set; } = 0;
-        [Required,Range(1, double.MaxValue, ErrorMessage = "Total Amount should be greater than zero !!")]
+        [Required, Range(1, double.MaxValue, ErrorMessage = "Total Amount should be greater than zero !!")]
         public decimal Total { get; set; } = 0;
 
         public decimal TotalCash { get; set; } = 0;

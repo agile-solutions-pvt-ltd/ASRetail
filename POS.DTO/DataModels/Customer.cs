@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -40,7 +39,7 @@ namespace POS.DTO
         public string Designation { get; set; }
         public DateTime? Registration_Date { get; set; } = DateTime.Now;
         public string Validity_Period { get; set; }
-        public DateTime? Validity_Date { get; set; }        
+        public DateTime? Validity_Date { get; set; }
         public string Reference_By { get; set; }
         public string Created_By { get; set; }
         public DateTime? Created_Date { get; set; } = DateTime.Now;

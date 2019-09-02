@@ -102,7 +102,7 @@ namespace POS.UI.Controllers
                     //get user role
                     var role = _context.UserViewModel.FirstOrDefault(x => x.UserName == user.UserName);
                     var rolePermission = _context.RoleWisePermission.FirstOrDefault(x => x.RoleId == role.RoleId || x.RoleId == role.Role);
-                   
+
 
                     //save to session 
                     HttpContext.Session.SetString("Role", JsonConvert.SerializeObject(role));
@@ -124,7 +124,7 @@ namespace POS.UI.Controllers
 
                         //var roleName = User.FindFirstValue(ClaimTypes.Role);
                         //var role = _roleManager.FindByNameAsync(roleName);
-                       
+
                         bool requireTerminalToLogin = rolePermission == null ? false : rolePermission.Require_Terminal_To_Login;
                         if (requireTerminalToLogin)
                         {
@@ -831,7 +831,7 @@ namespace POS.UI.Controllers
         [HttpGet]
         public IActionResult RoleWiseMenuPermission()
         {
-            
+
             IList<RoleWiseMenuPermission> permission = new List<RoleWiseMenuPermission>();
             if (HttpContext.Session.GetString("Menus") != null)
                 permission = JsonConvert.DeserializeObject<List<RoleWiseMenuPermission>>(HttpContext.Session.GetString("Menus"));

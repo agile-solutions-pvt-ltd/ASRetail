@@ -214,7 +214,9 @@ namespace POS.UI.Sync
                         return false;
                     }
                 }
+#pragma warning disable CS0168 // The variable 'ex' is declared but never used
                 catch (Exception ex)
+#pragma warning restore CS0168 // The variable 'ex' is declared but never used
                 {
                     //log
                     return false;
@@ -670,18 +672,19 @@ namespace POS.UI.Sync
                         List<ItemPrice> item = _mapper.Map<List<ItemPrice>>(response.Data.value);
                         var listOfItemCodeToRemove = item.Select(x => x.ItemCode).ToList();
                         var listOfItemToRemove = _context.ItemPrice.Where(x => listOfItemCodeToRemove.Contains(x.ItemCode));
-                        foreach(var i in listOfItemToRemove)
+                        foreach (var i in listOfItemToRemove)
                         {
                             try
                             {
                                 _context.ItemPrice.Remove(i);
                             }
-                            catch {
+                            catch
+                            {
                                 item.Remove(i);
                                 _context.Entry(i).State = EntityState.Detached;
                             }
                         }
-                       // _context.ItemPrice.RemoveRange(listOfItemToRemove);
+                        // _context.ItemPrice.RemoveRange(listOfItemToRemove);
                         _context.SaveChanges();
 
                         _context.ItemPrice.AddRange(item);
@@ -689,7 +692,7 @@ namespace POS.UI.Sync
                         //update update number
                         if (response.Data.value.Count() > 0)
                         {
-                           // var _services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Item Price");
+                            // var _services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "Item Price");
                             services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
                             services.LastSyncDate = DateTime.Now;
                             _context.Entry(services).State = EntityState.Modified;
@@ -697,7 +700,7 @@ namespace POS.UI.Sync
                             _context.Entry(services).State = EntityState.Detached;
 
                         }
-                       
+
                         if (response.Data.value.Count() > 0 && response.Data.value.Count() < 10)
                         {
                             //update cache
@@ -724,7 +727,9 @@ namespace POS.UI.Sync
                         return false;
                     }
                 }
-                catch(Exception ex)
+#pragma warning disable CS0168 // The variable 'ex' is declared but never used
+                catch (Exception ex)
+#pragma warning restore CS0168 // The variable 'ex' is declared but never used
                 {
                     _cache.Set("IsItemPriceSyncIsInProcess", false);
                     return false;
@@ -818,7 +823,9 @@ namespace POS.UI.Sync
                         return false;
                     }
                 }
+#pragma warning disable CS0168 // The variable 'ex' is declared but never used
                 catch (Exception ex)
+#pragma warning restore CS0168 // The variable 'ex' is declared but never used
                 {
                     return false;
                 }
@@ -925,23 +932,26 @@ namespace POS.UI.Sync
                             _context.Database.CloseConnection();
 
                         }
-                    }catch(Exception ex)
+                    }
+#pragma warning disable CS0168 // The variable 'ex' is declared but never used
+                    catch (Exception ex)
+#pragma warning restore CS0168 // The variable 'ex' is declared but never used
                     {
                         isError = true;
                         _context.Database.CloseConnection();
                     }
-                   
-                }
-               
 
-                    if (response.Data.value.Count() > 0 && isError == false)
+                }
+
+
+                if (response.Data.value.Count() > 0 && isError == false)
                 {
                     services.LastUpdateNumber = response.Data.value.Max(x => x.Update_No);
                     services.LastSyncDate = DateTime.Now;
                     _context.Entry(services).State = EntityState.Modified;
                     _context.SaveChanges();
                     _context.Entry(services).State = EntityState.Detached;
-                   
+
                 }
                 // _context.SaveChanges();
                 config.SyncLog.User = "Last Sync : " + DateTime.Now.ToString("dd MMM, yyyy hh:mm tt");
@@ -1177,7 +1187,7 @@ namespace POS.UI.Sync
 
             _cache.TryGetValue("IsItemCacheInProcess", out IsItemCacheInProcess);
 
-            if(!IsItemCacheInProcess)
+            if (!IsItemCacheInProcess)
             {
                 _cache.Set("IsItemCacheInProcess", true);
                 //update cache
@@ -1219,7 +1229,9 @@ namespace POS.UI.Sync
                         ConfigJSON.Write(config);
 
                     }
+#pragma warning disable CS0168 // The variable 'ex' is declared but never used
                     catch (Exception ex)
+#pragma warning restore CS0168 // The variable 'ex' is declared but never used
                     {
                         if (errorCount > 5)
                             break;

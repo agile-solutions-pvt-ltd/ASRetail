@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
 namespace POS.DTO
 {
-   
-   public class SettlementSummaryView
+
+    public class SettlementSummaryView
     {
 
         public Int64 Id { get; set; }
@@ -16,7 +12,7 @@ namespace POS.DTO
         public DateTime Date { get; set; }
         public string Trans_Mode { get; set; }
         public decimal Amount { get; set; }
-      
+
 
     }
 }

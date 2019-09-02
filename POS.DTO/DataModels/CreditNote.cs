@@ -16,7 +16,7 @@ namespace POS.DTO
         public int Credit_Note_Id { get; set; }
         [Display(Name = "Invoice Number")]
         public string Credit_Note_Number { get; set; }
-        [Display(Name ="Ref No.")]
+        [Display(Name = "Ref No.")]
         public string Reference_Number { get; set; }
         public string Reference_Number_Id { get; set; }
         [Display(Name = "Date")]
@@ -25,7 +25,7 @@ namespace POS.DTO
         [Display(Name = "BS")]
         public string Trans_Date_Bs { get; set; }
         public TimeSpan? Trans_Time { get; set; }
-        public string Trans_Type { get; set; }       
+        public string Trans_Type { get; set; }
         public string Division { get; set; }
         public string Terminal { get; set; }
         [Display(Name = "Bill To")]
@@ -55,7 +55,7 @@ namespace POS.DTO
         public decimal? Total_Net_Amount { get; set; }
         public string Created_By { get; set; }
         public DateTime? Created_Date { get; set; }
-        [Required,Display(Name ="Credit Note Remarks")]
+        [Required, Display(Name = "Credit Note Remarks")]
         public string Credit_Note { get; set; }
         public string Remarks { get; set; }
         public string Payment_Mode { get; set; }

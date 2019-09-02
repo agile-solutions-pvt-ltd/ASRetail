@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
 namespace POS.DTO
 {
@@ -10,13 +7,13 @@ namespace POS.DTO
     public partial class ItemDiscount
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        
+
         public string Id { get; set; }
         public decimal DiscountPercent { get; set; }
         public string ItemType { get; set; }
         public string ItemCode { get; set; }
         public string Location { get; set; }
-        public DateTime? StartDate { get; set; }       
+        public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public TimeSpan? StartTime { get; set; }
         public TimeSpan? EndTime { get; set; }

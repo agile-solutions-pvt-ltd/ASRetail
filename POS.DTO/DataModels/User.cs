@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace POS.DTO
 {
     public partial class User
     {
-       
+
         [Key]
         public string Id { get; set; }
         public string UserName { get; set; }

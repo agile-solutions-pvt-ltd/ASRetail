@@ -7,7 +7,7 @@
         get newClientPromise() {
             return new Promise((resolve, reject) => {
                 GetClientLocalIP(function (ip) {
-                    
+
                     var newIp = _.filter(serverIp, function (x, y) {
                         return y == ip;
                     });
@@ -76,7 +76,7 @@
         //    }
 
         //}
-       
+
         if (data.invoiceData.trans_Type === "Sales") {
             PrintSalesInvoice(data, callback);
         }
@@ -84,7 +84,7 @@
             if (!_.isEmpty(data.copy) && data.copy.printCount == 0) {
                 //print double
                 PrintTaxInvoice(data, function () {
-                    
+
                     data.copy.printCount = 1;
                     PrintTaxInvoice(data, callback);
                 });
@@ -247,12 +247,12 @@
 
         //Final Data
         var finalBill = header + itemHeader + item + itemTotal + footer;
-        
+
         printwsBill(finalBill, callback, data, PrintTaxInvoiceBrowser);
 
     };
     let PrintTaxInvoiceBrowser = (data, callback) => {
-        
+
         var url = ""
         var companyInitital = data.storeData.initial || data.storeData.INITIAL;
         if (data.billData !== null && data.billData.length > 0 && data.billData[0].trans_Mode === "Credit" && companyInitital === "WHS") {
@@ -306,7 +306,7 @@
                     printText = printText.replace("{terminalName}", data.invoiceData.terminal);
                     printText = printText.replace("{transTime}", FormatForDisplayTime(data.invoiceData.trans_Time));
                     printText = printText.replace("{cashierName}", data.invoiceData.created_By);
-                    printText = printText.replace("{printMessage}", data.storeData.PrintMessage || data.storeData.printMessage );
+                    printText = printText.replace("{printMessage}", data.storeData.PrintMessage || data.storeData.printMessage);
 
                     //get items template
                     let printItemTemplateOld = $(result.responseText).find("#items").html();
@@ -342,7 +342,7 @@
     };
 
     let PrintSalesInvoice = (data, callback) => {
-        
+
         var paymentMode = _.pluck(data.billData, "trans_Mode").join(", ");
         if (paymentMode === "") {
             paymentMode = data.paymentMode;
@@ -489,7 +489,7 @@
                     let printText = $(result.responseText).find("#printbody").html();
                     //replace all variables
 
-                    
+
                     var paymentMode = _.pluck(data.billData, "trans_Mode").join(", ");
                     if (paymentMode === "") {
                         paymentMode = data.paymentMode;
@@ -727,7 +727,7 @@
     }
 
     let PrintCreditNoteInvoiceBrowser = (data, callback) => {
-        
+
         var url = ""
         var companyInitital = data.storeData.initial || data.storeData.INITIAL;
         if (companyInitital === "WHS") {
@@ -1034,7 +1034,7 @@
         $("#tempprint").html(printText);
         if (printItemText !== undefined)
             $("#tempprint").find("#items").html(printItemText);
-        
+
 
         //
 
@@ -1055,12 +1055,12 @@
             printable: 'tempprint',
             type: 'html',
             targetStyles: ['*'],
-            onLoadingEnd: function () {               
+            onLoadingEnd: function () {
                 $("#tempprint").remove();
 
                 if (callback !== undefined)
                     setTimeout(callback, 100);
-                   
+
 
 
             }

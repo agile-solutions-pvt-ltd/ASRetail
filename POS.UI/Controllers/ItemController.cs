@@ -8,9 +8,9 @@ using MoreLinq;
 using POS.Core;
 using POS.DTO;
 using POS.UI.Helper;
-using POS.UI.Models;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -291,8 +291,14 @@ namespace POS.UI.Controllers
         }
 
 
-        // [ResponseCache(Duration = 60, VaryByQueryKeys = new string[] { "code","cacheId" })]
         public IEnumerable<ItemViewModel> GetItems(string code, bool getFromDataBase = false)
+        {
+            var query = "exec Sp_GetItems @ItemCode";
+            IEnumerable<ItemViewModel> data = _context.ItemViewModel.FromSql(query, new SqlParameter("@ItemCode", code));
+            return data;
+        }
+        // [ResponseCache(Duration = 60, VaryByQueryKeys = new string[] { "code","cacheId" })]
+        public IEnumerable<ItemViewModel> GetItems_old(string code, bool getFromDataBase = false)
         {
 
 
@@ -331,7 +337,7 @@ namespace POS.UI.Controllers
             if (result.Count() == 0 && getFromDataBase == false)
             {
                 return GetItems(code, true);
-            }
+            }           
             if (result.Count() > 0 && getFromDataBase == true)
             {
                 //update item to cache
@@ -339,9 +345,11 @@ namespace POS.UI.Controllers
                 _cache.TryGetValue("ItemViewModel", out items);
                 if (items == null)
                 {
-                    _cache.Set("ItemViewModel", result);
+                    //if cache not found means this is no-cache server
+                   // _cache.Set("ItemViewModel", result);
                 }
-                else {
+                else
+                {
                     items = items.Concat(result).Distinct().ToList();
                     _cache.Set("ItemViewModel", items);
                 }
@@ -383,6 +391,18 @@ namespace POS.UI.Controllers
             return result;
         }
 
+
+        public IActionResult GetItemReferenceData(Guid id, bool getFromDatabase = false)
+        {
+            //for item Reference Data           
+            var item = _context.SalesInvoiceItemsTmp.Where(x => x.Invoice_Id == id).ToList();
+            List<string> barCodeList = item.Select(x => x.Bar_Code).ToList();
+            barCodeList = barCodeList.Concat(item.Select(x => x.ItemCode)).ToList();           
+            string listOfItemsCodeString = string.Join(",", barCodeList);
+            IList<ItemViewModel> itemsTemp = _context.ItemViewModel.FromSql("Sp_GetItemList {0}", listOfItemsCodeString).ToList();
+
+            return Ok(itemsTemp);
+        }
 
         public IEnumerable<ItemViewModel> GetItemsRawData(string code)
         {
@@ -430,10 +450,28 @@ where (b.BarCode = {0} or i.Code = {0})";
                         {
                             itemsTotal = new List<ItemViewModel>();
                         }
-                        itemsTotal = itemsTotal.Concat(itemsTemp).DistinctBy(x=> new {
-                            x.Bar_Code,x.Code,x.Discount,x.DiscountEndDate,x.DiscountEndTime,x.DiscountItemType,x.DiscountLocation,x.DiscountMinimumQuantity,
-                            x.DiscountSalesGroupCode,x.DiscountStartDate,x.DiscountStartTime,x.DiscountType,x.Name,x.Rate,x.RateEndDate,x.RateMinimumQuantity,
-                            x.RateStartDate,x.SalesCode,x.SalesType}).ToList();
+                        itemsTotal = itemsTotal.Concat(itemsTemp).DistinctBy(x => new
+                        {
+                            x.Bar_Code,
+                            x.Code,
+                            x.Discount,
+                            x.DiscountEndDate,
+                            x.DiscountEndTime,
+                            x.DiscountItemType,
+                            x.DiscountLocation,
+                            x.DiscountMinimumQuantity,
+                            x.DiscountSalesGroupCode,
+                            x.DiscountStartDate,
+                            x.DiscountStartTime,
+                            x.DiscountType,
+                            x.Name,
+                            x.Rate,
+                            x.RateEndDate,
+                            x.RateMinimumQuantity,
+                            x.RateStartDate,
+                            x.SalesCode,
+                            x.SalesType
+                        }).ToList();
                         _cache.Set("ItemViewModel", itemsTotal);
 
                     }
@@ -454,7 +492,7 @@ where (b.BarCode = {0} or i.Code = {0})";
                 }
                 catch (Exception ex)
                 {
-                    if(ex.Message == "Invalid object name 'ItemViewModel'.")
+                    if (ex.Message == "Invalid object name 'ItemViewModel'.")
                     {
                         _cache.Set("IsItemCacheInProcess", true);
                         break;

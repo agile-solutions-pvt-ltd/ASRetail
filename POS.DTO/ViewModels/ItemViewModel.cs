@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace POS.DTO
 {
-   public class ItemViewModel
+    public class ItemViewModel
     {
-       [Key]
+        [Key]
         public long SN { get; set; }
         public string Code { get; set; }
         public string ItemId { get; set; }

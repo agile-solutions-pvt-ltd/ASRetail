@@ -2,14 +2,11 @@
 using Hangfire;
 using Hangfire.Dashboard;
 using Hangfire.SqlServer;
-using Hangfire.Storage;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -19,7 +16,6 @@ using POS.DTO;
 using POS.UI.Helper;
 using POS.UI.Models;
 using System;
-using System.Collections.Generic;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
@@ -99,7 +95,9 @@ namespace POS.UI
             });
 
 
+#pragma warning disable CS0618 // 'ServiceCollectionExtensions.AddAutoMapper(IServiceCollection)' is obsolete: 'This overload is error prone and it will be removed. Please pass the assemblies to scan explicitly. You can use AppDomain.CurrentDomain.GetAssemblies() if that works for you.'
             services.AddAutoMapper();
+#pragma warning restore CS0618 // 'ServiceCollectionExtensions.AddAutoMapper(IServiceCollection)' is obsolete: 'This overload is error prone and it will be removed. Please pass the assemblies to scan explicitly. You can use AppDomain.CurrentDomain.GetAssemblies() if that works for you.'
             services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
             services.AddResponseCompression(options =>
             {
@@ -107,7 +105,12 @@ namespace POS.UI
                 options.EnableForHttps = true;
             });
 
-            services.AddMemoryCache();
+            services.AddMemoryCache(options =>
+            {
+                options.CompactionPercentage = 1;
+               
+
+            });
             services.AddResponseCaching();
 
             services.AddSingleton<IKendoGrid, KendoGrid>();
@@ -149,7 +152,7 @@ namespace POS.UI
         QueuePollInterval = TimeSpan.Zero,
         JobExpirationCheckInterval = TimeSpan.FromMinutes(30),
         CountersAggregateInterval = TimeSpan.FromMinutes(5),
-        
+
         UseRecommendedIsolationLevel = true,
         UsePageLocksOnDequeue = true,
         DisableGlobalLocks = true
@@ -180,9 +183,10 @@ namespace POS.UI
 
 
             app.UseAuthentication();
-            
+
             app.UseResponseCaching();
-            var options = new BackgroundJobServerOptions {
+            var options = new BackgroundJobServerOptions
+            {
                 WorkerCount = 2,//Environment.ProcessorCount,
                 HeartbeatInterval = TimeSpan.FromMinutes(5)
             };
