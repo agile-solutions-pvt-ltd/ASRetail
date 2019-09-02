@@ -10,8 +10,8 @@ using POS.DTO;
 using POS.UI.Helper;
 using POS.UI.Models;
 using System;
-using System.Data.SqlClient;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -291,107 +291,16 @@ namespace POS.UI.Controllers
             return _context.Item.Any(e => e.Id == id);
         }
 
-
-        public IEnumerable<ItemViewModel> GetItems(string code, bool getFromDataBase = false)
+        public IEnumerable<ItemViewModel> GetItems(string code, string customerMembershipNo, string storeId = "001")
         {
-            var query = "exec Sp_GetItems @ItemCode";
-            IEnumerable<ItemViewModel> data = _context.ItemViewModel.FromSql(query, new SqlParameter("@ItemCode",code)).ToList();
+            var query = "exec Sp_GetItems @ItemCode, @customerMembershipNo, @StoreId";
+            IEnumerable<ItemViewModel> data = _context.ItemViewModel.FromSql(query, 
+                new SqlParameter("@ItemCode", code),
+                new SqlParameter("@customerMembershipNo", customerMembershipNo),
+                new SqlParameter("@StoreId", storeId)
+                ).ToList();
             return data;
         }
-
-
-        // [ResponseCache(Duration = 60, VaryByQueryKeys = new string[] { "code","cacheId" })]
-        public IEnumerable<ItemViewModel> GetItems1(string code, bool getFromDataBase = false)
-        {
-
-
-            IList<ItemViewModel> items = new List<ItemViewModel>();
-            if (!getFromDataBase)
-            {
-                _cache.TryGetValue("ItemViewModel", out items);
-                if (items == null)
-                {
-                    //update cache
-                    bool IsItemCacheInProcess = false;
-                    _cache.TryGetValue("IsItemCacheInProcess", out IsItemCacheInProcess);
-
-                    if (!IsItemCacheInProcess)
-                    {
-                        BackgroundJob.Enqueue(() => UpdateCacheItemViewModel());
-                    }
-
-                    //items = GetItemsRawData(code).ToList();
-                    items = new List<ItemViewModel>();
-                }
-            }
-            else
-            {
-                items = GetItemsRawData(code).ToList();
-                getFromDataBase = true;
-            }
-
-            var result = items.Where(x => (x.Code == code || x.Bar_Code == code)
-            && (x.RateStartDate == null || Convert.ToDateTime(x.RateStartDate.Value.ToShortDateString()) <= Convert.ToDateTime(DateTime.Now.ToShortDateString()))
-            && (x.RateEndDate == null || Convert.ToDateTime(x.RateEndDate.Value.ToShortDateString()) >= Convert.ToDateTime(DateTime.Now.ToShortDateString()))
-            && (x.DiscountStartDate == null || Convert.ToDateTime(x.DiscountStartDate.Value.ToShortDateString()) <= Convert.ToDateTime(DateTime.Now.ToShortDateString()))
-            && (x.DiscountEndDate == null || Convert.ToDateTime(x.DiscountEndDate.Value.ToShortDateString()) >= Convert.ToDateTime(DateTime.Now.ToShortDateString()))).ToList();
-
-            //result = result.ToList();
-            if (result.Count() == 0 && getFromDataBase == false)
-            {
-                return GetItems(code, true);
-            }
-            if (result.Count() > 0 && getFromDataBase == true)
-            {
-                //update item to cache
-                IList<ItemViewModel> itemInCache = new List<ItemViewModel>();
-                _cache.TryGetValue("ItemViewModel", out items);
-                if (items == null)
-                {
-                    _cache.Set("ItemViewModel", result);
-                }
-                else {
-                    items = items.Concat(result).Distinct().ToList();
-                    _cache.Set("ItemViewModel", items);
-                }
-
-            }
-            ////result.ToList().ForEach(x => { x.Bar_Code = result.FirstOrDefault().Bar_Code; x.SN = 1; });
-            //result.ToList().Distinct();
-            ///result.Select(x=> new ItemViewModel() { x.Bar_Code = x.Bar_Code,x.Code,x.Discount,x.DiscountEndTime})
-            //var temp = result.Select(x => x.Bar_Code).Distinct();
-            //IList<ItemViewModel> resulttemp = result.Select(x => new ItemViewModel
-            // {
-            //    //Bar_Code= x.Bar_Code,
-            //    Code =x.Code,
-            //   //Discount=  x.Discount,
-            //   //DiscountEndDate=  x.DiscountEndDate,
-            //   //DiscountEndTime = x.DiscountEndTime,
-            //   //DiscountItemType = x.DiscountItemType,
-            //   //DiscountLocation = x.DiscountLocation,
-            //   //DiscountMinimumQuantity = x.DiscountMinimumQuantity,
-            //   //DiscountSalesGroupCode = x.DiscountSalesGroupCode,
-            //   //DiscountStartDate = x.DiscountStartDate,
-            //   //DiscountStartTime = x.DiscountStartTime,
-            //   //DiscountType = x.DiscountType,
-            //   //Is_Discountable = x.Is_Discountable,
-            //   //Is_Vatable = x.Is_Vatable,
-            //   //ItemId = x.ItemId,
-            //   //KeyInWeight = x.KeyInWeight,
-            //   //Name = x.Name,
-            //   //No_Discount = x.No_Discount,
-            //   //Rate = x.Rate,
-            //   //RateEndDate = x.RateEndDate,
-            //   //RateMinimumQuantity = x.RateMinimumQuantity,
-            //   //RateStartDate = x.RateStartDate,
-            //   //SalesCode = x.SalesCode,
-            //   //SalesType = x.SalesType,
-            //   //SN = x.SN,
-            //   //Unit = x.Unit
-            // }).Distinct().ToList();
-            return result;
-        }
-
 
         public IEnumerable<ItemViewModel> GetItemsRawData(string code)
         {
@@ -410,6 +319,7 @@ left join ITEM_DISCOUNT d on i.Code = d.ItemCode Or (d.ItemType = 'Item Disc. Gr
 where (b.BarCode = {0} or i.Code = {0})";
 
             IEnumerable<ItemViewModel> data = _context.ItemViewModel.FromSql(query, code);
+            var dataAsList = data.ToList();
             return data;
 
         }

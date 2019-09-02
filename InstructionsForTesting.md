@@ -1,3 +1,18 @@
+# 2nd Sept, 2019
+
+### To Run the Application:
+
+1. Checkout and pull **Patched** branch.
+2. Update procedure **Sp_GetItems** using the latest query in **Sp_GetItems.sql** file.
+3. Update application codebase from this branch.
+4. Run.
+
+_______________________________________________________________
+
+
+
+# 29th Aug, 2019
+
 ### To Run the Application:
 
 1. Checkout the codebase from **patched** branch.

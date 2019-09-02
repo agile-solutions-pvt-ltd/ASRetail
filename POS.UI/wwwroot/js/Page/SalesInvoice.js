@@ -149,8 +149,10 @@ const invoice = (function () {
     let GetItems = (code, callback) => {
         var membershipNumber = $("#membershipId").val();
         let customer = _.filter(customerList, (x) => { return x.membership_Number === membershipNumber; })[0];
+      
+        var url = window.location.origin + "/item/GetItems/?code=" + code + "&customerMembershipNo=" + membershipNumber;
         $.ajax({
-            url: window.location.origin + "/item/GetItems/?code=" + code,
+            url: url,
             type: "GET",
             contentType: "application/json",
             // headers: { 'Accept-Encoding': 'deflate' },
@@ -197,7 +199,7 @@ const invoice = (function () {
                 //remove loading icon
                 $("#barcodeloading").removeClass("fa-spinner fa-pulse").css("font-size", "40px");
                 isBarCodePressed = false;
-                console.log(x);
+                // console.log(x);
             }
         });
     };
@@ -254,7 +256,8 @@ const invoice = (function () {
             }
         });
     };
-    // #endregion
+    // #endregion
+
 
     let updateSalesTax = () => {
 
@@ -802,6 +805,7 @@ const invoice = (function () {
         var todayDate = new Date();
         var membershipNumber = $("#membershipId").val();
 
+        // console.log(selectedItems.length);
 
         //Get Selected Item First   
         var selectedItem = _.filter(selectedItems, function (x) {
@@ -863,8 +867,6 @@ const invoice = (function () {
         return discount;
     };
     let calcDiscountLine = (selectedItem, quantity, itemCode) => {
-
-
         //variables
         var todayDate = new Date();
         var membershipNumber = $("#membershipId").val();
@@ -985,36 +987,36 @@ const invoice = (function () {
             return x.discountType === "Member Disc. Group";
         });
 
-        //1) filter by date
-        var filterByDate = _.filter(lineDiscountRows, function (x) {
-            var conditions = (moment(todayDate).format("YYYY-MM-DD") >= moment(x.discountStartDate).format("YYYY-MM-DD") && moment(todayDate).format("YYYY-MM-DD") <= moment(x.discountEndDate).format("YYYY-MM-DD")) ||
-                (x.discountStartDate === null && moment(todayDate).format("YYYY-MM-DD") <= moment(x.discountEndDate).format("YYYY-MM-DD")) ||
-                (moment(todayDate).format("YYYY-MM-DD") >= moment(x.discountStartDate).format("YYYY-MM-DD") && x.discountEndDate === null);
-            return conditions;
-        });
-        //2) filter by time
-        var filterByTime = _.filter(filterByDate, function (x) {
-            var conditions = (moment(todayDate).format("HH:mm:ss") >= moment(x.discountStartTime)._i && moment(todayDate).format("HH:mm:ss") <= moment(x.discountEndTime)._i) ||
-                (x.discountStartTime === null || x.discountEndTime === null);
-            return conditions;
-        });
+        ////1) filter by date
+        //var filterByDate = _.filter(lineDiscountRows, function (x) {
+        //    var conditions = (moment(todayDate).format("YYYY-MM-DD") >= moment(x.discountStartDate).format("YYYY-MM-DD") && moment(todayDate).format("YYYY-MM-DD") <= moment(x.discountEndDate).format("YYYY-MM-DD")) ||
+        //        (x.discountStartDate === null && moment(todayDate).format("YYYY-MM-DD") <= moment(x.discountEndDate).format("YYYY-MM-DD")) ||
+        //        (moment(todayDate).format("YYYY-MM-DD") >= moment(x.discountStartDate).format("YYYY-MM-DD") && x.discountEndDate === null);
+        //    return conditions;
+        //});
+        ////2) filter by time
+        //var filterByTime = _.filter(filterByDate, function (x) {
+        //    var conditions = (moment(todayDate).format("HH:mm:ss") >= moment(x.discountStartTime)._i && moment(todayDate).format("HH:mm:ss") <= moment(x.discountEndTime)._i) ||
+        //        (x.discountStartTime === null || x.discountEndTime === null);
+        //    return conditions;
+        //});
 
         // check customer group filter
-        var filterByCustomerGroup = filterByTime;
+        //var filterByCustomerGroup = filterByTime;
         ////**** get selected membership
 
 
-        if (customer !== undefined && filterByTime.length !== 0) {
-            filterByCustomerGroup = _.filter(filterByTime, function (x) {
-                return x.discountSalesGroupCode === customer.membershipDiscGroup;
-            });
-        }
+        //if (customer !== undefined && filterByTime.length !== 0) {
+        //    filterByCustomerGroup = _.filter(filterByTime, function (x) {
+        //        return x.discountSalesGroupCode === customer.membershipDiscGroup;
+        //    });
+        //}
 
-        var discount = _.filter(filterByCustomerGroup, function (x) {
+        var discount = _.filter(lineDiscountRows, function (x) {
             return x.discountMinimumQuantity === 0;
         })[0];
         discount = discount === undefined ? 0 : discount.discount;
-        _.each(filterByCustomerGroup, function (x) {
+        _.each(lineDiscountRows, function (x) {
             if (x.discountMinimumQuantity > 0 && quantity >= x.discountMinimumQuantity)
                 discount = x.discount;
         });
@@ -1201,9 +1203,9 @@ const invoice = (function () {
                     discountExcVat = 0,
                     grossAmout = 0;
 
-               
+
                 if ($(this).data("isChanged") != undefined && $(this).data("isChanged") == true) {
-                   
+
 
                     // 2. calc tax include Rate
                     rateIncludeTax = calcRate(itemCode, quantity, $(this));
@@ -1336,7 +1338,7 @@ const invoice = (function () {
 
             });
         }
-        
+
         //calctotal tax
         totalTax = totalTaxableAmount * 13 / 100;
         totalNetAmount = totalTaxableAmount + totalNonTaxableAmount + parseFloat(totalTax.toFixed(2));
