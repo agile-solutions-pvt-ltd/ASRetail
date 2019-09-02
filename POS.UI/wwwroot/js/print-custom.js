@@ -833,6 +833,347 @@
     };
 
     let PrintDenomination = (data, callback) => {
+
+        //Header Start here
+        var header = "";
+        header += "      " + data.Store.COMPANY_NAME + "\r\n";
+        header += "       " + data.Store.ADDRESS + "\r\n";
+        header += "          Vat No.: " + data.Store.VAT + "\r\n";
+        header += "          DENOMINATION SLIP \r\n\r\n";
+        header += "Date     : " + FormatForDisplay(new Date(data.DenominationData.Date)) + " (" + data.DenominationData.Date_BS + ")\r\n";
+        header += "Terminal : " + data.DenominationData.Terminal.Name + "\r\n";
+        header += "User     : " + data.DenominationData.User_Id + "\r\n";
+        header += "----------------------------------------\r\n";
+        //Header end here
+
+        //Body start here
+
+        var body = "";
+
+        if (data.DenominationData.Card !== null) {
+            let title = "C-Card";
+            while (title.length < 20) {
+                title = " " + title;
+            }
+
+            let quantity = " =";
+            while (quantity.length < 10) {
+                quantity = " " + quantity;
+            }
+
+            let amount = parseFloat(data.DenominationData.Card).toFixed(2);
+            while (amount.length < 10) {
+                amount = " " + amount;
+            }
+
+            body += title + quantity + amount + "\r\n";
+        }
+
+        if (data.DenominationData.Credit !== null) {
+            let title = "Credit";
+            while (title.length < 20) {
+                title = " " + title;
+            }
+
+            let quantity = " =";
+            while (quantity.length < 10) {
+                quantity = " " + quantity;
+            }
+
+            let amount = parseFloat(data.DenominationData.Credit).toFixed(2);
+            while (amount.length < 10) {
+                amount = " " + amount;
+            }
+
+            body += title + quantity + amount + "\r\n";
+        }
+
+        if (data.DenominationData.CreditNote !== null) {
+            let title = "Credit Note";
+            while (title.length < 20) {
+                title = " " + title;
+            }
+
+            let quantity = " =";
+            while (quantity.length < 10) {
+                quantity = " " + quantity;
+            }
+
+            let amount = parseFloat(data.DenominationData.CreditNote).toFixed(2);
+            while (amount.length < 10) {
+                amount = " " + amount;
+            }
+
+            body += title + quantity + amount + "\r\n";
+        }
+
+        if (data.DenominationData.Ric !== null) {
+            let title = "IC X";
+            while (title.length < 20) {
+                title = " " + title;
+            }
+
+            let quantity = parseFloat(data.DenominationData.Ric).toFixed(2) + " =";
+            while (quantity.length < 10) {
+                quantity = " " + quantity;
+            }
+
+            let amount = (parseFloat(data.DenominationData.Ric) * 1.6).toFixed(2);
+            while (amount.length < 10) {
+                amount = " " + amount;
+            }
+
+            body += title + quantity + amount + "\r\n";
+        }
+
+        if (data.DenominationData.R1000 !== null) {
+            let title = "1000 X";
+            while (title.length < 20) {
+                title = " " + title;
+            }
+
+            let quantity = parseFloat(data.DenominationData.R1000).toFixed(2) + " =";
+            while (quantity.length < 10) {
+                quantity = " " + quantity;
+            }
+
+            let amount = (parseFloat(data.DenominationData.R1000) * 1000).toFixed(2);
+            while (amount.length < 10) {
+                amount = " " + amount;
+            }
+
+            body += title + quantity + amount + "\r\n";
+        }
+
+        if (data.DenominationData.R500 !== null) {
+            let title = "500 X";
+            while (title.length < 20) {
+                title = " " + title;
+            }
+
+            let quantity = parseFloat(data.DenominationData.R500).toFixed(2) + " =";
+            while (quantity.length < 10) {
+                quantity = " " + quantity;
+            }
+
+            let amount = (parseFloat(data.DenominationData.R500) * 500).toFixed(2);
+            while (amount.length < 10) {
+                amount = " " + amount;
+            }
+
+            body += title + quantity + amount + "\r\n";
+        }
+
+        if (data.DenominationData.R250 !== null) {
+            let title = "250 X";
+            while (title.length < 20) {
+                title = " " + title;
+            }
+
+            let quantity = parseFloat(data.DenominationData.R250).toFixed(2) + " =";
+            while (quantity.length < 10) {
+                quantity = " " + quantity;
+            }
+
+            let amount = (parseFloat(data.DenominationData.R250) * 250).toFixed(2);
+            while (amount.length < 10) {
+                amount = " " + amount;
+            }
+
+            body += title + quantity + amount + "\r\n";
+        }
+
+        if (data.DenominationData.R100 !== null) {
+            let title = "100 X";
+            while (title.length < 20) {
+                title = " " + title;
+            }
+
+            let quantity = parseFloat(data.DenominationData.R100).toFixed(2) + " =";
+            while (quantity.length < 10) {
+                quantity = " " + quantity;
+            }
+
+            let amount = (parseFloat(data.DenominationData.R100) * 100).toFixed(2);
+            while (amount.length < 10) {
+                amount = " " + amount;
+            }
+
+            body += title + quantity + amount + "\r\n";
+        }
+
+        if (data.DenominationData.R50 !== null) {
+            let title = "50 X";
+            while (title.length < 20) {
+                title = " " + title;
+            }
+
+            let quantity = parseFloat(data.DenominationData.R50).toFixed(2) + " =";
+            while (quantity.length < 10) {
+                quantity = " " + quantity;
+            }
+
+            let amount = (parseFloat(data.DenominationData.R50) * 50).toFixed(2);
+            while (amount.length < 10) {
+                amount = " " + amount;
+            }
+
+            body += title + quantity + amount + "\r\n";
+        }
+
+        if (data.DenominationData.R25 !== null) {
+            let title = "25 X";
+            while (title.length < 20) {
+                title = " " + title;
+            }
+
+            let quantity = parseFloat(data.DenominationData.R25).toFixed(2) + " =";
+            while (quantity.length < 10) {
+                quantity = " " + quantity;
+            }
+
+            let amount = (parseFloat(data.DenominationData.R25) * 25).toFixed(2);
+            while (amount.length < 10) {
+                amount = " " + amount;
+            }
+
+            body += title + quantity + amount + "\r\n";
+        }
+
+        if (data.DenominationData.R20 !== null) {
+            let title = "20 X";
+            while (title.length < 20) {
+                title = " " + title;
+            }
+
+            let quantity = parseFloat(data.DenominationData.R20).toFixed(2) + " =";
+            while (quantity.length < 10) {
+                quantity = " " + quantity;
+            }
+
+            let amount = (parseFloat(data.DenominationData.R20) * 20).toFixed(2);
+            while (amount.length < 10) {
+                amount = " " + amount;
+            }
+
+            body += title + quantity + amount + "\r\n";
+        }
+
+        if (data.DenominationData.R10 !== null) {
+            let title = "10 X";
+            while (title.length < 20) {
+                title = " " + title;
+            }
+
+            let quantity = parseFloat(data.DenominationData.R10).toFixed(2) + " =";
+            while (quantity.length < 10) {
+                quantity = " " + quantity;
+            }
+
+            let amount = (parseFloat(data.DenominationData.R10) * 10).toFixed(2);
+            while (amount.length < 10) {
+                amount = " " + amount;
+            }
+
+            body += title + quantity + amount + "\r\n";
+        }
+
+        if (data.DenominationData.R5 !== null) {
+            let title = "5 X";
+            while (title.length < 20) {
+                title = " " + title;
+            }
+
+            let quantity = parseFloat(data.DenominationData.R5).toFixed(2) + " =";
+            while (quantity.length < 10) {
+                quantity = " " + quantity;
+            }
+
+            let amount = (parseFloat(data.DenominationData.R5) * 5).toFixed(2);
+            while (amount.length < 10) {
+                amount = " " + amount;
+            }
+
+            body += title + quantity + amount + "\r\n";
+        }
+
+        if (data.DenominationData.R2 !== null) {
+            let title = "2 X";
+            while (title.length < 20) {
+                title = " " + title;
+            }
+
+            let quantity = parseFloat(data.DenominationData.R2).toFixed(2) + " =";
+            while (quantity.length < 10) {
+                quantity = " " + quantity;
+            }
+
+            let amount = (parseFloat(data.DenominationData.R2) * 2).toFixed(2);
+            while (amount.length < 10) {
+                amount = " " + amount;
+            }
+
+            body += title + quantity + amount + "\r\n";
+        }
+
+        if (data.DenominationData.R1 !== null) {
+            let title = "1 X";
+            while (title.length < 20) {
+                title = " " + title;
+            }
+
+            let quantity = parseFloat(data.DenominationData.R1).toFixed(2) + " =";
+            while (quantity.length < 10) {
+                quantity = " " + quantity;
+            }
+
+            let amount = (parseFloat(data.DenominationData.R1) * 1).toFixed(2);
+            while (amount.length < 10) {
+                amount = " " + amount;
+            }
+
+            body += title + quantity + amount + "\r\n";
+        }
+
+        if (data.DenominationData.R05 !== null) {
+            let title = "0.5 X";
+            while (title.length < 20) {
+                title = " " + title;
+            }
+
+            let quantity = parseFloat(data.DenominationData.R05).toFixed(2) + " =";
+            while (quantity.length < 10) {
+                quantity = " " + quantity;
+            }
+
+            let amount = (parseFloat(data.DenominationData.R05) * 0.5).toFixed(2);
+            while (amount.length < 10) {
+                amount = " " + amount;
+            }
+
+            body += title + quantity + amount + "\r\n";
+        }
+
+        //Body end here
+
+        //Footer start here
+        var footer = "";
+        footer +=  "       ---------------------------------\r\n"
+
+        let totalAmount = (parseFloat(data.DenominationData.Total) + parseFloat(data.DenominationData.Card || 0) + parseFloat(data.DenominationData.Credit || 0) + parseFloat(data.DenominationData.CreditNote || 0)).toFixed(2);
+        while (totalAmount.length < 10) {
+            totalAmount = " " + totalAmount;
+        }
+        footer += "               Total         =" + totalAmount;
+        footer += "\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n";
+        //Footer end here
+
+        //Final Data
+        var finalBill = header + body + footer;
+        printwsBill(finalBill, callback, data, PrintDenominationBrowser);
+    }
+
+    let PrintDenominationBrowser = (data, callback) => {
         //var bill = "";
         //bill += "       " + data.Store.COMPANY_NAME + "      ";
         //bill += "       " + data.Store.ADDRESS + "     ";
@@ -931,7 +1272,238 @@
             }
         });
     };
+
     let PrintSettlement = (data, callback) => {
+
+        //Header Start here
+        var header = "";
+        header += "      " + data.store.companY_NAME + "\r\n";
+        header += "       " + data.store.address + "\r\n";
+        header += "          Vat No.: " + data.store.vat + "\r\n";
+        header += "         CASH SETTLEMENT MEMO \r\n\r\n";
+        header += "Date        : " + FormatForDisplay(new Date(data.settlementData[0].verifiedDate)) + " (" + AD2BS(FormatForInput(new Date(data.settlementData[0].verifiedDate))) + ")\r\n";
+        header += "Terminal    : " + data.settlementData[0].terminalName + "\r\n";
+        header += "User        : " + data.settlementData[0].userId + "\r\n";
+        header += "Verified By : " + data.settlementData[0].verifiedBy + "\r\n";
+        header += "----------------------------------------\r\n";
+        //Header end here
+
+        //Body start here
+
+        var body = "";
+        body += "Counter Opening           =         0.00\r\n";
+        body += "----------------------------------------\r\n";
+
+        var cash = _.sum(_.pluck(_.filter(data.settlementData, function (i, j) {
+            return i.paymentMode === "Cash";
+        }), "totalAmount"));
+
+        var card = _.sum(_.pluck(_.filter(data.settlementData, function (i, j) {
+            return i.paymentMode === "Card";
+        }), "totalAmount"));
+
+        var credit = _.sum(_.pluck(_.filter(data.settlementData, function (i, j) {
+            return i.paymentMode === "Credit";
+        }), "totalAmount"));
+
+        var creditNote = _.sum(_.pluck(_.filter(data.settlementData, function (i, j) {
+            return i.paymentMode === "CreditNote";
+        }), "totalAmount"));
+
+        var settlementCash = _.filter(data.settlementData, function (v, k) {
+            return v.paymentMode === "Cash";
+        })[0];
+
+        var settlementCard = _.filter(data.settlementData, function (v, k) {
+            return v.paymentMode === "Card";
+        })[0];
+
+        var settlementCredit = _.filter(data.settlementData, function (v, k) {
+            return v.paymentMode === "Credit";
+        })[0];
+
+        var settlementCreditNote = _.filter(data.settlementData, function (v, k) {
+            return v.paymentMode === "CreditNote";
+        })[0];
+
+        if (cash !== undefined && parseFloat(cash) > 0) {
+            let title = "Cash Sales";
+            while (title.length < 25) {
+                title = " " + title;
+            }
+
+            let amount = CurrencyFormat(cash.toString());
+            while (amount.length < 13) {
+                amount = " " + amount;
+            }
+
+            body += title  + " =" + amount + "\r\n";
+        }
+
+        if (card !== undefined && parseFloat(card) > 0) {
+            let title = "Card Sales";
+            while (title.length < 25) {
+                title = " " + title;
+            }
+
+            let amount = CurrencyFormat(card.toString());
+            while (amount.length < 13) {
+                amount = " " + amount;
+            }
+
+            body += title + " =" + amount + "\r\n";
+        }
+
+        if (credit !== undefined && parseFloat(credit) > 0) {
+            let title = "Credit Sales";
+            while (title.length < 25) {
+                title = " " + title;
+            }
+
+            let amount = CurrencyFormat(credit.toString());
+            while (amount.length < 13) {
+                amount = " " + amount;
+            }
+
+            body += title + " =" + amount + "\r\n";
+        }
+
+        if (creditNote !== undefined && parseFloat(creditNote) > 0) {
+            let title = "Credit Note Sales";
+            while (title.length < 25) {
+                title = " " + title;
+            }
+
+            let amount = CurrencyFormat(creditNote.toString());
+            while (amount.length < 13) {
+                amount = " " + amount;
+            }
+
+            body += title + " =" + amount + "\r\n";
+        }
+
+        if (settlementCash !== undefined && parseFloat(settlementCash.adjustmentAmount) > 0) {
+            let title = "Cash Adj.";
+            while (title.length < 25) {
+                title = " " + title;
+            }
+
+            let amount = CurrencyFormat(settlementCash.adjustmentAmount.toString());
+            while (amount.length < 13) {
+                amount = " " + amount;
+            }
+
+            body += title + " =" + amount + "\r\n";
+        }
+
+        if (settlementCard !== undefined && parseFloat(settlementCard.adjustmentAmount) > 0) {
+            let title = "Card Adj.";
+            while (title.length < 25) {
+                title = " " + title;
+            }
+
+            let amount = CurrencyFormat(settlementCard.adjustmentAmount.toString());
+            while (amount.length < 13) {
+                amount = " " + amount;
+            }
+
+            body += title + " =" + amount + "\r\n";
+        }
+
+        if (settlementCredit !== undefined && parseFloat(settlementCredit.adjustmentAmount) > 0) {
+            let title = "Credit Adj.";
+            while (title.length < 25) {
+                title = " " + title;
+            }
+
+            let amount = CurrencyFormat(settlementCredit.adjustmentAmount.toString());
+            while (amount.length < 13) {
+                amount = " " + amount;
+            }
+
+            body += title + " =" + amount + "\r\n";
+        }
+
+        if (settlementCreditNote !== undefined && parseFloat(settlementCreditNote.adjustmentAmount) > 0) {
+            let title = "Credit Note Adj.";
+            while (title.length < 25) {
+                title = " " + title;
+            }
+
+            let amount = CurrencyFormat(settlementCreditNote.adjustmentAmount.toString());
+            while (amount.length < 13) {
+                amount = " " + amount;
+            }
+
+            body += title + " =" + amount + "\r\n";
+        }
+
+        if (settlementCash !== undefined && parseFloat(settlementCash.shortExcessAmount) > 0) {
+            let title = "Cash S/E";
+            while (title.length < 25) {
+                title = " " + title;
+            }
+
+            let amount = CurrencyFormat(settlementCash.shortExcessAmount.toString());
+            while (amount.length < 13) {
+                amount = " " + amount;
+            }
+
+            body += title + " =" + amount + "\r\n";
+        }
+
+        if (settlementCard !== undefined && parseFloat(settlementCard.shortExcessAmount) > 0) {
+            let title = "Card S/E";
+            while (title.length < 25) {
+                title = " " + title;
+            }
+
+            let amount = CurrencyFormat(settlementCard.shortExcessAmount.toString());
+            while (amount.length < 13) {
+                amount = " " + amount;
+            }
+
+            body += title + " =" + amount + "\r\n";
+        }
+
+        if (settlementCredit !== undefined && parseFloat(settlementCredit.shortExcessAmount) > 0) {
+            let title = "Credit S/E";
+            while (title.length < 25) {
+                title = " " + title;
+            }
+
+            let amount = CurrencyFormat(settlementCredit.shortExcessAmount.toString());
+            while (amount.length < 13) {
+                amount = " " + amount;
+            }
+
+            body += title + " =" + amount + "\r\n";
+        }
+
+        if (settlementCreditNote !== undefined && parseFloat(settlementCreditNote.shortExcessAmount) > 0) {
+            let title = "Credit Note S/E";
+            while (title.length < 25) {
+                title = " " + title;
+            }
+
+            let amount = CurrencyFormat(settlementCreditNote.shortExcessAmount.toString());
+            while (amount.length < 13) {
+                amount = " " + amount;
+            }
+
+            body += title + " =" + amount + "\r\n";
+        }
+
+        body += "\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n"
+
+        //Body end here
+
+        //Final Data
+        var finalBill = header + body;
+        printwsBill(finalBill, callback, data, PrintSettlementBrowser);
+    };
+
+    let PrintSettlementBrowser = (data, callback) => {
         $.ajax({
             url: window.location.origin + "/Print/Settlement",
             type: 'GET',
@@ -958,8 +1530,6 @@
                     var cash = _.sum(_.pluck(_.filter(data.settlementData, function (i, j) {
                         return i.paymentMode === "Cash";
                     }), "totalAmount"));
-
-
                     var card = _.sum(_.pluck(_.filter(data.settlementData, function (i, j) {
                         return i.paymentMode === "Card";
                     }), "totalAmount"));
