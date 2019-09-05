@@ -152,7 +152,7 @@
             "DejaVu Sans|Italic": "https://kendo.cdn.telerik.com/2016.2.607/styles/fonts/DejaVu/DejaVuSans-Oblique.ttf",
             "WebComponentsIcons": "https://kendo.cdn.telerik.com/2017.1.223/styles/fonts/glyphs/WebComponentsIcons.ttf"
         });
-    
+
         var startdate = new Date();
         var dd = String(startdate.getDate()).padStart(2, '0');
         var mm = String(startdate.getMonth() + 1).padStart(2, '0'); //January is 0!
@@ -279,21 +279,29 @@
                             return data;
                         }
                     },
-                    pageSize: 100,
+                    //pageSize: 100,
                     sort: { field: "invoice_Number", dir: "desc" },
                     group: {
                         field: "created_By", aggregates: [
                             { field: "trans_Date_Bs", aggregate: "count" },
-                            { field: "total_Gross_Amount", aggregate: "sum" },
+
                             { field: "total_Discount", aggregate: "sum" },
                             { field: "total_Net_Amount", aggregate: "sum" },
+                            { field: "card", aggregate: "sum" },
+                            { field: "credit_Note", aggregate: "sum" },
+                            { field: "credit", aggregate: "sum" },
+                            { field: "cash", aggregate: "sum" }
                         ],
                         dir: "desc"
                     },
                     aggregate: [
-                        { field: "total_Gross_Amount", aggregate: "sum" },
+
                         { field: "total_Discount", aggregate: "sum" },
-                        { field: "total_Net_Amount", aggregate: "sum" }
+                        { field: "total_Net_Amount", aggregate: "sum" },
+                        { field: "card", aggregate: "sum" },
+                        { field: "credit_Note", aggregate: "sum" },
+                        { field: "credit", aggregate: "sum" },
+                        { field: "cash", aggregate: "sum" }
                     ],
                 },
                 height: 550,
@@ -338,8 +346,8 @@
                         footerTemplate: "Total"
                     },
                     {
-                        field: "total_Gross_Amount",
-                        title: "Gross Amount",
+                        field: "card",
+                        title: "Card",
                         attributes: {
                             "class": "p-1 text-right"
                         },
@@ -349,10 +357,59 @@
                         groupFotterAttributes: {
                             "class": "p-1 text-right"
                         },
-                        template: "#: CurrencyFormat(total_Gross_Amount) #",
+                        template: "#: CurrencyFormat(card) #",
                         groupFooterTemplate: "#: CurrencyFormat(sum) #",
                         footerTemplate: "#: CurrencyFormat(sum) #",
                     },
+                    {
+                        field: "cash",
+                        title: "Cash",
+                        attributes: {
+                            "class": "p-1 text-right"
+                        },
+                        footerAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        groupFotterAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        template: "#: CurrencyFormat(cash) #",
+                        groupFooterTemplate: "#: CurrencyFormat(sum) #",
+                        footerTemplate: "#: CurrencyFormat(sum) #",
+                    },
+                    {
+                        field: "credit_Note",
+                        title: "Credit Note",
+                        attributes: {
+                            "class": "p-1 text-right"
+                        },
+                        footerAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        groupFotterAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        template: "#: CurrencyFormat(credit_Note) #",
+                        groupFooterTemplate: "#: CurrencyFormat(sum) #",
+                        footerTemplate: "#: CurrencyFormat(sum) #",
+                    },
+                    {
+                        field: "credit",
+                        title: "Credit",
+                        attributes: {
+                            "class": "p-1 text-right"
+                        },
+                        footerAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        groupFotterAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        template: "#: CurrencyFormat(credit) #",
+                        groupFooterTemplate: "#: CurrencyFormat(sum) #",
+                        footerTemplate: "#: CurrencyFormat(sum) #",
+                    },
+
                     {
                         field: "total_Discount",
                         title: "Discount",
