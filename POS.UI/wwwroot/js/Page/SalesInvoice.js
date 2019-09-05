@@ -150,7 +150,7 @@ const invoice = (function () {
         var membershipNumber = $("#membershipId").val();
         let customer = _.filter(customerList, (x) => { return x.membership_Number === membershipNumber; })[0];
         $.ajax({
-            url: window.location.origin + "/item/GetItems/?code=" + code,
+            url: window.location.origin + "/item/GetItems/?code=" + code + "&customerMembershipNo=" + membershipNumber,
             type: "GET",
             contentType: "application/json",
             // headers: { 'Accept-Encoding': 'deflate' },
@@ -202,8 +202,10 @@ const invoice = (function () {
         });
     };
     let getItemReferenceData = (callback) => {
+        var membershipNumber = $("#membershipId").val();
+        let customer = _.filter(customerList, (x) => { return x.membership_Number === membershipNumber; })[0];
         $.ajax({
-            url: window.location.origin + "/SalesInvoice/GetItemReferenceData/?id=" + getUrlParameters(),
+            url: window.location.origin + "/item/GetItemReferenceData/?id=" + getUrlParameters() + "&CustomerMembershipNo=" + membershipNumber,
             type: "GET",
             dataType: "json",
             contentType: "application/json; charset=utf-8",
@@ -254,7 +256,8 @@ const invoice = (function () {
             }
         });
     };
-    // #endregion
+    // #endregion
+
 
     let updateSalesTax = () => {
 
@@ -502,7 +505,7 @@ const invoice = (function () {
         $("<span class='itemName' data-item-id='" + itemId + "' data-item-code= '" + itemCode + "'>" + itemName + "</span>").appendTo(cell3);
         $("<span>" + unit + "</span>").appendTo(cell4);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Rate" type="number" min="0.01" onfocusout="invoice.calcTotal()" name="Rate"  data-popup-rate="' + popupRate + '" ' + rateDisabled + ' " value=' + rate.toFixed(2) + ' ' + originalRate + '>').appendTo(cell5);
-        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Quantity" type="number" min="0.01" onfocusout="invoice.quantityChangeEvt(this)" name="Quantity" value=' + quantity.toString() + '>').appendTo(cell6);
+        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Quantity" type="number" min="0.01" onfocusout="invoice.quantityChangeEvt(this);" name="Quantity" value=' + quantity.toString() + '>').appendTo(cell6);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right GrossAmount" type="number" name="GrossAmount" disabled value=' + grossAmount.toFixed(2) + '>').appendTo(cell7);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Discount" type="number" data-isDiscountable="' + isDiscountable + '" ' + discountDisabled + ' min="0" ' + discountLimit + ' onfocusout="invoice.discountChangeEvt(this)" name="Discount" data-original-percent="' + discount.toFixed(2) + '" data-original-value="' + discount.toFixed(2) + '" value=' + discount.toFixed(2) + '>').appendTo(cell8);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Tax" data-isVatable="' + isVatable + '" type="number" name="Tax" disabled value=' + tax.toFixed(2) + '>').appendTo(cell9);
@@ -1588,14 +1591,20 @@ const invoice = (function () {
                         }
                     },
                     callback: function (result) {
-                        debugger;
+
                         if (result) {
                             if (mode === "tax")
                                 setTimeout(() => { location.assign(window.location.origin + "/SalesInvoice/Landing?mode=tax") }, 100);
                             else
                                 setTimeout(() => { location.assign(window.location.origin + "/SalesInvoice/Landing") }, 100);
-                        } else
-                            return;
+                        }
+
+                        if (result == "false") {
+
+                            bootbox.hideAll();
+                        }
+
+
                     }
                 }).one("shown.bs.modal", function () {
                     //temporary paused the shortcut events
@@ -1981,9 +1990,6 @@ const invoice = (function () {
     };
     let SaveSalesInvoice = () => {
         $("#NextButton").val("Please wait ..");
-        ////first calc total
-        ////*** deu to slow computer donot process all calculation
-        calcTotal();
         //check sales limit
         if (transType.val() === "Sales" && parseFloat(CurrencyUnFormat($("#totalNetAmount").text())) >= salesTransactionLimit) {
             //if (confirm('Your Transaction Amount Is Greater Than Sale Limit. \n Do You Want To Convert To Tax Invoice?')) {
@@ -2012,12 +2018,10 @@ const invoice = (function () {
         //validate
         if (!$('form#Sales_Invoice_Form').valid()) {
             bootbox.alert("Something wrong, please check all values !!");
-            $("#NextButton").val("Next");
             return false;
         }
         if (tableRows === undefined || tableRows.rows.length === 0) {
             bootbox.alert("No Item selected !!");
-            $("#NextButton").val("Next");
             return false;
         }
         let checkQuantityAndRateZeroValue = false;
@@ -2028,13 +2032,11 @@ const invoice = (function () {
             let quantity = parseFloat($(this).find(".Quantity").val());
             if (rate === 0 || quantity === 0) {
                 checkQuantityAndRateZeroValue = true;
-                $("#NextButton").val("Next");
                 return false;
             }
         });
         if (checkQuantityAndRateZeroValue) {
             bootbox.alert("Item price or quantity must be greater than zero !!");
-            $("#NextButton").val("Next");
             return false;
         }
 
@@ -2139,7 +2141,6 @@ const invoice = (function () {
                 else {
                     StatusNotify("error", result.responseText);
                 }
-                $("#NextButton").val("Next");
             }
         });
 

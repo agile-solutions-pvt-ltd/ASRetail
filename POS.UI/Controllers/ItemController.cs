@@ -1,13 +1,16 @@
 ﻿using Hangfire;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using MoreLinq;
+using Newtonsoft.Json;
 using POS.Core;
 using POS.DTO;
 using POS.UI.Helper;
+using POS.UI.Models;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -291,14 +294,8 @@ namespace POS.UI.Controllers
         }
 
 
-        public IEnumerable<ItemViewModel> GetItems(string code, bool getFromDataBase = false)
-        {
-            var query = "exec Sp_GetItems @ItemCode";
-            IEnumerable<ItemViewModel> data = _context.ItemViewModel.FromSql(query, new SqlParameter("@ItemCode", code));
-            return data;
-        }
         // [ResponseCache(Duration = 60, VaryByQueryKeys = new string[] { "code","cacheId" })]
-        public IEnumerable<ItemViewModel> GetItems_old(string code, bool getFromDataBase = false)
+        public IEnumerable<ItemViewModel> GetItems_Old(string code, bool getFromDataBase = false)
         {
 
 
@@ -336,8 +333,8 @@ namespace POS.UI.Controllers
             //result = result.ToList();
             if (result.Count() == 0 && getFromDataBase == false)
             {
-                return GetItems(code, true);
-            }           
+                return GetItems_Old(code, true);
+            }
             if (result.Count() > 0 && getFromDataBase == true)
             {
                 //update item to cache
@@ -345,8 +342,7 @@ namespace POS.UI.Controllers
                 _cache.TryGetValue("ItemViewModel", out items);
                 if (items == null)
                 {
-                    //if cache not found means this is no-cache server
-                   // _cache.Set("ItemViewModel", result);
+                    _cache.Set("ItemViewModel", result);
                 }
                 else
                 {
@@ -391,17 +387,17 @@ namespace POS.UI.Controllers
             return result;
         }
 
-
-        public IActionResult GetItemReferenceData(Guid id, bool getFromDatabase = false)
+        public IEnumerable<ItemViewModel> GetItems(string code, string customerMembershipNo)
         {
-            //for item Reference Data           
-            var item = _context.SalesInvoiceItemsTmp.Where(x => x.Invoice_Id == id).ToList();
-            List<string> barCodeList = item.Select(x => x.Bar_Code).ToList();
-            barCodeList = barCodeList.Concat(item.Select(x => x.ItemCode)).ToList();           
-            string listOfItemsCodeString = string.Join(",", barCodeList);
-            IList<ItemViewModel> itemsTemp = _context.ItemViewModel.FromSql("Sp_GetItemList {0}", listOfItemsCodeString).ToList();
+            var store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
 
-            return Ok(itemsTemp);
+            var query = "exec Sp_GetItems @ItemCode, @customerMembershipNo, @StoreId";
+            IEnumerable<ItemViewModel> data = _context.ItemViewModel.FromSql(query,
+                new SqlParameter("@ItemCode", code),
+                new SqlParameter("@customerMembershipNo", customerMembershipNo),
+                new SqlParameter("@StoreId", store.ID)
+                ).ToList();
+            return data;
         }
 
         public IEnumerable<ItemViewModel> GetItemsRawData(string code)
@@ -423,6 +419,20 @@ where (b.BarCode = {0} or i.Code = {0})";
             IEnumerable<ItemViewModel> data = _context.ItemViewModel.FromSql(query, code);
             return data;
 
+        }
+
+        public IActionResult GetItemReferenceData(Guid id, string CustomerMembershipNo)
+        {
+            //for item Reference Data        
+            var store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
+            var item = _context.SalesInvoiceItemsTmp.Where(x => x.Invoice_Id == id).ToList();
+            List<string> barCodeList = item.Select(x => x.Bar_Code).ToList();
+            barCodeList = barCodeList.Concat(item.Select(x => x.ItemCode)).ToList();
+            string listOfItemsCodeString = string.Join(",", barCodeList);
+
+            IList<ItemViewModel> itemsTemp = _context.ItemViewModel.FromSql("Sp_GetItemList {0}", listOfItemsCodeString, CustomerMembershipNo, store.ID).ToList();
+
+            return Ok(itemsTemp);
         }
 
 
@@ -450,8 +460,7 @@ where (b.BarCode = {0} or i.Code = {0})";
                         {
                             itemsTotal = new List<ItemViewModel>();
                         }
-                        itemsTotal = itemsTotal.Concat(itemsTemp).DistinctBy(x => new
-                        {
+                        itemsTotal = itemsTotal.Concat(itemsTemp).DistinctBy(x => new {
                             x.Bar_Code,
                             x.Code,
                             x.Discount,
