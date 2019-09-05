@@ -230,7 +230,7 @@ namespace POS.UI.Controllers
             };
 
             Sync.IRDPostData data = new Sync.IRDPostData();
-            bool result = data.PostBill(p);
+            bool result = data.PostCreditMemo(p);
             if (result)
             {
                 InvoiceMaterializedView view = _context.InvoiceMaterializedView.FirstOrDefault(x => x.BillNo == crNote.Credit_Note_Number);

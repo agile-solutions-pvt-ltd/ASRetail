@@ -217,6 +217,21 @@ namespace POS.UI.Controllers
             };
             return Ok(data);
         }
+        public IActionResult DeleteSalesOrder()
+        {
+            NavPostData sync = new NavPostData(_context, _mapper);
+           
+            //sync.PostSalesInvoice(store);
+            //sync.PostSalesInvoice(store);
+            BackgroundJob.Enqueue(() => sync.DeleteSalesOrder());
+            // BackgroundJob.Enqueue(() => Console.WriteLine("test from background"));
+            var data = new
+            {
+                Status = 200,
+                Message = "Success"
+            };
+            return Ok(data);
+        }
 
         ////////********** scheduling jobs
         ///[HttpGet]
