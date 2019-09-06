@@ -215,7 +215,7 @@ const invoice = (function () {
                     callback();
                 }
                 else {
-                    console("Error: cannot get item reference data");
+                    console.log("Error: cannot get item reference data");
                 }
             }
 

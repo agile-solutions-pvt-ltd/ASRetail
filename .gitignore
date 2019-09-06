@@ -21,3 +21,5 @@ obj/
 _ReSharper*/
 .vs/POS/v16/Server/sqlite3/
 /.vs
+/POS.Core/Properties/PublishProfiles
+/POS.DTO/Properties/PublishProfiles
