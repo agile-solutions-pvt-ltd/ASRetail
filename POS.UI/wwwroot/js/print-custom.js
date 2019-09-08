@@ -282,8 +282,9 @@
                     printText = printText.replace("{copyName}", (!_.isEmpty(data.copy) && data.copy.printCount > 1) ? "(COPY OF ORIGINAL) (" + (data.copy.printCount - 1).toString() + ")" : "");
                     printText = printText.replace("{billNumber}", data.invoiceData.invoice_Number);
                     printText = printText.replace("{dateAD}", FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)));
-                    printText = printText.replace("{dateBS}", data.invoiceData.trans_Date_Bs);
-                    printText = printText.replace(/{customerhide}/g, data.invoiceData.memberId === "POS" ? "display-none" : "");
+                    printText = printText.replace("{dateBS}", data.invoiceData.trans_Date_Bs);                    
+                    //printText = printText.replace(/{customerhide}/g, data.invoiceData.memberId === "POS" ? "display-none" : "");
+                    printText = printText.replace(/{customerNamehide}/g, _.isEmpty(data.invoiceData.customer_Name) || data.invoiceData.customer_Name.indexOf("Default") > -1 ? "display-none" : "");
                     printText = printText.replace(/{addresshide}/g, _.isEmpty(data.invoiceData.customer_Address) ? "display-none" : "");
                     printText = printText.replace(/{mobilehide}/g, _.isEmpty(data.invoiceData.customer_Mobile) ? "display-none" : "");
                     printText = printText.replace(/{billToVatHide}/g, _.isEmpty(data.invoiceData.customer_Vat) ? "display-none" : "");
@@ -503,7 +504,8 @@
                     printText = printText.replace("{billNumber}", data.invoiceData.invoice_Number);
                     printText = printText.replace("{dateAD}", FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)));
                     printText = printText.replace("{dateBS}", data.invoiceData.trans_Date_Bs);
-                    printText = printText.replace(/{customerhide}/g, data.invoiceData.memberId === "POS" ? "display-none" : "");
+                    //printText = printText.replace(/{customerhide}/g, data.invoiceData.memberId === "POS" ? "display-none" : "");
+                    printText = printText.replace(/{customerNamehide}/g, _.isEmpty(data.invoiceData.customer_Name) || data.invoiceData.customer_Name.indexOf("Default") > -1 ? "display-none" : "");
                     printText = printText.replace(/{addresshide}/g, _.isEmpty(data.invoiceData.customer_Address) ? "display-none" : "");
                     printText = printText.replace(/{mobilehide}/g, _.isEmpty(data.invoiceData.customer_Mobile) ? "display-none" : "");
                     printText = printText.replace("{billToName}", data.invoiceData.customer_Name);
@@ -758,7 +760,8 @@
                     printText = printText.replace("{billRefNumber}", data.invoiceData.reference_Number);
                     printText = printText.replace("{dateAD}", FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)));
                     printText = printText.replace("{dateBS}", data.invoiceData.trans_Date_Bs);
-                    printText = printText.replace(/{customerhide}/g, data.invoiceData.memberId === "POS" ? "display-none" : "");
+                    //printText = printText.replace(/{customerhide}/g, data.invoiceData.memberId === "POS" ? "display-none" : "");
+                    printText = printText.replace(/{customerNamehide}/g, _.isEmpty(data.invoiceData.customer_Name) || data.invoiceData.customer_Name.indexOf("Default") > -1 ? "display-none" : "");
                     printText = printText.replace(/{addresshide}/g, _.isEmpty(data.invoiceData.customer_Address) ? "display-none" : "");
                     printText = printText.replace(/{mobilehide}/g, _.isEmpty(data.invoiceData.customer_Mobile) ? "display-none" : "");
                     printText = printText.replace(/{billToVatHide}/g, _.isEmpty(data.invoiceData.customer_Vat) ? "display-none" : "");

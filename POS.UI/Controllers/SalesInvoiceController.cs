@@ -586,7 +586,27 @@ namespace POS.UI.Controllers
         //api get salesinvoice
         public IActionResult GetInvoice(string invoiceNumber)
         {
-            SalesInvoice tmp = _context.SalesInvoice.Include(x => x.SalesInvoiceItems).FirstOrDefault(x => x.Invoice_Number == invoiceNumber || x.Invoice_Id.ToString("0000") == invoiceNumber);
+            Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
+            SalesInvoice tmp;
+            int invoiceIntNumber;
+            if(int.TryParse(invoiceNumber,out invoiceIntNumber))
+            {
+                string invoiceFormat = "SI-" + invoiceIntNumber.ToString("0000") + "-" + store.INITIAL + "-" + store.FISCAL_YEAR;
+                tmp = _context.SalesInvoice.Include(x => x.SalesInvoiceItems).FirstOrDefault(x => x.Invoice_Number == invoiceFormat);
+                if(tmp == null)
+                {
+                    invoiceFormat = "TI-" + invoiceIntNumber.ToString("0000") + "-" + store.INITIAL + "-" + store.FISCAL_YEAR;
+                    tmp = _context.SalesInvoice.Include(x => x.SalesInvoiceItems).FirstOrDefault(x => x.Invoice_Number == invoiceFormat);
+                }
+
+            }
+            else if(!invoiceNumber.Contains(store.INITIAL) && !invoiceNumber.Contains(store.FISCAL_YEAR))
+            {
+                string invoiceFormat = invoiceNumber + "-" + store.INITIAL + "-" + store.FISCAL_YEAR;
+                tmp = _context.SalesInvoice.Include(x => x.SalesInvoiceItems).FirstOrDefault(x => x.Invoice_Number == invoiceFormat);                
+            }
+            else
+              tmp = _context.SalesInvoice.Include(x => x.SalesInvoiceItems).FirstOrDefault(x => x.Invoice_Number == invoiceNumber);
             if (tmp == null)
                 return NotFound();
             //remove self reference object

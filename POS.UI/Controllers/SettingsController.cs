@@ -233,6 +233,51 @@ namespace POS.UI.Controllers
             return Ok(data);
         }
 
+        [AutomaticRetry(Attempts = 0)]
+        public IActionResult PostUnSyncCreditNoteToNav()
+        {
+            NavPostData sync = new NavPostData(_context, _mapper);
+            Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
+            
+            BackgroundJob.Enqueue(() => sync.PostUnSyncCreditMemo(store));
+            // BackgroundJob.Enqueue(() => Console.WriteLine("test from background"));
+            var data = new
+            {
+                Status = 200,
+                Message = "Success"
+            };
+            return Ok(data);
+        }
+        public IActionResult PostUnSyncCreditNoteToNavSchedulerStart()
+        {
+            // RecurringJob.AddOrUpdate(() => PostCustomerToNAV(), Cron.Daily);
+            RecurringJob.AddOrUpdate(() => PostUnSyncCreditNoteToNav(), "15 17 * * *");
+
+            var data = new
+            {
+                Status = 200,
+                Message = "Success"
+            };
+            return Ok(data);
+        }
+        public IActionResult DeleteCreditNote()
+        {
+            NavPostData sync = new NavPostData(_context, _mapper);
+
+            //sync.PostSalesInvoice(store);
+            //sync.PostSalesInvoice(store);
+            BackgroundJob.Enqueue(() => sync.DeleteCreditMemo());
+            // BackgroundJob.Enqueue(() => Console.WriteLine("test from background"));
+            var data = new
+            {
+                Status = 200,
+                Message = "Success"
+            };
+            return Ok(data);
+        }
+
+
+
         ////////********** scheduling jobs
         ///[HttpGet]
         public IActionResult APISetup()

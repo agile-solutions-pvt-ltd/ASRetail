@@ -55,16 +55,33 @@ namespace POS.UI.Controllers
         }
         public void UpdateCacheCustomerBackground()
         {
-            _cache.Remove("Customers");
+            //_cache.Remove("Customers");
             //update cache
-            IList<Customer> itemsTotal = new List<Customer>();
-            IList<Customer> itemsTemp = new List<Customer>();
+            IList<CustomerViewModel> itemsTotal = new List<CustomerViewModel>();
+            IList<CustomerViewModel> itemsTemp = new List<CustomerViewModel>();
             int count = 100000, skip = 0;
             for (; ; )
             {
                 try
                 {
-                    itemsTemp = _context.Customer.AsNoTracking().Skip(skip).Take(count).ToList();
+                    itemsTemp = _context.Customer.AsNoTracking().Skip(skip).Take(count).Select(x => new CustomerViewModel
+                    {
+                        Address = x.Address,
+                        Barcode = x.Barcode,
+                        Code = x.Code,
+                        CustomerDiscGroup = x.CustomerDiscGroup,
+                        CustomerPriceGroup = x.CustomerPriceGroup,
+                        Is_Member = x.Is_Member,
+                        Is_Sale_Refused = x.Is_Sale_Refused,
+                        MembershipDiscGroup = x.MembershipDiscGroup,
+                        Membership_Number = x.Membership_Number,
+                        Membership_Number_Old = x.Membership_Number_Old,
+                        Member_Id = x.Member_Id,
+                        Mobile1 = x.Mobile1,
+                        Name = x.Name,
+                        Type = x.Type,
+                        Vat = x.Vat
+                    }).ToList();
                     if (itemsTemp.Count() == 0 && itemsTotal.Count() > 0)
                     {
                         _cache.Set("Customers", itemsTotal);
@@ -252,31 +269,6 @@ namespace POS.UI.Controllers
             try
             {
                 _cache.Remove("Customers");
-                var data = new
-                {
-                    Status = 200,
-                    Message = "Success"
-                };
-                return Ok(data);
-            }
-            catch (Exception ex)
-            {
-                var data = new
-                {
-                    Status = 500,
-                    Message = "Error :" + ex.Message
-                };
-                return StatusCode(500, data);
-            }
-        }
-        public IActionResult DeleteNAVSalesOrder()
-        {
-            try
-            {
-                NavPostData navPostData = new NavPostData(_context, _mapper);
-                BackgroundJob.Enqueue(() => navPostData.DeleteSalesOrder());
-
-
                 var data = new
                 {
                     Status = 200,

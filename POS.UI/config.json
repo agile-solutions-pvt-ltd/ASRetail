@@ -3,7 +3,7 @@
   "ClientPort": "1111",
   "IRDBaseUrl": "http://103.1.92.174:9050",
   "IRDBillUrl": "api/bill",
-  "IRDBillCreditNoteUrl": "api/credit",
+  "IRDBillCreditNoteUrl": "api/billreturn",
   "NavApiBaseUrl": "http://10.10.10.25:7098",
   "NavPath": "longrun/api/beta/",
   "NavCompanyId": "ca25d1ed-4fff-49df-bf9b-c1f18a0bf932",
@@ -17,8 +17,10 @@
   "StopCustomerPosting": false,
   "OfficeHourStart": "16:00:00.3041840",
   "OfficeHourEnd": "21:00:00.3041840",
-  "Location": "IMD",
-  "LoggedInUsers": [],
+  "Location": "MHJ",
+  "LoggedInUsers": [
+    "Admin"
+  ],
   "SchedulerDuration": {
     "Default": "100000",
     "Store": "100000",

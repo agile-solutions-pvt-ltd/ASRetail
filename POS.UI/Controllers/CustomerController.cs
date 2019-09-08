@@ -373,8 +373,9 @@ namespace POS.UI.Controllers
             //    customers = GetItemsRawData(code).ToList();
             //}
 
+            _cache.TryGetValue("Customers", out customers);
 
-            if (!_cache.TryGetValue("Customers", out customers))
+            if (customers == null)
             {
                 // Key not in cache, so get data.
                 customers = _context.Customer.Select(x => new CustomerViewModel
