@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using Hangfire;
+using javax.crypto;
+using javax.crypto.spec;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,9 +13,13 @@ using POS.Core;
 using POS.DTO;
 using POS.UI.Helper;
 using POS.UI.Sync;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace POS.UI.Controllers
@@ -706,5 +712,178 @@ where b.BarCode in ('" + barcodeListString + "') OR i.Code in ('" + barcodeListS
             return data;
 
         }
+
+
+        [HttpPost]
+        public IActionResult FonePayGenerateQR([FromBody]FonePay fonePay)
+        {
+            try
+            {
+                //string url = "https://dev-merchantapi.fonepay.com/convergent-merchant-web/api/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrDownload";
+                string url = "https://merchantapi.fonepay.com/api/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrDownload";
+                string srcretKey = "7116fabfe73e4afc901df48bd7805907";
+                var client = new RestClient(url);
+                var request = new RestRequest(url, Method.POST);
+
+                //request.AddHeader("Content-Type", "application/json");
+
+                
+                //post data
+
+
+                fonePay.merchantCode = "FONEPAY_SUBODH";
+                fonePay.prn = Guid.NewGuid().ToString();
+                fonePay.secret_key = srcretKey;
+                fonePay.username = "test_merchant";
+                fonePay.password = "aY1wWHHmM";
+
+                string message = fonePay.amount + "," + fonePay.prn + "," + fonePay.merchantCode + "," + fonePay.remarks1 + "," + fonePay.remarks2;
+                fonePay.dataValidation = SHA512_ComputeHash(fonePay.secret_key, message);
+
+                //request.RequestFormat = DataFormat.Json;
+
+
+                request.AddHeader("merchantCode", fonePay.merchantCode);
+                request.AddHeader("prn", fonePay.prn);
+                request.AddHeader("username", fonePay.username);
+                request.AddHeader("password", fonePay.password);
+                request.AddHeader("dataValidation",fonePay.dataValidation);
+                request.AddHeader("amount", fonePay.amount);
+                request.AddHeader("remarks1", fonePay.remarks1);
+                request.AddHeader("remarks2", fonePay.remarks2);
+
+                var jsonModel = JsonConvert.SerializeObject(fonePay);
+                request.AddJsonBody(jsonModel);
+               
+
+                IRestResponse response = client.Execute(request);
+
+                if (response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Created)
+                {
+                    dynamic obj = JsonConvert.DeserializeObject<dynamic>(response.Content);
+                    obj.prn = fonePay.prn;
+                    return Ok(obj);
+                }
+                else
+                    return StatusCode(500);
+
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500);
+            }
+        }
+
+
+
+        [HttpPost]
+        public IActionResult FonePayCheckStatus([FromBody]FonePay fonePay)
+        {
+            try
+            {               
+                string url = "https://merchantapi.fonepay.com/api/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrGetStatus";
+                string srcretKey = "7116fabfe73e4afc901df48bd7805907";
+                var client = new RestClient(url);
+                var request = new RestRequest(url, Method.POST);
+
+                //request.AddHeader("Content-Type", "application/json");
+
+
+                //post data
+
+
+                fonePay.merchantCode = "FONEPAY_SUBODH";
+                fonePay.prn = fonePay.prn;
+                fonePay.secret_key = srcretKey;
+                fonePay.username = "test_merchant";
+                fonePay.password = "aY1wWHHmM";
+
+                string message = fonePay.prn + "," + fonePay.merchantCode;
+                fonePay.dataValidation = SHA512_ComputeHash(fonePay.secret_key, message);
+
+                //request.RequestFormat = DataFormat.Json;
+
+
+                request.AddHeader("merchantCode", fonePay.merchantCode);
+                request.AddHeader("prn", fonePay.prn);
+                request.AddHeader("username", fonePay.username);
+                request.AddHeader("password", fonePay.password);
+                request.AddHeader("dataValidation", fonePay.dataValidation);
+
+                var jsonModel = JsonConvert.SerializeObject(fonePay);
+                request.AddJsonBody(jsonModel);
+
+
+                IRestResponse response = client.Execute(request);
+
+                if (response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Created)
+                {
+                    return Ok(response.Content);
+                }
+                else
+                    return StatusCode(500);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
+        }
+
+
+        public String generateHash(String secretKey, String message)
+        {
+            HMACSHA512 hmac = null;
+            String result = null;
+            try
+            {
+                byte[] secretKeyByte = Encoding.UTF8.GetBytes(secretKey);
+                hmac = new HMACSHA512(secretKeyByte);
+                hmac.Initialize();
+                byte[] bytes = Encoding.UTF8.GetBytes(message);
+                byte[] rawHmac = hmac.ComputeHash(bytes);
+                result = GetStringFromHash(rawHmac);
+
+
+
+
+                return result;
+            }
+            catch (Exception e)
+            {
+               // log.error("Exception while Hashing Using HMAC256");
+                return null;
+            }
+        }
+
+        private static string GetStringFromHash(byte[] hash)
+        {
+            StringBuilder result = new StringBuilder();
+
+            for (int i = 0; i < hash.Length; i++)
+            {
+                result.Append(hash[i].ToString("X2"));
+            }
+            return result.ToString();
+        }
+
+
+        public static string SHA512_ComputeHash(string secretKey, string text)
+        {
+            var hash = new StringBuilder(); ;
+            byte[] secretkeyBytes = Encoding.UTF8.GetBytes(secretKey);
+            byte[] inputBytes = Encoding.UTF8.GetBytes(text);
+            using (var hmac = new HMACSHA512(secretkeyBytes))
+            {
+                byte[] hashValue = hmac.ComputeHash(inputBytes);
+                foreach (var theByte in hashValue)
+                {
+                    hash.Append(theByte.ToString("x2"));
+                }
+            }
+
+            return hash.ToString();
+        }
+
     }
 }

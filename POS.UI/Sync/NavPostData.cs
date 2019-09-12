@@ -213,44 +213,52 @@ namespace POS.UI.Sync
             {
                 //if credit then no need to call api
                 if (i.Trans_Mode == "Credit")
-                    return false;
-                lineNo += 1;
-                NavSalesPaymentMode mode = new NavSalesPaymentMode()
                 {
-                    lineno = lineNo * 10000,
-                    amount = i.Amount,
-                    paymenttype = i.Trans_Mode,// == "CreditNote" ? "" : i.Trans_Mode, //for creditNote payment type should be blank
-                    locationcode = config.Location,
-                    documentno = i.Invoice_Number
-                };
-                var newUrl = url + $"({invoiceId})/{serviceforSalesInvoiceItem.ServiceName}";
-
-                var client = NAV.NAVClient(newUrl, config);
-                var request = new RestRequest(Method.POST);
-
-                request.AddHeader("Content-Type", "application/json");
-
-
-                request.RequestFormat = DataFormat.Json;
-                var temp = JsonConvert.SerializeObject(mode);
-                request.AddJsonBody(JsonConvert.SerializeObject(mode));
-
-                IRestResponse response = client.Execute(request);
-
-                if (response.StatusCode == HttpStatusCode.Created || response.Content.Contains("already exists"))
-                {
-                    //update sync status
                     i.IsNavSync = true;
                     i.NavSyncDate = DateTime.Now;
                     _context.Entry(i).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-                    //_context.SaveChanges();
-
+                    
                 }
                 else
                 {
-                    string errorMessage = "Error Invoice Bill, Invoice= " + i.Invoice_Number.ToString() + " Message= " + response.Content + "  " + DateTime.Now.ToString() + Environment.NewLine;
-                    WriteToFile(Path.GetFullPath("logs/"), "NAVSyncLog.log", errorMessage);
-                    //_logger.LogError("Error Invoice Bill, Invoice= " + i.Invoice_Number.ToString() + " Message= " + response.Content + "  " + DateTime.Now.ToString());
+                    lineNo += 1;
+                    NavSalesPaymentMode mode = new NavSalesPaymentMode()
+                    {
+                        lineno = lineNo * 10000,
+                        amount = i.Amount,
+                        paymenttype = i.Trans_Mode,// == "CreditNote" ? "" : i.Trans_Mode, //for creditNote payment type should be blank
+                        locationcode = config.Location,
+                        documentno = i.Invoice_Number
+                    };
+                    var newUrl = url + $"({invoiceId})/{serviceforSalesInvoiceItem.ServiceName}";
+
+                    var client = NAV.NAVClient(newUrl, config);
+                    var request = new RestRequest(Method.POST);
+
+                    request.AddHeader("Content-Type", "application/json");
+
+
+                    request.RequestFormat = DataFormat.Json;
+                    var temp = JsonConvert.SerializeObject(mode);
+                    request.AddJsonBody(JsonConvert.SerializeObject(mode));
+
+                    IRestResponse response = client.Execute(request);
+
+                    if (response.StatusCode == HttpStatusCode.Created || response.Content.Contains("already exists"))
+                    {
+                        //update sync status
+                        i.IsNavSync = true;
+                        i.NavSyncDate = DateTime.Now;
+                        _context.Entry(i).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                        //_context.SaveChanges();
+
+                    }
+                    else
+                    {
+                        string errorMessage = "Error Invoice Bill, Invoice= " + i.Invoice_Number.ToString() + " Message= " + response.Content + "  " + DateTime.Now.ToString() + Environment.NewLine;
+                        WriteToFile(Path.GetFullPath("logs/"), "NAVSyncLog.log", errorMessage);
+                        //_logger.LogError("Error Invoice Bill, Invoice= " + i.Invoice_Number.ToString() + " Message= " + response.Content + "  " + DateTime.Now.ToString());
+                    }
                 }
 
             }

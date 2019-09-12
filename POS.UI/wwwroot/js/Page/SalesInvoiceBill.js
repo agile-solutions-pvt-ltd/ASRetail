@@ -85,11 +85,11 @@
             url: window.location.origin + "/Customer/GetCustomerByNumber?MembershipNumber=" + GetUrlParameters("M"),
             dataType: "json",
             contentType: "application/json; charset=utf-8",
-            complete: function (result) {               
+            complete: function (result) {
                 if (result.status === 200) {
                     if (result.responseJSON.length > 0) {
                         customerList = result.responseJSON;
-                       // $("#customer").val(result.responseJSON[0].name);
+                        // $("#customer").val(result.responseJSON[0].name);
                     }
                 }
                 $("#customer").attr("readonly", true);
@@ -145,7 +145,7 @@
         vat = parseFloat(CurrencyUnFormat($("#vatSpan").text()));
         if ($("#Trans_Mode").val() !== "Tax")
             vat = 0;
-        
+
         //var totalPayableAmount = totalGrossAmount - promoDiscount - loyaltyDiscount + vat;
         var totalPayableAmount = parseFloat($("#TotalNetAmount").val());
 
@@ -235,6 +235,10 @@
         var checkAlreadyExistItem = false;
         $.each(table.rows, function (i, v) {
             var mode = $(this).find(".trans_mode").text();
+            if (mode == "FonePay") {
+                checkAlreadyExistItem = true;
+                return false;
+            }
             if (type === mode) {
                 var oldAmount = CurrencyUnFormat($(this).find(".table-amount").text());
                 $(this).find(".table-amount").text(CurrencyFormat((parseFloat(oldAmount) + parseFloat(amount))));
@@ -281,17 +285,17 @@
 
     };
     let handleBackButtonEvent = () => {
-        if (!_.isEmpty(getUrlParameters())) {           
+        if (!_.isEmpty(getUrlParameters())) {
             var id = getUrlParameters();
             var mode = GetUrlParameters("mode");
             var member = GetUrlParameters("M");
             if (mode === "tax") {
                 location.assign(window.location.origin + "/SalesInvoice/Index/" + id + "?Mode=tax&M=" + member);
-                setTimeout(() => { location.assign(window.location.origin + "/SalesInvoice/Index/" + id + "?Mode=tax&M=" + member); }, 100);                
+                setTimeout(() => { location.assign(window.location.origin + "/SalesInvoice/Index/" + id + "?Mode=tax&M=" + member); }, 100);
             }
             else {
                 location.assign(window.location.origin + "/SalesInvoice/Index/" + id + "?M=" + member);
-                setTimeout(() => { location.assign(window.location.origin + "/SalesInvoice/Index/" + id + "?M=" + member); }, 100);                
+                setTimeout(() => { location.assign(window.location.origin + "/SalesInvoice/Index/" + id + "?M=" + member); }, 100);
             }
             return false;
         }
@@ -318,7 +322,7 @@
         //    return x.Code === selectedValue;
         //})[0];
         var selectedItem = customerList[0];
-        
+
         if (selectedItem && (selectedItem.type == "1" || selectedItem.Type == "1")) {
             $("#customerPan").text(selectedItem.vat || selectedItem.Vat);
             $("#customerAddress").text(selectedItem.address || selectedItem.Address);
@@ -353,6 +357,12 @@
             else {
                 $("#credit").remove();
             }
+            if (data.roleWiseUserPermission.phonePay) {
+                $("#fonePay").show();
+            }
+            else {
+                $("#fonePay").remove();
+            }
 
             paymentMethodForWholesaleCustomer();
 
@@ -360,7 +370,7 @@
     };
 
     let paymentMethodForWholesaleCustomer = () => {
-        
+
         if (customerList[0].CustomerPriceGroup === "WSP" || customerList[0].customerPriceGroup === "WSP" || customerList[0].Type === "1" || customerList[0].type === "1") {
             $("#cash").remove();
             $("#card").remove();
@@ -370,7 +380,7 @@
             $(".payment-mode-panel").hide();
             $("#credit-panel").show();
             $(".payment-mode[data-shortcut='f3']").trigger("click");
-            
+
             $("#customer").val(customerList[0].name || customerList[0].Name);
             customerChangeEvent();
 
@@ -396,6 +406,93 @@
         $this.find("span").addClass("text-success");
         $("#" + selectedMode + "-panel").find(".amount").trigger("click");
     };
+
+    let fonePayClickEvent = (evt) => {
+        
+        //first generate QR code
+        var finalData = {
+            amount: $("#totalPayableAmount").text(),
+            remarks1: customerList[0].membership_Number,
+            remarks2: $("#totalPayableAmount").text(),
+
+        };
+        $.ajax({
+            method: "POST",
+            url: "/SalesInvoice/FonePayGenerateQR",
+            data: JSON.stringify(finalData),
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            complete: function (result) {
+                if (result.status === 200) {
+                    $('#qrCode').html("");
+                    $('#qrCode').qrcode(result.responseJSON.qrMessage);
+                    $("#qrStatusCheck").data("prn", result.responseJSON.prn);
+                    $("#qrMessage").text("Waiting for scan");
+                    let wsClient = new WebSocket(result.responseJSON.thirdpartyQrWebSocketUrl);
+                    wsClient.onopen = () => {
+                        console.log("fonepay connected");
+                    };                   
+                    wsClient.onmessage = (evt) => { 
+                        var data = JSON.parse(JSON.parse(evt.data).transactionStatus);
+                        console.log(data);
+                        if (data.success && data.message == "VERIFIED") {
+                            $("#qrMessage").text("QR Scanned Successfull, Validating Please wait ...");
+                        }
+                        if (data.success && data.paymentSuccess && data.message == "Request Complete") {
+                            $("#qrMessage").text("Payment Successfull !!");
+                            addRow("FonePay", data.productNumber, $("#totalPayableAmount").text());
+                        }
+                    };                    
+                    wsClient.onclose = (evt) => {
+                        console.log("fonepay connection closed");
+                    }
+                    wsClient.onerror = (evt) => {
+                        console.log(evt);
+                    }
+                    
+
+                }
+                else {
+                    StatusNotify("error", "Error occur to generate QR, try again later !!");
+
+                }
+            }
+        });
+    };
+    let fonePayCheckStatus = (evt) => {
+
+        $("#qrStatusCheck").val("Checking ...");
+        $("#qrStatusCheck").attr("disabled", true);
+        //first generate QR code
+        var finalData = {
+            prn: $("#qrStatusCheck").data("prn")
+        };
+
+        $.ajax({
+            method: "POST",
+            url: "/SalesInvoice/FonePayCheckStatus",
+            data: JSON.stringify(finalData),
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            complete: function (result) {
+                if (result.status === 200) {
+                    if (result.responseJSON.paymentStatus === "pending") {
+                        StatusNotify("warning", result.responseJSON.paymentStatus);
+                    }                  
+                    if (result.responseJSON.paymentStatus === "success") {
+                        addRow("FonePay", result.responseJSON.prn, $("#totalPayableAmount").text());
+                    }
+                }
+                else {
+                    StatusNotify("error", "Error occur to check status, try again later !!");
+
+                }
+                $("#qrStatusCheck").val("Check Status");
+                $("#qrStatusCheck").attr("disabled", false);
+            }
+        });
+        qrStatusCheck
+    };
     let getCreditNoteInfo = (creditNote, Callback) => {
         $.ajax({
             url: window.location.origin + "/CreditNote/GetCreditNote?CN=" + creditNote,
@@ -415,7 +512,7 @@
                     showErrorMessage(data.responseJSON.message);
                 }
                 else if (data.status === 200) {
-                    
+
                     $(".onetimewarning").show();
                     $("#creditNoteAmount").val(data.responseJSON.total_Net_Amount);
                     $("#creditNoteAmount").focus();
@@ -452,6 +549,11 @@
             $(".payment-mode[data-shortcut='f4']").trigger("click");
             $("#creditNoteNumber").focus();
         });
+        Mousetrap.bindGlobal('f6', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            $(".payment-mode[data-shortcut='f6']").trigger("click");
+            
+        });
         Mousetrap.bindGlobal('f12', function (e) {
             e.preventDefault(); e.stopPropagation();
             convertICtoNepaliCurrency();
@@ -478,7 +580,7 @@
     let SaveBill = () => {
         //some validation
         $("#SaveButton").attr("disabled", true);
-        
+
 
         if (parseFloat(CurrencyUnFormat($("#changeAmount").text())) < 0) {
             bootbox.alert("Tender amount is less then bill amount !!");
@@ -528,7 +630,7 @@
             contentType: "application/json; charset=utf-8",
             complete: function (result) {
                 if (result.status === 200) {
-                    
+
                     if (result.responseJSON.billData !== null && result.responseJSON.billData[0].trans_Mode === "Credit") {
                         result.responseJSON.copy = {
                             printCount: 0
@@ -555,19 +657,19 @@
 
     //********* Events **************//
     $("#customer").on('change', customerChangeEvent);
-    $("#AddCashButton").on('click', function () {       
+    $("#AddCashButton").on('click', function () {
         if (parseFloat($("#cashAmount").val()) <= 0)
             $("#cashAmount").val("");
         else if ($("#cashAmount").val() !== "") {
             addRow("Cash", "", $("#cashAmount").val());
             clear();
         }
-       
+
     });
     $("#AddDebitCardButton").on('click', function () {
         if (parseFloat($("#cardAmount").val()) <= 0)
             $("#cardAmount").val("");
-       else if ($("#cardAmount").val() !== "") {
+        else if ($("#cardAmount").val() !== "") {
             addRow("Card", "Card", $("#cardAmount").val());
             clear();
         }
@@ -580,10 +682,10 @@
         if (parseFloat($("#creditAmount").val()) <= 0)
             $("#creditAmount").val("");
         else
-        if ($("#creditAmount").val() !== "") {
-            addRow("Credit", $("#customer").text(), $("#creditAmount").val());
-            clear();
-        }
+            if ($("#creditAmount").val() !== "") {
+                addRow("Credit", $("#customer").text(), $("#creditAmount").val());
+                clear();
+            }
     });
     $("#AddCreditNoteNumbertButton").on('click', function () {
         if ($("#creditNoteAmount").val() !== "") {
@@ -666,6 +768,8 @@
         }
     });
     $(".payment-mode").on("click", PaymentMethodClickEvent);
+    $("#fonePay").on('click', fonePayClickEvent);
+    $("#qrStatusCheck").on("click", fonePayCheckStatus);
     $("#creditNoteNumber").on("keypress", function (e) {
         if (e.keyCode === 13 && $(this).val() !== "") {
             creditNoteNumberChangeEvent();

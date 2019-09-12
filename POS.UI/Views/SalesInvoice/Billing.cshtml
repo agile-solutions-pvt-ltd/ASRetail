@@ -94,6 +94,8 @@
 
                                 <button class="col-md-3 mr-1 btn payment-mode" id="creditNote" data-mode="creditNote" data-shortcut="f4"><span class="fa fa-credit-card-alt  fa-4x text-primary"></span><br />Cr. Note (F4)</button>
 
+                                <button class="col-md-3 mr-1 btn payment-mode" id="fonePay" data-mode="fonePay" data-shortcut="f6"><span class="fa fa-credit-card-alt  fa-4x text-primary"></span><br />FonePay (F6)</button>
+
                             </div>
 
 
@@ -126,10 +128,10 @@
                                                 <div class="card-header bg-success">ATM Card</div>
                                                 <div class="card-body">
                                                     @*Card Type : <input type="text" class="form-control" name="cardType" id="cardType" />
-                                                    <select id="cardType" name="cardType" class="form-control form-control-sm text-right">
-                                                        <option value="CREDIT CARD A\C">CREDIT CARD A\C</option>
-                                                    </select>
-                                                    <div class="br"></div>*@
+                    <select id="cardType" name="cardType" class="form-control form-control-sm text-right">
+                        <option value="CREDIT CARD A\C">CREDIT CARD A\C</option>
+                    </select>
+                    <div class="br"></div>*@
                                                     Amount : <input type="text" class="form-control form-control-sm text-right amount" name="cardAmount" id="cardAmount" />
                                                     <div class="br"></div>
                                                     <input type="button" id="AddDebitCardButton" class="btn btn-success btn-sm pull-right" value="Add" />
@@ -142,8 +144,8 @@
                                                 <div class="card-body">
                                                     Credit Customer :
                                                     @*@Html.DropDownList("customer", new SelectList(ViewBag.Customer, "Code", "Name"), "--Select Customer--", new { @class = "form-control form-control-sm" })*@
-                                                    <input id="customer" class="form-control form-control-sm" style="width: 100%;"/>
-                                                   
+                                                    <input id="customer" class="form-control form-control-sm" style="width: 100%;" />
+
                                                     <div class="br"></div>
                                                     <div class="br"></div>
                                                     <div class="row form-horizontal">
@@ -169,6 +171,16 @@
                                                     <div class="br"></div>
                                                     <span class="fa fa-info-circle text-warning onetimewarning"> This is one time use Amount.</span>
                                                     <input type="button" id="AddCreditNoteNumbertButton" class="btn btn-success btn-sm pull-right" value="Add" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12 pt-5 payment-mode-panel" id="fonePay-panel">
+                                            <div class="card">
+                                                <div class="card-header bg-success">FonePay</div>
+                                                <div class="card-body">
+                                                    <div id="qrCode"></div>
+                                                    <span id="qrMessage">Generating QR Please Wait...</span>
+                                                    <input type="button" id="qrStatusCheck" class="btn btn-success btn-sm pull-right" value="Check Status" />
                                                 </div>
                                             </div>
                                         </div>
