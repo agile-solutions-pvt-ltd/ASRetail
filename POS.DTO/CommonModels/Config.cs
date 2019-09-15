@@ -17,6 +17,12 @@ namespace POS.DTO
         public string NavUserName { get; set; }
         public string NavPassword { get; set; }
         // public string IRDBillUrl { get; set; }
+        public string FonePayGenerateQRUrl { get; set; }
+        public string FonePayCheckStatusUrl { get; set; }
+        public string FonePaySecretKey { get; set; }
+        public string FonePayMerchantCode { get; set; }
+        public string FonePayUserName { get; set; }
+        public string FonePayPassword { get; set; }
         public bool StopPostingIRD { get; set; } = false;
         public bool StopInvoicePosting { get; set; }
         public bool StopCreditNotePosting { get; set; }

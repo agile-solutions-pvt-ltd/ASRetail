@@ -285,8 +285,7 @@ const invoice = (function () {
 
 
     };
-    let updateFlatDiscount = (calcTotalFlag) => {
-        debugger;
+    let updateFlatDiscount = (calcTotalFlag) => {       
         var type = $("input[name='flatDiscount']:checked").val();
         var value = parseFloat($("#flat_discount").val() || 0).toFixed(2);
         var percent = 0;
@@ -726,6 +725,19 @@ const invoice = (function () {
                 // convertSalesTax();
 
 
+                if (salesInvoiceTmpData.Customer_Name !== null) {
+                    $('#Customer_Name').val(salesInvoiceTmpData.Customer_Name);
+                }
+                if (salesInvoiceTmpData.Customer_Vat !== null || salesInvoiceTmpData.Customer_Vat !== "NA") {
+                    $('#Customer_Vat').val(salesInvoiceTmpData.Customer_Vat);
+                }
+                if (salesInvoiceTmpData.Customer_Mobile !== null) {
+                    $('#Customer_Mobile').val(salesInvoiceTmpData.Customer_Mobile);
+                }
+                if (salesInvoiceTmpData.Customer_Address !== null) {
+                    $('#Customer_Address').val(salesInvoiceTmpData.Customer_Address);
+                }
+
 
                 //save transaction id
                 $("#Id").val(getUrlParameters());
@@ -741,6 +753,7 @@ const invoice = (function () {
                     $.each(table.rows, function (i, v) {
                         $(this).data("isChanged", true);
                     });
+                    calcTotal();
                 }
                 kendo.ui.progress($("#item_table"), false);
             });
@@ -870,17 +883,14 @@ const invoice = (function () {
                     $(this).find(".Discount").attr("readonly", false);
                 }
 
-            });
-            debugger;
+            });          
             discount = calcFlatDiscount();
 
         }
-
-        calcFlatDiscount();
+        
         return discount;
     };
     let calcDiscountLine = (selectedItem, quantity, itemCode) => {
-        debugger;
        
         //variables
         var todayDate = new Date();
@@ -980,8 +990,7 @@ const invoice = (function () {
         if (discount > 0) {
             //update type promodiscount
             $.each(table.rows, function (i, v) {
-                if ($(this).find(".itemName").attr("data-item-code") === itemCode) {
-                    debugger;
+                if ($(this).find(".itemName").attr("data-item-code") === itemCode) {                   
                     $(this).find(".Discount").data("discountType", "PromoDiscount");
                 }
 
@@ -1476,8 +1485,7 @@ const invoice = (function () {
                 let discountType = $(this).find(".Discount").data("discountType");
                
                 if (type === "amount")
-                    grossAmount = parseFloat($(this).find(".Rate").val()) * parseFloat($(this).find(".Quantity").val());
-                debugger;
+                    grossAmount = parseFloat($(this).find(".Rate").val()) * parseFloat($(this).find(".Quantity").val());               
                 if (noDiscount === false && discountType !== "MembershipDiscount" && discountType !== "PromoDiscount") {
                     totalGrossAmountWithoutOtherDiscountItem += grossAmount;
                 }
@@ -1494,13 +1502,13 @@ const invoice = (function () {
             percent = maxPercent; //no need to show error message// just set max percentage that is allowed.
             $("#flat_discount").val(maxPercent);
         }
-
+     
         //update inlinepromo discount
         if (percent > 0) {
             $.each(table.rows, function (i, v) {
                 let discountType = $(this).find(".Discount").data("discountType");
                 if (discountType === "InlineManualDiscount")
-                    $(this).find(".Discount").data("discountType",undefined);               
+                    $(this).find(".Discount").removeData("discountType");               
             });
         }
         return percent;
@@ -2077,8 +2085,7 @@ const invoice = (function () {
         //get items
         var table = $("#item_table");
         var invoiceItems = [];
-        table.find('tbody > tr').each(function (i, el) {
-            debugger;
+        table.find('tbody > tr').each(function (i, el) {           
             var $tds = $(this).find('td');
             let discountType = $(this).find('td input.Discount').data("discountType");
             let promoDiscount = discountType === undefined || discountType !== "MembershipDiscount" ? $(this).find('td input.Discount').val() : 0;

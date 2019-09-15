@@ -357,7 +357,7 @@
             else {
                 $("#credit").remove();
             }
-            if (data.roleWiseUserPermission.phonePay) {
+            if (data.roleWiseUserPermission.fonePay) {
                 $("#fonePay").show();
             }
             else {

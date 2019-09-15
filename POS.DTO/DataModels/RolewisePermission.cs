@@ -29,5 +29,7 @@ namespace POS.DTO
         public bool Require_Terminal_To_Login { get; set; }
         [Display(Name = "Sales Rate Commission Right")]
         public bool Sales_Rate_Commission_Right { get; set; } = false;
+        [Display(Name = "FonePay Right")]
+        public bool fonePay { get; set; } = false;
     }
 }

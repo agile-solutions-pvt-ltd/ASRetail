@@ -719,23 +719,23 @@ where b.BarCode in ('" + barcodeListString + "') OR i.Code in ('" + barcodeListS
         {
             try
             {
-                //string url = "https://dev-merchantapi.fonepay.com/convergent-merchant-web/api/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrDownload";
-                string url = "https://merchantapi.fonepay.com/api/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrDownload";
-                string srcretKey = "7116fabfe73e4afc901df48bd7805907";
+                Config config = ConfigJSON.Read();
+                string url = config.FonePayGenerateQRUrl;  //"https://merchantapi.fonepay.com/api/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrDownload";
+                //string srcretKey = "7116fabfe73e4afc901df48bd7805907";
                 var client = new RestClient(url);
                 var request = new RestRequest(url, Method.POST);
 
                 //request.AddHeader("Content-Type", "application/json");
 
-                
+
                 //post data
 
 
-                fonePay.merchantCode = "FONEPAY_SUBODH";
+                fonePay.merchantCode = config.FonePayMerchantCode; //"FONEPAY_SUBODH";
                 fonePay.prn = Guid.NewGuid().ToString();
-                fonePay.secret_key = srcretKey;
-                fonePay.username = "test_merchant";
-                fonePay.password = "aY1wWHHmM";
+                fonePay.secret_key = config.FonePaySecretKey;
+                fonePay.username = config.FonePayUserName; //"test_merchant";
+                fonePay.password = config.FonePayPassword; //"aY1wWHHmM";
 
                 string message = fonePay.amount + "," + fonePay.prn + "," + fonePay.merchantCode + "," + fonePay.remarks1 + "," + fonePay.remarks2;
                 fonePay.dataValidation = SHA512_ComputeHash(fonePay.secret_key, message);
@@ -780,9 +780,10 @@ where b.BarCode in ('" + barcodeListString + "') OR i.Code in ('" + barcodeListS
         public IActionResult FonePayCheckStatus([FromBody]FonePay fonePay)
         {
             try
-            {               
-                string url = "https://merchantapi.fonepay.com/api/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrGetStatus";
-                string srcretKey = "7116fabfe73e4afc901df48bd7805907";
+            {
+                Config config = ConfigJSON.Read();
+                string url = config.FonePayCheckStatusUrl;//"https://merchantapi.fonepay.com/api/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrGetStatus";
+                //string srcretKey = "7116fabfe73e4afc901df48bd7805907";
                 var client = new RestClient(url);
                 var request = new RestRequest(url, Method.POST);
 
@@ -792,11 +793,11 @@ where b.BarCode in ('" + barcodeListString + "') OR i.Code in ('" + barcodeListS
                 //post data
 
 
-                fonePay.merchantCode = "FONEPAY_SUBODH";
+                fonePay.merchantCode = config.FonePayMerchantCode;//"FONEPAY_SUBODH";
                 fonePay.prn = fonePay.prn;
-                fonePay.secret_key = srcretKey;
-                fonePay.username = "test_merchant";
-                fonePay.password = "aY1wWHHmM";
+                fonePay.secret_key = config.FonePaySecretKey;
+                fonePay.username = config.FonePayUserName;// "test_merchant";
+                fonePay.password = config.FonePayPassword;//"aY1wWHHmM";
 
                 string message = fonePay.prn + "," + fonePay.merchantCode;
                 fonePay.dataValidation = SHA512_ComputeHash(fonePay.secret_key, message);
@@ -831,41 +832,7 @@ where b.BarCode in ('" + barcodeListString + "') OR i.Code in ('" + barcodeListS
         }
 
 
-        public String generateHash(String secretKey, String message)
-        {
-            HMACSHA512 hmac = null;
-            String result = null;
-            try
-            {
-                byte[] secretKeyByte = Encoding.UTF8.GetBytes(secretKey);
-                hmac = new HMACSHA512(secretKeyByte);
-                hmac.Initialize();
-                byte[] bytes = Encoding.UTF8.GetBytes(message);
-                byte[] rawHmac = hmac.ComputeHash(bytes);
-                result = GetStringFromHash(rawHmac);
-
-
-
-
-                return result;
-            }
-            catch (Exception e)
-            {
-               // log.error("Exception while Hashing Using HMAC256");
-                return null;
-            }
-        }
-
-        private static string GetStringFromHash(byte[] hash)
-        {
-            StringBuilder result = new StringBuilder();
-
-            for (int i = 0; i < hash.Length; i++)
-            {
-                result.Append(hash[i].ToString("X2"));
-            }
-            return result.ToString();
-        }
+        
 
 
         public static string SHA512_ComputeHash(string secretKey, string text)
@@ -883,6 +850,17 @@ where b.BarCode in ('" + barcodeListString + "') OR i.Code in ('" + barcodeListS
             }
 
             return hash.ToString();
+        }
+
+        private static string GetStringFromHash(byte[] hash)
+        {
+            StringBuilder result = new StringBuilder();
+
+            for (int i = 0; i < hash.Length; i++)
+            {
+                result.Append(hash[i].ToString("X2"));
+            }
+            return result.ToString();
         }
 
     }
