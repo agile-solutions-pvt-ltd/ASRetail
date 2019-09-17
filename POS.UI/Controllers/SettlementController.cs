@@ -133,7 +133,12 @@ namespace POS.UI.Controllers
                                 item.AdjustmentAmount = data.AdjustmentCreditNoteAmount;
                                 item.ShortExcessAmount = data.ShortExcessCreditNoteAmount;
                             }
-                            else if (item.PaymentMode == "Card")
+							else if (item.PaymentMode == "FonePay")
+							{
+								item.AdjustmentAmount = data.AdjustmentFonePayAmount;
+								item.ShortExcessAmount = data.ShortExcessFonePayAmount;
+							}
+							else if (item.PaymentMode == "Card")
                             {
                                 item.AdjustmentAmount = data.AdjustmentCardAmount;
                                 item.ShortExcessAmount = data.ShortExcessCardAmount;

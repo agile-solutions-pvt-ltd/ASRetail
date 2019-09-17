@@ -90,7 +90,7 @@ namespace POS.UI.Controllers
                 }
                 else
                 {
-                    denomination.TotalCash = denomination.Total;//CalcTotalCash(denomination);
+                    denomination.TotalCash = denomination.TotalCash;//CalcTotalCash(denomination);
                     _context.Add(denomination);
 
                     await _context.SaveChangesAsync();

@@ -121,30 +121,37 @@
     let calcShortExcessAmount = (e) => {
         
         //for first time
+        debugger;
         if (e === undefined) {            
             let shortExcessAmount = {
+                
                 card: CurrencyFormat(denominationAmount[0].card - parseFloat(CurrencyUnFormat(transAmount.cardAmount.toString())) + adjustmentAmount.cardAmount),
                 credit: CurrencyFormat(denominationAmount[0].credit - parseFloat(CurrencyUnFormat(transAmount.creditAmount.toString())) + adjustmentAmount.creditAmount),
                 creditNote: CurrencyFormat(denominationAmount[0].creditNote - parseFloat(CurrencyUnFormat(transAmount.creditNoteAmount.toString())) + adjustmentAmount.creditNoteAmount),
+                fonePay: CurrencyFormat(denominationAmount[0].fonePay - parseFloat(CurrencyUnFormat(transAmount.fonePayAmount.toString())) + adjustmentAmount.fonePayAmount),
                 cash: CurrencyFormat(denominationAmount[0].denominationCash - parseFloat(CurrencyUnFormat(transAmount.cashAmount.toString())) + adjustmentAmount.cashAmount)
             };
             return shortExcessAmount;
         }
         else {           
-            var parentDiv = $($(e).parents()[3]);
+            var parentDiv = $($(e).parents()[4]);
 
             //variables
             let transCardAmount = parseFloat(CurrencyUnFormat(parentDiv.find(".transCardAmount").text())),
                 transCreditAmount = parseFloat(CurrencyUnFormat(parentDiv.find(".transCreditAmount").text())),
                 transCreditNoteAmount = parseFloat(CurrencyUnFormat(parentDiv.find(".transCreditNoteAmount").text())),
+                transFonePayAmount = parseFloat(CurrencyUnFormat(parentDiv.find(".transFonePayAmount").text())),
                 transCashAmount = parseFloat(CurrencyUnFormat(parentDiv.find(".transCashAmount").text())),
                 denoCardAmount = parseFloat(CurrencyUnFormat(parentDiv.find(".denoCardAmount").text())),
                 denoCreditAmount = parseFloat(CurrencyUnFormat(parentDiv.find(".denoCreditAmount").text())),
                 denoCreditNoteAmount = parseFloat(CurrencyUnFormat(parentDiv.find(".denoCreditNoteAmount").text())),
+                denoFonePayAmount = parseFloat(CurrencyUnFormat(parentDiv.find(".denoFonePayAmount").text())),
                 denoCashAmount = parseFloat(CurrencyUnFormat(parentDiv.find(".denoCashAmount").text())),
                 adjustmentCardAmount = parseFloat(parentDiv.find(".adjustmentCardAmount").val() || 0),
                 adjustmentCreditAmount = parseFloat(parentDiv.find(".adjustmentCreditAmount").val() || 0),
                 adjustmentCreditNoteAmount = parseFloat(parentDiv.find(".adjustmentCreditNoteAmount").val() || 0),
+                adjustmentFonePayAmount = parseFloat(parentDiv.find(".adjustmentFonePayAmount").val() || 0),
+
                 adjustmentCashAmount = parseFloat(parentDiv.find(".adjustmentCashAmount").val() || 0);
 
             //calc
@@ -152,6 +159,7 @@
                 card: denoCardAmount - transCardAmount + adjustmentCardAmount,
                 credit: denoCreditAmount - transCreditAmount + adjustmentCreditAmount,
                 creditNote: denoCreditNoteAmount - transCreditNoteAmount + adjustmentCreditNoteAmount,
+                fonePay: denoFonePayAmount - transFonePayAmount + adjustmentFonePayAmount,
                 cash: denoCashAmount - transCashAmount + adjustmentCashAmount
             };
 
@@ -159,6 +167,7 @@
             parentDiv.find(".shortAccessCardAmount").text(CurrencyFormat(shortExessAmount.card));
             parentDiv.find(".shortAccessCreditAmount").text(CurrencyFormat(shortExessAmount.credit));
             parentDiv.find(".shortAccessCreditNoteAmount").text(CurrencyFormat(shortExessAmount.creditNote));
+            parentDiv.find(".shortAccessFonePayAmount").text(CurrencyFormat(shortExessAmount.fonePay));
             parentDiv.find(".shortAccessCashAmount").text(CurrencyFormat(shortExessAmount.cash));
 
         }
@@ -184,6 +193,7 @@
             cardAmount: 0,
             creditAmount: 0,
             creditNoteAmount: 0,
+            fonePayAmount:0,
             cashAmount: 0
         };
         denominationAmount = data;
@@ -198,6 +208,10 @@
                 x.paymentMode = "Cr. Note";
                 transAmount.creditNoteAmount += parseFloat(x.totalAmount);
             }
+            else if (x.paymentMode === "FonePay") {
+                x.paymentMode = "FonePay";
+                transAmount.fonePayAmount += parseFloat(x.totalAmount);
+            }
             else if (x.paymentMode === "Cash") {
                 transAmount.cashAmount += parseFloat(x.totalAmount);
             }
@@ -206,6 +220,8 @@
         transAmount.cashAmount = CurrencyFormat(transAmount.cashAmount);
         transAmount.creditAmount = CurrencyFormat(transAmount.creditAmount);
         transAmount.creditNoteAmount = CurrencyFormat(transAmount.creditNoteAmount);
+        transAmount.fonePayAmount = CurrencyFormat(transAmount.fonePayAmount);
+
         transAmount.cardAmount = CurrencyFormat(transAmount.cardAmount);
 
 
@@ -230,11 +246,13 @@
         html = html.replace("$transCardAmount", transAmount.cardAmount);
         html = html.replace("$transCreditAmount", transAmount.creditAmount);
         html = html.replace("$transCreditNoteAmount", transAmount.creditNoteAmount);
+        html = html.replace("$transFonePayAmount", transAmount.fonePayAmount);
         html = html.replace("$transCashAmount", transAmount.cashAmount);
 
         html = html.replace("$denoCardAmount", CurrencyFormat(data[0].card));
         html = html.replace("$denoCreditAmount", CurrencyFormat(data[0].credit));
         html = html.replace("$denoCreditNoteAmount", CurrencyFormat(data[0].creditNote));
+        html = html.replace("$denoFonePayAmount", CurrencyFormat(data[0].fonePay));
         html = html.replace("$denoCashAmount", CurrencyFormat(data[0].denominationCash));
         html = html.replace("$denominationId", CurrencyFormat(data[0].denominationId));
 
@@ -243,6 +261,7 @@
             cardAmount: 0,
             creditAmount: 0,
             creditNoteAmount: 0,
+            fonePayAmount:0,
             cashAmount: 0
         };
         _.each(data, function (x) {
@@ -258,6 +277,10 @@
                 html = html.replace("$adjCreditNoteAmount", x.adjustmentAmount);
                 adjustmentAmount.creditNoteAmount = x.adjustmentAmount;
             }
+            else if (x.paymentMode === "FonePay") {
+                html = html.replace("$adjFonePayAmount", x.adjustmentAmount);
+                adjustmentAmount.fonePayAmount = x.adjustmentAmount;
+            }
             else if (x.paymentMode === "Cash") {
                 html = html.replace("$adjCashAmount", x.adjustmentAmount);
                 adjustmentAmount.cashAmount = x.adjustmentAmount;
@@ -268,12 +291,14 @@
         html = html.replace("$adjCardAmount", 0);
         html = html.replace("$adjCreditAmount", 0);
         html = html.replace("$adjCreditNoteAmount", 0);
+        html = html.replace("$adjFonePayAmount", 0);
         html = html.replace("$adjCashAmount", 0);
 
         var shortExcessAmount = calcShortExcessAmount();
         html = html.replace("$shortAccessCardAmount", shortExcessAmount.card);
         html = html.replace("$shortAccessCreditAmount", shortExcessAmount.credit);
         html = html.replace("$shortAccessCreditNoteAmount", shortExcessAmount.creditNote);
+        html = html.replace("$shortAccessFonePayAmount", shortExcessAmount.fonePay);
         html = html.replace("$shortAccessCashAmount", shortExcessAmount.cash);
         //if (GetUrlParameters("status") == "verified") {
         //    //for shortexcess amount
@@ -361,11 +386,14 @@
                         AdjustmentCardAmount: parseFloat($parent.find(".adjustmentCardAmount").val() || 0),
                         AdjustmentCreditAmount: parseFloat($parent.find(".adjustmentCreditAmount").val() || 0),
                         AdjustmentCreditNoteAmount: parseFloat($parent.find(".adjustmentCreditNoteAmount").val() || 0),
+                        AdjustmentFonePayAmount: parseFloat($parent.find(".adjustmentFonePayAmount").val() || 0),
                         AdjustmentCashAmount: parseFloat($parent.find(".adjustmentCashAmount").val() || 0),
 
                         ShortExcessCardAmount: CurrencyUnFormat($parent.find(".shortAccessCardAmount").text()),
                         ShortExcessCreditAmount: CurrencyUnFormat($parent.find(".shortAccessCreditAmount").text()),
                         ShortExcessCreditNoteAmount: CurrencyUnFormat($parent.find(".shortAccessCreditNoteAmount").text()),
+                        ShortExcessFonePayAmount: CurrencyUnFormat($parent.find(".shortAccessFonePayAmount").text()),
+
                         ShortExcessCashAmount: CurrencyUnFormat($parent.find(".shortAccessCashAmount").text())
                     };
                     $.ajax({

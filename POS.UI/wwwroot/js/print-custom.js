@@ -112,17 +112,16 @@
         header += (!_.isEmpty(data.copy) && data.copy.printCount > 1) ? "\t    (COPY OF ORIGINAL) (" + (data.copy.printCount - 1).toString() + ")\r\n\r\n" : "\r\n\r\n";
         header += "Bill #   : " + data.invoiceData.invoice_Number + "\r\n";
         header += "Date     : " + FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)) + " (" + data.invoiceData.trans_Date_Bs + ")\r\n";
-        if (data.invoiceData.memberId !== "POS") {
-            header += "Bill To  : " + data.invoiceData.customer_Name + "  \r\n";
-            if (!_.isEmpty(data.invoiceData.customer_Address)) {
-                header += "Address  : " + data.invoiceData.customer_Address + " \r\n";
-            }
-            if (!_.isEmpty(data.invoiceData.customer_Mobile)) {
-                header += "Mobile   : " + data.invoiceData.customer_Mobile + "\r\n";
-            }
+        if (data.invoiceData.customer_Name !== "Default Customer")
+            header += "Bill To  : " + data.invoiceData.customer_Name + "\r\n";
+        if (!_.isEmpty(data.invoiceData.customer_Address)) {
+            header += "Address  : " + data.invoiceData.customer_Address + "\r\n";
         }
-        if (!_.isEmpty(data.invoiceData.customer_Vat || (data.invoiceData.customer_Vat !== "NA"))) {
-            header += "VAT      : " + data.invoiceData.customer_Vat + "\r\n";
+        if (!_.isEmpty(data.invoiceData.customer_Mobile)) {
+            header += "Mobile   : " + data.invoiceData.customer_Mobile + "\r\n";
+        }
+        if ((!_.isEmpty(data.invoiceData.customer_Vat))) {
+            header += "Vat   : " + data.invoiceData.customer_Vat + "\r\n";
         }
         header += "Pay Mode : " + paymentMode + "\r\n";
         header += "----------------------------------------\r\n";
@@ -357,15 +356,18 @@
         header += (_.isEmpty(data.copy) || data.copy.printCount === 0) ? "\r\n\r\n" : "\t    (COPY OF ORIGINAL)\r\n\r\n";
         header += "Bill #   : " + data.invoiceData.invoice_Number + "\r\n";
         header += "Date     : " + FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)) + " (" + data.invoiceData.trans_Date_Bs + ")\r\n";
-        if (data.invoiceData.memberId !== "POS") {
+        if (data.invoiceData.customer_Name !== "Default Customer")
             header += "Bill To  : " + data.invoiceData.customer_Name + "\r\n";
-            if (!_.isEmpty(data.invoiceData.customer_Address)) {
-                header += "Address  : " + data.invoiceData.customer_Address + "\r\n";
-            }
-            if (!_.isEmpty(data.invoiceData.customer_Mobile)) {
-                header += "Mobile   : " + data.invoiceData.customer_Mobile + "\r\n";
-            }
+        if (!_.isEmpty(data.invoiceData.customer_Address)) {
+            header += "Address  : " + data.invoiceData.customer_Address + "\r\n";
         }
+        if (!_.isEmpty(data.invoiceData.customer_Mobile)) {
+            header += "Mobile   : " + data.invoiceData.customer_Mobile + "\r\n";
+        }
+        if ((!_.isEmpty(data.invoiceData.customer_Vat))) {
+            header += "Vat   : " + data.invoiceData.customer_Vat + "\r\n";
+        }
+
         header += "Pay Mode : " + paymentMode + "\r\n";
         header += "----------------------------------------\r\n";
         //Header end here
@@ -480,6 +482,7 @@
 
     };
     let PrintSalesInvoiceBrowser = (data, callback) => {
+        debugger;
 
         $.ajax({
             url: window.location.origin + "/Print/SalesInvoice",
@@ -503,12 +506,14 @@
                     printText = printText.replace("{billNumber}", data.invoiceData.invoice_Number);
                     printText = printText.replace("{dateAD}", FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)));
                     printText = printText.replace("{dateBS}", data.invoiceData.trans_Date_Bs);
-                    printText = printText.replace(/{customerhide}/g, data.invoiceData.memberId === "POS" ? "display-none" : "");
+                    //printText = printText.replace(/{customerhide}/g, data.invoiceData.memberId === "POS" ? "display-none" : "");
                     printText = printText.replace(/{addresshide}/g, _.isEmpty(data.invoiceData.customer_Address) ? "display-none" : "");
                     printText = printText.replace(/{mobilehide}/g, _.isEmpty(data.invoiceData.customer_Mobile) ? "display-none" : "");
+                    printText = printText.replace(/{billToVatHide}/g, _.isEmpty(data.invoiceData.customer_Vat) ? "display-none" : "");
                     printText = printText.replace("{billToName}", data.invoiceData.customer_Name);
                     printText = printText.replace("{billToAddress}", data.invoiceData.customer_Address);
                     printText = printText.replace("{billToMobile}", data.invoiceData.customer_Mobile);
+                    printText = printText.replace("{billToVat}", data.invoiceData.customer_Vat);
                     printText = printText.replace("{paymentMode}", paymentMode);
 
                     printText = printText.replace("{totalGrossAmount}", parseFloat(data.invoiceData.total_Gross_Amount).toFixed(2));
@@ -587,17 +592,16 @@
         header += "Bill #   : " + data.invoiceData.credit_Note_Number + "\r\n";
         header += "Ref No. #: " + data.invoiceData.reference_Number + "\r\n";
         header += "Date     : " + FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)) + " (" + data.invoiceData.trans_Date_Bs + ")\r\n";
-        if (data.invoiceData.memberId !== "POS") {
+        if (data.invoiceData.customer_Name !== "Default Customer")
             header += "Bill To  : " + data.invoiceData.customer_Name + "\r\n";
-            if (!_.isEmpty(data.invoiceData.customer_Address)) {
-                header += "Address  : " + data.invoiceData.customer_Address + "\r\n";
-            }
-            if (!_.isEmpty(data.invoiceData.customer_Mobile)) {
-                header += "Mobile   : " + data.invoiceData.customer_Mobile + "\r\n";
-            }
+        if (!_.isEmpty(data.invoiceData.customer_Address)) {
+            header += "Address  : " + data.invoiceData.customer_Address + "\r\n";
         }
-        if (!_.isEmpty(data.invoiceData.customer_Vat || (data.invoiceData.customer_Vat !== "NA"))) {
-            header += "VAT      : " + data.invoiceData.customer_Vat + "\r\n";
+        if (!_.isEmpty(data.invoiceData.customer_Mobile)) {
+            header += "Mobile   : " + data.invoiceData.customer_Mobile + "\r\n";
+        }
+        if ((!_.isEmpty(data.invoiceData.customer_Vat))) {
+            header += "Vat   : " + data.invoiceData.customer_Vat + "\r\n";
         }
         header += "Remarks  : " + data.invoiceData.credit_Note + "\r\n";
         header += "Pay Mode : " + data.invoiceData.payment_Mode + "\r\n";
@@ -865,7 +869,11 @@
                     printText = printText.replace("{creditHide}", data.DenominationData.Credit !== null ? "" : "display-none");
                     printText = printText.replace("{credit}", (parseFloat(data.DenominationData.Credit).toFixed(2)));
                     printText = printText.replace("{creditNoteHide}", data.DenominationData.CreditNote !== null ? "" : "display-none");
+                    printText = printText.replace("{fonePayHide}", data.DenominationData.FonePay !== null ? "" : "display-none");
+
                     printText = printText.replace("{creditNote}", (parseFloat(data.DenominationData.CreditNote).toFixed(2)));
+                    printText = printText.replace("{fonePay}", (parseFloat(data.DenominationData.FonePay).toFixed(2)));
+
 
                     printText = printText.replace("{ICHide}", data.DenominationData.Ric !== null ? "" : "display-none");
                     printText = printText.replace("{IC}", data.DenominationData.Ric);
@@ -969,6 +977,9 @@
                     var creditNote = _.sum(_.pluck(_.filter(data.settlementData, function (i, j) {
                         return i.paymentMode === "CreditNote";
                     }), "totalAmount"));
+                    var fonePay = _.sum(_.pluck(_.filter(data.settlementData, function (i, j) {
+                        return i.paymentMode === "FonePay";
+                    }), "totalAmount"));
 
                     printText = printText.replace("{cashHide}", cash !== undefined && parseFloat(cash) > 0 ? "" : "display-none");
                     printText = printText.replace("{cash}", CurrencyFormat(cash.toString()));
@@ -978,6 +989,8 @@
                     printText = printText.replace("{credit}", CurrencyFormat(credit.toString()));
                     printText = printText.replace("{creditNoteHide}", creditNote !== undefined && parseFloat(creditNote) > 0 ? "" : "display-none");
                     printText = printText.replace("{creditNote}", CurrencyFormat(creditNote.toString()));
+                    printText = printText.replace("{fonePayHide}", fonePay !== undefined && parseFloat(fonePay) > 0 ? "" : "display-none");
+                    printText = printText.replace("{fonePay}", CurrencyFormat(fonePay.toString()));
 
                     var settlementCash = _.filter(data.settlementData, function (v, k) {
                         return v.paymentMode === "Cash";
@@ -990,6 +1003,9 @@
                     })[0];
                     var settlementCreditNote = _.filter(data.settlementData, function (v, k) {
                         return v.paymentMode === "CreditNote";
+                    })[0];
+                    var settlementFonePay = _.filter(data.settlementData, function (v, k) {
+                        return v.paymentMode === "FonePay";
                     })[0];
                     printText = printText.replace("{cashAdjHide}", settlementCash !== undefined && parseFloat(settlementCash.adjustmentAmount) > 0 ? "" : "display-none");
                     if (settlementCash !== undefined)
@@ -1017,7 +1033,8 @@
                     printText = printText.replace("{creditNoteSEHide}", settlementCreditNote !== undefined && parseFloat(settlementCreditNote.shortExcessAmount) !== 0 ? "" : "display-none");
                     if (settlementCreditNote !== undefined)
                         printText = printText.replace("{creditNoteShortExcess}", CurrencyFormat(settlementCreditNote.shortExcessAmount.toString()));
-
+                    if (settlementFonePay !== undefined)
+                        printText = printText.replace("{fonePayShortExcess}", CurrencyFormat(settlementFonePay.shortExcessAmount.toString()));
 
 
 
