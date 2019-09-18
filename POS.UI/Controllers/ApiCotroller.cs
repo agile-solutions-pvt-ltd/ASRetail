@@ -264,7 +264,7 @@ namespace POS.UI.Controllers
                 return StatusCode(500, data);
             }
         }
-        public IActionResult DeleteCahceCustomer()
+        public IActionResult DeleteCacheCustomer()
         {
             try
             {

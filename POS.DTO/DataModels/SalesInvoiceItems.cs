@@ -37,6 +37,10 @@ namespace POS.DTO
         public int SyncErrorCount { get; set; } = 0;
         public DateTime? NavSyncDate { get; set; }
 
+
+        public decimal FonepayDiscountPercent { get; set; }
+        public decimal FonepayDiscountAmount { get; set; }
+
         [ForeignKey("Invoice_Id")]
         public SalesInvoice Invoice { get; set; }
     }

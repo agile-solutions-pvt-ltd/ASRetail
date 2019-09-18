@@ -100,7 +100,9 @@ namespace POS.UI.Sync
             if ((config.OfficeHourStart != null && currentTime.CompareTo(Convert.ToDateTime(config.OfficeHourStart).TimeOfDay) == 1)
                 && (config.OfficeHourEnd != null && currentTime.CompareTo(Convert.ToDateTime(config.OfficeHourEnd).TimeOfDay) == -1))
                 return true;
-            var unSyncInvoice = _context.SalesInvoice.Where(x => x.IsNavSync == false).OrderBy(x => x.Trans_Date_Ad);
+            var startDate = Convert.ToDateTime("2019-07-17");
+            var endDate = Convert.ToDateTime("2019-08-14");
+            var unSyncInvoice = _context.SalesInvoice.Where(x => x.IsNavSync == false && x.Trans_Date_Ad > startDate && x.Trans_Date_Ad <= endDate).OrderBy(x => x.Trans_Date_Ad);
             NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "SalesInvoicePost");
             int errorCount = 0, successCount = 0;
             foreach (var salesInvoice in unSyncInvoice)
@@ -213,44 +215,52 @@ namespace POS.UI.Sync
             {
                 //if credit then no need to call api
                 if (i.Trans_Mode == "Credit")
-                    return false;
-                lineNo += 1;
-                NavSalesPaymentMode mode = new NavSalesPaymentMode()
                 {
-                    lineno = lineNo * 10000,
-                    amount = i.Amount,
-                    paymenttype = i.Trans_Mode,// == "CreditNote" ? "" : i.Trans_Mode, //for creditNote payment type should be blank
-                    locationcode = config.Location,
-                    documentno = i.Invoice_Number
-                };
-                var newUrl = url + $"({invoiceId})/{serviceforSalesInvoiceItem.ServiceName}";
-
-                var client = NAV.NAVClient(newUrl, config);
-                var request = new RestRequest(Method.POST);
-
-                request.AddHeader("Content-Type", "application/json");
-
-
-                request.RequestFormat = DataFormat.Json;
-                var temp = JsonConvert.SerializeObject(mode);
-                request.AddJsonBody(JsonConvert.SerializeObject(mode));
-
-                IRestResponse response = client.Execute(request);
-
-                if (response.StatusCode == HttpStatusCode.Created || response.Content.Contains("already exists"))
-                {
-                    //update sync status
                     i.IsNavSync = true;
                     i.NavSyncDate = DateTime.Now;
                     _context.Entry(i).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-                    //_context.SaveChanges();
-
+                    
                 }
                 else
                 {
-                    string errorMessage = "Error Invoice Bill, Invoice= " + i.Invoice_Number.ToString() + " Message= " + response.Content + "  " + DateTime.Now.ToString() + Environment.NewLine;
-                    WriteToFile(Path.GetFullPath("logs/"), "NAVSyncLog.log", errorMessage);
-                    //_logger.LogError("Error Invoice Bill, Invoice= " + i.Invoice_Number.ToString() + " Message= " + response.Content + "  " + DateTime.Now.ToString());
+                    lineNo += 1;
+                    NavSalesPaymentMode mode = new NavSalesPaymentMode()
+                    {
+                        lineno = lineNo * 10000,
+                        amount = i.Amount,
+                        paymenttype = i.Trans_Mode,// == "CreditNote" ? "" : i.Trans_Mode, //for creditNote payment type should be blank
+                        locationcode = config.Location,
+                        documentno = i.Invoice_Number
+                    };
+                    var newUrl = url + $"({invoiceId})/{serviceforSalesInvoiceItem.ServiceName}";
+
+                    var client = NAV.NAVClient(newUrl, config);
+                    var request = new RestRequest(Method.POST);
+
+                    request.AddHeader("Content-Type", "application/json");
+
+
+                    request.RequestFormat = DataFormat.Json;
+                    var temp = JsonConvert.SerializeObject(mode);
+                    request.AddJsonBody(JsonConvert.SerializeObject(mode));
+
+                    IRestResponse response = client.Execute(request);
+
+                    if (response.StatusCode == HttpStatusCode.Created || response.Content.Contains("already exists"))
+                    {
+                        //update sync status
+                        i.IsNavSync = true;
+                        i.NavSyncDate = DateTime.Now;
+                        _context.Entry(i).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                        //_context.SaveChanges();
+
+                    }
+                    else
+                    {
+                        string errorMessage = "Error Invoice Bill, Invoice= " + i.Invoice_Number.ToString() + " Message= " + response.Content + "  " + DateTime.Now.ToString() + Environment.NewLine;
+                        WriteToFile(Path.GetFullPath("logs/"), "NAVSyncLog.log", errorMessage);
+                        //_logger.LogError("Error Invoice Bill, Invoice= " + i.Invoice_Number.ToString() + " Message= " + response.Content + "  " + DateTime.Now.ToString());
+                    }
                 }
 
             }

@@ -212,7 +212,7 @@ function StatusNotify(type, message) {
             nonblock: true
         },
         type: type,
-        addclass: type === 'success' ? 'bg-success' : 'bg-danger',
+        addclass: type === 'success' ? 'bg-success' : type === 'warning' ? 'bg-warning' : 'bg-danger',
         closer: true,
         closer_hover: true,
         sticker: true,

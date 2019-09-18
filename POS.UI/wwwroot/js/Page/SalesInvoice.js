@@ -1,4 +1,3 @@
-
 const invoice = (function () {
     // #region PRIVATE VARIABLES **************//
 
@@ -184,8 +183,7 @@ const invoice = (function () {
                     });
                     setTimeout(function () { $("#itemNotFoundLabel").hide(); }, 2000);
 
-                } else {
-
+                } else {                   
                     _.each(data, function (x) { selectedItems.push(x); });
                     callback(data);
                 }
@@ -210,7 +208,7 @@ const invoice = (function () {
             dataType: "json",
             contentType: "application/json; charset=utf-8",
             complete: function (result) {
-                if (result.status === 200 && result.responseJSON.length > 0) {
+                if (result.status === 200 && result.responseJSON.length > 0) {                  
                     _.each(result.responseJSON, function (x) { selectedItems.push(x); });
                     callback();
                 }
@@ -286,12 +284,12 @@ const invoice = (function () {
 
 
     };
-    let updateFlatDiscount = (calcTotalFlag) => {
+    let updateFlatDiscount = (calcTotalFlag) => {       
         var type = $("input[name='flatDiscount']:checked").val();
         var value = parseFloat($("#flat_discount").val() || 0).toFixed(2);
         var percent = 0;
         if (_.isEmpty(type))
-            return false;
+            return false;       
         if (type === "percent") {
             percent = parseFloat(value);
         } else {
@@ -300,7 +298,7 @@ const invoice = (function () {
             $.each(table.rows, function (i, v) {
                 var grossAmount = parseFloat($(this).find(".GrossAmount").val());
                 if (type === "amount")
-                    grossAmount = parseFloat($(this).find(".Rate").val());
+                    grossAmount = parseFloat($(this).find(".Rate").val()) * parseFloat($(this).find(".Quantity").val());
                 var lineDiscountAmount = parseFloat($(this).find(".Discount").val());
                 if ($(this).find(".Discount").data("isdiscountable")) {
                     totalGrossAmountWithoutLineDiscountItem += grossAmount;
@@ -461,9 +459,9 @@ const invoice = (function () {
         cell10.className = "netAmount-width-item p-1 pr-3";
         cell11.className = "action-width-item p-1";
 
-
+       
         var barCode = result.Bar_Code || result[0].bar_Code;
-        var itemCode = result.Remarks || result[0].code; //temporary update code to remarks field :)       
+        var itemCode = result.ItemCode || result[0].code; //temporary update code to remarks field :)       
         var itemName = result.Name || result[0].name;
         var itemId = result.ItemId || result[0].itemId;
         var unit = result.Unit || result[0].unit;
@@ -478,11 +476,12 @@ const invoice = (function () {
         //    tax = (grossAmount - discount) * taxPercent / 100;
         //}
         //later calculations
-
+       
         var rate = result.rate || result.Rate || 0;
         var originalRate = rate == 0 ? "" : "data-original-rate=" + rate;
         var popupRate = (result.Invoice_Number != undefined && result.Invoice_Number.indexOf("TI-") > -1 && isVatable == true ? result.RateExcludeVatWithoutRoundoff * 1.13 : rate).toFixed(2);
         var discount = result.Discount || 0;
+        var discountType = result.Remarks == "InlineManualDiscount" ? "data-discountType='InlineManualDiscount'" : "";
 
         var grossAmount = 0;
         var tax = 0;
@@ -507,12 +506,17 @@ const invoice = (function () {
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Rate" type="number" min="0.01" onfocusout="invoice.calcTotal()" name="Rate"  data-popup-rate="' + popupRate + '" ' + rateDisabled + ' " value=' + rate.toFixed(2) + ' ' + originalRate + '>').appendTo(cell5);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Quantity" type="number" min="0.01" onfocusout="invoice.quantityChangeEvt(this);" name="Quantity" value=' + quantity.toString() + '>').appendTo(cell6);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right GrossAmount" type="number" name="GrossAmount" disabled value=' + grossAmount.toFixed(2) + '>').appendTo(cell7);
-        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Discount" type="number" data-isDiscountable="' + isDiscountable + '" ' + discountDisabled + ' min="0" ' + discountLimit + ' onfocusout="invoice.discountChangeEvt(this)" name="Discount" data-original-percent="' + discount.toFixed(2) + '" data-original-value="' + discount.toFixed(2) + '" value=' + discount.toFixed(2) + '>').appendTo(cell8);
+        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Discount" type="number" data-isDiscountable="' + isDiscountable + '" ' + discountDisabled + ' min="0" ' + discountLimit + ' onfocusout="invoice.discountChangeEvt(this)" name="Discount" data-original-percent="' + discount.toFixed(2) + '" data-original-value="' + discount.toFixed(2) + '" value=' + discount.toFixed(2) + ' >').appendTo(cell8);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Tax" data-isVatable="' + isVatable + '" type="number" name="Tax" disabled value=' + tax.toFixed(2) + '>').appendTo(cell9);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right NetAmount" type="number" name="NetAmount" disabled value=' + netAmount.toFixed(2) + '>').appendTo(cell10);
 
         $('<botton onclick="invoice.delete_row(this);" class="btn btn-sm btn-danger"><i class="fa fa-times fa-sm"></i></botton>').appendTo(cell11);
 
+
+        //if inline manual discount then add in data
+        if (result.Remarks == "InlineManualDiscount") {
+            $(row).find(".Discount").data("discountType", "InlineManualDiscountFromDB");
+        }
 
         //check keyinweight
         if (result.keyInWeight || (result.length > 0 && result[0].keyInWeight)) {
@@ -719,6 +723,21 @@ const invoice = (function () {
                     $("#Trans_Type").val("Sales");
                 // convertSalesTax();
 
+
+                if (salesInvoiceTmpData.Customer_Name !== null) {
+                    $('#Customer_Name').val(salesInvoiceTmpData.Customer_Name);
+                }
+                if (salesInvoiceTmpData.Customer_Vat !== null || salesInvoiceTmpData.Customer_Vat !== "NA") {
+                    $('#Customer_Vat').val(salesInvoiceTmpData.Customer_Vat);
+                }
+                if (salesInvoiceTmpData.Customer_Mobile !== null) {
+                    $('#Customer_Mobile').val(salesInvoiceTmpData.Customer_Mobile);
+                }
+                if (salesInvoiceTmpData.Customer_Address !== null) {
+                    $('#Customer_Address').val(salesInvoiceTmpData.Customer_Address);
+                }
+
+
                 //save transaction id
                 $("#Id").val(getUrlParameters());
 
@@ -728,6 +747,12 @@ const invoice = (function () {
                         addRowWithData(x, false);
                     });
                     calcAll();
+
+                    //quick solution// change this later
+                    $.each(table.rows, function (i, v) {
+                        $(this).data("isChanged", true);
+                    });
+                    calcTotal();
                 }
                 kendo.ui.progress($("#item_table"), false);
             });
@@ -839,7 +864,7 @@ const invoice = (function () {
             if (discount > 0)
                 isMembershipDiscount = true;
         }
-
+       
         if (discount > 0) {
             //update isdiscountable
             $.each(table.rows, function (i, v) {
@@ -857,17 +882,15 @@ const invoice = (function () {
                     $(this).find(".Discount").attr("readonly", false);
                 }
 
-            });
+            });          
             discount = calcFlatDiscount();
 
         }
-
-
+        
         return discount;
     };
     let calcDiscountLine = (selectedItem, quantity, itemCode) => {
-
-
+       
         //variables
         var todayDate = new Date();
         var membershipNumber = $("#membershipId").val();
@@ -966,7 +989,7 @@ const invoice = (function () {
         if (discount > 0) {
             //update type promodiscount
             $.each(table.rows, function (i, v) {
-                if ($(this).find(".itemName").attr("data-item-code") === itemCode) {
+                if ($(this).find(".itemName").attr("data-item-code") === itemCode) {                   
                     $(this).find(".Discount").data("discountType", "PromoDiscount");
                 }
 
@@ -1220,7 +1243,10 @@ const invoice = (function () {
                     discountPercent = calcDiscount(itemCode, quantity, from);
                     //if discount percent is zero check manual inline discount
                     ///*** Discount logic start
-                    if (from !== undefined && from.name === "Discount") {
+                    let inlineManualDiscountCondition = $(this).find(".Discount").data("discountType") === "InlineManualDiscount" &&
+                        $("input[name='flatDiscount']:checked").val() == undefined &&
+                        parseFloat($(this).find(".Discount").val()) > 0;
+                    if ((from !== undefined && from.name === "Discount") || $(this).find(".Discount").data("discountType") === "InlineManualDiscountFromDB" || inlineManualDiscountCondition) {
                         $(this).find(".Discount").data("discountType", "InlineManualDiscount");
                         discount = parseFloat($(this).find(".Discount").val());
                         discountPercent = discount / (rate * quantity) * 100;
@@ -1228,7 +1254,7 @@ const invoice = (function () {
                     }
 
 
-
+                   
 
                     discount = rate * discountPercent / 100;
                     discountExcVat = rateExcludeTax * discountPercent / 100;
@@ -1454,18 +1480,19 @@ const invoice = (function () {
             $.each(table.rows, function (i, v) {
                 var grossAmount = parseFloat($(this).find(".GrossAmount").val());
                 let discountable = $(this).find(".Discount").data("isdiscountable");
-                let noDiscount = $(this).find(".Discount").data("noDiscount") || false;;
+                let noDiscount = $(this).find(".Discount").data("noDiscount") || false;
                 let discountType = $(this).find(".Discount").data("discountType");
-
-                //if (type === "amount")
-                //    grossAmount = parseFloat($(this).find(".Rate").val());
-
+               
+                if (type === "amount")
+                    grossAmount = parseFloat($(this).find(".Rate").val()) * parseFloat($(this).find(".Quantity").val());               
                 if (noDiscount === false && discountType !== "MembershipDiscount" && discountType !== "PromoDiscount") {
                     totalGrossAmountWithoutOtherDiscountItem += grossAmount;
                 }
             });
 
             percent = totalGrossAmountWithoutOtherDiscountItem === 0 ? 0 : (discountAmount * 100 / totalGrossAmountWithoutOtherDiscountItem);
+            percent = parseFloat(percent.toFixed(5));
+            console.log(percent);
         }
 
         //check if exceed the max percent
@@ -1474,7 +1501,15 @@ const invoice = (function () {
             percent = maxPercent; //no need to show error message// just set max percentage that is allowed.
             $("#flat_discount").val(maxPercent);
         }
-
+     
+        //update inlinepromo discount
+        if (percent > 0) {
+            $.each(table.rows, function (i, v) {
+                let discountType = $(this).find(".Discount").data("discountType");
+                if (discountType === "InlineManualDiscount")
+                    $(this).find(".Discount").removeData("discountType");               
+            });
+        }
         return percent;
     };
     let calculateReverseTax = (amount, taxPercent, taxable) => {
@@ -1504,6 +1539,7 @@ const invoice = (function () {
         if (givenDiscountPercent > maxDiscountPercent) {
             let finalDiscountAmount = grossAmount * maxDiscountPercent / 100;
             $(row).val(finalDiscountAmount.toFixed(2));
+
         }
 
     };
@@ -2002,7 +2038,7 @@ const invoice = (function () {
         //variable
         let tableRows = document.getElementById("item_table").getElementsByTagName('tbody')[0];
 
-
+        
 
 
         //save field data first
@@ -2041,14 +2077,52 @@ const invoice = (function () {
         }
 
 
+        debugger;
+        //calcFonepay percent
+        let totalNetAmount = $("#Total_Net_Amount").val();
+        let fonePayDiscountPercent = config.FonePayDiscountPercent;
+        let fonePayMaxLimit = config.FonePayDiscountLimit;
+        let calcFonePayDiscount = totalNetAmount * fonePayDiscountPercent / 100;
+        if (calcFonePayDiscount > fonePayMaxLimit) {
+            calcFonePayDiscount = fonePayMaxLimit;
+            fonePayDiscountPercent = calcFonePayDiscount / totalNetAmount * 100;
+        }
 
+
+
+        //calcfonepay  taxable and non taxable
+        var fonepayTaxableAmount = 0, fonepayNonTaxableAmount = 0,fonepayTotalDiscountExcVat = 0;
+        $.each(tableRows.rows, function (i, v) {
+
+            //variables 
+            let taxable = $(this).find(".Tax").data("isvatable");
+            let rateExcludeTax = parseFloat($(this).find(".Rate").data("RateExcludedVatWithoutRoundoff"));
+            let quantity = parseFloat($(this).find(".Quantity").val());
+            let previousDiscountPercent = parseFloat($(this).find(".Discount").data("DiscountPercent"));
+            let discountPercent = previousDiscountPercent + fonePayDiscountPercent;
+            let discountExcVat = rateExcludeTax * discountPercent / 100;
+
+            var grossRateN = parseFloat((rateExcludeTax * quantity).toFixed(2));
+            var grossDiscountN = parseFloat((grossRateN * discountPercent / 100).toFixed(2));
+            if (taxable)
+                fonepayTaxableAmount += parseFloat(grossRateN - grossDiscountN);// parseFloat(((rateExcludeTax - discountExcVat) * quantity).toFixed(2));
+            else
+                fonepayNonTaxableAmount += parseFloat(grossRateN - grossDiscountN);
+
+            fonepayTotalDiscountExcVat += discountExcVat;
+        });
+        let fonepayTax = fonepayTaxableAmount * 13 / 100;
+        let fonepayTotalNetAmount = fonepayTaxableAmount + fonepayNonTaxableAmount + parseFloat(fonepayTax.toFixed(2));
+
+
+        
 
 
 
         //get items
         var table = $("#item_table");
         var invoiceItems = [];
-        table.find('tbody > tr').each(function (i, el) {
+        table.find('tbody > tr').each(function (i, el) {           
             var $tds = $(this).find('td');
             let discountType = $(this).find('td input.Discount').data("discountType");
             let promoDiscount = discountType === undefined || discountType !== "MembershipDiscount" ? $(this).find('td input.Discount').val() : 0;
@@ -2066,28 +2140,33 @@ const invoice = (function () {
                 Gross_Amount: $(this).find('td input.GrossAmount').val(),
                 Discount: $(this).find('td input.Discount').val(),
                 DiscountPercent: $(this).find('td input.Discount').data("DiscountPercent"),
+                FonepayDiscountPercent: fonePayDiscountPercent,
                 PromoDiscount: promoDiscount,
                 MembershipDiscount: membershipDiscount,
                 Tax: $(this).find('td input.Tax').val(),
                 Is_Vatable: $(this).find('td input.Tax').attr("data-isVatable") === "true",
                 Is_Discountable: $(this).find('td input.Discount').attr("data-isDiscountable") === "true",
                 Net_Amount: $(this).find('td input.NetAmount').val(),
-                Remarks: $(this).find('td .itemName').data("item-code")
+                Remarks: ($(this).find('td input.Discount').data("discountType") == "InlineManualDiscount" && $("input[name='flatDiscount']:checked").val() == undefined) ? "InlineManualDiscount" : $(this).find('td .itemName').data("item-code")
             });
         });
 
-
+        
 
         //call ajaxnow       
         var data = $('form#Sales_Invoice_Form').serializeObject();
-
+       
         //assign customer id
         data.Customer_Id = $("#membershipId").val();
 
-        if ($("input[name='flatDiscount']:checked").val() === "percent")
+        if ($("input[name='flatDiscount']:checked").val() === "percent") {
             data.Flat_Discount_Percent = $("#flat_discount").val();
-        else
+            data.Flat_Discount_Amount = null;
+        }
+        else {
             data.Flat_Discount_Amount = $("#flat_discount").val();
+            data.Flat_Discount_Percent = null;
+        }
 
 
 
@@ -2095,7 +2174,13 @@ const invoice = (function () {
         data.MembershipDiscount = calcTotalMembershipDiscount();
         data.PromoDiscount = calcTotalPromoDiscount();
 
-
+        //assign fonepay field
+        data.FonepayTaxable = fonepayTaxableAmount;
+        data.FonepayNonTaxable = fonepayNonTaxableAmount;
+        data.FonepayTax = fonepayTax;
+        data.FonepayDiscountAmount = calcFonePayDiscount;
+        data.FonepayDiscountPercent = fonePayDiscountPercent;
+        data.FonepayTotalDiscountExcVat = fonepayTotalDiscountExcVat;        
 
         data.SalesInvoiceItems = invoiceItems;
         data.MemberId = $("#membershipId").val();
@@ -2130,6 +2215,7 @@ const invoice = (function () {
 
                     if (result.responseJSON.redirectUrl === "") {
                         StatusNotify("success", "Saved Successfully");
+                        $("#NextButton").val("Next");
                     } else {
 
                         window.location.href = window.location.origin + result.responseJSON.redirectUrl;
@@ -2140,6 +2226,7 @@ const invoice = (function () {
                 }
                 else {
                     StatusNotify("error", result.responseText);
+                    $("#NextButton").val("Next");
                 }
             }
         });

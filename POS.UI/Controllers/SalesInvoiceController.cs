@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using Hangfire;
+using javax.crypto;
+using javax.crypto.spec;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,9 +13,13 @@ using POS.Core;
 using POS.DTO;
 using POS.UI.Helper;
 using POS.UI.Sync;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace POS.UI.Controllers
@@ -73,6 +79,7 @@ namespace POS.UI.Controllers
             }
             TempData["StatusMessage"] = StatusMessage;
             ViewData["Store"] = store;
+            ViewData["Config"] = ConfigJSON.Read();
 
             //for customer
             //display only ismember data later
@@ -302,7 +309,7 @@ namespace POS.UI.Controllers
                 customers = customers.Where(x => x.Membership_Number == salesInvoiceTMP.MemberId);
             ViewData["Customer"] = customers;
 
-
+            ViewData["Config"] = ConfigJSON.Read();
             return View();
         }
 
@@ -338,6 +345,8 @@ namespace POS.UI.Controllers
                         salesInvoice = _mapper.Map<SalesInvoice>(salesInvoiceTmp);
                         salesInvoice.Id = Guid.NewGuid();
 
+                       
+
                         salesInvoice.Total_Bill_Discount = model.billDiscount;
                         salesInvoice.Total_Payable_Amount = model.totalPayable;
                         salesInvoice.Total_Net_Amount_Roundup = model.totalNetAmountRoundUp;
@@ -345,6 +354,23 @@ namespace POS.UI.Controllers
                         salesInvoice.Change_Amount = model.changeAmount;
                         salesInvoice.Invoice_Id = _context.SalesInvoice.Where(x => x.Trans_Type == salesInvoice.Trans_Type).Select(x => x.Invoice_Id).DefaultIfEmpty(0).Max() + 1;
                         salesInvoice.Invoice_Number = SalesInvoiceNumberFormat(store, salesInvoice.Invoice_Id, salesInvoice.Trans_Type);
+
+                        if (model.bill.FirstOrDefault().Trans_Mode == "FonePay")
+                        {
+                            var totalPayableAmount = salesInvoiceTmp.FonepayTaxable + salesInvoiceTmp.FonepayNonTaxable + salesInvoiceTmp.FonepayTax;
+                            var totalDiscount = salesInvoiceTmp.Total_Discount.Value + salesInvoiceTmp.FonepayDiscountAmount;
+
+                            salesInvoice.TaxableAmount = salesInvoiceTmp.FonepayTaxable;
+                            salesInvoice.NonTaxableAmount = salesInvoiceTmp.FonepayNonTaxable;
+                            salesInvoice.Total_Vat = salesInvoiceTmp.FonepayTax;
+                            salesInvoice.Total_Net_Amount = totalPayableAmount;
+                            salesInvoice.TOTAL_DISCOUNT_EXC_VAT = salesInvoiceTmp.FonepayTotalDiscountExcVat;
+                            salesInvoice.Total_Net_Amount_Roundup = totalPayableAmount + totalDiscount;
+                            salesInvoice.Total_Bill_Discount = totalDiscount- salesInvoice.PromoDiscount;
+                            salesInvoice.Total_Discount = totalDiscount;
+
+                        }
+
                         _context.SalesInvoice.Add(salesInvoice);
 
 
@@ -357,7 +383,19 @@ namespace POS.UI.Controllers
                             salesItem.Id = 0;
                             salesItem.Invoice_Id = salesInvoice.Id;
                             salesItem.Invoice_Number = salesInvoice.Invoice_Number;
-                            _context.SalesInvoiceItems.Add(salesItem);
+                            if (model.bill.FirstOrDefault().Trans_Mode == "FonePay")
+                            {
+                                salesItem.DiscountPercent = item.DiscountPercent + item.FonepayDiscountPercent;
+                                salesItem.FonepayDiscountPercent = item.FonepayDiscountPercent;
+                                salesItem.FonepayDiscountAmount = item.Gross_Amount.Value * item.FonepayDiscountPercent / 100;
+                                salesItem.Discount = item.Discount + salesItem.FonepayDiscountAmount;
+                                salesItem.Tax = Math.Round(((Math.Round(salesItem.RateExcludeVat * salesItem.Quantity.Value, 2) - salesItem.Discount.Value) * 13 / 100),2);
+
+
+                            }
+
+
+                                _context.SalesInvoiceItems.Add(salesItem);
                         }
                         _context.SaveChanges();
 
@@ -706,5 +744,158 @@ where b.BarCode in ('" + barcodeListString + "') OR i.Code in ('" + barcodeListS
             return data;
 
         }
+
+
+        [HttpPost]
+        public IActionResult FonePayGenerateQR([FromBody]FonePay fonePay)
+        {
+            try
+            {
+                Config config = ConfigJSON.Read();
+                string url = config.FonePayGenerateQRUrl;  //"https://merchantapi.fonepay.com/api/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrDownload";
+                //string srcretKey = "7116fabfe73e4afc901df48bd7805907";
+                var client = new RestClient(url);
+                var request = new RestRequest(url, Method.POST);
+
+                //request.AddHeader("Content-Type", "application/json");
+
+
+                //post data
+
+
+                fonePay.merchantCode = config.FonePayMerchantCode; //"FONEPAY_SUBODH";
+                fonePay.prn = Guid.NewGuid().ToString();
+                fonePay.secret_key = config.FonePaySecretKey;
+                fonePay.remarks1 = User.Identity.Name;
+                fonePay.remarks2 = HttpContext.Session.GetString("Terminal");
+                fonePay.username = config.FonePayUserName; //"test_merchant";
+                fonePay.password = config.FonePayPassword; //"aY1wWHHmM";
+
+                string message = fonePay.amount + "," + fonePay.prn + "," + fonePay.merchantCode + "," + fonePay.remarks1 + "," + fonePay.remarks2;
+                fonePay.dataValidation = SHA512_ComputeHash(fonePay.secret_key, message);
+
+                //request.RequestFormat = DataFormat.Json;
+
+
+                request.AddHeader("merchantCode", fonePay.merchantCode);
+                request.AddHeader("prn", fonePay.prn);
+                request.AddHeader("username", fonePay.username);
+                request.AddHeader("password", fonePay.password);
+                request.AddHeader("dataValidation",fonePay.dataValidation);
+                request.AddHeader("amount", fonePay.amount);
+                request.AddHeader("remarks1", fonePay.remarks1);
+                request.AddHeader("remarks2", fonePay.remarks2);
+
+                var jsonModel = JsonConvert.SerializeObject(fonePay);
+                request.AddJsonBody(jsonModel);
+               
+
+                IRestResponse response = client.Execute(request);
+
+                if (response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Created)
+                {
+                    dynamic obj = JsonConvert.DeserializeObject<dynamic>(response.Content);
+                    obj.prn = fonePay.prn;
+                    return Ok(obj);
+                }
+                else
+                    return StatusCode(500,response.Content);
+
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500);
+            }
+        }
+
+
+
+        [HttpPost]
+        public IActionResult FonePayCheckStatus([FromBody]FonePay fonePay)
+        {
+            try
+            {
+                Config config = ConfigJSON.Read();
+                string url = config.FonePayCheckStatusUrl;//"https://merchantapi.fonepay.com/api/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrGetStatus";
+                //string srcretKey = "7116fabfe73e4afc901df48bd7805907";
+                var client = new RestClient(url);
+                var request = new RestRequest(url, Method.POST);
+
+                //request.AddHeader("Content-Type", "application/json");
+
+
+                //post data
+
+
+                fonePay.merchantCode = config.FonePayMerchantCode;//"FONEPAY_SUBODH";
+                fonePay.prn = fonePay.prn;
+                fonePay.secret_key = config.FonePaySecretKey;
+                fonePay.username = config.FonePayUserName;// "test_merchant";
+                fonePay.password = config.FonePayPassword;//"aY1wWHHmM";
+
+                string message = fonePay.prn + "," + fonePay.merchantCode;
+                fonePay.dataValidation = SHA512_ComputeHash(fonePay.secret_key, message);
+
+                //request.RequestFormat = DataFormat.Json;
+
+
+                request.AddHeader("merchantCode", fonePay.merchantCode);
+                request.AddHeader("prn", fonePay.prn);
+                request.AddHeader("username", fonePay.username);
+                request.AddHeader("password", fonePay.password);
+                request.AddHeader("dataValidation", fonePay.dataValidation);
+
+                var jsonModel = JsonConvert.SerializeObject(fonePay);
+                request.AddJsonBody(jsonModel);
+
+
+                IRestResponse response = client.Execute(request);
+
+                if (response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Created)
+                {
+                    return Ok(response.Content);
+                }
+                else
+                    return StatusCode(500);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
+        }
+
+
+        
+
+
+        public static string SHA512_ComputeHash(string secretKey, string text)
+        {
+            var hash = new StringBuilder(); ;
+            byte[] secretkeyBytes = Encoding.UTF8.GetBytes(secretKey);
+            byte[] inputBytes = Encoding.UTF8.GetBytes(text);
+            using (var hmac = new HMACSHA512(secretkeyBytes))
+            {
+                byte[] hashValue = hmac.ComputeHash(inputBytes);
+                foreach (var theByte in hashValue)
+                {
+                    hash.Append(theByte.ToString("x2"));
+                }
+            }
+
+            return hash.ToString();
+        }
+
+        private static string GetStringFromHash(byte[] hash)
+        {
+            StringBuilder result = new StringBuilder();
+
+            for (int i = 0; i < hash.Length; i++)
+            {
+                result.Append(hash[i].ToString("X2"));
+            }
+            return result.ToString();
+        }
+
     }
 }

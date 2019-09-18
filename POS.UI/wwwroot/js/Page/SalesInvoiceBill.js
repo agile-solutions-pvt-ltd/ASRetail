@@ -85,11 +85,11 @@
             url: window.location.origin + "/Customer/GetCustomerByNumber?MembershipNumber=" + GetUrlParameters("M"),
             dataType: "json",
             contentType: "application/json; charset=utf-8",
-            complete: function (result) {               
+            complete: function (result) {
                 if (result.status === 200) {
                     if (result.responseJSON.length > 0) {
                         customerList = result.responseJSON;
-                       // $("#customer").val(result.responseJSON[0].name);
+                        // $("#customer").val(result.responseJSON[0].name);
                     }
                 }
                 $("#customer").attr("readonly", true);
@@ -120,6 +120,7 @@
         var totalGrossAmount = parseFloat(CurrencyUnFormat($("#totalNetAmountSpan").text()));
         var promoDiscount = parseFloat(CurrencyUnFormat($("#promoDiscountSpan").text()));
         var loyaltyDiscount = parseFloat(CurrencyUnFormat($("#loyaltyDiscountSpan").text()));
+       
         var vat = 0;
         if (promoDiscount === 0) {
             $("#promoDiscount").hide();
@@ -132,6 +133,9 @@
         } else {
             $("#loyaltyDiscount").show();
         }
+        $("#fonepayDiscount").hide();
+
+       
 
         //if (promoDiscount === 0) {
         //    loyaltyDiscount = totalGrossAmount * loyaltyDiscountPercent / 100;
@@ -145,7 +149,7 @@
         vat = parseFloat(CurrencyUnFormat($("#vatSpan").text()));
         if ($("#Trans_Mode").val() !== "Tax")
             vat = 0;
-        
+
         //var totalPayableAmount = totalGrossAmount - promoDiscount - loyaltyDiscount + vat;
         var totalPayableAmount = parseFloat($("#TotalNetAmount").val());
 
@@ -210,6 +214,7 @@
     let calcAll = (mode) => {
         calcDiscount();
         roundUpTotalAmount(mode);
+
         calcTotal();
     };
     let showErrorMessage = (messgae) => {
@@ -217,7 +222,7 @@
         $("#error-message > span").text(messgae);
         setTimeout(function () { $("#error-message").hide(); }, 5000);
     };
-    let addRow = (type, account, amount) => {
+    let addRow = (type, account, amount,remarks) => {
 
         //check if tendar amount is greater then bill amount
         if (type === trans_mode.DebitCard || type === trans_mode.Credit) {
@@ -233,8 +238,13 @@
 
         //check there alreay item in pos  
         var checkAlreadyExistItem = false;
+        var mode = '';
         $.each(table.rows, function (i, v) {
-            var mode = $(this).find(".trans_mode").text();
+            mode = $(this).find(".trans_mode").text();
+            if (mode == "FonePay") {
+                checkAlreadyExistItem = true;
+                return false;
+            }
             if (type === mode) {
                 var oldAmount = CurrencyUnFormat($(this).find(".table-amount").text());
                 $(this).find(".table-amount").text(CurrencyFormat((parseFloat(oldAmount) + parseFloat(amount))));
@@ -260,10 +270,12 @@
 
             $('<i class="sn font-weight-bold">' + (table.rows.length) + '</i>').appendTo(cell1);
             $("<span class='trans_mode'>" + type + "</span>").appendTo(cell2);
-            $("<span class='account' data-account='" + accountToSave + "'>" + account + "</span>").appendTo(cell3);
+            $("<span class='account' data-remarks='"+ remarks+"' data-account='" + accountToSave + "'>" + account + "</span>").appendTo(cell3);
             $("<span class='table-amount text-right'>" + CurrencyFormat(amount) + "</span>").appendTo(cell4);
-
-            $('<botton onclick="bill.deleteRow(this);" class="btn btn-sm btn-danger"><i class="fa fa-times fa-sm"></i></botton>').appendTo(cell5);
+            debugger;
+            if (type != "FonePay") {
+                $('<botton onclick="bill.deleteRow(this);" class="btn btn-sm btn-danger"><i class="fa fa-times fa-sm"></i></botton>').appendTo(cell5);
+            }
         }
         calcTotal();
     };
@@ -281,17 +293,17 @@
 
     };
     let handleBackButtonEvent = () => {
-        if (!_.isEmpty(getUrlParameters())) {           
+        if (!_.isEmpty(getUrlParameters())) {
             var id = getUrlParameters();
             var mode = GetUrlParameters("mode");
             var member = GetUrlParameters("M");
             if (mode === "tax") {
                 location.assign(window.location.origin + "/SalesInvoice/Index/" + id + "?Mode=tax&M=" + member);
-                setTimeout(() => { location.assign(window.location.origin + "/SalesInvoice/Index/" + id + "?Mode=tax&M=" + member); }, 100);                
+                setTimeout(() => { location.assign(window.location.origin + "/SalesInvoice/Index/" + id + "?Mode=tax&M=" + member); }, 100);
             }
             else {
                 location.assign(window.location.origin + "/SalesInvoice/Index/" + id + "?M=" + member);
-                setTimeout(() => { location.assign(window.location.origin + "/SalesInvoice/Index/" + id + "?M=" + member); }, 100);                
+                setTimeout(() => { location.assign(window.location.origin + "/SalesInvoice/Index/" + id + "?M=" + member); }, 100);
             }
             return false;
         }
@@ -318,7 +330,7 @@
         //    return x.Code === selectedValue;
         //})[0];
         var selectedItem = customerList[0];
-        
+
         if (selectedItem && (selectedItem.type == "1" || selectedItem.Type == "1")) {
             $("#customerPan").text(selectedItem.vat || selectedItem.Vat);
             $("#customerAddress").text(selectedItem.address || selectedItem.Address);
@@ -353,6 +365,12 @@
             else {
                 $("#credit").remove();
             }
+            if (data.roleWiseUserPermission.fonePay) {
+                $("#fonePay").show();
+            }
+            else {
+                $("#fonePay").remove();
+            }
 
             paymentMethodForWholesaleCustomer();
 
@@ -360,7 +378,7 @@
     };
 
     let paymentMethodForWholesaleCustomer = () => {
-        
+
         if (customerList[0].CustomerPriceGroup === "WSP" || customerList[0].customerPriceGroup === "WSP" || customerList[0].Type === "1" || customerList[0].type === "1") {
             $("#cash").remove();
             $("#card").remove();
@@ -370,7 +388,7 @@
             $(".payment-mode-panel").hide();
             $("#credit-panel").show();
             $(".payment-mode[data-shortcut='f3']").trigger("click");
-            
+
             $("#customer").val(customerList[0].name || customerList[0].Name);
             customerChangeEvent();
 
@@ -396,6 +414,134 @@
         $this.find("span").addClass("text-success");
         $("#" + selectedMode + "-panel").find(".amount").trigger("click");
     };
+    let UpdateFonepayDiscount = () => {
+        debugger;
+        if (config.FonePayDiscountActive) {
+            var fonepayDiscount = parseFloat(CurrencyUnFormat($("#fonepayDiscountSpan").text()));
+            if (fonepayDiscount === 0) {
+                $("#fonepayDiscount").hide();
+            } else {
+                $("#fonepayDiscount").show();
+            }
+
+
+            //update  amount
+            let fonepayVat = salesInvoiceTmpData.FonepayTax;
+            let fonepayPayableAmount = salesInvoiceTmpData.FonepayTaxable + salesInvoiceTmpData.FonepayNonTaxable + salesInvoiceTmpData.FonepayTax;
+            $("#vatSpan").text(CurrencyFormat(fonepayVat));
+            $("#totalPayableAmount").text(CurrencyFormat(fonepayPayableAmount));
+            $("#changeAmount").text(CurrencyFormat(fonepayPayableAmount));
+            
+        }
+
+    };
+    let fonePayClickEvent = (evt) => {
+        debugger;
+        //check if any other payment mode selected
+        if (table.rows.length > 0 && $(table.rows[0]).find(".trans_mode").text() != "FonePay") {
+            showErrorMessage("Please remove other payment method first !!");
+            return false;
+        }
+      
+
+        //update fonepayDiscount
+        UpdateFonepayDiscount();
+
+
+
+
+        //first generate QR code
+        var finalData = {
+            amount: CurrencyUnFormat($("#totalPayableAmount").text()),
+            remarks1: customerList[0].membership_Number,
+            remarks2: $("#totalPayableAmount").text(),
+
+        };
+        $.ajax({
+            method: "POST",
+            url: "/SalesInvoice/FonePayGenerateQR",
+            data: JSON.stringify(finalData),
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            complete: function (result) {
+                if (result.status === 200) {
+                    $('#qrCode').html("");
+                    $('#qrCode').qrcode(result.responseJSON.qrMessage);
+                    $("#qrStatusCheck").data("prn", result.responseJSON.prn);
+                    $("#qrMessage").html("<b>Status </b>: Waiting for scan <i class='fa fa-spinner fa-spin'></i>");
+                    let wsClient = new WebSocket(result.responseJSON.thirdpartyQrWebSocketUrl);
+                    wsClient.onopen = () => {
+                        console.log("fonepay connected");
+                    };                   
+                    wsClient.onmessage = (evt) => { 
+                        var data = JSON.parse(JSON.parse(evt.data).transactionStatus);
+                        console.log(data);
+                        if (data.success && data.message == "VERIFIED") {
+                            $("#qrMessage").css({ "position": "absolute", "top": "159px", "left": "54px" });
+                            $("#qrCode > canvas").css("visibility", "hidden");
+                            $("#qrMessage").html("Status : QR Scanned Successfull, Waiting for Confirmation <i class='fa fa-spinner fa-spin'></i>");
+                        }
+                        if (data.success && data.paymentSuccess && data.message == "Request Complete") {
+                            $("#qrMessage").css({ "position": "absolute", "top": "83px", "left": "225px" });
+                            $("#qrCode > canvas").css("visibility", "hidden");
+                            $("#qrMessage").html("<img src='https://media.wponlinesupport.com/wp-content/uploads/2015/11/payment-successful.png' style='width: 110px;'><br /><br /><span class='font-weight-bold'>Payment Successfull</span>")
+                            StatusNotify("success", "Payment Successfull !!");
+                            addRow("FonePay", data.productNumber, $("#totalPayableAmount").text());
+                        }
+                    };                    
+                    wsClient.onclose = (evt) => {
+                        console.log("fonepay connection closed");
+                    }
+                    wsClient.onerror = (evt) => {
+                        console.log(evt);
+                    }
+                    
+
+                }
+                else {
+                    debugger;
+                    StatusNotify("error", result.responseJSON.message);
+
+                }
+            }
+        });
+    };
+    let fonePayCheckStatus = (evt) => {
+
+        $("#qrStatusCheck").val("Checking ...");
+        $("#qrStatusCheck").attr("disabled", true);
+        //first generate QR code
+        var finalData = {
+            prn: $("#qrStatusCheck").data("prn")
+        };
+
+        $.ajax({
+            method: "POST",
+            url: "/SalesInvoice/FonePayCheckStatus",
+            data: JSON.stringify(finalData),
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            complete: function (result) {
+                if (result.status === 200) {
+                    if (result.responseJSON.paymentStatus === "pending") {    
+                        addRow("FonePay", result.responseJSON.prn, $("#totalPayableAmount").text());
+                        StatusNotify("warning", result.responseJSON.paymentStatus);
+                    }                  
+                    if (result.responseJSON.paymentStatus === "success") {
+                        addRow("FonePay", result.responseJSON.prn, $("#totalPayableAmount").text());
+                        StatusNotify("success", result.responseJSON.paymentStatus);
+                    }
+                }
+                else {
+                    StatusNotify("error", "Error occur to check status, try again later !!");
+
+                }
+                $("#qrStatusCheck").val("Check Status");
+                $("#qrStatusCheck").attr("disabled", false);
+            }
+        });
+        qrStatusCheck
+    };
     let getCreditNoteInfo = (creditNote, Callback) => {
         $.ajax({
             url: window.location.origin + "/CreditNote/GetCreditNote?CN=" + creditNote,
@@ -415,7 +561,7 @@
                     showErrorMessage(data.responseJSON.message);
                 }
                 else if (data.status === 200) {
-                    
+
                     $(".onetimewarning").show();
                     $("#creditNoteAmount").val(data.responseJSON.total_Net_Amount);
                     $("#creditNoteAmount").focus();
@@ -452,6 +598,11 @@
             $(".payment-mode[data-shortcut='f4']").trigger("click");
             $("#creditNoteNumber").focus();
         });
+        Mousetrap.bindGlobal('f6', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            $(".payment-mode[data-shortcut='f6']").trigger("click");
+            
+        });
         Mousetrap.bindGlobal('f12', function (e) {
             e.preventDefault(); e.stopPropagation();
             convertICtoNepaliCurrency();
@@ -478,7 +629,7 @@
     let SaveBill = () => {
         //some validation
         $("#SaveButton").attr("disabled", true);
-        
+
 
         if (parseFloat(CurrencyUnFormat($("#changeAmount").text())) < 0) {
             bootbox.alert("Tender amount is less then bill amount !!");
@@ -499,13 +650,14 @@
             let mode = $(this).find(".trans_mode").text();
             let account = $(this).find(".account").data("account");
             let amount = CurrencyUnFormat($(this).find(".table-amount").text());
-            //let amount = $("#TotalNetAmount").val();
+            let remarks = $(this).find(".account").data("remarks");
 
             data.push({
                 Invoice_Id: invoiceId,
                 Trans_Mode: mode,
                 account: account,
-                Amount: amount
+                Amount: amount,
+                Remarks: remarks
             });
 
         });
@@ -528,7 +680,7 @@
             contentType: "application/json; charset=utf-8",
             complete: function (result) {
                 if (result.status === 200) {
-                    
+
                     if (result.responseJSON.billData !== null && result.responseJSON.billData[0].trans_Mode === "Credit") {
                         result.responseJSON.copy = {
                             printCount: 0
@@ -555,19 +707,19 @@
 
     //********* Events **************//
     $("#customer").on('change', customerChangeEvent);
-    $("#AddCashButton").on('click', function () {       
+    $("#AddCashButton").on('click', function () {
         if (parseFloat($("#cashAmount").val()) <= 0)
             $("#cashAmount").val("");
         else if ($("#cashAmount").val() !== "") {
             addRow("Cash", "", $("#cashAmount").val());
             clear();
         }
-       
+
     });
     $("#AddDebitCardButton").on('click', function () {
         if (parseFloat($("#cardAmount").val()) <= 0)
             $("#cardAmount").val("");
-       else if ($("#cardAmount").val() !== "") {
+        else if ($("#cardAmount").val() !== "") {
             addRow("Card", "Card", $("#cardAmount").val());
             clear();
         }
@@ -580,10 +732,10 @@
         if (parseFloat($("#creditAmount").val()) <= 0)
             $("#creditAmount").val("");
         else
-        if ($("#creditAmount").val() !== "") {
-            addRow("Credit", $("#customer").text(), $("#creditAmount").val());
-            clear();
-        }
+            if ($("#creditAmount").val() !== "") {
+                addRow("Credit", $("#customer").text(), $("#creditAmount").val());
+                clear();
+            }
     });
     $("#AddCreditNoteNumbertButton").on('click', function () {
         if ($("#creditNoteAmount").val() !== "") {
@@ -666,6 +818,8 @@
         }
     });
     $(".payment-mode").on("click", PaymentMethodClickEvent);
+    $("#fonePay").on('click', fonePayClickEvent);
+    $("#qrStatusCheck").on("click", fonePayCheckStatus);
     $("#creditNoteNumber").on("keypress", function (e) {
         if (e.keyCode === 13 && $(this).val() !== "") {
             creditNoteNumberChangeEvent();
