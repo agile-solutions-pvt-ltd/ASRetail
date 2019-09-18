@@ -60,7 +60,7 @@
                                 </div>
                                 <div class="form-group col-md-2">
                                     <label asp-for="Date" class="control-label"></label>
-                                    <input asp-for="Date" type="text" class="form-control form-control-sm" value="@TempData["Startingdate"]"  id="startingdate"/>
+                                    <input asp-for="Date" type="text" class="form-control form-control-sm" value="@TempData["Startingdate"]" id="startingdate" />
                                     <span asp-validation-for="Date" class="text-danger"></span>
                                 </div>
                                 <div class="form-group col-md-2">
@@ -96,14 +96,20 @@
                                     <span asp-validation-for="CreditNote" class="text-danger"></span>
                                 </div>
                             </div>
-                           
-                            <div class="form-row pb-1">
-                                <label asp-for="Other" class="control-label col-md-2 mr-denomination text-right"></label>
+                            <div class="form-row">
+                                <label asp-for="FonePay" class="control-label col-md-2 mr-denomination text-right"></label>
                                 <div class="form-group-sm col-md-2">
-                                    <input asp-for="Other" class="form-control form-control-sm text-right" />
-                                    <span asp-validation-for="Other" class="text-danger"></span>
+                                    <input asp-for="FonePay" class="form-control form-control-sm text-right" />
+                                    <span asp-validation-for="FonePay" class="text-danger"></span>
                                 </div>
                             </div>
+                            @*<div class="form-row pb-1">
+            <label asp-for="Other" class="control-label col-md-2 mr-denomination text-right"></label>
+            <div class="form-group-sm col-md-2">
+                <input asp-for="Other" class="form-control form-control-sm text-right" />
+                <span asp-validation-for="Other" class="text-danger"></span>
+            </div>
+        </div>*@
                             <div class="form-row pb-1">
                                 <label asp-for="Ric" class="control-label col-md-1 text-right"></label>
                                 <label class="control-label">&nbsp;&nbsp; X &nbsp;&nbsp; </label>
@@ -263,13 +269,20 @@
                             <hr />
                             <div class="br"></div>
                             <div class="form-row">
-                                <label asp-for="Total" class="control-label col-md-2 mr-denomination text-right"></label>
+                                <label asp-for="TotalCash" class="control-label col-md-2 mr-denomination text-right">Total Cash</label>
                                 <div class="form-group col-md-2">
-                                    <input asp-for="Total" class="form-control form-control-sm text-right" />
+                                    <input asp-for="TotalCash" class="form-control form-control-sm text-right total" />
+                                    <span asp-validation-for="TotalCash" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="br"></div>
+                            <div class="form-row">
+                                <label asp-for="Total" class="control-label col-md-2 mr-denomination text-right">Grand Total</label>
+                                <div class="form-group col-md-2">
+                                    <input asp-for="Total" class="form-control form-control-sm text-right total" />
                                     <span asp-validation-for="Total" class="text-danger"></span>
                                 </div>
                             </div>
-
 
                             @*<div class="form-group ml-button col-md-4">
             <input type="submit" value="Update" class="btn btn-success btn-block" />

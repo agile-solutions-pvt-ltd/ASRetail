@@ -50,7 +50,7 @@
                 <div class="card">
                     <div class="card-block">
                         @*Your content here*@
-                        <form  asp-action="Create" class="form-horizontal" id="form">
+                        <form asp-action="Create" class="form-horizontal" id="form">
 
                             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                             <div class="d-none d-print-block">
@@ -63,17 +63,18 @@
                                 </div>
                                 <div class="form-group col-md-2">
                                     <label asp-for="Date" class="control-label"></label>
-                                    <input asp-for="Date" type="text" class="form-control form-control-sm" readonly/>
+                                    <input asp-for="Date" type="text" class="form-control form-control-sm" readonly />
                                     <span asp-validation-for="Date" class="text-danger"></span>
                                 </div>
                                 <div class="form-group col-md-2">
                                     <label asp-for="Date_BS" class="control-label"></label>
-                                    <input asp-for="Date_BS" class="form-control form-control-sm" readonly/>
+                                    <input asp-for="Date_BS" class="form-control form-control-sm" readonly />
                                     <span asp-validation-for="Date_BS" class="text-danger"></span>
                                 </div>
 
                             </div>
                             <div class="br"><hr /></div>
+
                             <div class="form-row">
                                 <label asp-for="Card" class="control-label col-md-2 mr-denomination text-right"></label>
                                 <div class="form-group-sm col-md-2">
@@ -93,6 +94,13 @@
                                 <div class="form-group-sm col-md-2">
                                     <input asp-for="CreditNote" class="form-control form-control-sm text-right" />
                                     <span asp-validation-for="CreditNote" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label asp-for="FonePay" class="control-label col-md-2 mr-denomination text-right"></label>
+                                <div class="form-group-sm col-md-2">
+                                    <input asp-for="FonePay" class="form-control form-control-sm text-right" />
+                                    <span asp-validation-for="FonePay" class="text-danger"></span>
                                 </div>
                             </div>
                             <div class="form-row sr-only">
@@ -261,7 +269,15 @@
                             <hr />
                             <div class="br"></div>
                             <div class="form-row">
-                                <label asp-for="Total" class="control-label col-md-2 mr-denomination text-right">Total Cash</label>
+                                <label asp-for="TotalCash" class="control-label col-md-2 mr-denomination text-right">Total Cash</label>
+                                <div class="form-group col-md-2">
+                                    <input asp-for="TotalCash" class="form-control form-control-sm text-right total" />
+                                    <span asp-validation-for="TotalCash" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="br"></div>
+                            <div class="form-row">
+                                <label asp-for="Total" class="control-label col-md-2 mr-denomination text-right">Grand Total</label>
                                 <div class="form-group col-md-2">
                                     <input asp-for="Total" class="form-control form-control-sm text-right total" />
                                     <span asp-validation-for="Total" class="text-danger"></span>
@@ -271,7 +287,7 @@
 
                             <div class="form-group ml-button col-md-4">
                                 @*<input  type="submit" value="Save" class="btn btn-success btn-block"  />*@
-                                <input type="button" value="Save"  class="btn btn-success btn-block"  onclick="submitbtn();"  />
+                                <input type="button" value="Save" class="btn btn-success btn-block" onclick="submitbtn();" />
 
                             </div>
                         </form>
