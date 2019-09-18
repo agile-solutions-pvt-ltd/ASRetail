@@ -57,5 +57,7 @@ namespace POS.DTO
 
         [ForeignKey("Terminal_Id")]
         public Terminal Terminal { get; set; }
-    }
+		[Display(Name = "FonePay")]
+		public decimal? FonePay { get; set; } = 0;
+	}
 }

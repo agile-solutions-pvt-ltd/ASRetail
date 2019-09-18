@@ -74,7 +74,13 @@
                                 </div>
                             </div>
                             <div class="br"><hr /></div>
-
+                            <div class="form-row">
+                                <label asp-for="FonePay" class="control-label col-md-2 mr-denomination text-right"></label>
+                                <div class="form-group-sm col-md-2">
+                                    <input asp-for="FonePay" class="form-control form-control-sm text-right" />
+                                    <span asp-validation-for="FonePay" class="text-danger"></span>
+                                </div>
+                            </div>
                             <div class="form-row">
                                 <label asp-for="Card" class="control-label col-md-2 mr-denomination text-right"></label>
                                 <div class="form-group-sm col-md-2">
@@ -95,8 +101,10 @@
                                     <input asp-for="CreditNote" class="form-control form-control-sm text-right" />
                                     <span asp-validation-for="CreditNote" class="text-danger"></span>
                                 </div>
+
+
                             </div>
-                           
+
                             <div class="form-row pb-1 sr-only">
                                 <label asp-for="Other" class="control-label col-md-2 mr-denomination text-right"></label>
                                 <div class="form-group-sm col-md-2">
@@ -263,9 +271,17 @@
                             <hr />
                             <div class="br"></div>
                             <div class="form-row">
-                                <label asp-for="Total" class="control-label col-md-2 mr-denomination text-right"></label>
+                                <label asp-for="TotalCash" class="control-label col-md-2 mr-denomination text-right">Total Cash</label>
                                 <div class="form-group col-md-2">
-                                    <input asp-for="Total" class="form-control form-control-sm text-right" />
+                                    <input asp-for="TotalCash" class="form-control form-control-sm text-right total" />
+                                    <span asp-validation-for="TotalCash" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="br"></div>
+                            <div class="form-row">
+                                <label asp-for="Total" class="control-label col-md-2 mr-denomination text-right">Grand Total</label>
+                                <div class="form-group col-md-2">
+                                    <input asp-for="Total" class="form-control form-control-sm text-right total" />
                                     <span asp-validation-for="Total" class="text-danger"></span>
                                 </div>
                             </div>

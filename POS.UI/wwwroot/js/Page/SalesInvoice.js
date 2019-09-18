@@ -1639,8 +1639,8 @@ const invoice = (function () {
 
                             bootbox.hideAll();
                         }
-
-
+                       
+                      
                     }
                 }).one("shown.bs.modal", function () {
                     //temporary paused the shortcut events

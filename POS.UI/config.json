@@ -3,7 +3,7 @@
   "ClientPort": "1111",
   "IRDBaseUrl": "http://103.1.92.174:9050",
   "IRDBillUrl": "api/bill",
-  "IRDBillCreditNoteUrl": "api/billreturn",
+  "IRDBillCreditNoteUrl": "api/credit",
   "NavApiBaseUrl": "http://10.10.10.25:7098",
   "NavPath": "test/api/beta/",
   "NavCompanyId": "ca25d1ed-4fff-49df-bf9b-c1f18a0bf932",
@@ -28,6 +28,7 @@
   "OfficeHourEnd": "21:00:00.3041840",
   "Location": "SDB",
   "LoggedInUsers": [
+    "ROSHAN.PANDEY",
     "Admin"
   ],
   "SchedulerDuration": {

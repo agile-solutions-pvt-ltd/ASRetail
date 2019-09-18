@@ -31,6 +31,8 @@ namespace POS.DTO
         public decimal Card { get; set; }
         public decimal Credit { get; set; }
         public decimal CreditNote { get; set; }
+
+		public decimal FonePay { get; set; }
         public decimal DenominationCash { get; set; }
 
 
