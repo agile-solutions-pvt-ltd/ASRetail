@@ -120,7 +120,7 @@
         var totalGrossAmount = parseFloat(CurrencyUnFormat($("#totalNetAmountSpan").text()));
         var promoDiscount = parseFloat(CurrencyUnFormat($("#promoDiscountSpan").text()));
         var loyaltyDiscount = parseFloat(CurrencyUnFormat($("#loyaltyDiscountSpan").text()));
-       
+
         var vat = 0;
         if (promoDiscount === 0) {
             $("#promoDiscount").hide();
@@ -135,7 +135,7 @@
         }
         $("#fonepayDiscount").hide();
 
-       
+
 
         //if (promoDiscount === 0) {
         //    loyaltyDiscount = totalGrossAmount * loyaltyDiscountPercent / 100;
@@ -222,7 +222,7 @@
         $("#error-message > span").text(messgae);
         setTimeout(function () { $("#error-message").hide(); }, 5000);
     };
-    let addRow = (type, account, amount,remarks) => {
+    let addRow = (type, account, amount, remarks) => {
 
         //check if tendar amount is greater then bill amount
         if (type === trans_mode.DebitCard || type === trans_mode.Credit) {
@@ -270,7 +270,7 @@
 
             $('<i class="sn font-weight-bold">' + (table.rows.length) + '</i>').appendTo(cell1);
             $("<span class='trans_mode'>" + type + "</span>").appendTo(cell2);
-            $("<span class='account' data-remarks='"+ remarks+"' data-account='" + accountToSave + "'>" + account + "</span>").appendTo(cell3);
+            $("<span class='account' data-remarks='" + remarks + "' data-account='" + accountToSave + "'>" + account + "</span>").appendTo(cell3);
             $("<span class='table-amount text-right'>" + CurrencyFormat(amount) + "</span>").appendTo(cell4);
             debugger;
             if (type != "FonePay") {
@@ -405,6 +405,13 @@
         $this = $(evt.currentTarget);
         let selectedMode = $this.data("mode");
 
+
+        if (table.rows.length > 0 && $(table.rows[0]).find(".trans_mode").text() == "FonePay" && selectedMode !== "fonePay") {
+            showErrorMessage("Please remove other payment method first !!");
+            return false;
+        }
+
+
         calcAll(selectedMode);
 
         $(".payment-mode-panel").hide();
@@ -431,7 +438,7 @@
             $("#vatSpan").text(CurrencyFormat(fonepayVat));
             $("#totalPayableAmount").text(CurrencyFormat(fonepayPayableAmount));
             $("#changeAmount").text(CurrencyFormat(fonepayPayableAmount));
-            
+
         }
 
     };
@@ -442,7 +449,7 @@
             showErrorMessage("Please remove other payment method first !!");
             return false;
         }
-      
+
 
         //update fonepayDiscount
         UpdateFonepayDiscount();
@@ -468,12 +475,13 @@
                     $('#qrCode').html("");
                     $('#qrCode').qrcode(result.responseJSON.qrMessage);
                     $("#qrStatusCheck").data("prn", result.responseJSON.prn);
+                    $("#qrMessage").css({ "position": "" });
                     $("#qrMessage").html("<b>Status </b>: Waiting for scan <i class='fa fa-spinner fa-spin'></i>");
                     let wsClient = new WebSocket(result.responseJSON.thirdpartyQrWebSocketUrl);
                     wsClient.onopen = () => {
                         console.log("fonepay connected");
-                    };                   
-                    wsClient.onmessage = (evt) => { 
+                    };
+                    wsClient.onmessage = (evt) => {
                         var data = JSON.parse(JSON.parse(evt.data).transactionStatus);
                         console.log(data);
                         if (data.success && data.message == "VERIFIED") {
@@ -481,26 +489,33 @@
                             $("#qrCode > canvas").css("visibility", "hidden");
                             $("#qrMessage").html("Status : QR Scanned Successfull, Waiting for Confirmation <i class='fa fa-spinner fa-spin'></i>");
                         }
-                        if (data.success && data.paymentSuccess && data.message == "Request Complete") {
+                        else if (data.success && data.paymentSuccess && data.message == "Request Complete") {
                             $("#qrMessage").css({ "position": "absolute", "top": "83px", "left": "225px" });
                             $("#qrCode > canvas").css("visibility", "hidden");
-                            $("#qrMessage").html("<img src='https://media.wponlinesupport.com/wp-content/uploads/2015/11/payment-successful.png' style='width: 110px;'><br /><br /><span class='font-weight-bold'>Payment Successfull</span>")
+                            $("#qrMessage").html("<img src='/images/payment-successful.png' style='width: 110px;'><br /><br /><span class='font-weight-bold'>Payment Successfull</span>")
                             StatusNotify("success", "Payment Successfull !!");
-                            addRow("FonePay", data.productNumber, $("#totalPayableAmount").text());
+                            addRow("FonePay", data.productNumber, $("#totalPayableAmount").text(), data.traceId);
+                        } else {
+                            $("#qrMessage").css({ "position": "absolute", "top": "159px", "left": "54px" });
+                            $("#qrCode > canvas").css("visibility", "hidden");
+                            $("#qrMessage").html("Status : " + data.message);
                         }
-                    };                    
+                    };
                     wsClient.onclose = (evt) => {
                         console.log("fonepay connection closed");
                     }
                     wsClient.onerror = (evt) => {
                         console.log(evt);
                     }
-                    
+
 
                 }
                 else {
-                    debugger;
-                    StatusNotify("error", result.responseJSON.message);
+                    if (result !== undefined && result.responseJSON !== undefined && result.responseJSON.message !== undefined)
+                        StatusNotify("error", result.responseJSON.message);
+                    else
+                        StatusNotify("error", "Error occur to generate QR, try again later");
+
 
                 }
             }
@@ -523,14 +538,14 @@
             contentType: "application/json; charset=utf-8",
             complete: function (result) {
                 if (result.status === 200) {
-                    if (result.responseJSON.paymentStatus === "pending") {    
-                        addRow("FonePay", result.responseJSON.prn, $("#totalPayableAmount").text());
-                        StatusNotify("warning", result.responseJSON.paymentStatus);
-                    }                  
                     if (result.responseJSON.paymentStatus === "success") {
                         addRow("FonePay", result.responseJSON.prn, $("#totalPayableAmount").text());
-                        StatusNotify("success", result.responseJSON.paymentStatus);
+                        StatusNotify("success", result.responseJSON.paymentStatus, result.responseJSON.traceId);
+                    } else {
+                        addRow("FonePay", result.responseJSON.prn, $("#totalPayableAmount").text());
+                        StatusNotify("warning", result.responseJSON.paymentStatus);
                     }
+
                 }
                 else {
                     StatusNotify("error", "Error occur to check status, try again later !!");
@@ -601,7 +616,7 @@
         Mousetrap.bindGlobal('f6', function (e) {
             e.preventDefault(); e.stopPropagation();
             $(".payment-mode[data-shortcut='f6']").trigger("click");
-            
+
         });
         Mousetrap.bindGlobal('f12', function (e) {
             e.preventDefault(); e.stopPropagation();
