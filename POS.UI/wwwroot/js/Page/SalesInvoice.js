@@ -1,4 +1,3 @@
-
 const invoice = (function () {
     // #region PRIVATE VARIABLES **************//
 
@@ -2039,7 +2038,7 @@ const invoice = (function () {
         //variable
         let tableRows = document.getElementById("item_table").getElementsByTagName('tbody')[0];
 
-
+        
 
 
         //save field data first
@@ -2078,7 +2077,45 @@ const invoice = (function () {
         }
 
 
+        debugger;
+        //calcFonepay percent
+        let totalNetAmount = $("#Total_Net_Amount").val();
+        let fonePayDiscountPercent = config.FonePayDiscountPercent;
+        let fonePayMaxLimit = config.FonePayDiscountLimit;
+        let calcFonePayDiscount = totalNetAmount * fonePayDiscountPercent / 100;
+        if (calcFonePayDiscount > fonePayMaxLimit) {
+            calcFonePayDiscount = fonePayMaxLimit;
+            fonePayDiscountPercent = calcFonePayDiscount / totalNetAmount * 100;
+        }
 
+
+
+        //calcfonepay  taxable and non taxable
+        var fonepayTaxableAmount = 0, fonepayNonTaxableAmount = 0,fonepayTotalDiscountExcVat = 0;
+        $.each(tableRows.rows, function (i, v) {
+
+            //variables 
+            let taxable = $(this).find(".Tax").data("isvatable");
+            let rateExcludeTax = parseFloat($(this).find(".Rate").data("RateExcludedVatWithoutRoundoff"));
+            let quantity = parseFloat($(this).find(".Quantity").val());
+            let previousDiscountPercent = parseFloat($(this).find(".Discount").data("DiscountPercent"));
+            let discountPercent = previousDiscountPercent + fonePayDiscountPercent;
+            let discountExcVat = rateExcludeTax * discountPercent / 100;
+
+            var grossRateN = parseFloat((rateExcludeTax * quantity).toFixed(2));
+            var grossDiscountN = parseFloat((grossRateN * discountPercent / 100).toFixed(2));
+            if (taxable)
+                fonepayTaxableAmount += parseFloat(grossRateN - grossDiscountN);// parseFloat(((rateExcludeTax - discountExcVat) * quantity).toFixed(2));
+            else
+                fonepayNonTaxableAmount += parseFloat(grossRateN - grossDiscountN);
+
+            fonepayTotalDiscountExcVat += discountExcVat;
+        });
+        let fonepayTax = fonepayTaxableAmount * 13 / 100;
+        let fonepayTotalNetAmount = fonepayTaxableAmount + fonepayNonTaxableAmount + parseFloat(fonepayTax.toFixed(2));
+
+
+        
 
 
 
@@ -2103,6 +2140,7 @@ const invoice = (function () {
                 Gross_Amount: $(this).find('td input.GrossAmount').val(),
                 Discount: $(this).find('td input.Discount').val(),
                 DiscountPercent: $(this).find('td input.Discount').data("DiscountPercent"),
+                FonepayDiscountPercent: fonePayDiscountPercent,
                 PromoDiscount: promoDiscount,
                 MembershipDiscount: membershipDiscount,
                 Tax: $(this).find('td input.Tax').val(),
@@ -2136,7 +2174,13 @@ const invoice = (function () {
         data.MembershipDiscount = calcTotalMembershipDiscount();
         data.PromoDiscount = calcTotalPromoDiscount();
 
-
+        //assign fonepay field
+        data.FonepayTaxable = fonepayTaxableAmount;
+        data.FonepayNonTaxable = fonepayNonTaxableAmount;
+        data.FonepayTax = fonepayTax;
+        data.FonepayDiscountAmount = calcFonePayDiscount;
+        data.FonepayDiscountPercent = fonePayDiscountPercent;
+        data.FonepayTotalDiscountExcVat = fonepayTotalDiscountExcVat;        
 
         data.SalesInvoiceItems = invoiceItems;
         data.MemberId = $("#membershipId").val();

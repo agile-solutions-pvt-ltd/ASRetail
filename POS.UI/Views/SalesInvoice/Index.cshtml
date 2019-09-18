@@ -405,7 +405,8 @@
 
     <script>       
     var store = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Store));
-    var salesInvoiceTmpData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+        var salesInvoiceTmpData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+        var config = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Config));
     </script>
     <script src="~/js/Page/SalesInvoice.js" asp-append-version="true"></script>
 }

@@ -75,6 +75,9 @@ namespace POS.DTO
         public DateTime? NavSyncDate { get; set; }
         public bool IsNavPosted { get; set; }
 
+        public decimal FonepayDiscountPercent { get; set; }
+        public decimal FonepayDiscountAmount { get; set; }
+
         public ICollection<SalesInvoiceItems> SalesInvoiceItems { get; set; }
     }
 }

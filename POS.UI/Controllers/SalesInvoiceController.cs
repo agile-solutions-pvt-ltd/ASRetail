@@ -79,6 +79,7 @@ namespace POS.UI.Controllers
             }
             TempData["StatusMessage"] = StatusMessage;
             ViewData["Store"] = store;
+            ViewData["Config"] = ConfigJSON.Read();
 
             //for customer
             //display only ismember data later
@@ -308,7 +309,7 @@ namespace POS.UI.Controllers
                 customers = customers.Where(x => x.Membership_Number == salesInvoiceTMP.MemberId);
             ViewData["Customer"] = customers;
 
-
+            ViewData["Config"] = ConfigJSON.Read();
             return View();
         }
 
@@ -344,6 +345,8 @@ namespace POS.UI.Controllers
                         salesInvoice = _mapper.Map<SalesInvoice>(salesInvoiceTmp);
                         salesInvoice.Id = Guid.NewGuid();
 
+                       
+
                         salesInvoice.Total_Bill_Discount = model.billDiscount;
                         salesInvoice.Total_Payable_Amount = model.totalPayable;
                         salesInvoice.Total_Net_Amount_Roundup = model.totalNetAmountRoundUp;
@@ -351,6 +354,23 @@ namespace POS.UI.Controllers
                         salesInvoice.Change_Amount = model.changeAmount;
                         salesInvoice.Invoice_Id = _context.SalesInvoice.Where(x => x.Trans_Type == salesInvoice.Trans_Type).Select(x => x.Invoice_Id).DefaultIfEmpty(0).Max() + 1;
                         salesInvoice.Invoice_Number = SalesInvoiceNumberFormat(store, salesInvoice.Invoice_Id, salesInvoice.Trans_Type);
+
+                        if (model.bill.FirstOrDefault().Trans_Mode == "FonePay")
+                        {
+                            var totalPayableAmount = salesInvoiceTmp.FonepayTaxable + salesInvoiceTmp.FonepayNonTaxable + salesInvoiceTmp.FonepayTax;
+                            var totalDiscount = salesInvoiceTmp.Total_Discount.Value + salesInvoiceTmp.FonepayDiscountAmount;
+
+                            salesInvoice.TaxableAmount = salesInvoiceTmp.FonepayTaxable;
+                            salesInvoice.NonTaxableAmount = salesInvoiceTmp.FonepayNonTaxable;
+                            salesInvoice.Total_Vat = salesInvoiceTmp.FonepayTax;
+                            salesInvoice.Total_Net_Amount = totalPayableAmount;
+                            salesInvoice.TOTAL_DISCOUNT_EXC_VAT = salesInvoiceTmp.FonepayTotalDiscountExcVat;
+                            salesInvoice.Total_Net_Amount_Roundup = totalPayableAmount + totalDiscount;
+                            salesInvoice.Total_Bill_Discount = totalDiscount- salesInvoice.PromoDiscount;
+                            salesInvoice.Total_Discount = totalDiscount;
+
+                        }
+
                         _context.SalesInvoice.Add(salesInvoice);
 
 
@@ -363,7 +383,19 @@ namespace POS.UI.Controllers
                             salesItem.Id = 0;
                             salesItem.Invoice_Id = salesInvoice.Id;
                             salesItem.Invoice_Number = salesInvoice.Invoice_Number;
-                            _context.SalesInvoiceItems.Add(salesItem);
+                            if (model.bill.FirstOrDefault().Trans_Mode == "FonePay")
+                            {
+                                salesItem.DiscountPercent = item.DiscountPercent + item.FonepayDiscountPercent;
+                                salesItem.FonepayDiscountPercent = item.FonepayDiscountPercent;
+                                salesItem.FonepayDiscountAmount = item.Gross_Amount.Value * item.FonepayDiscountPercent / 100;
+                                salesItem.Discount = item.Discount + salesItem.FonepayDiscountAmount;
+                                salesItem.Tax = Math.Round(((Math.Round(salesItem.RateExcludeVat * salesItem.Quantity.Value, 2) - salesItem.Discount.Value) * 13 / 100),2);
+
+
+                            }
+
+
+                                _context.SalesInvoiceItems.Add(salesItem);
                         }
                         _context.SaveChanges();
 
@@ -734,6 +766,8 @@ where b.BarCode in ('" + barcodeListString + "') OR i.Code in ('" + barcodeListS
                 fonePay.merchantCode = config.FonePayMerchantCode; //"FONEPAY_SUBODH";
                 fonePay.prn = Guid.NewGuid().ToString();
                 fonePay.secret_key = config.FonePaySecretKey;
+                fonePay.remarks1 = User.Identity.Name;
+                fonePay.remarks2 = HttpContext.Session.GetString("Terminal");
                 fonePay.username = config.FonePayUserName; //"test_merchant";
                 fonePay.password = config.FonePayPassword; //"aY1wWHHmM";
 
@@ -765,7 +799,7 @@ where b.BarCode in ('" + barcodeListString + "') OR i.Code in ('" + barcodeListS
                     return Ok(obj);
                 }
                 else
-                    return StatusCode(500);
+                    return StatusCode(500,response.Content);
 
             }
             catch(Exception ex)

@@ -57,6 +57,13 @@ namespace POS.DTO
         public DateTime? Created_Date { get; set; }
         public string Remarks { get; set; }
 
+        public decimal FonepayTaxable { get; set; }
+        public decimal FonepayNonTaxable { get; set; }
+        public decimal FonepayTax { get; set; }
+        public decimal FonepayDiscountPercent { get; set; }
+        public decimal FonepayDiscountAmount { get; set; }
+        public decimal FonepayTotalDiscountExcVat { get; set; }
+
         // [ForeignKey("Id")]
         public ICollection<SalesInvoiceItemsTmp> SalesInvoiceItems { get; set; }
     }

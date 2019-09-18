@@ -120,6 +120,7 @@
         var totalGrossAmount = parseFloat(CurrencyUnFormat($("#totalNetAmountSpan").text()));
         var promoDiscount = parseFloat(CurrencyUnFormat($("#promoDiscountSpan").text()));
         var loyaltyDiscount = parseFloat(CurrencyUnFormat($("#loyaltyDiscountSpan").text()));
+       
         var vat = 0;
         if (promoDiscount === 0) {
             $("#promoDiscount").hide();
@@ -132,6 +133,9 @@
         } else {
             $("#loyaltyDiscount").show();
         }
+        $("#fonepayDiscount").hide();
+
+       
 
         //if (promoDiscount === 0) {
         //    loyaltyDiscount = totalGrossAmount * loyaltyDiscountPercent / 100;
@@ -210,6 +214,7 @@
     let calcAll = (mode) => {
         calcDiscount();
         roundUpTotalAmount(mode);
+
         calcTotal();
     };
     let showErrorMessage = (messgae) => {
@@ -217,7 +222,7 @@
         $("#error-message > span").text(messgae);
         setTimeout(function () { $("#error-message").hide(); }, 5000);
     };
-    let addRow = (type, account, amount) => {
+    let addRow = (type, account, amount,remarks) => {
 
         //check if tendar amount is greater then bill amount
         if (type === trans_mode.DebitCard || type === trans_mode.Credit) {
@@ -233,8 +238,9 @@
 
         //check there alreay item in pos  
         var checkAlreadyExistItem = false;
+        var mode = '';
         $.each(table.rows, function (i, v) {
-            var mode = $(this).find(".trans_mode").text();
+            mode = $(this).find(".trans_mode").text();
             if (mode == "FonePay") {
                 checkAlreadyExistItem = true;
                 return false;
@@ -264,10 +270,12 @@
 
             $('<i class="sn font-weight-bold">' + (table.rows.length) + '</i>').appendTo(cell1);
             $("<span class='trans_mode'>" + type + "</span>").appendTo(cell2);
-            $("<span class='account' data-account='" + accountToSave + "'>" + account + "</span>").appendTo(cell3);
+            $("<span class='account' data-remarks='"+ remarks+"' data-account='" + accountToSave + "'>" + account + "</span>").appendTo(cell3);
             $("<span class='table-amount text-right'>" + CurrencyFormat(amount) + "</span>").appendTo(cell4);
-
-            $('<botton onclick="bill.deleteRow(this);" class="btn btn-sm btn-danger"><i class="fa fa-times fa-sm"></i></botton>').appendTo(cell5);
+            debugger;
+            if (type != "FonePay") {
+                $('<botton onclick="bill.deleteRow(this);" class="btn btn-sm btn-danger"><i class="fa fa-times fa-sm"></i></botton>').appendTo(cell5);
+            }
         }
         calcTotal();
     };
@@ -406,12 +414,45 @@
         $this.find("span").addClass("text-success");
         $("#" + selectedMode + "-panel").find(".amount").trigger("click");
     };
+    let UpdateFonepayDiscount = () => {
+        debugger;
+        if (config.FonePayDiscountActive) {
+            var fonepayDiscount = parseFloat(CurrencyUnFormat($("#fonepayDiscountSpan").text()));
+            if (fonepayDiscount === 0) {
+                $("#fonepayDiscount").hide();
+            } else {
+                $("#fonepayDiscount").show();
+            }
 
+
+            //update  amount
+            let fonepayVat = salesInvoiceTmpData.FonepayTax;
+            let fonepayPayableAmount = salesInvoiceTmpData.FonepayTaxable + salesInvoiceTmpData.FonepayNonTaxable + salesInvoiceTmpData.FonepayTax;
+            $("#vatSpan").text(CurrencyFormat(fonepayVat));
+            $("#totalPayableAmount").text(CurrencyFormat(fonepayPayableAmount));
+            $("#changeAmount").text(CurrencyFormat(fonepayPayableAmount));
+            
+        }
+
+    };
     let fonePayClickEvent = (evt) => {
-        
+        debugger;
+        //check if any other payment mode selected
+        if (table.rows.length > 0 && $(table.rows[0]).find(".trans_mode").text() != "FonePay") {
+            showErrorMessage("Please remove other payment method first !!");
+            return false;
+        }
+      
+
+        //update fonepayDiscount
+        UpdateFonepayDiscount();
+
+
+
+
         //first generate QR code
         var finalData = {
-            amount: $("#totalPayableAmount").text(),
+            amount: CurrencyUnFormat($("#totalPayableAmount").text()),
             remarks1: customerList[0].membership_Number,
             remarks2: $("#totalPayableAmount").text(),
 
@@ -427,7 +468,7 @@
                     $('#qrCode').html("");
                     $('#qrCode').qrcode(result.responseJSON.qrMessage);
                     $("#qrStatusCheck").data("prn", result.responseJSON.prn);
-                    $("#qrMessage").text("Waiting for scan");
+                    $("#qrMessage").html("<b>Status </b>: Waiting for scan <i class='fa fa-spinner fa-spin'></i>");
                     let wsClient = new WebSocket(result.responseJSON.thirdpartyQrWebSocketUrl);
                     wsClient.onopen = () => {
                         console.log("fonepay connected");
@@ -436,10 +477,15 @@
                         var data = JSON.parse(JSON.parse(evt.data).transactionStatus);
                         console.log(data);
                         if (data.success && data.message == "VERIFIED") {
-                            $("#qrMessage").text("QR Scanned Successfull, Validating Please wait ...");
+                            $("#qrMessage").css({ "position": "absolute", "top": "159px", "left": "54px" });
+                            $("#qrCode > canvas").css("visibility", "hidden");
+                            $("#qrMessage").html("Status : QR Scanned Successfull, Waiting for Confirmation <i class='fa fa-spinner fa-spin'></i>");
                         }
                         if (data.success && data.paymentSuccess && data.message == "Request Complete") {
-                            $("#qrMessage").text("Payment Successfull !!");
+                            $("#qrMessage").css({ "position": "absolute", "top": "83px", "left": "225px" });
+                            $("#qrCode > canvas").css("visibility", "hidden");
+                            $("#qrMessage").html("<img src='https://media.wponlinesupport.com/wp-content/uploads/2015/11/payment-successful.png' style='width: 110px;'><br /><br /><span class='font-weight-bold'>Payment Successfull</span>")
+                            StatusNotify("success", "Payment Successfull !!");
                             addRow("FonePay", data.productNumber, $("#totalPayableAmount").text());
                         }
                     };                    
@@ -453,7 +499,8 @@
 
                 }
                 else {
-                    StatusNotify("error", "Error occur to generate QR, try again later !!");
+                    debugger;
+                    StatusNotify("error", result.responseJSON.message);
 
                 }
             }
@@ -476,11 +523,13 @@
             contentType: "application/json; charset=utf-8",
             complete: function (result) {
                 if (result.status === 200) {
-                    if (result.responseJSON.paymentStatus === "pending") {
+                    if (result.responseJSON.paymentStatus === "pending") {    
+                        addRow("FonePay", result.responseJSON.prn, $("#totalPayableAmount").text());
                         StatusNotify("warning", result.responseJSON.paymentStatus);
                     }                  
                     if (result.responseJSON.paymentStatus === "success") {
                         addRow("FonePay", result.responseJSON.prn, $("#totalPayableAmount").text());
+                        StatusNotify("success", result.responseJSON.paymentStatus);
                     }
                 }
                 else {
@@ -601,13 +650,14 @@
             let mode = $(this).find(".trans_mode").text();
             let account = $(this).find(".account").data("account");
             let amount = CurrencyUnFormat($(this).find(".table-amount").text());
-            //let amount = $("#TotalNetAmount").val();
+            let remarks = $(this).find(".account").data("remarks");
 
             data.push({
                 Invoice_Id: invoiceId,
                 Trans_Mode: mode,
                 account: account,
-                Amount: amount
+                Amount: amount,
+                Remarks: remarks
             });
 
         });
