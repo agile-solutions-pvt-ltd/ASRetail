@@ -215,11 +215,19 @@
         while (change.length < 10) {
             change = ' ' + change;  //adds a space before the d
         }
+        let fonePayDiscount = parseFloat(data.invoiceData.fonepayDiscountAmount).toFixed(2);
+        while (fonePayDiscount.length < 10) {
+            fonePayDiscount = ' ' + fonePayDiscount;  //adds a space before the d
+        }
         var itemTotal = "";
         itemTotal += "\t      --------------------------\r\n";
         itemTotal += "\t      Gross Amount  : " + grossAmount + "\r\n";
         itemTotal += "\t      Promo Disc.   : " + promoDiscount + "\r\n";
         itemTotal += "\t      Loyalty Disc. : " + loyaltyDiscount + "\r\n";
+        if (paymentMode == "FonePay") {
+
+            itemTotal += "\t      FonePay Disc. : " + fonePayDiscount + "\r\n";
+        }
         itemTotal += "\t      Taxable       : " + taxable + "\r\n";
         itemTotal += "\t      Non Taxable   : " + nonTaxable + "\r\n";
         itemTotal += "\t      Vat (13%)     : " + vat + "\r\n";
@@ -251,7 +259,7 @@
 
     };
     let PrintTaxInvoiceBrowser = (data, callback) => {
-
+        
         var url = ""
         var companyInitital = data.storeData.initial || data.storeData.INITIAL;
         if (data.billData !== null && data.billData.length > 0 && data.billData[0].trans_Mode === "Credit" && companyInitital === "WHS") {
@@ -294,6 +302,8 @@
                     printText = printText.replace("{totalGrossAmount}", parseFloat(data.invoiceData.total_Gross_Amount).toFixed(2));
                     printText = printText.replace("{promoDiscount}", parseFloat(data.invoiceData.promoDiscount).toFixed(2));
                     printText = printText.replace("{loyaltyDiscount}", parseFloat(data.invoiceData.membershipDiscount).toFixed(2));
+                    printText = printText.replace(/{fonePayDiscounthide}/g, paymentMode != "FonePay" ? "display-none" : "");
+                    printText = printText.replace("{fonePayDiscount}", parseFloat(data.invoiceData.fonepayDiscountAmount).toFixed(2));
                     printText = printText.replace("{totalSaving}", parseFloat(data.invoiceData.total_Discount).toFixed(2));
                     printText = printText.replace("{totalNetAmount}", parseFloat(data.invoiceData.total_Payable_Amount).toFixed(2));
                     printText = printText.replace("{tenderAmount}", parseFloat(data.invoiceData.tender_Amount).toFixed(2));
@@ -449,11 +459,20 @@
         while (change.length < 10) {
             change = ' ' + change;  //adds a space before the d
         }
+        let fonePayDiscount = parseFloat(data.invoiceData.fonepayDiscountAmount).toFixed(2);
+        while (fonePayDiscount.length < 10) {
+            fonePayDiscount = ' ' + fonePayDiscount;  //adds a space before the d
+        }
         var itemTotal = "";
         itemTotal += "\t      --------------------------\r\n";
         itemTotal += "\t      Gross Amount  : " + grossAmount + "\r\n";
         itemTotal += "\t      Promo Disc.   : " + promoDiscount + "\r\n";
         itemTotal += "\t      Loyalty Disc. : " + loyaltyDiscount + "\r\n";
+        if (paymentMode == "FonePay") {
+
+        itemTotal += "\t      FonePay Disc. : " + fonePayDiscount + "\r\n";
+        }
+        
         itemTotal += "\t      Net Amount    : " + netAmount + "\r\n";
         itemTotal += "\t      --------------------------\r\n";
         itemTotal += "\t      Tender        : " + tender + "\r\n";
@@ -482,7 +501,7 @@
 
     };
     let PrintSalesInvoiceBrowser = (data, callback) => {
-        debugger;
+        
 
         $.ajax({
             url: window.location.origin + "/Print/SalesInvoice",
@@ -519,6 +538,8 @@
                     printText = printText.replace("{totalGrossAmount}", parseFloat(data.invoiceData.total_Gross_Amount).toFixed(2));
                     printText = printText.replace("{promoDiscount}", parseFloat(data.invoiceData.promoDiscount).toFixed(2));
                     printText = printText.replace("{loyaltyDiscount}", parseFloat(data.invoiceData.membershipDiscount).toFixed(2));
+                    printText = printText.replace(/{fonePayDiscounthide}/g, paymentMode != "FonePay" ? "display-none" : "");
+                    printText = printText.replace("{fonePayDiscount}", parseFloat(data.invoiceData.fonepayDiscountAmount).toFixed(2));
                     printText = printText.replace("{totalSaving}", parseFloat(data.invoiceData.total_Discount).toFixed(2));
                     printText = printText.replace("{totalNetAmount}", parseFloat(data.invoiceData.total_Payable_Amount).toFixed(2));
                     printText = printText.replace("{tenderAmount}", parseFloat(data.invoiceData.tender_Amount).toFixed(2));
@@ -665,14 +686,14 @@
         while (grossAmount.length < 10) {
             grossAmount = ' ' + grossAmount;  //adds a space before the d
         }
-        let promoDiscount = parseFloat(data.invoiceData.promoDiscount).toFixed(2);
-        while (promoDiscount.length < 10) {
-            promoDiscount = ' ' + promoDiscount;  //adds a space before the d
+        let totalDiscount = parseFloat(data.invoiceData.total_Discount).toFixed(2);
+        while (totalDiscount.length < 10) {
+            totalDiscount = ' ' + totalDiscount;  //adds a space before the d
         }
-        let loyaltyDiscount = parseFloat(data.invoiceData.membershipDiscount).toFixed(2);
-        while (loyaltyDiscount.length < 10) {
-            loyaltyDiscount = ' ' + loyaltyDiscount;  //adds a space before the d
-        }
+        //let loyaltyDiscount = parseFloat(data.invoiceData.membershipDiscount).toFixed(2);
+        //while (loyaltyDiscount.length < 10) {
+        //    loyaltyDiscount = ' ' + loyaltyDiscount;  //adds a space before the d
+        //}
         let taxable = parseFloat(data.invoiceData.taxableAmount).toFixed(2);
         while (taxable.length < 10) {
             taxable = ' ' + taxable;  //adds a space before the d
@@ -700,8 +721,8 @@
         var itemTotal = "";
         itemTotal += "\t      --------------------------\r\n";
         itemTotal += "\t      Gross Amount  : " + grossAmount + "\r\n";
-        itemTotal += "\t      Promo Disc.   : " + promoDiscount + "\r\n";
-        itemTotal += "\t      Loyalty Disc. : " + loyaltyDiscount + "\r\n";
+        itemTotal += "\t      Total Disc.   : " + totalDiscount + "\r\n";
+        //itemTotal += "\t      Loyalty Disc. : " + loyaltyDiscount + "\r\n";
         itemTotal += "\t      Taxable       : " + taxable + "\r\n";
         itemTotal += "\t      Non Taxable   : " + nonTaxable + "\r\n";
         itemTotal += "\t      Vat (13%)     : " + vat + "\r\n";
@@ -731,7 +752,7 @@
     }
 
     let PrintCreditNoteInvoiceBrowser = (data, callback) => {
-
+      
         var url = ""
         var companyInitital = data.storeData.initial || data.storeData.INITIAL;
         if (companyInitital === "WHS") {
@@ -774,7 +795,10 @@
                     printText = printText.replace("{totalGrossAmount}", parseFloat(data.invoiceData.total_Gross_Amount).toFixed(2));
                     printText = printText.replace("{promoDiscount}", parseFloat(data.invoiceData.promoDiscount).toFixed(2));
                     printText = printText.replace("{loyaltyDiscount}", parseFloat(data.invoiceData.membershipDiscount).toFixed(2));
+                    printText = printText.replace("{totalDiscount}", parseFloat(data.invoiceData.total_Discount).toFixed(2));
                     // printText = printText.replace("{totalSaving}", parseFloat(data.invoiceData.total_Discount).toFixed(2));
+                    printText = printText.replace(/{fonePayDiscounthide}/g, data.invoiceData.payment_Mode != "FonePay" ? "display-none" : "");
+                    printText = printText.replace("{fonePayDiscount}", parseFloat(data.invoiceData.fonepayDiscountAmount).toFixed(2));
                     printText = printText.replace("{totalTaxableAmount}", parseFloat(data.invoiceData.taxableAmount).toFixed(2));
                     printText = printText.replace("{totalNonTaxableAmount}", parseFloat(data.invoiceData.nonTaxableAmount).toFixed(2));
                     printText = printText.replace("{totalVat}", parseFloat(data.invoiceData.total_Vat).toFixed(2));
