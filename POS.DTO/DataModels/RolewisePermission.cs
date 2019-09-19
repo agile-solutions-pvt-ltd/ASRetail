@@ -30,6 +30,7 @@ namespace POS.DTO
         [Display(Name = "Sales Rate Commission Right")]
         public bool Sales_Rate_Commission_Right { get; set; } = false;
         [Display(Name = "FonePay Right")]
-        public bool fonePay { get; set; } = false;
+        public bool FonePay { get; set; } = false;
+        public bool FonePayDiscountActive { get; set; }
     }
 }

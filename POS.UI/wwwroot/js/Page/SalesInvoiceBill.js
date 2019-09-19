@@ -5,6 +5,9 @@
         Cash: "Cash", DebitCard: "Card", Credit: "Credit", CreditNote: "Credit Note"
     };
     let loyaltyDiscountPercent = 2;
+    let permission = {        
+        fonepayDiscountStatus: false
+    };
 
     //*********Private Methods **************//
     let init = () => {
@@ -353,6 +356,8 @@
     };
     let updatePageWithRespectToPermission = () => {
         getPermissions((data) => {
+            debugger;
+            permission.fonepayDiscountStatus = data.roleWiseUserPermission.fonePayDiscountActive;
             if (data.roleWiseUserPermission.credit_Note_Bill_Pay) {
                 $("#creditNote").show();
             }
@@ -423,7 +428,7 @@
     };
     let UpdateFonepayDiscount = () => {
         debugger;
-        if (config.FonePayDiscountActive) {
+        if (permission.fonepayDiscountStatus) {
             var fonepayDiscount = parseFloat(CurrencyUnFormat($("#fonepayDiscountSpan").text()));
             if (fonepayDiscount === 0) {
                 $("#fonepayDiscount").hide();

@@ -100,9 +100,9 @@ namespace POS.UI.Sync
             if ((config.OfficeHourStart != null && currentTime.CompareTo(Convert.ToDateTime(config.OfficeHourStart).TimeOfDay) == 1)
                 && (config.OfficeHourEnd != null && currentTime.CompareTo(Convert.ToDateTime(config.OfficeHourEnd).TimeOfDay) == -1))
                 return true;
-            var startDate = Convert.ToDateTime("2019-07-17");
-            var endDate = Convert.ToDateTime("2019-08-14");
-            var unSyncInvoice = _context.SalesInvoice.Where(x => x.IsNavSync == false && x.Trans_Date_Ad > startDate && x.Trans_Date_Ad <= endDate).OrderBy(x => x.Trans_Date_Ad);
+            //var startDate = Convert.ToDateTime("2019-07-17");
+            //var endDate = Convert.ToDateTime("2019-08-14");
+            var unSyncInvoice = _context.SalesInvoice.Where(x => x.IsNavSync == false).OrderBy(x => x.Trans_Date_Ad);
             NavIntegrationService services = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "SalesInvoicePost");
             int errorCount = 0, successCount = 0;
             foreach (var salesInvoice in unSyncInvoice)

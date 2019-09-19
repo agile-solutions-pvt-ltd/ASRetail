@@ -8,7 +8,8 @@ const invoice = (function () {
     let permission = {
         salesDiscountItemwise: false,
         salesDiscountItemLimit: 0,
-        salesRateEditRight: false
+        salesRateEditRight: false,
+        fonepayDiscountStatus: false
     };
     var selectedItems = [];
     var customerList = [];
@@ -1809,9 +1810,11 @@ const invoice = (function () {
             else {
                 $(".commissionPercentHide").remove();
             }
+            debugger;
             permission.salesDiscountItemwise = data.roleWiseUserPermission.sales_Discount_Line_Item;
             permission.salesDiscountItemLimit = data.roleWiseUserPermission.sales_Discount_Line_Item_Limit;
             permission.salesRateEditRight = data.roleWiseUserPermission.sales_Rate_Edit;
+            permission.fonepayDiscountStatus = data.roleWiseUserPermission.fonePayDiscountActive;
 
             if (Callback !== undefined)
                 Callback();
@@ -2078,43 +2081,48 @@ const invoice = (function () {
 
 
         debugger;
+        //variables
+        let fonePayDiscountPercent = 0, fonePayMaxLimit = 0, calcFonePayDiscount = 0,
+            fonepayTaxableAmount = 0, fonepayNonTaxableAmount = 0, fonepayTotalDiscountExcVat = 0,
+            fonepayTax = 0, fonepayTotalNetAmount = 0;
         //calcFonepay percent
-        let totalNetAmount = $("#Total_Net_Amount").val();
-        let fonePayDiscountPercent = config.FonePayDiscountPercent;
-        let fonePayMaxLimit = config.FonePayDiscountLimit;
-        let calcFonePayDiscount = totalNetAmount * fonePayDiscountPercent / 100;
-        if (calcFonePayDiscount > fonePayMaxLimit) {
-            calcFonePayDiscount = fonePayMaxLimit;
-            fonePayDiscountPercent = calcFonePayDiscount / totalNetAmount * 100;
+        if (permission.fonepayDiscountStatus == true) {
+            let totalNetAmount = $("#Total_Net_Amount").val();
+            fonePayDiscountPercent = config.FonePayDiscountPercent;
+            fonePayMaxLimit = config.FonePayDiscountLimit;
+            calcFonePayDiscount = totalNetAmount * fonePayDiscountPercent / 100;
+            if (calcFonePayDiscount > fonePayMaxLimit) {
+                calcFonePayDiscount = fonePayMaxLimit;
+                fonePayDiscountPercent = calcFonePayDiscount / totalNetAmount * 100;
+            }
+
+
+
+            //calcfonepay  taxable and non taxable
+            
+            $.each(tableRows.rows, function (i, v) {
+
+                //variables 
+                let taxable = $(this).find(".Tax").data("isvatable");
+                let rateExcludeTax = parseFloat($(this).find(".Rate").data("RateExcludedVatWithoutRoundoff"));
+                let quantity = parseFloat($(this).find(".Quantity").val());
+                let previousDiscountPercent = parseFloat($(this).find(".Discount").data("DiscountPercent"));
+                let discountPercent = previousDiscountPercent + fonePayDiscountPercent;
+                let discountExcVat = rateExcludeTax * discountPercent / 100;
+
+                var grossRateN = parseFloat((rateExcludeTax * quantity).toFixed(2));
+                var grossDiscountN = parseFloat((grossRateN * discountPercent / 100).toFixed(2));
+                if (taxable)
+                    fonepayTaxableAmount += parseFloat(grossRateN - grossDiscountN);// parseFloat(((rateExcludeTax - discountExcVat) * quantity).toFixed(2));
+                else
+                    fonepayNonTaxableAmount += parseFloat(grossRateN - grossDiscountN);
+
+                fonepayTotalDiscountExcVat += discountExcVat;
+            });
+            fonepayTax = fonepayTaxableAmount * 13 / 100;
+            fonepayTotalNetAmount = fonepayTaxableAmount + fonepayNonTaxableAmount + parseFloat(fonepayTax.toFixed(2));
+
         }
-
-
-
-        //calcfonepay  taxable and non taxable
-        var fonepayTaxableAmount = 0, fonepayNonTaxableAmount = 0,fonepayTotalDiscountExcVat = 0;
-        $.each(tableRows.rows, function (i, v) {
-
-            //variables 
-            let taxable = $(this).find(".Tax").data("isvatable");
-            let rateExcludeTax = parseFloat($(this).find(".Rate").data("RateExcludedVatWithoutRoundoff"));
-            let quantity = parseFloat($(this).find(".Quantity").val());
-            let previousDiscountPercent = parseFloat($(this).find(".Discount").data("DiscountPercent"));
-            let discountPercent = previousDiscountPercent + fonePayDiscountPercent;
-            let discountExcVat = rateExcludeTax * discountPercent / 100;
-
-            var grossRateN = parseFloat((rateExcludeTax * quantity).toFixed(2));
-            var grossDiscountN = parseFloat((grossRateN * discountPercent / 100).toFixed(2));
-            if (taxable)
-                fonepayTaxableAmount += parseFloat(grossRateN - grossDiscountN);// parseFloat(((rateExcludeTax - discountExcVat) * quantity).toFixed(2));
-            else
-                fonepayNonTaxableAmount += parseFloat(grossRateN - grossDiscountN);
-
-            fonepayTotalDiscountExcVat += discountExcVat;
-        });
-        let fonepayTax = fonepayTaxableAmount * 13 / 100;
-        let fonepayTotalNetAmount = fonepayTaxableAmount + fonepayNonTaxableAmount + parseFloat(fonepayTax.toFixed(2));
-
-
         
 
 
