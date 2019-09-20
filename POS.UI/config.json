@@ -25,10 +25,9 @@
   "StopCreditNotePosting": false,
   "StopCustomerPosting": false,
   "OfficeHourStart": "16:00:00.3041840",
-  "OfficeHourEnd": "21:00:00.3041840",
+  "OfficeHourEnd": "17:00:00.3041840",
   "Location": "SDB",
   "LoggedInUsers": [
-    "ROSHAN.PANDEY",
     "Admin"
   ],
   "SchedulerDuration": {

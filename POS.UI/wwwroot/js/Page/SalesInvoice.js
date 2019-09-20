@@ -2113,9 +2113,9 @@ const invoice = (function () {
                 var grossRateN = parseFloat((rateExcludeTax * quantity).toFixed(2));
                 var grossDiscountN = parseFloat((grossRateN * discountPercent / 100).toFixed(2));
                 if (taxable)
-                    fonepayTaxableAmount += parseFloat(grossRateN - grossDiscountN);// parseFloat(((rateExcludeTax - discountExcVat) * quantity).toFixed(2));
+                    fonepayTaxableAmount += parseFloat(grossRateN - grossDiscountN).toFixedDecimal(2);// parseFloat(((rateExcludeTax - discountExcVat) * quantity).toFixed(2));
                 else
-                    fonepayNonTaxableAmount += parseFloat(grossRateN - grossDiscountN);
+                    fonepayNonTaxableAmount += parseFloat(grossRateN - grossDiscountN).toFixedDecimal(2);
 
                 fonepayTotalDiscountExcVat += discountExcVat;
             });

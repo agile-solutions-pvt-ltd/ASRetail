@@ -81,6 +81,7 @@
                         <form asp-action="Billing">
                             <input type="hidden" asp-for="Invoice_Id" value="@salesInvoice.Id" />
                             <input type="hidden" id="TotalNetAmount" value="@salesInvoice.Total_Net_Amount" />
+                           <input type="hidden" id="TotalVat" value="@salesInvoice.Total_Vat" />
                             <input type="hidden" asp-for="Trans_Mode" value="@salesInvoice.Trans_Type"/>
                             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 

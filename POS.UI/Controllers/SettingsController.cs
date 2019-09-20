@@ -293,6 +293,18 @@ namespace POS.UI.Controllers
             data.SchedulerDuration = config.SchedulerDuration;
             data.ClientPort = config.ClientPort;
             data.Environment = config.Environment;
+            data.FonePayCheckStatusUrl = config.FonePayCheckStatusUrl;
+            data.FonePayDiscountActive = config.FonePayDiscountActive;
+            data.FonePayDiscountLimit = config.FonePayDiscountLimit;
+            data.FonePayDiscountPercent = config.FonePayDiscountPercent;
+            data.FonePayGenerateQRUrl = config.FonePayGenerateQRUrl;
+            data.FonePayMerchantCode = config.FonePayMerchantCode;
+            data.FonePayPassword = config.FonePayPassword;
+            data.FonePaySecretKey = config.FonePaySecretKey;
+            data.FonePayUserName = config.FonePayUserName;
+            data.OfficeHourStart = config.OfficeHourStart;
+            data.OfficeHourEnd = config.OfficeHourEnd;
+
             ConfigJSON.Write(data);
             return Ok();
         }

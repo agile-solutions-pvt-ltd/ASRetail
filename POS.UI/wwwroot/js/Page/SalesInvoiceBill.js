@@ -149,7 +149,8 @@
         //    $("#promoDiscount").show();
         //    $("#loyaltyDiscount").hide();
         //}
-        vat = parseFloat(CurrencyUnFormat($("#vatSpan").text()));
+        debugger;
+        vat = parseFloat(CurrencyUnFormat($("#TotalVat").val()));
         if ($("#Trans_Mode").val() !== "Tax")
             vat = 0;
 
@@ -159,6 +160,7 @@
 
         //assign
         $("#totalNetAmountSpan").text(CurrencyFormat(totalGrossAmount));
+        $("#vatSpan").text(CurrencyFormat(vat));
         $("#promoDiscountSpan").text(CurrencyFormat(promoDiscount));
         $("#loyaltyDiscountSpan").text(CurrencyFormat(loyaltyDiscount));
         $("#totalPayableAmount").text(CurrencyFormat(totalPayableAmount.toFixed(2)));
@@ -415,6 +417,10 @@
             showErrorMessage("Please remove other payment method first !!");
             return false;
         }
+        else if (table.rows.length > 0 && $(table.rows[0]).find(".trans_mode").text() == "FonePay" && selectedMode == "fonePay") {
+            showErrorMessage("Already Payment Added !!");
+            return false;
+        }
 
 
         calcAll(selectedMode);
@@ -442,7 +448,7 @@
             let fonepayPayableAmount = salesInvoiceTmpData.FonepayTaxable + salesInvoiceTmpData.FonepayNonTaxable + salesInvoiceTmpData.FonepayTax;
             $("#vatSpan").text(CurrencyFormat(fonepayVat));
             $("#totalPayableAmount").text(CurrencyFormat(fonepayPayableAmount));
-            $("#changeAmount").text(CurrencyFormat(fonepayPayableAmount));
+            $("#changeAmount").text(CurrencyFormat(-fonepayPayableAmount));
 
         }
 
@@ -454,7 +460,10 @@
             showErrorMessage("Please remove other payment method first !!");
             return false;
         }
-
+        else if (table.rows.length > 0 && $(table.rows[0]).find(".trans_mode").text() == "FonePay") {
+            showErrorMessage("Already Payment Added !!");
+            return false;
+        }
 
         //update fonepayDiscount
         UpdateFonepayDiscount();
@@ -499,7 +508,7 @@
                             $("#qrCode > canvas").css("visibility", "hidden");
                             $("#qrMessage").html("<img src='/images/payment-successful.png' style='width: 110px;'><br /><br /><span class='font-weight-bold'>Payment Successfull</span>")
                             StatusNotify("success", "Payment Successfull !!");
-                            addRow("FonePay", data.productNumber, $("#totalPayableAmount").text(), data.traceId);
+                            addRow("FonePay", data.productNumber, CurrencyUnFormat($("#totalPayableAmount").text()), data.traceId);
                         } else {
                             $("#qrMessage").css({ "position": "absolute", "top": "159px", "left": "54px" });
                             $("#qrCode > canvas").css("visibility", "hidden");
@@ -544,10 +553,9 @@
             complete: function (result) {
                 if (result.status === 200) {
                     if (result.responseJSON.paymentStatus === "success") {
-                        addRow("FonePay", result.responseJSON.prn, $("#totalPayableAmount").text());
+                        addRow("FonePay", result.responseJSON.prn, CurrencyUnFormat($("#totalPayableAmount").text()));
                         StatusNotify("success", result.responseJSON.paymentStatus, result.responseJSON.traceId);
-                    } else {
-                        addRow("FonePay", result.responseJSON.prn, $("#totalPayableAmount").text());
+                    } else {                       
                         StatusNotify("warning", result.responseJSON.paymentStatus);
                     }
 
