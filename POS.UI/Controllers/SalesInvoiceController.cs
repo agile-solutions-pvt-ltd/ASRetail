@@ -528,7 +528,9 @@ namespace POS.UI.Controllers
                             accountabilitycenter = store.INITIAL,
                             assigneduserid = salesInvoice.Created_By,
                             externalDocumentNumber = crNumber,
-                            amountrounded = salesInvoice.Total_Net_Amount != salesInvoice.Total_Payable_Amount
+                            amountrounded = salesInvoice.Total_Net_Amount != salesInvoice.Total_Payable_Amount,
+                            FonePay_Discount = salesInvoice.FonepayDiscountAmount
+                            
 
                         };
 

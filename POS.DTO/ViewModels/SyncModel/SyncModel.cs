@@ -206,6 +206,7 @@ namespace POS.DTO
         public string shippingno { get; set; }
         public string externalDocumentNumber { get; set; }
         public bool amountrounded { get; set; }
+        public decimal FonePay_Discount { get; set; }
 
 
     }
