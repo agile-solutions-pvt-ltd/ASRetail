@@ -21,6 +21,8 @@ namespace POS.DTO
 
         public decimal Credit { get; set; }
 
-        public decimal Total { get; set; }
+		public decimal FonePay { get; set; }
+
+		public decimal Total { get; set; }
     }
 }

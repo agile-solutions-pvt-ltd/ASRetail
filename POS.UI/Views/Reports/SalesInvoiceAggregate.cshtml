@@ -251,7 +251,8 @@
                             { field: "cash", aggregate: "sum" },
                             { field: "card", aggregate: "sum" },
                             { field: "credit", aggregate: "sum" },
-                            { field: "credit_Note", aggregate: "sum" }
+                            { field: "credit_Note", aggregate: "sum" },
+                            { field: "fonePay", aggregate: "sum" }
                         ],
                     },
                     aggregate: [
@@ -259,7 +260,10 @@
                         { field: "cash", aggregate: "sum" },
                         { field: "card", aggregate: "sum" },
                         { field: "credit", aggregate: "sum" },
-                        { field: "credit_Note", aggregate: "sum" }
+                        { field: "credit_Note", aggregate: "sum" },
+                        { field: "fonePay", aggregate: "sum" }
+
+
                     ]
                 },
                 height: 550,
@@ -338,6 +342,22 @@
                             "class": "p-1 text-right"
                         },
                         template: "#: CurrencyFormat(credit_Note) #",
+                        groupFooterTemplate: "#: CurrencyFormat(sum) #",
+                        footerTemplate: "#: CurrencyFormat(sum) #",
+                    },
+                    {
+                        title: "FonePay",
+                        field: "fonePay",
+                        attributes: {
+                            "class": "p-1 text-right"
+                        },
+                        footerAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        groupFotterAttributes: {
+                            "class": "p-1 text-right"
+                        },
+                        template: "#: CurrencyFormat(fonePay) #",
                         groupFooterTemplate: "#: CurrencyFormat(sum) #",
                         footerTemplate: "#: CurrencyFormat(sum) #",
                     },

@@ -429,10 +429,11 @@ where (b.BarCode = {0} or i.Code = {0})";
             List<string> barCodeList = item.Select(x => x.Bar_Code).ToList();
             barCodeList = barCodeList.Concat(item.Select(x => x.ItemCode)).ToList();
             string listOfItemsCodeString = string.Join(",", barCodeList);
-
+            
             IList<ItemViewModel> itemsTemp = _context.ItemViewModel.FromSql($"Sp_GetItemList {listOfItemsCodeString},{CustomerMembershipNo},{store.ID}").ToList();
+		
 
-            return Ok(itemsTemp);
+			return Ok(itemsTemp);
         }
 
 
