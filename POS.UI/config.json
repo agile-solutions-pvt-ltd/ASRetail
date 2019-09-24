@@ -4,8 +4,8 @@
   "IRDBaseUrl": "http://103.1.92.174:9050",
   "IRDBillUrl": "api/bill",
   "IRDBillCreditNoteUrl": "api/credit",
-  "NavApiBaseUrl": "http://10.10.10.25:7098",
-  "NavPath": "test/api/beta/",
+  "NavApiBaseUrl": "http://10.10.10.25:8048",
+  "NavPath": "POSTest/api/beta/",
   "NavCompanyId": "ca25d1ed-4fff-49df-bf9b-c1f18a0bf932",
   "IRDUserName": "Test_CBMS",
   "IRDPassword": "test@321",
@@ -15,8 +15,8 @@
   "FonePayCheckStatusUrl": "https://merchantapi.fonepay.com/api/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrGetStatus",
   "FonePaySecretKey": "61f67e48a83c4130a5f708bbdf6737db",
   "FonePayMerchantCode": "XEHJ",
-  "FonePayUserName": "9840094364",
-  "FonePayPassword": "N3pvZ6yqB",
+  "FonePayUserName": "SITAPAILA@salesberry.com.np",
+  "FonePayPassword": "MGjPytWZW",
   "FonePayDiscountPercent": 15.0,
   "FonePayDiscountLimit": 500.0,
   "FonePayDiscountActive": true,
@@ -28,6 +28,7 @@
   "OfficeHourEnd": "17:00:00.3041840",
   "Location": "SDB",
   "LoggedInUsers": [
+    "ROSHAN.PANDEY",
     "Admin"
   ],
   "SchedulerDuration": {

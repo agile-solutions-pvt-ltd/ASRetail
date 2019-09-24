@@ -5,7 +5,7 @@
         Cash: "Cash", DebitCard: "Card", Credit: "Credit", CreditNote: "Credit Note"
     };
     let loyaltyDiscountPercent = 2;
-    let permission = {        
+    let permission = {
         fonepayDiscountStatus: false
     };
 
@@ -390,6 +390,7 @@
             $("#cash").remove();
             $("#card").remove();
             $("#creditNote").remove();
+            $("#fonePay").remove();
 
             //trigger credit
             $(".payment-mode-panel").hide();
@@ -541,7 +542,7 @@
         $("#qrStatusCheck").attr("disabled", true);
         //first generate QR code
         var finalData = {
-            prn: $("#qrStatusCheck").data("prn")
+            prn: $("#fonepayPRN").val() == "" ? $("#qrStatusCheck").data("prn") : $.trim($("#fonepayPRN").val()),
         };
 
         $.ajax({
@@ -553,9 +554,14 @@
             complete: function (result) {
                 if (result.status === 200) {
                     if (result.responseJSON.paymentStatus === "success") {
-                        addRow("FonePay", result.responseJSON.prn, CurrencyUnFormat($("#totalPayableAmount").text()));
-                        StatusNotify("success", result.responseJSON.paymentStatus, result.responseJSON.traceId);
-                    } else {                       
+                        var totalPayableAmount = CurrencyUnFormat($("#totalPayableAmount").text());
+                        if (parseFloat(result.responseJSON.totalTransactionAmount) != totalPayableAmount) {
+                            StatusNotify("warning", "Not Valid Fonepay Bill");
+                        } else {
+                            addRow("FonePay", result.responseJSON.prn, CurrencyUnFormat($("#totalPayableAmount").text()));
+                            StatusNotify("success", result.responseJSON.paymentStatus, result.responseJSON.traceId);
+                        }
+                    } else {
                         StatusNotify("warning", result.responseJSON.paymentStatus);
                     }
 
@@ -650,6 +656,17 @@
         Mousetrap.bindGlobal('shift+enter', function (e) {
             e.preventDefault(); e.stopPropagation();
             $(".bootbox-accept").trigger("click");
+        });
+
+        Mousetrap.bindGlobal('alt+s', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            $("#fonepayPRN").val('');
+           
+            if ($("#fonepayPRN").is(":visible"))
+                $("#fonepayPRN").hide();
+            else
+                $("#fonepayPRN").show();
+            $("#fonepayPRN").focus();
         });
 
 
@@ -853,6 +870,12 @@
             creditNoteNumberChangeEvent();
             e.preventDefault();
             return false;
+        }
+    });
+    $("#fonepayPRN").on("keypress", function (e) {
+        if (e.keyCode === 13 && $(this).val() !== "") {
+            $("#qrStatusCheck").trigger('click');
+            return false; // prevent the button click from happening
         }
     });
     $("#SaveButton").on('click', SaveBill);

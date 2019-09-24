@@ -10,7 +10,7 @@
         display: none;
     }
 
-    #debitCard-panel, #credit-panel, #creditNote-panel,#fonePay-panel {
+    #debitCard-panel, #credit-panel, #creditNote-panel,#fonePay-panel,#fonepayPRN {
         display: none;
     }
 
@@ -82,6 +82,7 @@
                             <input type="hidden" asp-for="Invoice_Id" value="@salesInvoice.Id" />
                             <input type="hidden" id="TotalNetAmount" value="@salesInvoice.Total_Net_Amount" />
                            <input type="hidden" id="TotalVat" value="@salesInvoice.Total_Vat" />
+                            <input type="hidden" id="TotalDiscount" value="@salesInvoice.Total_Discount" />
                             <input type="hidden" asp-for="Trans_Mode" value="@salesInvoice.Trans_Type"/>
                             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
@@ -183,7 +184,10 @@
                                                         <div id="qrCode"></div>
                                                     </center>
                                                     <span id="qrMessage" class="text-primary font-weight-bold">Generating QR Please Wait <i class="fa fa-spinner fa-spin"></i></span>
+
                                                     <input type="button" id="qrStatusCheck" class="btn btn-success btn-sm pull-right" value="Check Status" />
+                                                    <span class="pull-right">&nbsp;&nbsp;</span>
+                                                    <input type="text" id="fonepayPRN" class="pull-right" name="fonepayPRN" value="" />
                                                 </div>
                                             </div>
                                         </div>

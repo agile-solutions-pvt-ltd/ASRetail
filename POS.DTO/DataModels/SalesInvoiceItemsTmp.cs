@@ -34,6 +34,7 @@ namespace POS.DTO
         public string Remarks { get; set; }
 
         public decimal FonepayDiscountPercent { get; set; }
+        public decimal FonepayDiscountAmount { get; set; }
 
         [ForeignKey("Invoice_Id")]
         public SalesInvoiceTmp Invoice { get; set; }

@@ -165,7 +165,7 @@
             Vat: $.trim($("#Customer_Vat").val()),
             Is_Member: true
         };
-        if (!_.isEmpty(membership.Name) && !_.isEmpty(membership.Mobile1) && membership.Mobile1.length > 6 && membership.Mobile1.length > 11) {
+        if (!_.isEmpty(membership.Name) && !_.isEmpty(membership.Mobile1) && membership.Mobile1.length > 6 && membership.Mobile1.length < 11) {
             $.ajax({
                 method: "POST",
                 url: "/Customer/CreateMembership",

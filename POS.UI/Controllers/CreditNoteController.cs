@@ -44,119 +44,134 @@ namespace POS.UI.Controllers
             {
                 try
                 {
-                    Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store")); ;
-                    creditNote.Id = Guid.NewGuid();
-                    creditNote.Credit_Note_Id = _context.CreditNote.Select(x => x.Credit_Note_Id).DefaultIfEmpty(0).Max() + 1;
-                    creditNote.Credit_Note_Number = "CN-" + creditNote.Credit_Note_Id.ToString("0000") + "-" + store.INITIAL + '-' + store.FISCAL_YEAR;
-                    creditNote.Trans_Time = DateTime.Now.TimeOfDay;
-                    creditNote.Division = "Divisioin";
-                    creditNote.Terminal = HttpContext.Session.GetString("Terminal");
-                    creditNote.Created_Date = DateTime.Now;
-                    creditNote.Created_By = User.Identity.Name;
-                    creditNote.isRedeem = creditNote.isRedeem;
+                    Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
 
-                    if (creditNote.isRedeem == true)
+                    using (var trans = _context.Database.BeginTransaction())
                     {
-                        creditNote.Remarks = "Claimed";
+                        try
+                        {
+
+                            creditNote.Id = Guid.NewGuid();
+                            creditNote.Credit_Note_Id = _context.CreditNote.Select(x => x.Credit_Note_Id).DefaultIfEmpty(0).Max() + 1;
+                            creditNote.Credit_Note_Number = "CN-" + creditNote.Credit_Note_Id.ToString("0000") + "-" + store.INITIAL + '-' + store.FISCAL_YEAR;
+                            creditNote.Trans_Time = DateTime.Now.TimeOfDay;
+                            creditNote.Division = "Divisioin";
+                            creditNote.Terminal = HttpContext.Session.GetString("Terminal");
+                            creditNote.Created_Date = DateTime.Now;
+                            creditNote.Created_By = User.Identity.Name;
+                            creditNote.isRedeem = creditNote.isRedeem;
+
+                            if (creditNote.isRedeem == true)
+                            {
+                                creditNote.Remarks = "Claimed";
+                            }
+                            _context.Add(creditNote);
+
+                            foreach (var item in creditNote.CreditNoteItems)
+                            {
+                                item.Credit_Note_Id = creditNote.Id;
+                                item.Credit_Note_Number = creditNote.Credit_Note_Number;
+                                _context.CreditNoteItem.Add(item);
+                            }
+
+                            //save to print table
+                            InvoicePrint print = new InvoicePrint()
+                            {
+                                InvoiceNumber = creditNote.Credit_Note_Number,
+                                Type = "CreditNote",
+                                FirstPrintedDate = DateTime.Now,
+                                FirstPrintedBy = User.Identity.Name,
+                                PrintCount = 1
+                            };
+                            _context.InvoicePrint.Add(print);
+
+                            await _context.SaveChangesAsync();
+
+                            //now update invoice remarks also
+                            SalesInvoice invoice = _context.SalesInvoice.FirstOrDefault(x => x.Invoice_Number == creditNote.Reference_Number.Trim());
+                            invoice.Remarks = "Return";
+                            _context.Entry(invoice).State = EntityState.Modified;
+                            InvoiceMaterializedView invoiceMaterializedViewOld = _context.InvoiceMaterializedView.FirstOrDefault(x => x.BillNo == creditNote.Reference_Number.Trim());
+                            invoiceMaterializedViewOld.IsBillActive = false;
+                            _context.Entry(invoiceMaterializedViewOld).State = EntityState.Modified;
+
+
+                            InvoiceMaterializedView view = new InvoiceMaterializedView()
+                            {
+                                BillNo = creditNote.Credit_Note_Number,
+                                DocumentType = "Credit Memo",
+                                FiscalYear = store.FISCAL_YEAR,
+                                LocationCode = store.INITIAL,
+                                BillDate = creditNote.Trans_Date_Ad.Value,
+                                PostingTime = creditNote.Trans_Time.Value,
+                                CustomerCode = creditNote.Customer_Id,
+                                CustomerName = creditNote.Customer_Name,
+                                Vatno = creditNote.Customer_Vat,
+                                Amount = creditNote.Total_Gross_Amount.Value,
+                                Discount = creditNote.Total_Discount.Value,
+                                TaxableAmount = creditNote.TaxableAmount,
+                                NonTaxableAmount = creditNote.NonTaxableAmount,
+                                TaxAmount = creditNote.Total_Vat == null ? 0 : creditNote.Total_Vat.Value,
+                                TotalAmount = creditNote.Total_Net_Amount.Value,
+                                IsBillActive = true,
+                                IsBillPrinted = false,
+                                PrintedTime = DateTime.Now,
+                                PrintedBy = "",
+                                EnteredBy = creditNote.Created_By,
+                                SyncStatus = "Not Started",
+                                SyncedDate = DateTime.Now,
+                                SyncedTime = DateTime.Now.TimeOfDay,
+                                SyncWithIrd = false,
+                                IsRealTime = false
+                            };
+
+                            InvoiceMaterializedView invoiceMaterializedView = _context.InvoiceMaterializedView.FirstOrDefault(x => x.BillNo == creditNote.Reference_Number.Trim());
+                            invoiceMaterializedView.IsBillActive = false;
+                            _context.Entry(invoiceMaterializedView).State = EntityState.Modified;
+
+                            NavCreditMemo navCreditMemo = new NavCreditMemo()
+                            {
+                                id = creditNote.Id.ToString(),
+                                number = creditNote.Credit_Note_Number,
+                                postingno = creditNote.Credit_Note_Number,
+                                creditMemoDate = creditNote.Trans_Date_Ad.Value.ToString("yyyy-MM-dd"),
+                                customerNumber = creditNote.MemberId,
+                                customerName = creditNote.Customer_Name,
+                                vatregistrationnumber = creditNote.Customer_Vat,
+                                locationcode = store.INITIAL,
+                                accountabilitycenter = store.INITIAL,
+                                assigneduserid = creditNote.Created_By,
+                                externalDocumentNumber = creditNote.Reference_Number,
+                                amountrounded = creditNote.IsRoundup,
+                                returnremarks = creditNote.Credit_Note
+
+                            };
+                            _context.InvoiceMaterializedView.Add(view);
+                            _context.SaveChanges();
+
+                            trans.Commit();
+
+                            //post to ird
+                            //background task
+                            BackgroundJob.Enqueue(() => SendDataToIRD(creditNote, store));
+                            //Send data to NAV
+                            Config config = ConfigJSON.Read();
+                            if (!config.StopCreditNotePosting)
+                            {
+                                NavPostData navPostData = new NavPostData(_context, _mapper);
+                                BackgroundJob.Enqueue(() => navPostData.PostCreditNote(navCreditMemo));
+                            }
+
+                            //for api return
+                            TempData["StatusMessage"] = "Credit Note Added Successfully";
+                            return Ok(new { redirectUrl = "/CreditNote", Message = "Credit Note Added Successfully", InvoiceData = creditNote, StoreData = store });
+                        }
+                        catch (Exception ex)
+                        {
+                            trans.Rollback();
+                        }
+
                     }
-                    _context.Add(creditNote);
-
-                    foreach (var item in creditNote.CreditNoteItems)
-                    {
-                        item.Credit_Note_Id = creditNote.Id;
-                        item.Credit_Note_Number = creditNote.Credit_Note_Number;
-                        _context.CreditNoteItem.Add(item);
-                    }
-
-                    //save to print table
-                    InvoicePrint print = new InvoicePrint()
-                    {
-                        InvoiceNumber = creditNote.Credit_Note_Number,
-                        Type = "CreditNote",
-                        FirstPrintedDate = DateTime.Now,
-                        FirstPrintedBy = User.Identity.Name,
-                        PrintCount = 1
-                    };
-                    _context.InvoicePrint.Add(print);
-
-                    await _context.SaveChangesAsync();
-
-                    //now update invoice remarks also
-                    SalesInvoice invoice = _context.SalesInvoice.FirstOrDefault(x => x.Invoice_Number == creditNote.Reference_Number.Trim());
-                    invoice.Remarks = "Return";
-                    _context.Entry(invoice).State = EntityState.Modified;
-                    InvoiceMaterializedView invoiceMaterializedViewOld = _context.InvoiceMaterializedView.FirstOrDefault(x => x.BillNo == creditNote.Reference_Number.Trim());
-                    invoiceMaterializedViewOld.IsBillActive = false;
-                    _context.Entry(invoiceMaterializedViewOld).State = EntityState.Modified;
-
-
-                    InvoiceMaterializedView view = new InvoiceMaterializedView()
-                    {
-                        BillNo = creditNote.Credit_Note_Number,
-                        DocumentType = "Credit Memo",
-                        FiscalYear = store.FISCAL_YEAR,
-                        LocationCode = store.INITIAL,
-                        BillDate = creditNote.Trans_Date_Ad.Value,
-                        PostingTime = creditNote.Trans_Time.Value,
-                        CustomerCode = creditNote.Customer_Id,
-                        CustomerName = creditNote.Customer_Name,
-                        Vatno = creditNote.Customer_Vat,
-                        Amount = creditNote.Total_Gross_Amount.Value,
-                        Discount = creditNote.Total_Discount.Value,
-                        TaxableAmount = creditNote.TaxableAmount,
-                        NonTaxableAmount = creditNote.NonTaxableAmount,
-                        TaxAmount = creditNote.Total_Vat == null ? 0 : creditNote.Total_Vat.Value,
-                        TotalAmount = creditNote.Total_Net_Amount.Value,
-                        IsBillActive = true,
-                        IsBillPrinted = false,
-                        PrintedTime = DateTime.Now,
-                        PrintedBy = "",
-                        EnteredBy = creditNote.Created_By,
-                        SyncStatus = "Not Started",
-                        SyncedDate = DateTime.Now,
-                        SyncedTime = DateTime.Now.TimeOfDay,
-                        SyncWithIrd = false,
-                        IsRealTime = false
-                    };
-
-                    InvoiceMaterializedView invoiceMaterializedView = _context.InvoiceMaterializedView.FirstOrDefault(x => x.BillNo == creditNote.Reference_Number.Trim());
-                    invoiceMaterializedView.IsBillActive = false;
-                    _context.Entry(invoiceMaterializedView).State = EntityState.Modified;
-
-                    NavCreditMemo navCreditMemo = new NavCreditMemo()
-                    {
-                        id = creditNote.Id.ToString(),
-                        number = creditNote.Credit_Note_Number,
-                        postingno = creditNote.Credit_Note_Number,
-                        creditMemoDate = creditNote.Trans_Date_Ad.Value.ToString("yyyy-MM-dd"),
-                        customerNumber = creditNote.MemberId,
-                        customerName = creditNote.Customer_Name,
-                        vatregistrationnumber = creditNote.Customer_Vat,
-                        locationcode = store.INITIAL,
-                        accountabilitycenter = store.INITIAL,
-                        assigneduserid = creditNote.Created_By,
-                        externalDocumentNumber = creditNote.Reference_Number,
-                        amountrounded = creditNote.IsRoundup,
-                        returnremarks = creditNote.Credit_Note
-
-                    };
-                    _context.InvoiceMaterializedView.Add(view);
-                    _context.SaveChanges();
-
-                    //post to ird
-                    //background task
-                    BackgroundJob.Enqueue(() => SendDataToIRD(creditNote, store));
-                    //Send data to NAV
-                    Config config = ConfigJSON.Read();
-                    if (!config.StopCreditNotePosting)
-                    {
-                        NavPostData navPostData = new NavPostData(_context, _mapper);
-                        BackgroundJob.Enqueue(() => navPostData.PostCreditNote(navCreditMemo));
-                    }
-
-                    //for api return
-                    TempData["StatusMessage"] = "Credit Note Added Successfully";
-                    return Ok(new { redirectUrl = "/CreditNote", Message = "Credit Note Added Successfully", InvoiceData = creditNote, StoreData = store });
                 }
                 catch (Exception ex)
                 {

@@ -184,7 +184,7 @@ const invoice = (function () {
                     });
                     setTimeout(function () { $("#itemNotFoundLabel").hide(); }, 2000);
 
-                } else {                   
+                } else {
                     _.each(data, function (x) { selectedItems.push(x); });
                     callback(data);
                 }
@@ -209,7 +209,7 @@ const invoice = (function () {
             dataType: "json",
             contentType: "application/json; charset=utf-8",
             complete: function (result) {
-                if (result.status === 200 && result.responseJSON.length > 0) {                  
+                if (result.status === 200 && result.responseJSON.length > 0) {
                     _.each(result.responseJSON, function (x) { selectedItems.push(x); });
                     callback();
                 }
@@ -285,12 +285,12 @@ const invoice = (function () {
 
 
     };
-    let updateFlatDiscount = (calcTotalFlag) => {       
+    let updateFlatDiscount = (calcTotalFlag) => {
         var type = $("input[name='flatDiscount']:checked").val();
         var value = parseFloat($("#flat_discount").val() || 0).toFixed(2);
         var percent = 0;
         if (_.isEmpty(type))
-            return false;       
+            return false;
         if (type === "percent") {
             percent = parseFloat(value);
         } else {
@@ -460,7 +460,7 @@ const invoice = (function () {
         cell10.className = "netAmount-width-item p-1 pr-3";
         cell11.className = "action-width-item p-1";
 
-       
+
         var barCode = result.Bar_Code || result[0].bar_Code;
         var itemCode = result.ItemCode || result[0].code; //temporary update code to remarks field :)       
         var itemName = result.Name || result[0].name;
@@ -477,7 +477,7 @@ const invoice = (function () {
         //    tax = (grossAmount - discount) * taxPercent / 100;
         //}
         //later calculations
-       
+
         var rate = result.rate || result.Rate || 0;
         var originalRate = rate == 0 ? "" : "data-original-rate=" + rate;
         var popupRate = (result.Invoice_Number != undefined && result.Invoice_Number.indexOf("TI-") > -1 && isVatable == true ? result.RateExcludeVatWithoutRoundoff * 1.13 : rate).toFixed(2);
@@ -865,7 +865,7 @@ const invoice = (function () {
             if (discount > 0)
                 isMembershipDiscount = true;
         }
-       
+
         if (discount > 0) {
             //update isdiscountable
             $.each(table.rows, function (i, v) {
@@ -883,15 +883,15 @@ const invoice = (function () {
                     $(this).find(".Discount").attr("readonly", false);
                 }
 
-            });          
+            });
             discount = calcFlatDiscount();
 
         }
-        
+
         return discount;
     };
     let calcDiscountLine = (selectedItem, quantity, itemCode) => {
-       
+
         //variables
         var todayDate = new Date();
         var membershipNumber = $("#membershipId").val();
@@ -942,9 +942,12 @@ const invoice = (function () {
                 return x.discountMinimumQuantity === 0;
             })[0];
             discount = discount === undefined ? 0 : discount.discount;
-            _.each(filterByTimePriority, function (x) {
-                if (x.discountMinimumQuantity > 0 && quantity >= x.discountMinimumQuantity)
+            let discountMinimumQuantity = 0
+            _.each(filterByTime, function (x) {
+                if (x.discountMinimumQuantity > 0 && quantity >= x.discountMinimumQuantity && (discountMinimumQuantity == 0 || discountMinimumQuantity < x.discountMinimumQuantity)) {
                     discount = x.discount;
+                    discountMinimumQuantity = x.discountMinimumQuantity;
+                }
             });
         }
         //3) By time is priority 
@@ -970,9 +973,13 @@ const invoice = (function () {
                     return x.discountMinimumQuantity === 0;
                 })[0];
                 discount = discount === undefined ? 0 : discount.discount;
+                debugger;
+                let discountMinimumQuantity = 0
                 _.each(filterByTime, function (x) {
-                    if (x.discountMinimumQuantity > 0 && quantity >= x.discountMinimumQuantity)
+                    if (x.discountMinimumQuantity > 0 && quantity >= x.discountMinimumQuantity && (discountMinimumQuantity == 0 || discountMinimumQuantity < x.discountMinimumQuantity)) {
                         discount = x.discount;
+                        discountMinimumQuantity = x.discountMinimumQuantity;
+                    }
                 });
             }
             else {
@@ -980,9 +987,12 @@ const invoice = (function () {
                     return x.discountMinimumQuantity === 0;
                 })[0];
                 discount = discount === undefined ? 0 : discount.discount;
+                let discountMinimumQuantity = 0
                 _.each(filterByTime, function (x) {
-                    if (x.discountMinimumQuantity > 0 && quantity >= x.discountMinimumQuantity)
+                    if (x.discountMinimumQuantity > 0 && quantity >= x.discountMinimumQuantity && (discountMinimumQuantity == 0 || discountMinimumQuantity < x.discountMinimumQuantity)) {
                         discount = x.discount;
+                        discountMinimumQuantity = x.discountMinimumQuantity;
+                    }
                 });
             }
         }
@@ -990,7 +1000,7 @@ const invoice = (function () {
         if (discount > 0) {
             //update type promodiscount
             $.each(table.rows, function (i, v) {
-                if ($(this).find(".itemName").attr("data-item-code") === itemCode) {                   
+                if ($(this).find(".itemName").attr("data-item-code") === itemCode) {
                     $(this).find(".Discount").data("discountType", "PromoDiscount");
                 }
 
@@ -1255,7 +1265,7 @@ const invoice = (function () {
                     }
 
 
-                   
+
 
                     discount = rate * discountPercent / 100;
                     discountExcVat = rateExcludeTax * discountPercent / 100;
@@ -1483,9 +1493,9 @@ const invoice = (function () {
                 let discountable = $(this).find(".Discount").data("isdiscountable");
                 let noDiscount = $(this).find(".Discount").data("noDiscount") || false;
                 let discountType = $(this).find(".Discount").data("discountType");
-               
+
                 if (type === "amount")
-                    grossAmount = parseFloat($(this).find(".Rate").val()) * parseFloat($(this).find(".Quantity").val());               
+                    grossAmount = parseFloat($(this).find(".Rate").val()) * parseFloat($(this).find(".Quantity").val());
                 if (noDiscount === false && discountType !== "MembershipDiscount" && discountType !== "PromoDiscount") {
                     totalGrossAmountWithoutOtherDiscountItem += grossAmount;
                 }
@@ -1502,13 +1512,13 @@ const invoice = (function () {
             percent = maxPercent; //no need to show error message// just set max percentage that is allowed.
             $("#flat_discount").val(maxPercent);
         }
-     
+
         //update inlinepromo discount
         if (percent > 0) {
             $.each(table.rows, function (i, v) {
                 let discountType = $(this).find(".Discount").data("discountType");
                 if (discountType === "InlineManualDiscount")
-                    $(this).find(".Discount").removeData("discountType");               
+                    $(this).find(".Discount").removeData("discountType");
             });
         }
         return percent;
@@ -1640,8 +1650,8 @@ const invoice = (function () {
 
                             bootbox.hideAll();
                         }
-                       
-                      
+
+
                     }
                 }).one("shown.bs.modal", function () {
                     //temporary paused the shortcut events
@@ -2041,7 +2051,7 @@ const invoice = (function () {
         //variable
         let tableRows = document.getElementById("item_table").getElementsByTagName('tbody')[0];
 
-        
+
 
 
         //save field data first
@@ -2084,53 +2094,98 @@ const invoice = (function () {
         //variables
         let fonePayDiscountPercent = 0, fonePayMaxLimit = 0, calcFonePayDiscount = 0,
             fonepayTaxableAmount = 0, fonepayNonTaxableAmount = 0, fonepayTotalDiscountExcVat = 0,
-            fonepayTax = 0, fonepayTotalNetAmount = 0;
+            totalFonepayTaxableAmount = 0, totalFonepayNonTaxableAmount = 0, totalFonepayDiscount = 0
+        fonepayTax = 0, fonepayTotalNetAmount = 0;
         //calcFonepay percent
         if (permission.fonepayDiscountStatus == true) {
-            let totalNetAmount = $("#Total_Net_Amount").val();
+            debugger;
+            let totalNetAmount = parseFloat(CurrencyUnFormat($("#totalGrossAmount").text()));
+            let TotalDiscount = parseFloat($("#Total_Discount").val());
             fonePayDiscountPercent = config.FonePayDiscountPercent;
             fonePayMaxLimit = config.FonePayDiscountLimit;
-            calcFonePayDiscount = totalNetAmount * fonePayDiscountPercent / 100;
+            let totalNonTaxable = parseFloat(CurrencyUnFormat($("#NonTaxableAmount").val()));
+            let totalTaxable = parseFloat(CurrencyUnFormat($("#TaxableAmount").val()));
+            if (transType.val() === "Sales")
+                calcFonePayDiscount = (totalNetAmount - TotalDiscount) * fonePayDiscountPercent / 100;
+            else
+                calcFonePayDiscount = ((totalTaxable * fonePayDiscountPercent / 100) / 1.13) + (totalNonTaxable * fonePayDiscountPercent / 100);
+
             if (calcFonePayDiscount > fonePayMaxLimit) {
                 calcFonePayDiscount = fonePayMaxLimit;
-                fonePayDiscountPercent = calcFonePayDiscount / totalNetAmount * 100;
+                fonePayDiscountPercent = calcFonePayDiscount / (totalNetAmount - TotalDiscount) * 100;
             }
 
-
-
             //calcfonepay  taxable and non taxable
-            
+
             $.each(tableRows.rows, function (i, v) {
 
                 //variables 
+                fonepayTaxableAmount = 0;
+                fonepayNonTaxableAmount = 0;
+                var fonepayTaxableDiscount = 0, fonepayNonTaxableDiscount = 0;
+
                 let taxable = $(this).find(".Tax").data("isvatable");
                 let rateExcludeTax = parseFloat($(this).find(".Rate").data("RateExcludedVatWithoutRoundoff"));
                 let quantity = parseFloat($(this).find(".Quantity").val());
                 let previousDiscountPercent = parseFloat($(this).find(".Discount").data("DiscountPercent"));
-                let discountPercent = previousDiscountPercent + fonePayDiscountPercent;
-                let discountExcVat = rateExcludeTax * discountPercent / 100;
+                var previousGrossN = parseFloat((rateExcludeTax * quantity).toFixed(2));
+                let previousDiscountAmount = previousGrossN * previousDiscountPercent / 100;
+                if (transType.val() === "Sales") {
+                    if (taxable) {
+                        fonepayTaxableAmount = parseFloat(previousGrossN - previousDiscountAmount).toFixedDecimal(2);
+                        fonepayTaxableDiscount = (fonepayTaxableAmount * fonePayDiscountPercent / 100 * 1.13).toFixedDecimal(2);
+                    }
+                    else {
+                        fonepayNonTaxableAmount = parseFloat(previousGrossN - previousDiscountAmount).toFixedDecimal(2);
+                        fonepayNonTaxableDiscount = (fonepayNonTaxableAmount * fonePayDiscountPercent / 100).toFixedDecimal(2);
+                    }
+                }
+                else {
+                    if (taxable) {
+                        fonepayTaxableAmount = parseFloat(previousGrossN - previousDiscountAmount).toFixedDecimal(2);
+                        if (calcFonePayDiscount >= 500)
+                            fonepayTaxableDiscount = ((fonepayTaxableAmount * fonePayDiscountPercent / 100) / 1.13).toFixedDecimal(2);
+                        else
+                            fonepayTaxableDiscount = ((fonepayTaxableAmount * fonePayDiscountPercent / 100)).toFixedDecimal(2);
+                    }
+                    else {
+                        fonepayNonTaxableAmount = parseFloat(previousGrossN - previousDiscountAmount).toFixedDecimal(2);
+                        fonepayNonTaxableDiscount = (fonepayNonTaxableAmount * fonePayDiscountPercent / 100).toFixedDecimal(2);
+                    }
+                }
 
-                var grossRateN = parseFloat((rateExcludeTax * quantity).toFixed(2));
-                var grossDiscountN = parseFloat((grossRateN * discountPercent / 100).toFixed(2));
-                if (taxable)
-                    fonepayTaxableAmount += parseFloat(grossRateN - grossDiscountN).toFixedDecimal(2);// parseFloat(((rateExcludeTax - discountExcVat) * quantity).toFixed(2));
-                else
-                    fonepayNonTaxableAmount += parseFloat(grossRateN - grossDiscountN).toFixedDecimal(2);
+                //for fonepay
+                var fonepayDiscountAmount = (fonepayTaxableDiscount + fonepayNonTaxableDiscount).toFixedDecimal(2);
+                totalFonepayDiscount = (totalFonepayDiscount + fonepayTaxableDiscount + fonepayNonTaxableDiscount).toFixedDecimal(2);
+                if (transType.val() === "Sales" && taxable) {
+                    fonepayTaxableAmount = fonepayTaxableAmount - (fonepayTaxableAmount * fonePayDiscountPercent / 100).toFixedDecimal(2);
+                }
+                else {
+                    fonepayTaxableAmount = fonepayTaxableAmount - fonepayTaxableDiscount;
+                }
+                fonepayNonTaxableAmount = fonepayNonTaxableAmount - fonepayNonTaxableDiscount;
 
-                fonepayTotalDiscountExcVat += discountExcVat;
+                totalFonepayTaxableAmount += fonepayTaxableAmount;
+                totalFonepayNonTaxableAmount += fonepayNonTaxableAmount;
+
+                $(this).find(".Discount").data("FonepayDiscountAmount", fonepayDiscountAmount);
+                $(this).find(".Discount").data("FonepayDiscountPercent", fonePayDiscountPercent);
+                //discountPercent = ((grossRateN * previousDiscountPercent / 100) + grossDiscountN) /grossRateN * 100;
             });
-            fonepayTax = fonepayTaxableAmount * 13 / 100;
-            fonepayTotalNetAmount = fonepayTaxableAmount + fonepayNonTaxableAmount + parseFloat(fonepayTax.toFixed(2));
+            fonepayTax = totalFonepayTaxableAmount * 13 / 100;
+            fonepayTotalNetAmount = totalFonepayTaxableAmount + totalFonepayNonTaxableAmount + parseFloat(fonepayTax.toFixed(2));
+            calcFonePayDiscount = totalFonepayDiscount;
+
 
         }
-        
+
 
 
 
         //get items
         var table = $("#item_table");
         var invoiceItems = [];
-        table.find('tbody > tr').each(function (i, el) {           
+        table.find('tbody > tr').each(function (i, el) {
             var $tds = $(this).find('td');
             let discountType = $(this).find('td input.Discount').data("discountType");
             let promoDiscount = discountType === undefined || discountType !== "MembershipDiscount" ? $(this).find('td input.Discount').val() : 0;
@@ -2148,7 +2203,8 @@ const invoice = (function () {
                 Gross_Amount: $(this).find('td input.GrossAmount').val(),
                 Discount: $(this).find('td input.Discount').val(),
                 DiscountPercent: $(this).find('td input.Discount').data("DiscountPercent"),
-                FonepayDiscountPercent: fonePayDiscountPercent,
+                FonepayDiscountAmount: $(this).find(".Discount").data("FonepayDiscountAmount"),
+                FonepayDiscountPercent: $(this).find(".Discount").data("FonepayDiscountPercent"),
                 PromoDiscount: promoDiscount,
                 MembershipDiscount: membershipDiscount,
                 Tax: $(this).find('td input.Tax').val(),
@@ -2159,11 +2215,11 @@ const invoice = (function () {
             });
         });
 
-        
+
 
         //call ajaxnow       
         var data = $('form#Sales_Invoice_Form').serializeObject();
-       
+
         //assign customer id
         data.Customer_Id = $("#membershipId").val();
 
@@ -2183,12 +2239,12 @@ const invoice = (function () {
         data.PromoDiscount = calcTotalPromoDiscount();
 
         //assign fonepay field
-        data.FonepayTaxable = fonepayTaxableAmount;
-        data.FonepayNonTaxable = fonepayNonTaxableAmount;
+        data.FonepayTaxable = totalFonepayTaxableAmount;
+        data.FonepayNonTaxable = totalFonepayNonTaxableAmount;
         data.FonepayTax = fonepayTax;
         data.FonepayDiscountAmount = calcFonePayDiscount;
         data.FonepayDiscountPercent = fonePayDiscountPercent;
-        data.FonepayTotalDiscountExcVat = fonepayTotalDiscountExcVat;        
+        data.FonepayTotalDiscountExcVat = fonepayTotalDiscountExcVat;
 
         data.SalesInvoiceItems = invoiceItems;
         data.MemberId = $("#membershipId").val();

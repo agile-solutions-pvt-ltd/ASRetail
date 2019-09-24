@@ -20,6 +20,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace POS.UI.Controllers
@@ -385,10 +386,11 @@ namespace POS.UI.Controllers
                             salesItem.Invoice_Number = salesInvoice.Invoice_Number;
                             if (model.bill.FirstOrDefault().Trans_Mode == "FonePay")
                             {
-                                salesItem.DiscountPercent = item.DiscountPercent + item.FonepayDiscountPercent;
+                                
                                 salesItem.FonepayDiscountPercent = item.FonepayDiscountPercent;
-                                salesItem.FonepayDiscountAmount = item.Gross_Amount.Value * item.FonepayDiscountPercent / 100;
+                                salesItem.FonepayDiscountAmount = item.FonepayDiscountAmount;
                                 salesItem.Discount = item.Discount + salesItem.FonepayDiscountAmount;
+                                salesItem.DiscountPercent = salesItem.Discount.Value / salesItem.Gross_Amount.Value * 100;
                                 salesItem.Tax = Math.Round(((Math.Round(salesItem.RateExcludeVat * salesItem.Quantity.Value, 2) - salesItem.Discount.Value) * 13 / 100),2);
 
 
@@ -529,7 +531,7 @@ namespace POS.UI.Controllers
                             assigneduserid = salesInvoice.Created_By,
                             externalDocumentNumber = crNumber,
                             amountrounded = salesInvoice.Total_Net_Amount != salesInvoice.Total_Payable_Amount,
-                            FonePay_Discount = salesInvoice.FonepayDiscountAmount
+                            fonepaydiscount = salesInvoice.FonepayDiscountAmount
                             
 
                         };
@@ -766,7 +768,7 @@ where b.BarCode in ('" + barcodeListString + "') OR i.Code in ('" + barcodeListS
 
 
                 fonePay.merchantCode = config.FonePayMerchantCode; //"FONEPAY_SUBODH";
-                fonePay.prn = Guid.NewGuid().ToString();
+                fonePay.prn = Regex.Replace(Convert.ToBase64String(Guid.NewGuid().ToByteArray()), "[/+=]", ""); //Guid.NewGuid().ToString();
                 fonePay.secret_key = config.FonePaySecretKey;
                 fonePay.remarks1 = User.Identity.Name;
                 fonePay.remarks2 = HttpContext.Session.GetString("Terminal");
