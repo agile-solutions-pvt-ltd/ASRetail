@@ -371,6 +371,11 @@ namespace POS.UI.Controllers
                             salesInvoice.Total_Discount = totalDiscount;
 
                         }
+                        else
+                        {
+                            salesInvoice.FonepayDiscountAmount = 0;
+                            salesInvoice.FonepayDiscountPercent = 0;
+                        }
 
                         _context.SalesInvoice.Add(salesInvoice);
 
@@ -394,6 +399,11 @@ namespace POS.UI.Controllers
                                 salesItem.Tax = Math.Round(((Math.Round(salesItem.RateExcludeVat * salesItem.Quantity.Value, 2) - salesItem.Discount.Value) * 13 / 100),2);
 
 
+                            }
+                            else
+                            {
+                                salesItem.FonepayDiscountPercent = 0;
+                                salesItem.FonepayDiscountAmount = 0;
                             }
 
 
@@ -531,7 +541,7 @@ namespace POS.UI.Controllers
                             assigneduserid = salesInvoice.Created_By,
                             externalDocumentNumber = crNumber,
                             amountrounded = salesInvoice.Total_Net_Amount != salesInvoice.Total_Payable_Amount,
-                            fonepaydiscount = salesInvoice.FonepayDiscountAmount
+                            fonepaydiscount = salesInvoice.Trans_Type == "Tax" ? salesInvoice.FonepayDiscountAmount * 113 / 100 : salesInvoice.FonepayDiscountAmount
                             
 
                         };

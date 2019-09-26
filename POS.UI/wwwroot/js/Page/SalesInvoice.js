@@ -2105,14 +2105,17 @@ const invoice = (function () {
             fonePayMaxLimit = config.FonePayDiscountLimit;
             let totalNonTaxable = parseFloat(CurrencyUnFormat($("#NonTaxableAmount").val()));
             let totalTaxable = parseFloat(CurrencyUnFormat($("#TaxableAmount").val()));
-            if (transType.val() === "Sales")
+            if (transType.val() === "Sales") {
                 calcFonePayDiscount = (totalNetAmount - TotalDiscount) * fonePayDiscountPercent / 100;
-            else
+            }
+            else {
                 calcFonePayDiscount = ((totalTaxable * fonePayDiscountPercent / 100) / 1.13) + (totalNonTaxable * fonePayDiscountPercent / 100);
+                fonePayMaxLimit = fonePayMaxLimit / 1.13;
+            }
 
             if (calcFonePayDiscount > fonePayMaxLimit) {
                 calcFonePayDiscount = fonePayMaxLimit;
-                fonePayDiscountPercent = calcFonePayDiscount / (totalNetAmount - TotalDiscount) * 100;
+                fonePayDiscountPercent =  (calcFonePayDiscount / (totalNetAmount - TotalDiscount) * 100).toFixedDecimal(5);
             }
 
             //calcfonepay  taxable and non taxable
@@ -2129,7 +2132,7 @@ const invoice = (function () {
                 let quantity = parseFloat($(this).find(".Quantity").val());
                 let previousDiscountPercent = parseFloat($(this).find(".Discount").data("DiscountPercent"));
                 var previousGrossN = parseFloat((rateExcludeTax * quantity).toFixed(2));
-                let previousDiscountAmount = previousGrossN * previousDiscountPercent / 100;
+                let previousDiscountAmount = (previousGrossN * previousDiscountPercent / 100).toFixedDecimal(2);
                 if (transType.val() === "Sales") {
                     if (taxable) {
                         fonepayTaxableAmount = parseFloat(previousGrossN - previousDiscountAmount).toFixedDecimal(2);
