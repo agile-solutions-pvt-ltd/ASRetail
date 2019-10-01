@@ -95,12 +95,13 @@
             let R25Value = parseFloat(R25.val()) * 25;
             R25Total.val(R25Value.toFixed(2));
             totalAmount += R25Value;
-            totalAmount += R25Value;
+            totalCash += R25Value;
 
         }
         if (!_.isEmpty(R20.val())) {
             let R20Value = parseFloat(R20.val()) * 20;
             R20Total.val(R20Value.toFixed(2));
+            totalAmount += R20Value;
             totalCash += R20Value;
         }
         if (!_.isEmpty(R10.val())) {
