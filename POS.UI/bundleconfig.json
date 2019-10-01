@@ -2,7 +2,17 @@
   {
     "outputFileName": "wwwroot/css/main.min.css",
     "inputFiles": [
-      "wwwroot/lib/bootstrap/css/bootstrap.min.css"
+      "wwwroot/lib/bootstrap/css/bootstrap.min.css",
+      "wwwroot/css/bootstrap-override.css",
+      "wwwroot/lib/bootstrap-treeview/css/bootstrap-treeview.css",
+      "wwwroot/icon/themify-icons/themify-icons.css",
+      "wwwroot/lib/font-awesome/css/font-awesome.css",
+      "wwwroot/lib/jquery.mCustomScrollbar.concat/jquery.mCustomScrollbar.min.css",
+      "wwwroot/lib/pnotify/css/pnotify.custom.min.css",
+      "wwwroot/lib/kendo-ui/kendo.common-material.min.css",
+      "wwwroot/lib/kendo-ui/kendo.material.min.css",
+      "wwwroot/lib/printjs/print.min.css",
+      "wwwroot/css/site.css"
     ]
   },
   {
@@ -12,21 +22,33 @@
       "wwwroot/lib/jquery-ui/jquery-ui.js",
       "wwwroot/lib/propper.js/propper.js",
       "wwwroot/lib/bootstrap/js/bootstrap.js",
+      "wwwroot/lib/math/math.min.js",
       "wwwroot/lib/bootstrap-treeview/js/bootstrap-treeview.js",
       "wwwroot/lib/jquery-slimscroll/js/jquery.slimscroll.js",
-      //"wwwroot/lib/jquery.mCustomScrollbar.concat/jquery.mCustomScrollbar.js",
+      "wwwroot/lib/jquery.mCustomScrollbar.concat/jquery.mCustomScrollbar.js",
       "wwwroot/lib/moment/js/moment.min.js",
       "wwwroot/lib/kendo-ui/jszip.min.js",
       "wwwroot/lib/modernizr/js/modernizr.js",
       "wwwroot/lib/underscore/underscore-min.js",
       "wwwroot/lib/underscore/underscoreAddon.js",
       "wwwroot/lib/bootbox/bootbox.min.js",
+      "wwwroot/lib/kendo-ui/kendo.core.min.js",
+      "wwwroot/lib//kendo-ui//kendo.core.min.js",
+      "wwwroot/lib/kendo-ui/kendo.data.min.js",
+      "wwwroot/lib/kendo-ui/kendo.grid.min.js",
       "wwwroot/lib/cookie/jquery.cookie.js",
       "wwwroot/js/pcoded.min.js",
       "wwwroot/js/demo-12.js",
       "wwwroot/lib/pnotify/js/pnotify.custom.min.js",
-      "wwwroot/lib/printjs/print.min.js"
-
+      "wwwroot/lib/printjs/print.min.js",
+     
+      "wwwroot/servers.js",
+      "wwwroot/lib/assign-shortcuts/mousetrap.js",
+      "wwwroot/js/assign-shortcut-keys.js",
+      "wwwroot/lib/nepali.datepicker/nepali.datepicker.v2.2.min.js",
+      "wwwroot/lib/jquery.qrcode/jquery.qrcode.js",
+      "wwwroot/lib/jquery.qrcode/qrcode.js",
+      "wwwroot/js/site.js"
     ],
     "minify": {
       "enabled": true,

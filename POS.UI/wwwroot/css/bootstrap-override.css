@@ -19411,9 +19411,9 @@ tr:first-child > td > .fc-day-grid-event {
 
     .note-card .note-write {
         position: relative;
-        background: -webkit-linear-gradient(top, #f0f0f0 0%, #ffffec 5%) 0 0;
-        background: -moz-linear-gradient(top, #f0f0f0 0%, #ffffec 5%) 0 0;
-        background: linear-gradient(top, #f0f0f0 0%, #ffffec 5%) 0 0;
+        background: -webkit-linear-gradient(top, #f0f0f0 0%, #fff 5%) 0 0;
+        background: -moz-linear-gradient(top, #f0f0f0 0%, #fff 5%) 0 0;
+        background: linear-gradient(top, #f0f0f0 0%, #fff 5%) 0 0;
         -webkit-background-size: 100% 35px;
         -moz-background-size: 100% 35px;
         background-size: 100% 35px;
@@ -25006,7 +25006,7 @@ body[themebg-pattern="pattern9"] {
         }
 
     .pcoded .pcoded-navbar[data-navbar-theme="theme1"] .pcoded-item .pcoded-hasmenu .pcoded-submenu li > a .pcoded-mtext:before {
-        border-bottom-color: #ffff;
+        border-bottom-color: #fff;
     }
 
     .pcoded .pcoded-navbar[data-navbar-theme="theme1"] .pcoded-item .pcoded-hasmenu .pcoded-submenu li > a .pcoded-mtext:after {
@@ -25185,7 +25185,7 @@ body[themebg-pattern="pattern9"] {
         }
 
     .pcoded .pcoded-navbar[data-navbar-theme="themelight1"] .pcoded-item .pcoded-hasmenu .pcoded-submenu li > a .pcoded-mtext:before {
-        border-bottom-color: #ffff;
+        border-bottom-color: #fff;
     }
 
     .pcoded .pcoded-navbar[data-navbar-theme="themelight1"] .pcoded-item .pcoded-hasmenu .pcoded-submenu li > a .pcoded-mtext:after {

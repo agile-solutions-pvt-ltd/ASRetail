@@ -19,7 +19,7 @@ using System.Reflection;
 
 namespace POS.UI.Controllers
 {
-    [SessionAuthorized]
+   
     public class SettingsController : Controller
     {
         private readonly EntityCore _context;
@@ -64,6 +64,7 @@ namespace POS.UI.Controllers
             return RedirectToAction("Index");
         }
 
+        [SessionAuthorized]
         public IActionResult GetMenu()
         {
 
@@ -189,10 +190,11 @@ namespace POS.UI.Controllers
             return Ok(data);
         }
         [AutomaticRetry(Attempts = 0)]
+        [AllowAnonymous]
         public IActionResult PostUnSyncInvoiceToNav()
         {
             NavPostData sync = new NavPostData(_context, _mapper);
-            Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
+            Store store = _context.Store.FirstOrDefault();
             //sync.PostSalesInvoice(store);
             //sync.PostSalesInvoice(store);
             BackgroundJob.Enqueue(() => sync.PostCustomer());
@@ -234,10 +236,11 @@ namespace POS.UI.Controllers
         }
 
         [AutomaticRetry(Attempts = 0)]
+        [AllowAnonymous]
         public IActionResult PostUnSyncCreditNoteToNav()
         {
             NavPostData sync = new NavPostData(_context, _mapper);
-            Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
+            Store store = _context.Store.FirstOrDefault();
             
             BackgroundJob.Enqueue(() => sync.PostUnSyncCreditMemo(store));
             // BackgroundJob.Enqueue(() => Console.WriteLine("test from background"));
@@ -280,6 +283,7 @@ namespace POS.UI.Controllers
 
         ////////********** scheduling jobs
         ///[HttpGet]
+        [SessionAuthorized]
         public IActionResult APISetup()
         {
             ViewData["API"] = ConfigJSON.Read();
@@ -327,7 +331,7 @@ namespace POS.UI.Controllers
 
 
 
-
+        [SessionAuthorized]
         public IActionResult DatabaseBackupRestore()
         {
             return View();

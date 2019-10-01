@@ -176,7 +176,11 @@ namespace POS.UI.Controllers
                 catch (Exception ex)
                 {
                     if (ex.Message.Contains("UniqueCreditNoteNumber") || ex.InnerException.Message.Contains("UniqueCreditNoteNumber"))
+                    {
+                        _context.Entry(creditNote).State = EntityState.Detached;
+                        _context.SaveChanges();
                         return await Index(creditNote);
+                    }
                 }
             }
             return View(creditNote);

@@ -453,11 +453,14 @@ namespace POS.UI.Sync
         public void PostUnSyncInvoie(Store store)
         {
             Config config = ConfigJSON.Read();
-            var unSyncInvoice = _context.SalesInvoice.Where(x => x.IsNavPosted == false);
+            var unSyncInvoice = _context.SalesInvoice.Where(x => x.IsNavPosted == false && x.IsNavSync == true);
             //update isnavsync to false then restart scheduling job
-            bool flag = UpdateIsNavSyncStatus(unSyncInvoice);
-            if (flag == false)
-                return;
+            if (unSyncInvoice.Count() > 0)
+            {
+                bool flag = UpdateIsNavSyncStatus(unSyncInvoice);
+                if (flag == false)
+                    return;
+            }
 
             //delete all generated sales orders from nav
             DeleteSalesOrder();
@@ -466,11 +469,15 @@ namespace POS.UI.Sync
             //if any invoice left then reschedule it
             if (_context.SalesInvoice.Where(x =>  x.IsNavPosted == false).Any())
             {
-                BackgroundJob.Schedule(() => PostUnSyncInvoie(store), TimeSpan.FromMinutes(10));
+                BackgroundJob.Schedule(() => PostUnSyncInvoie(store), TimeSpan.FromMinutes(5));
+            }
+            else
+            {
+                //also Start credit memo
+                PostUnSyncCreditMemo(store);
             }
 
-            //also Start credit memo
-            PostUnSyncCreditMemo(store);
+            
         }
         public bool UpdateIsNavSyncStatus(IEnumerable<SalesInvoice> invoice)
         {
@@ -814,7 +821,7 @@ namespace POS.UI.Sync
         public void PostUnSyncCreditMemo(Store store)
         {
             Config config = ConfigJSON.Read();
-            var unSyncInvoice = _context.CreditNote.Where(x => x.IsNavPosted == false);
+            var unSyncInvoice = _context.CreditNote.Where(x => x.IsNavPosted == false && x.IsNavSync == true);
             //update isnavsync to false then restart scheduling job
             bool flag = UpdateIsNavSyncStatusCreditMemo(unSyncInvoice);
             if (flag == false)
@@ -827,7 +834,7 @@ namespace POS.UI.Sync
             //if any invoice left then reschedule it
             if (_context.CreditNote.Where(x => x.IsNavPosted == false).Any())
             {
-                BackgroundJob.Schedule(() => PostUnSyncCreditMemo(store), TimeSpan.FromMinutes(10));
+                BackgroundJob.Schedule(() => PostUnSyncCreditMemo(store), TimeSpan.FromMinutes(5));
             }
         }
         public bool UpdateIsNavSyncStatusCreditMemo(IEnumerable<CreditNote> invoice)
@@ -971,7 +978,7 @@ namespace POS.UI.Sync
                 }
                 if (_context.Customer.Where(x => x.Is_Member == true && x.IsNavSync == false).Any())
                 {
-                    BackgroundJob.Schedule(() => PostCustomer(), TimeSpan.FromMinutes(10));
+                    BackgroundJob.Schedule(() => PostCustomer(), TimeSpan.FromMinutes(5));
                 }
 
                 //  request.AddJsonBody(navCustomers);

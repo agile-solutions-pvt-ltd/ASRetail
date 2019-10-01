@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -6,6 +7,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace POS.DTO
 {
     [Table("SALES_INVOICE_TMP")]
+    [JsonObject(IsReference = true)]
     public partial class SalesInvoiceTmp
     {
         [Key]

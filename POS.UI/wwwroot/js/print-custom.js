@@ -7,7 +7,6 @@
         get newClientPromise() {
             return new Promise((resolve, reject) => {
                 GetClientLocalIP(function (ip) {
-
                     var newIp = _.filter(serverIp, function (x, y) {
                         return y == ip;
                     });
@@ -40,7 +39,6 @@
                         //      }
 
                         // }
-
                     });
                 })
             });
@@ -51,20 +49,16 @@
             }
             return this.promise;
         }
-    }
+    };
 
     //********* Private Methos *****************//
     let init = () => {
-
-
     };
-
 
     let PrintInvoice = (data, callback) => {
         //if (data.invoiceData.trans_Type === "Sales")
         //    PrintSalesInvoice(data, callback);
         //else {
-
         //    if (data.copy !== undefined) {
         //        //print double
         //        PrintTaxInvoice(data, callback);
@@ -84,11 +78,9 @@
             if (!_.isEmpty(data.copy) && data.copy.printCount == 0) {
                 //print double
                 PrintTaxInvoice(data, function () {
-
                     data.copy.printCount = 1;
                     PrintTaxInvoice(data, callback);
                 });
-
             }
             else {
                 //print single
@@ -126,7 +118,6 @@
         header += "Pay Mode : " + paymentMode + "\r\n";
         header += "----------------------------------------\r\n";
         //Header end here
-
 
         //Item Header Start here
         var itemHeader = "Particulars  Qty    Rate  P.Dis   Amount\r\n";
@@ -170,7 +161,6 @@
             }
             item += amt;
             item += "\r\n";
-
         });
 
         //Items end here
@@ -225,7 +215,6 @@
         itemTotal += "\t      Promo Disc.   : " + promoDiscount + "\r\n";
         itemTotal += "\t      Loyalty Disc. : " + loyaltyDiscount + "\r\n";
         if (paymentMode == "FonePay") {
-
             itemTotal += "\t      FonePay Disc. : " + fonePayDiscount + "\r\n";
         }
         itemTotal += "\t      Taxable       : " + taxable + "\r\n";
@@ -239,7 +228,6 @@
         itemTotal += "Saving in this bill: Rs. " + parseFloat(data.invoiceData.total_Discount).toFixed(2) + "\r\n";
         //Items Total End Here
 
-
         //Footer start here
         var footer = "----------------------------------------\r\n";
         //footer += "Welcome to great shopping experience. Goods exchange within 7 days with original bill. contact: 01-5550422,23 \r\n";
@@ -250,16 +238,12 @@
         footer += "\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n";
         //Footer end here
 
-
-
         //Final Data
         var finalBill = header + itemHeader + item + itemTotal + footer;
 
         printwsBill(finalBill, callback, data, PrintTaxInvoiceBrowser);
-
     };
     let PrintTaxInvoiceBrowser = (data, callback) => {
-        
         var url = ""
         var companyInitital = data.storeData.initial || data.storeData.INITIAL;
         if (data.billData !== null && data.billData.length > 0 && data.billData[0].trans_Mode === "Credit" && companyInitital === "WHS") {
@@ -273,9 +257,8 @@
             type: 'GET',
             complete: function (result) {
                 if (result.status === 200) {
-
                     let printText = $(result.responseText).find("#printbody").html();
-                    //replace all variables  
+                    //replace all variables
 
                     var paymentMode = _.pluck(data.billData, "trans_Mode").join(", ");
                     if (paymentMode === "") {
@@ -332,7 +315,6 @@
                         printItems += printItemTemplate;
                     });
 
-
                     FinalPrint(printText, printItems, callback);
 
                     //update print count
@@ -351,7 +333,6 @@
     };
 
     let PrintSalesInvoice = (data, callback) => {
-
         var paymentMode = _.pluck(data.billData, "trans_Mode").join(", ");
         if (paymentMode === "") {
             paymentMode = data.paymentMode;
@@ -381,7 +362,6 @@
         header += "Pay Mode : " + paymentMode + "\r\n";
         header += "----------------------------------------\r\n";
         //Header end here
-
 
         //Item Header Start here
         var itemHeader = "Particulars  Qty    Rate  P.Dis   Amount\r\n";
@@ -426,7 +406,6 @@
             item += amt;
             //item += "      ";
             item += "\r\n";
-
         });
 
         //Items end here
@@ -469,10 +448,9 @@
         itemTotal += "\t      Promo Disc.   : " + promoDiscount + "\r\n";
         itemTotal += "\t      Loyalty Disc. : " + loyaltyDiscount + "\r\n";
         if (paymentMode == "FonePay") {
-
-        itemTotal += "\t      FonePay Disc. : " + fonePayDiscount + "\r\n";
+            itemTotal += "\t      FonePay Disc. : " + fonePayDiscount + "\r\n";
         }
-        
+
         itemTotal += "\t      Net Amount    : " + netAmount + "\r\n";
         itemTotal += "\t      --------------------------\r\n";
         itemTotal += "\t      Tender        : " + tender + "\r\n";
@@ -480,7 +458,6 @@
         itemTotal += "\t      --------------------------\r\n";
         itemTotal += "Saving in this bill: Rs. " + parseFloat(data.invoiceData.total_Discount).toFixed(2) + "\r\n";
         //Items Total End Here
-
 
         //Footer start here
         var footer = "----------------------------------------\r\n";
@@ -492,17 +469,12 @@
         footer += "\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n";
         //Footer end here
 
-
-
         //Final Data
         var finalBill = header + itemHeader + item + itemTotal + footer;
 
         printwsBill(finalBill, callback, data, PrintSalesInvoiceBrowser);
-
     };
     let PrintSalesInvoiceBrowser = (data, callback) => {
-        
-
         $.ajax({
             url: window.location.origin + "/Print/SalesInvoice",
             type: 'GET',
@@ -510,7 +482,6 @@
                 if (result.status === 200) {
                     let printText = $(result.responseText).find("#printbody").html();
                     //replace all variables
-
 
                     var paymentMode = _.pluck(data.billData, "trans_Mode").join(", ");
                     if (paymentMode === "") {
@@ -564,8 +535,7 @@
                         printItems += printItemTemplate;
                     });
 
-
-                    //            //printText = 
+                    //            //printText =
                     //            //printText = printText.replace("", "");
                     //            //printText = printText.replace("", "");
                     //            //printText = printText.replace("", "");
@@ -577,9 +547,6 @@
                     //            //printText = printText.replace("", "");
                     //            //printText = printText.replace("", "");
                     //            //printText = printText.replace("", "");
-
-
-
 
                     FinalPrint(printText, printItems, callback);
                     // console.log(finalBill);
@@ -602,7 +569,6 @@
     };
 
     let PrintCreditNoteInvoice = (data, callback) => {
-
         //Header Start here
         var header = "";
         header += "\t" + (data.storeData.COMPANY_NAME || data.storeData.companY_NAME) + "\r\n";
@@ -628,7 +594,6 @@
         header += "Pay Mode : " + data.invoiceData.payment_Mode + "\r\n";
         header += "----------------------------------------\r\n";
         //Header end here
-
 
         //Item Header Start here
         var itemHeader = "Particulars  Qty    Rate  P.Dis   Amount\r\n";
@@ -673,7 +638,6 @@
             item += amt;
             //item += "      ";
             item += "\r\n";
-
         });
 
         //Items end here
@@ -732,7 +696,6 @@
         itemTotal += "\t      Change        : " + change + "\r\n";
         //Items Total End Here
 
-
         //Footer start here
         var footer = "----------------------------------------\r\n";
         //footer += "Welcome to great shopping experience. Goods exchange within 7 days with original bill. contact: 01-5550422,23 \r\n";
@@ -743,16 +706,13 @@
         footer += "\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n";
         //Footer end here
 
-
-
         //Final Data
         var finalBill = header + itemHeader + item + itemTotal + footer;
 
         printwsBill(finalBill, callback, data, PrintCreditNoteInvoiceBrowser);
-    }
+    };
 
     let PrintCreditNoteInvoiceBrowser = (data, callback) => {
-      
         var url = ""
         var companyInitital = data.storeData.initial || data.storeData.INITIAL;
         if (companyInitital === "WHS") {
@@ -828,8 +788,7 @@
                         printItems += printItemTemplate;
                     });
 
-
-                    //printText = 
+                    //printText =
                     //printText = printText.replace("", "");
                     //printText = printText.replace("", "");
                     //printText = printText.replace("", "");
@@ -843,7 +802,6 @@
                     //printText = printText.replace("", "");
 
                     FinalPrint(printText, printItems, callback);
-
 
                     //update print count
                     $.ajax({
@@ -887,7 +845,6 @@
                     printText = printText.replace("{terminalName}", data.DenominationData.Terminal.Name);
                     printText = printText.replace("{cashierName}", data.DenominationData.User_Id);
 
-
                     printText = printText.replace("{cardHide}", data.DenominationData.Card !== null ? "" : "display-none");
                     printText = printText.replace("{card}", (parseFloat(data.DenominationData.Card).toFixed(2)));
                     printText = printText.replace("{creditHide}", data.DenominationData.Credit !== null ? "" : "display-none");
@@ -897,7 +854,6 @@
 
                     printText = printText.replace("{creditNote}", (parseFloat(data.DenominationData.CreditNote).toFixed(2)));
                     printText = printText.replace("{fonePay}", (parseFloat(data.DenominationData.FonePay).toFixed(2)));
-
 
                     printText = printText.replace("{ICHide}", data.DenominationData.Ric !== null ? "" : "display-none");
                     printText = printText.replace("{IC}", data.DenominationData.Ric);
@@ -954,7 +910,6 @@
                     var grandTotal = parseFloat(data.DenominationData.Total) + parseFloat(data.DenominationData.Card || 0) + parseFloat(data.DenominationData.Credit || 0) + parseFloat(data.DenominationData.CreditNote || 0);
                     printText = printText.replace("{GrandTotal}", grandTotal.toFixed(2));
 
-
                     FinalPrint(printText, undefined, callback);
                 }
 
@@ -983,14 +938,12 @@
                     printText = printText.replace("{cashierName}", data.settlementData[0].userId);
                     printText = printText.replace("{verifyBy}", data.settlementData[0].verifiedBy);
 
-
                     printText = printText.replace("{openingBalance}", "0.00");
                     //variable
 
                     var cash = _.sum(_.pluck(_.filter(data.settlementData, function (i, j) {
                         return i.paymentMode === "Cash";
                     }), "totalAmount"));
-
 
                     var card = _.sum(_.pluck(_.filter(data.settlementData, function (i, j) {
                         return i.paymentMode === "Card";
@@ -1044,7 +997,6 @@
                     if (settlementCreditNote !== undefined)
                         printText = printText.replace("{creditNoteAdj}", CurrencyFormat(settlementCreditNote.adjustmentAmount.toString()));
 
-
                     printText = printText.replace("{cashSEHide}", settlementCash !== undefined && parseFloat(settlementCash.shortExcessAmount) !== 0 ? "" : "display-none");
                     if (settlementCash !== undefined)
                         printText = printText.replace("{cashShortExcess}", CurrencyFormat(settlementCash.shortExcessAmount.toString()));
@@ -1060,22 +1012,16 @@
                     if (settlementFonePay !== undefined)
                         printText = printText.replace("{fonePayShortExcess}", CurrencyFormat(settlementFonePay.shortExcessAmount.toString()));
 
-
-
                     FinalPrint(printText, undefined, callback);
                 }
-
-
             }
         });
     };
     let FinalPrint = (printText, printItemText, callback) => {
-
         $(document.body).find(".main-body").append('<div id="tempprint" ></div>');
         $("#tempprint").html(printText);
         if (printItemText !== undefined)
             $("#tempprint").find("#items").html(printItemText);
-
 
         //
 
@@ -1101,33 +1047,14 @@
 
                 if (callback !== undefined)
                     setTimeout(callback, 100);
-
-
-
             }
         });
     };
 
-    let printwsBill = (str, callback, data, errorcallback, ) => {
-        //var ws;
-        //ws = new WebSocket('ws://127.0.0.1:90');
-        //var state;
-        //ws.addEventListener('open', ws_open(str), false);
-        //ws.addEventListener('close', ws_close(str), false);
-        //function ws_open(text) {
-        //    // alert("Are you sure to print?");
-        //    console.log("printcalled");
-        //    ws.onopen = () => ws.send(text);
-        //    // ws.send(text);
-        //    if (callback !== undefined)
-        //        callback();
-        //}
-        //function ws_close(text) {
-        //    if (errorcallback !== undefined)
-        //        errorcallback(data, callback);
-        //}
+    let printwsBill = (str, callback, data, errorcallback) => {
+       
         try {
-            window.wsSingleton = new Ws()
+            window.wsSingleton = new Ws();
             window.wsSingleton.clientPromise
                 .then(wsClient => {
                     wsClient.send(str);
@@ -1136,37 +1063,15 @@
                     if (callback !== undefined)
                         callback();
                 })
-                .catch((error) => {
+                .catch(() => {
                     if (errorcallback !== undefined)
                         errorcallback(data, callback);
                 });
-
-
         } catch{
             alert("error");
         }
 
-
-
-        //var ws;
-        //ws = new WebSocket('ws://127.0.0.1:90');
-        //var state;       
-        //ws.addEventListener('open', ws_open(str), false);
-
-        //function ws_open(text) {
-        //    // alert("Are you sure to print?");
-        //    console.log("printcalled");
-        //    ws.onopen = () => ws.send(text);
-        //    // ws.send(text);
-        //    if (callback !== undefined)
-        //        callback();
-        //}
-
-
     };
-
-
-
 
     //********* Events ************************//
 
@@ -1178,7 +1083,6 @@
         PrintDenomination,
         PrintSettlement
     };
-
 })();
 
 printer.init();

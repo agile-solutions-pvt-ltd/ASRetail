@@ -51,11 +51,11 @@ namespace POS.UI.Controllers
             {
                 tmp = _context.SalesInvoiceTmp.Include(x => x.SalesInvoiceItems).FirstOrDefault(x => x.Id == id);
                 //remove self reference object
-                tmp = JsonConvert.DeserializeObject<SalesInvoiceTmp>(
-                    JsonConvert.SerializeObject(tmp, Formatting.Indented, new JsonSerializerSettings
-                    {
-                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-                    }));
+                //tmp = JsonConvert.DeserializeObject<SalesInvoiceTmp>(
+                //    JsonConvert.SerializeObject(tmp, Formatting.Indented, new JsonSerializerSettings
+                //    {
+                //        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                //    }));
             }
             else
             {
@@ -98,7 +98,7 @@ namespace POS.UI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Index([FromBody] SalesInvoiceAndCustomerViewModel model)
+        public IActionResult Index([FromBody] SalesInvoiceAndCustomerViewModel model)
         {
             SalesInvoiceTmp salesInvoiceTmp = model.SalesInvoice;
             Customer customer = model.Customer;
@@ -116,7 +116,7 @@ namespace POS.UI.Controllers
                     bool isExistOldSalesInvoice = false;
                     if (salesInvoiceTmp.Id != null)
                     {
-                        oldData = await _context.SalesInvoiceTmp.FirstOrDefaultAsync(x => x.Id == salesInvoiceTmp.Id);
+                        oldData =  _context.SalesInvoiceTmp.FirstOrDefault(x => x.Id == salesInvoiceTmp.Id);
                         if (oldData != null) isExistOldSalesInvoice = true;
                     }
 
@@ -153,7 +153,7 @@ namespace POS.UI.Controllers
 
 
 
-                    await _context.SaveChangesAsync();
+                    _context.SaveChanges();
 
                     //if everything goes right then delete old sales invoice in background
                     if (isExistOldSalesInvoice)
@@ -332,11 +332,13 @@ namespace POS.UI.Controllers
 
                 using (var trans = _context.Database.BeginTransaction())
                 {
+                    Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
                     SalesInvoice salesInvoice = new SalesInvoice();
+                    SalesInvoiceItems salesItem = new SalesInvoiceItems();
                     try
                     {
                         //get store info
-                        Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
+                       
                         //convert to sales invoice and save
 
 
@@ -378,6 +380,7 @@ namespace POS.UI.Controllers
                         }
 
                         _context.SalesInvoice.Add(salesInvoice);
+                        _context.SaveChanges();
 
 
                         //get invoice items temp convert to sales invoice item and save them
@@ -385,7 +388,7 @@ namespace POS.UI.Controllers
                         foreach (var item in itemtmp)
                         {
                             item.Invoice = null;
-                            SalesInvoiceItems salesItem = _mapper.Map<SalesInvoiceItems>(item);
+                            salesItem = _mapper.Map<SalesInvoiceItems>(item);
                             salesItem.Id = 0;
                             salesItem.Invoice_Id = salesInvoice.Id;
                             salesItem.Invoice_Number = salesInvoice.Invoice_Number;
@@ -574,9 +577,11 @@ namespace POS.UI.Controllers
                     {
                         trans.Rollback();
                         if (ex.Message.Contains("UniqueInvoiceNumber") || ex.InnerException.Message.Contains("UniqueInvoiceNumber"))
-                        {
+                        {                            
                             _context.Entry(salesInvoice).State = EntityState.Detached;
-                            return Billing(model);
+                            _context.Entry(salesItem).State = EntityState.Detached;
+                           // _context.SaveChanges();
+                            return Billing(model);                           
                         }
                         else
                             return BadRequest(ex.Message);
@@ -867,10 +872,19 @@ where b.BarCode in ('" + barcodeListString + "') OR i.Code in ('" + barcodeListS
 
                 if (response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Created)
                 {
+                    //_context.SalesInvoiceBill.FirstOrDefault(x=>x.Remarks == response.Content.)
+                    dynamic obj = JsonConvert.DeserializeObject<dynamic>(response.Content);
+                    string traceId = obj.fonepayTraceId.Value.ToString();
+                    var salesBill = _context.SalesInvoiceBill.FirstOrDefault(x => x.Remarks == traceId);
+                    if(salesBill != null)
+                    {
+                        obj.paymentStatus = "Fonepay bill already used !!";
+                        return StatusCode(500, obj);
+                    }
                     return Ok(response.Content);
                 }
                 else
-                    return StatusCode(500);
+                    return StatusCode(500, response.Content);
 
             }
             catch (Exception ex)

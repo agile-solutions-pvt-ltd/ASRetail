@@ -55,7 +55,7 @@ namespace POS.DTO
         public decimal? Total_Net_Amount { get; set; }
         public string Created_By { get; set; }
         public DateTime? Created_Date { get; set; }
-        [Required, Display(Name = "Credit Note Remarks")]
+        [Required, Display(Name = "Credit Note Remarks"), MaxLength(35)]
         public string Credit_Note { get; set; }
         public string Remarks { get; set; }
         public string Payment_Mode { get; set; }

@@ -552,6 +552,7 @@
             dataType: "json",
             contentType: "application/json; charset=utf-8",
             complete: function (result) {
+                debugger;
                 if (result.status === 200) {
                     if (result.responseJSON.paymentStatus === "success") {
                         var totalPayableAmount = CurrencyUnFormat($("#totalPayableAmount").text());
@@ -567,7 +568,10 @@
 
                 }
                 else {
-                    StatusNotify("error", "Error occur to check status, try again later !!");
+                    if (result.responseJSON.paymentStatus == undefined)
+                        StatusNotify("error", "Error occur to check status, try again later !!");
+                    else
+                        StatusNotify("error", result.responseJSON.paymentStatus);
 
                 }
                 $("#qrStatusCheck").val("Check Status");
@@ -605,12 +609,14 @@
             });
         }
     };
+
     let convertICtoNepaliCurrency = () => {
         let amount = $("#cashAmount");
         if (amount.val() !== "") {
             amount.val((parseFloat(amount.val()) * 1.6).toFixed(2));
         }
     };
+
     let AssignKeyEvent = () => {
         Mousetrap.bindGlobal('esc', function () {
             handleBackButtonEvent();
@@ -661,16 +667,15 @@
         Mousetrap.bindGlobal('alt+s', function (e) {
             e.preventDefault(); e.stopPropagation();
             $("#fonepayPRN").val('');
-           
+
             if ($("#fonepayPRN").is(":visible"))
                 $("#fonepayPRN").hide();
             else
                 $("#fonepayPRN").show();
             $("#fonepayPRN").focus();
         });
-
-
     };
+
     let SaveBill = () => {
         //some validation
         $("#SaveButton").attr("disabled", true);
@@ -717,6 +722,7 @@
             changeAmount: CurrencyUnFormat($("#changeAmount").text()),
             bill: data
         };
+       
         $.ajax({
             method: "POST",
             url: "/SalesInvoice/Billing",
