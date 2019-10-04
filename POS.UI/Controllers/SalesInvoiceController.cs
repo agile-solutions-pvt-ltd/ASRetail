@@ -544,7 +544,7 @@ namespace POS.UI.Controllers
                             assigneduserid = salesInvoice.Created_By,
                             externalDocumentNumber = crNumber,
                             amountrounded = salesInvoice.Total_Net_Amount != salesInvoice.Total_Payable_Amount,
-                            fonepaydiscount = salesInvoice.Trans_Type == "Tax" ? salesInvoice.FonepayDiscountAmount * 113 / 100 : salesInvoice.FonepayDiscountAmount
+                            fonepaydiscount = salesInvoice.Trans_Type == "Tax" ? Convert.ToDecimal(Math.Round(salesInvoice.FonepayDiscountAmount * 113 / 100,2)) : salesInvoice.FonepayDiscountAmount
                             
 
                         };
