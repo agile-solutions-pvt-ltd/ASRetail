@@ -121,11 +121,11 @@ namespace POS.UI.Sync
                     var request = new RestRequest(Method.POST);
                     //DeleteSalesOrder();
                     //delete first if already exist
-                    string urlDelete = url + "(" + salesInvoice.Id + ")";
-                    var clientDelete = NAV.NAVClient(urlDelete, config);
-                    var requestDelete = new RestRequest(Method.DELETE);
-                    requestDelete.AddHeader("Content-Type", "application/json");
-                    IRestResponse responseDelete = clientDelete.Execute(requestDelete);
+                    //string urlDelete = url + "(" + salesInvoice.Id + ")";
+                    //var clientDelete = NAV.NAVClient(urlDelete, config);
+                    //var requestDelete = new RestRequest(Method.DELETE);
+                    //requestDelete.AddHeader("Content-Type", "application/json");
+                    //IRestResponse responseDelete = clientDelete.Execute(requestDelete);
 
 
                     request.AddHeader("Content-Type", "application/json");
@@ -155,7 +155,7 @@ namespace POS.UI.Sync
 
                     IRestResponse<SyncModel<NavSalesInvoice>> response = client.Execute<SyncModel<NavSalesInvoice>>(request);
 
-                    if (response.StatusCode == HttpStatusCode.Created || response.StatusCode == HttpStatusCode.OK)
+                    if (response.StatusCode == HttpStatusCode.Created || response.StatusCode == HttpStatusCode.OK || response.Content.Contains("already exists"))
                     {
                         var data = JsonConvert.DeserializeObject<NavSalesInvoice>(response.Content);
                         //update sync status
@@ -215,7 +215,7 @@ namespace POS.UI.Sync
             NavIntegrationService serviceforSalesInvoiceItem = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "SalesPaymentModes");
             string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
 
-            var invoiceBill = _context.SalesInvoiceBill.Where(x => x.Invoice_Number == invoiceNumber);
+            var invoiceBill = _context.SalesInvoiceBill.Where(x => x.Invoice_Number == invoiceNumber && x.IsNavSync == false);
             //var itemList = _context.SalesInvoiceItems.Where(x=> all)
             int lineNo = 0;
             foreach (var i in invoiceBill)
@@ -294,7 +294,7 @@ namespace POS.UI.Sync
             string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
 
 
-            var items = _context.SalesInvoiceItems.Where(x => x.Invoice_Number == invoiceNumber);
+            var items = _context.SalesInvoiceItems.Where(x => x.Invoice_Number == invoiceNumber && x.IsNavSync == false);
             foreach (var item in items)
             {
 
@@ -713,7 +713,7 @@ namespace POS.UI.Sync
             NavIntegrationService serviceforSalesInvoiceItem = _context.NavIntegrationService.FirstOrDefault(x => x.IntegrationType == "CreditNotePostItem");
             string url = config.NavApiBaseUrl + "/" + config.NavPath + $"/companies({config.NavCompanyId})/{services.ServiceName}";
 
-            var allUnSyncItemList = _context.CreditNoteItem.Where(x => x.Credit_Note_Number == invoiceNumber);
+            var allUnSyncItemList = _context.CreditNoteItem.Where(x => x.Credit_Note_Number == invoiceNumber && x.IsNavSync == true);
             //var itemList = _context.SalesInvoiceItems.Where(x=> all)
             foreach (var item in allUnSyncItemList)
             {
@@ -906,7 +906,7 @@ namespace POS.UI.Sync
         #endregion
 
 
-        [AutomaticRetry(Attempts = 1)]
+        [AutomaticRetry(Attempts = 0)]
         public void PostCustomer()
         {
             Config config = ConfigJSON.Read();
@@ -1011,14 +1011,21 @@ namespace POS.UI.Sync
 
             string FilePath = DirectoryPath + "\\" + FileName;
             //Check Whether file exist or not if not then create it new else append on same file
-            if (!File.Exists(FilePath))
+            try
             {
-                File.WriteAllText(FilePath, Text);
+                if (!File.Exists(FilePath))
+                {
+                    File.WriteAllText(FilePath, Text);
+                }
+                else
+                {
+                    Text = $"{Environment.NewLine}{Text}";
+                    File.AppendAllText(FilePath, Text);
+                }
             }
-            else
+            catch
             {
-                Text = $"{Environment.NewLine}{Text}";
-                File.AppendAllText(FilePath, Text);
+
             }
         }
 
