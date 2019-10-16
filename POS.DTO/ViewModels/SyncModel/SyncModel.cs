@@ -207,7 +207,7 @@ namespace POS.DTO
         public string externalDocumentNumber { get; set; }
         public bool amountrounded { get; set; }
         public decimal fonepaydiscount { get; set; }
-
+        public int billtype { get; set; }
 
     }
     public class NavCreditMemo
