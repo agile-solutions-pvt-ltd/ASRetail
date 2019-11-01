@@ -16,7 +16,7 @@
         setTimeout(() => {
             $(".alert").hide();
             //update url too
-            debugger;
+            
             if (GetUrlParameters("StatusMessage") !== undefined)
                 if (GetUrlParameters("mode") === undefined)
                     history.pushState({}, null, window.location.origin + "/SalesInvoice/Landing");
@@ -96,7 +96,7 @@
         });
     };
     let DisplayMember = (list) => {
-        debugger;
+        
         $('#memberTable tbody').html('');
         if (list.length > 0) {
             $('#memberTable').show();
@@ -159,13 +159,13 @@
     let SaveMember = () => {
         $("#memberSaveButton").attr("disabled", true);
         var membership = {
-            Name: $("#Customer_Name").val(),
-            Mobile1: $("#Customer_Mobile").val(),
-            Address: $("#Customer_Address").val(),
-            Vat: $("#Customer_Vat").val(),
+            Name: $.trim($("#Customer_Name").val()),
+            Mobile1: $.trim($("#Customer_Mobile").val()),
+            Address: $.trim($("#Customer_Address").val()),
+            Vat: $.trim($("#Customer_Vat").val()),
             Is_Member: true
         };
-        if (!_.isEmpty(membership.Name) && !_.isEmpty(membership.Mobile1) && membership.Mobile1.length > 9) {
+        if (!_.isEmpty(membership.Name) && !_.isEmpty(membership.Mobile1) && membership.Mobile1.length > 6 && membership.Mobile1.length < 11) {
             $.ajax({
                 method: "POST",
                 url: "/Customer/CreateMembership",
@@ -197,7 +197,7 @@
         }
     };
     let SkipPage = () => {
-        debugger;
+        
         if ($(".bootbox.modal").is(":visible")) {
             $(".bootbox.modal").modal('hide')
         }

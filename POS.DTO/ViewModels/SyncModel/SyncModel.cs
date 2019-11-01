@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace POS.DTO
 {
-   public class SyncModel<T>
+    public class SyncModel<T>
     {
         public List<T> value { get; set; }
     }
@@ -66,7 +65,8 @@ namespace POS.DTO
         //}
     }
 
-    public class NavCustomerPOST{
+    public class NavCustomerPOST
+    {
         public string id { get; set; }
         public string number { get; set; }
         public string displayName { get; set; }
@@ -80,7 +80,7 @@ namespace POS.DTO
         public string VAT_Bus_Posting_Group { get; set; }
         public string generalbuspostinggrp { get; set; }
         public string Customer_Posting_Group { get; set; }
-        public string Member_Disc_Group { get; set; }          
+        public string Member_Disc_Group { get; set; }
         public string Membership_ID { get; set; }
     }
 
@@ -165,7 +165,7 @@ namespace POS.DTO
     }
     public class NavRole
     {
-       
+
         public string Name { get; set; }
         public bool Sales_Discount_Line_Item { get; set; }
 
@@ -180,7 +180,7 @@ namespace POS.DTO
         public bool Commission_Right { get; set; }
     }
 
-   
+
 
     public class NavRolewiseMenuPermission
     {
@@ -196,7 +196,7 @@ namespace POS.DTO
         public string id { get; set; }
         public string number { get; set; }
         public string postingno { get; set; }
-        public string orderDate { get; set; }       
+        public string orderDate { get; set; }
         public string customerNumber { get; set; }
         public string customerName { get; set; }
         public string vatregistrationnumber { get; set; }
@@ -206,7 +206,9 @@ namespace POS.DTO
         public string shippingno { get; set; }
         public string externalDocumentNumber { get; set; }
         public bool amountrounded { get; set; }
-
+        public decimal fonepaydiscount { get; set; }
+        public string billtype { get; set; }
+        public decimal posbillamt { get; set; }
 
     }
     public class NavCreditMemo
@@ -224,6 +226,7 @@ namespace POS.DTO
         public string externalDocumentNumber { get; set; }
         public bool amountrounded { get; set; }
         public string returnremarks { get; set; }
+        public decimal posbillamt { get; set; }
 
 
 
@@ -231,7 +234,7 @@ namespace POS.DTO
 
     public class NavSalesItems
     {
-      
+
         public string itemId { get; set; }
         public decimal quantity { get; set; }
         public decimal unitPrice { get; set; }
@@ -255,7 +258,7 @@ namespace POS.DTO
         public string locationcode { get; set; }
         public decimal amount { get; set; }
         public string paymenttype { get; set; }
-       
+
 
     }
 
@@ -279,7 +282,7 @@ namespace POS.DTO
     public class NavCompanyInfo
     {
         public string taxRegistrationNumber { get; set; }
-       
+
     }
     public class NavStoreInfo
     {
@@ -302,7 +305,7 @@ namespace POS.DTO
 
     public class NavMenu
     {
-        
+
         public int Id { get; set; }
         public int? Parent_ID { get; set; }
         public int? SN { get; set; }
@@ -315,10 +318,10 @@ namespace POS.DTO
     }
 
     public class NavMenuPermission
-    {      
+    {
         public string Role_Name { get; set; }
-        public int? Menu_Code { get; set; }       
-        public int Update_No { get; set; }       
+        public int? Menu_Code { get; set; }
+        public int Update_No { get; set; }
     }
 
 
@@ -333,7 +336,8 @@ namespace POS.DTO
 
     }
 
-    public class NavItemFOC {
+    public class NavItemFOC
+    {
         public string Item_No_FOC { get; set; }
         public string Item_Description { get; set; }
         public decimal Amount { get; set; }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
 namespace POS.DTO
 {
@@ -44,7 +43,9 @@ namespace POS.DTO
         public decimal Change_Amount { get; set; }
         public decimal MembershipDiscount { get; set; }
         public decimal PromoDiscount { get; set; }
-        public decimal TOTAL_DISCOUNT_EXC_VAT { get; set; }
+
+		public decimal FonepayDiscountAmount { get; set; }
+		public decimal TOTAL_DISCOUNT_EXC_VAT { get; set; }
 
         public decimal Card { get; set; }
         public decimal Credit_Note { get; set; }

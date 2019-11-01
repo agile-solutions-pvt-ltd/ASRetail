@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace POS.DTO
 {
@@ -11,7 +9,7 @@ namespace POS.DTO
         //{
         //    AspNetRoleClaims = new HashSet<AspNetRoleClaims>();
         //    AspNetUserRoles = new HashSet<AspNetUserRoles>();
-           
+
         //}
 
         public string Id { get; set; }
@@ -21,6 +19,6 @@ namespace POS.DTO
 
         //public ICollection<AspNetRoleClaims> AspNetRoleClaims { get; set; }
         //public ICollection<AspNetUserRoles> AspNetUserRoles { get; set; }
-       
+
     }
 }

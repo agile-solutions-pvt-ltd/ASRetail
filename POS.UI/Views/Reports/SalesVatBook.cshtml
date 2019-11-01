@@ -69,21 +69,21 @@
                             <div class="form-row">
                                 <div class="form-group col-md-2">
                                     <label for="StartDate" class="control-label">Start Date</label>
-                                    <input id="StartDate" type="date" class="form-control form-control-sm" />
+                                    <input id="StartDate" type="date" class="form-control form-control-sm" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
                                 </div>
                                 <div class="form-group col-md-2">
                                     <label for="EndDate" class="control-label">End Date</label>
-                                    <input type="date" class="form-control form-control-sm" id="EndDate" />
+                                    <input type="date" class="form-control form-control-sm" id="EndDate" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
                                 </div>
                                 <div class="form-group col-md-2">
                                     <label for="Trans_type" class="control-label">Trans Type</label>
 
                                     @*<select id="transtype">
-            <option value="All">All</option>
-            <option value="Sales">Sales</option>
-            <option value="Tax">Tax</option>
-            <option value="Credit_Note">Credit_Note</option>
-        </select>*@
+                                            <option value="All">All</option>
+                                            <option value="Sales">Sales</option>
+                                            <option value="Tax">Tax</option>
+                                            <option value="Credit_Note">Credit_Note</option>
+                                        </select>*@
                                     <select id="transtype" selected="@TempData["TransType"]" option="@TempData["TransType"]">
                                         <option value="All">All</option>
                                         <option value="Sales">Sales</option>
@@ -92,25 +92,29 @@
                                     </select>
                                 </div>
                                 @*<div class="form-group col-md-1 pt-3">
-            <label for="EndDate" class="control-label">End Date</label>
-            <select>
-                <option value="All">All</option>
-                <option value="Sales">Sales</option>
-                <option value="Tax">Tax</option>
-                <option value="Credit_Note">Credit_Note</option>
-            </select>
+                                        <label for="EndDate" class="control-label">End Date</label>
+                                        <select>
+                                            <option value="All">All</option>
+                                            <option value="Sales">Sales</option>
+                                            <option value="Tax">Tax</option>
+                                            <option value="Credit_Note">Credit_Note</option>
+                                        </select>
 
-        </div>*@
+                                    </div>*@
                                 <div class="form-group col-md-1 pt-3">
                                     <button type="button" id="filer" value="Filter" class="btn btn-sm btn-primary"> Filter</button>
                                 </div>
 
-                                <div class="form-group col-md-2 pt-3">
+                                <div class="form-group col-md-1 pt-3">
                                     <input type="button" class="btn btn-success btn-sm" id="print" value="Print" />
                                 </div>
+
+                                <div class="form-group col-md-2 pt-3">
+                                    <button class="btn btn-success btn-sm" id="export" >Export &nbsp;<span class="fa fa-file-excel-o"></span></button>
+                                </div>
                             </div>
-                                <hr />
-                            </div>
+                            <hr />
+                        </div>
 
                         <div id="print-content">
                             <div class="pt-5"></div>
@@ -171,7 +175,7 @@
                                     {
                                         <tr>
                                             <td>
-                                                @Html.DisplayFor(modelItem => item.Trans_Date_AD)
+                                                @(item.Trans_Date_AD.ToShortDateString())
                                             </td>
                                             <td class="nowrap" style="text-wrap:none">
                                                 @Html.DisplayFor(modelItem => item.Invoice_Number)
@@ -183,10 +187,10 @@
                                                 @(item.Customer_Vat == "" ? "NA" : item.Customer_Vat)
                                             </td>
                                             <td class="text-right total-sale amount">
-                                                @Html.DisplayFor(modelItem => item.TaxableAmount)
+                                                @Html.DisplayFor(modelItem => item.TotalSale)
                                             </td>
                                             <td class="text-right exempt-sale">
-                                                0.00
+                                                @Html.DisplayFor(modelItem => item.NonTaxableAmount)
                                             </td>
                                             <td class="text-right zerotaxrate-sale">
                                                 0.00
@@ -231,7 +235,7 @@
 @section Scripts {
 
     <script>
-      
+
         $(document).ready(function () {
 
 
@@ -247,7 +251,7 @@
             });
             console.log('Selected', Option);
 
-          
+
             $("#filer").on('click', function () {
                 ;
                 let startDate = $("#StartDate").val();
@@ -262,59 +266,82 @@
                 window.location.href = url;
             });
 
+
+            $("#export").on("click", function () {
+                var tT = new XMLSerializer().serializeToString(document.querySelector('table')); //Serialised table
+                var tF = 'Sales Vat Book.xls'; //Filename
+                var tB = new Blob([tT]); //Blub
+
+                if (window.navigator.msSaveOrOpenBlob) {
+                    //Store Blob in IE
+                    window.navigator.msSaveOrOpenBlob(tB, tF)
+                }
+                else {
+                    //Store Blob in others
+                    var tA = document.body.appendChild(document.createElement('a'));
+                    tA.href = URL.createObjectURL(tB);
+                    tA.download = tF;
+                    tA.style.display = 'none';
+                    tA.click();
+                    tA.parentNode.removeChild(tA)
+                }
+            });
+
         });
 
-         function init() {
-                //load date
-                let startDate = GetUrlParameters("StartDate");
-                let endDate = GetUrlParameters("EndDate");
-                if (startDate != undefined) {
-                    $("#StartDate").val(startDate);
-                    $("#startDateSpan").text(startDate);
-                }
-                if (endDate != undefined) {
-                    $("#EndDate").val(endDate);
-                    $("#endDateSpan").text(endDate);
-                }
-
-
-                CalcTable();
+        function init() {
+            //load date
+            let startDate = GetUrlParameters("StartDate");
+            let endDate = GetUrlParameters("EndDate");
+            if (startDate != undefined) {
+                $("#StartDate").val(startDate);
+                $("#startDateSpan").text(startDate);
+            }
+            if (endDate != undefined) {
+                $("#EndDate").val(endDate);
+                $("#endDateSpan").text(endDate);
             }
 
-            function CalcTable() {
-                let table = document.getElementById("grid").getElementsByTagName('tbody')[0];
-                let footerTotalSale = 0, footerExemptSale = 0, footerZeroTaxRateSale = 0, footerTaxableAmount = 0, footerVatAmount = 0, footerTotalAmount = 0;
-                $.each(table.rows, function (i, v) {
 
-                    let totalSale = parseFloat($(this).find(".total-sale").text());
-                    let exemptSale = parseFloat($(this).find(".exempt-sale").text());
-                    let zeroTaxRateSale = parseFloat($(this).find(".zerotaxrate-sale").text());
-                    let taxableAmount = parseFloat($(this).find(".taxable-amount").text());
-                    let vatAmount = parseFloat($(this).find(".vat-amount").text());
-                    let totalAmount = parseFloat($(this).find(".total-amount").text());
+            CalcTable();
+        }
 
-                    $(this).find(".total-sale").text(CurrencyFormat(totalSale));
-                    $(this).find(".exempt-sale").text(CurrencyFormat(exemptSale));
-                    $(this).find(".zerotaxrate-sale").text(CurrencyFormat(zeroTaxRateSale));
-                    $(this).find(".taxable-amount").text(CurrencyFormat(taxableAmount));
-                    $(this).find(".vat-amount").text(CurrencyFormat(vatAmount));
-                    $(this).find(".total-amount").text(CurrencyFormat(totalAmount));
+        function CalcTable() {
+            let table = document.getElementById("grid").getElementsByTagName('tbody')[0];
+            let footerTotalSale = 0, footerExemptSale = 0, footerZeroTaxRateSale = 0, footerTaxableAmount = 0, footerVatAmount = 0, footerTotalAmount = 0;
 
-                    footerTotalSale += totalSale;
-                    footerExemptSale += exemptSale;
-                    footerZeroTaxRateSale += zeroTaxRateSale;
-                    footerTaxableAmount += taxableAmount;
-                    footerVatAmount += vatAmount;
-                    footerTotalAmount += totalAmount;
+            $.each(table.rows, function (i, v) {
 
-                });
-                $(".footer-total-sale").text(CurrencyFormat(footerTotalSale));
-                $(".footer-exempt-sale").text(CurrencyFormat(footerExemptSale));
-                $(".footer-zerotaxrate-sale").text(CurrencyFormat(footerZeroTaxRateSale));
-                $(".footer-taxable-amount").text(CurrencyFormat(footerTaxableAmount));
-                $(".footer-vat-amount").text(CurrencyFormat(footerVatAmount));
-                $(".footer-total-amount").text(CurrencyFormat(footerTotalAmount));
-            }
+                let totalSale = parseFloat($(this).find(".total-sale").text());
+                let exemptSale = parseFloat($(this).find(".exempt-sale").text());
+                let zeroTaxRateSale = parseFloat($(this).find(".zerotaxrate-sale").text());
+                let taxableAmount = parseFloat($(this).find(".taxable-amount").text());
+                let vatAmount = parseFloat($(this).find(".vat-amount").text());
+                let totalAmount = parseFloat($(this).find(".total-amount").text());
+
+                $(this).find(".total-sale").text(CurrencyFormat(totalSale));
+                $(this).find(".exempt-sale").text(CurrencyFormat(exemptSale));
+                $(this).find(".zerotaxrate-sale").text(CurrencyFormat(zeroTaxRateSale));
+                $(this).find(".taxable-amount").text(CurrencyFormat(taxableAmount));
+                $(this).find(".vat-amount").text(CurrencyFormat(vatAmount));
+                $(this).find(".total-amount").text(CurrencyFormat(totalAmount));
+
+                footerTotalSale += totalSale;
+                footerExemptSale += exemptSale;
+                footerZeroTaxRateSale += zeroTaxRateSale;
+                footerTaxableAmount += taxableAmount;
+                footerVatAmount += vatAmount;
+                footerTotalAmount += totalAmount;
+
+            });
+
+            $(".footer-total-sale").text(CurrencyFormat(footerTotalSale));
+            $(".footer-exempt-sale").text(CurrencyFormat(footerExemptSale));
+            $(".footer-zerotaxrate-sale").text(CurrencyFormat(footerZeroTaxRateSale));
+            $(".footer-taxable-amount").text(CurrencyFormat(footerTaxableAmount));
+            $(".footer-vat-amount").text(CurrencyFormat(footerVatAmount));
+            $(".footer-total-amount").text(CurrencyFormat(footerTotalAmount));
+        }
 
     </script>
 }

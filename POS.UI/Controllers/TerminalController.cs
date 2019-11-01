@@ -23,12 +23,25 @@ namespace POS.UI.Controllers
         }
 
         // GET: Terminal
+        /// <summary>
+        /// Get view for list of terminal.
+        /// </summary>
+        /// <returns>Terminal's List</returns>
+        /// 
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             return View(await _context.Terminal.ToListAsync());
         }
 
         // GET: Terminal/Details/5
+        /// <summary>
+        /// Get view of first or default terminal detail by id.
+        /// </summary>
+        /// <param name="id">Primary Key (int)</param>
+        /// <returns>Terminal's detail by id.</returns>
+        /// 
+        [HttpGet]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -47,6 +60,7 @@ namespace POS.UI.Controllers
         }
 
         // GET: Terminal/Create
+        [HttpGet]
         public IActionResult Create()
         {
             return View();
@@ -55,6 +69,11 @@ namespace POS.UI.Controllers
         // POST: Terminal/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Post new details of terminal.
+        /// </summary>
+        /// <param name="terminal">Main obj for posting</param>
+        /// <returns>Create terminal.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Initial,Name,Is_Active,Remarks,Cash_Drop_Limit")] Terminal terminal)
@@ -69,6 +88,12 @@ namespace POS.UI.Controllers
         }
 
         // GET: Terminal/Edit/5
+        /// <summary>
+        /// Get edit view of terminal details by id
+        /// </summary>
+        /// <param name="id">Primary key (int)</param>
+        /// <returns>Terminal's detail by id.</returns>
+        [HttpGet]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -87,6 +112,12 @@ namespace POS.UI.Controllers
         // POST: Terminal/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Post edited details of terminal.
+        /// </summary>
+        /// <param name="id">Primary Key (int)</param>
+        /// <param name="terminal">Main obj for posting</param>
+        /// <returns>Update terminal</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Initial,Name,Is_Active,Remarks,Cash_Drop_Limit")] Terminal terminal)
@@ -120,6 +151,7 @@ namespace POS.UI.Controllers
         }
 
         // GET: Terminal/Delete/5
+        [HttpGet]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -171,9 +203,9 @@ namespace POS.UI.Controllers
             if (ModelState.IsValid)
             {
                 //first remove if mapped to terminal
-                IEnumerable<TerminalMapping> oldMapping = _context.TerminalMapping.Where(x => x.PCName == terminalMapping.PCName);
+                IEnumerable<TerminalMapping> oldMapping = _context.TerminalMapping.Where(x => x.IPAddress == terminalMapping.IPAddress);
                 _context.TerminalMapping.RemoveRange(oldMapping);
-
+                _context.SaveChanges();
 
                 terminalMapping.AssignedBy = User.Identity.Name; ;
                 terminalMapping.AssignedDate = DateTime.Now;
@@ -199,7 +231,9 @@ namespace POS.UI.Controllers
 
                 RestSharp.IRestResponse response = client.Execute(request);
                 string pcName = response.Content.Replace("\"", "");
+#pragma warning disable CS0219 // The variable 'terminalId' is assigned but its value is never used
                 int terminalId = 0;
+#pragma warning restore CS0219 // The variable 'terminalId' is assigned but its value is never used
                 //check if terminal is assigned
                 TerminalMapping terminalMapping = _context.TerminalMapping.FirstOrDefault(x => x.PCName == pcName);
                 Terminal terminal = new Terminal();
@@ -208,7 +242,9 @@ namespace POS.UI.Controllers
 
                 return Ok(new { pcName = pcName, terminalId = terminalMapping.TerminalId.ToString(), terminalName = terminal?.Name });
             }
+#pragma warning disable CS0168 // The variable 'ex' is declared but never used
             catch (Exception ex)
+#pragma warning restore CS0168 // The variable 'ex' is declared but never used
             {
                 return StatusCode(500);
             }
@@ -223,7 +259,7 @@ namespace POS.UI.Controllers
         public IActionResult GetTerminalInfo(string ip)
         {
             try
-            {                 
+            {
                 int terminalId = 0;
                 //check if terminal is assigned
                 TerminalMapping terminalMapping = _context.TerminalMapping.FirstOrDefault(x => x.IPAddress == ip);
@@ -236,7 +272,9 @@ namespace POS.UI.Controllers
 
                 return Ok(new { pcName = "", terminalId = terminalId, terminalName = terminal?.Name });
             }
+#pragma warning disable CS0168 // The variable 'ex' is declared but never used
             catch (Exception ex)
+#pragma warning restore CS0168 // The variable 'ex' is declared but never used
             {
                 return StatusCode(500);
             }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace POS.DTO 
+namespace POS.DTO
 {
     [Table("SALES_INVOICE")]
     [JsonObject(IsReference = true)]
@@ -74,6 +74,9 @@ namespace POS.DTO
         public int SyncErrorCount { get; set; } = 0;
         public DateTime? NavSyncDate { get; set; }
         public bool IsNavPosted { get; set; }
+
+        public decimal FonepayDiscountPercent { get; set; }
+        public decimal FonepayDiscountAmount { get; set; }
 
         public ICollection<SalesInvoiceItems> SalesInvoiceItems { get; set; }
     }

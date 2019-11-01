@@ -82,8 +82,44 @@ $.fn.serializeObject = function () {
     });
     return o;
 };
+Number.prototype.toFixed = function (decimalPlaces) {
+    //first roundoff
+    var firstResult = math.round(parseFloat(this), decimalPlaces + 9);
+    //second roundoff
+    var secondResult = math.round(firstResult, decimalPlaces);
+    return secondResult.toString();
+};
+Number.prototype.toFixedDecimal = function (decimalPlaces) {
+    //first roundoff
+    var firstResult = math.round(parseFloat(this), decimalPlaces + 9);
+    //second roundoff
+    var secondResult = math.round(firstResult, decimalPlaces);
+    return secondResult;
+};
+//Number.prototype.toFixed = function (decimalPlaces) {
+//    //first roundoff
+//    var factor = Math.pow(10, decimalPlaces + 9 || 0);
+//    var v = (Math.round(this * factor) / factor).toString();
+//    var firstResult = 0;
+//    if (v.indexOf('.') >= 0) {
+//        firstResult = v + factor.toString().substr(v.length - v.indexOf('.'));
+//    } else
+//        firstResult = v + '.' + factor.toString().substr(1);
 
-function CurrencyFormat(amount) {    
+//    //second roundoff
+//    var factor = Math.pow(10, decimalPlaces || 0);
+//    var v = (Math.round(firstResult * factor) / factor).toString();
+//    var secondResult = 0
+//    if (v.indexOf('.') >= 0) {
+//        secondResult = v + factor.toString().substr(v.length - v.indexOf('.'));
+//    } else
+//        secondResult = v + '.' + factor.toString().substr(1);
+
+//    return secondResult;
+//};
+
+
+function CurrencyFormat(amount) {
     let amountFloat = parseFloat(amount);
     let isNegative = false;
     if (isNaN(amountFloat))
@@ -113,7 +149,7 @@ function CurrencyFormat(amount) {
     if (isNegative)
         return "-" + formattedAmout;
     else
-       return formattedAmout;
+        return formattedAmout;
 }
 
 function CurrencyUnFormat(amount) {
@@ -147,18 +183,18 @@ function NumberFormat(num) {
 
 
 function GetClientLocalIP(callback) {
-    
+
     window.RTCPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;//compatibility for Firefox and chrome
     var pc = new RTCPeerConnection({ iceServers: [] }), noop = function () { };
     pc.createDataChannel('');//create a bogus data channel
     //pc.createOffer(pc.setLocalDescription.bind(pc), noop);// create offer and set local description
-   
+
     pc.createOffer().then(function (offer) {
         return pc.setLocalDescription(offer);
     });
 
     pc.onicecandidate = function (ice) {
-        
+
         if (ice && ice.candidate && ice.candidate.candidate) {
             var myIP = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/.exec(ice.candidate.candidate)[1];
             callback(myIP);
@@ -176,11 +212,11 @@ function StatusNotify(type, message) {
             nonblock: true
         },
         type: type,
-        addclass: type === 'success' ? 'bg-success' : 'bg-danger',
+        addclass: type === 'success' ? 'bg-success' : type === 'warning' ? 'bg-warning' : 'bg-danger',
         closer: true,
         closer_hover: true,
         sticker: true,
-        sticker_hover : true
+        sticker_hover: true
     });
 }
 
@@ -218,7 +254,7 @@ function toCamel(o) {
         contentType: "application/json; charset=utf-8",
         complete: function (result) {
             if (result.status === 200) {
-                
+
                 _.each(result.responseJSON, function (val) {
                     $("." + val.menu.name.replace(/ /g, "_")).css("display", "block !important");
                     $("." + val.menu.name.replace(/ /g, "_")).show();
@@ -376,7 +412,7 @@ $(document).ready(function () {
     $('.theme-loader').fadeOut(300);
     //loader end
 
-   
+
 
 
 

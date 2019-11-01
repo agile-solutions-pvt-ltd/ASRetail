@@ -23,6 +23,12 @@ namespace POS.UI.Controllers
         }
 
         // GET: Denomination
+        /// <summary>
+        /// Get view for list of denominations.
+        /// </summary>
+        /// <returns>Denominaion Details List</returns>
+        /// 
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             string userName = User.Identity.Name;
@@ -52,6 +58,7 @@ namespace POS.UI.Controllers
         }
 
         // GET: Denomination/Create
+        [HttpGet]
         public IActionResult Create()
         {
             var terminal = HttpContext.Session.GetString("TerminalId");
@@ -63,6 +70,11 @@ namespace POS.UI.Controllers
         // POST: Denomination/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Create denomination by posting details.
+        /// </summary>
+        /// <param name="denomination">Denomination Class</param>
+        /// <returns>Create Status</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Denomination denomination)
@@ -90,7 +102,7 @@ namespace POS.UI.Controllers
                 }
                 else
                 {
-                    denomination.TotalCash = denomination.Total;//CalcTotalCash(denomination);
+                    denomination.TotalCash = denomination.TotalCash;//CalcTotalCash(denomination);
                     _context.Add(denomination);
 
                     await _context.SaveChangesAsync();
@@ -112,6 +124,12 @@ namespace POS.UI.Controllers
         }
 
         // GET: Denomination/Edit/5
+        /// <summary>
+        /// Get denomination details by id.
+        /// </summary>
+        /// <param name="id">Denomination id (int)</param>
+        /// <returns>Denomination Details</returns>
+        [HttpGet]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -133,6 +151,12 @@ namespace POS.UI.Controllers
         // POST: Denomination/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Update denomination details.
+        /// </summary>
+        /// <param name="id">Denomination id (int)</param>
+        /// <param name="denomination">Denomination details</param>
+        /// <returns>Update status.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Denomination denomination)

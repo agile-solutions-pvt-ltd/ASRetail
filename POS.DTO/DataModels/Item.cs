@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace POS.DTO
 {
     public partial class Item
-    {     
-       // [Key]
+    {
+        // [Key]
         //[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
         [Key]
@@ -32,7 +28,7 @@ namespace POS.DTO
         public Item UpdateItem(Item item)
         {
             var itemToReturn = new Item();
-            item.Code = itemToReturn.Code;            
+            item.Code = itemToReturn.Code;
             return itemToReturn;
         }
     }

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json;
-using POS.Core;
 using POS.DTO;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +25,7 @@ namespace Microsoft.AspNetCore.Authorization
                     new RouteValueDictionary { { "controller", "Account" }, { "action", "Login" } });
                 return;
             }
-            
+
             if (!filterContext.HttpContext.User.IsInRole("Administrator"))
             {
                 if (filterContext.HttpContext.Session.GetString("Menus") != null)
@@ -36,14 +35,14 @@ namespace Microsoft.AspNetCore.Authorization
                     var controllerName = filterContext.RouteData.Values["controller"].ToString();
                     var actionName = filterContext.RouteData.Values["action"].ToString();
                     // string url = "/" + controllerName + "/" + actionName;
-                    
+
                     if (!menus.Where(s => s.Menu.Controller == controllerName || s.Menu.Action == actionName).Any())
                     {
                         filterContext.Result = new RedirectToRouteResult(
                             new RouteValueDictionary { { "controller", "Account" }, { "action", "Unauthorized" } });
                         return;
                     }
-                    if(totalMenu.Where(x=>x.Controller == controllerName && x.Action == actionName).Any() && !menus.Where(x=> x.Menu.Controller == controllerName && x.Menu.Action == actionName).Any())
+                    if (totalMenu.Where(x => x.Controller == controllerName && x.Action == actionName).Any() && !menus.Where(x => x.Menu.Controller == controllerName && x.Menu.Action == actionName).Any())
                     {
                         filterContext.Result = new RedirectToRouteResult(
                            new RouteValueDictionary { { "controller", "Account" }, { "action", "Unauthorized" } });
@@ -66,7 +65,7 @@ namespace Microsoft.AspNetCore.Authorization
 
         public override void OnResultExecuting(ResultExecutingContext filterContext)
         {
-           
+
         }
         public override void OnActionExecuting(ActionExecutingContext filterContext)
         {

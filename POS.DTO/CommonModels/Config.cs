@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace POS.DTO
 {
@@ -10,6 +8,7 @@ namespace POS.DTO
         public string ClientPort { get; set; }
         public string IRDBaseUrl { get; set; }
         public string IRDBillUrl { get; set; }
+        public string IRDBillCreditNoteUrl { get; set; }
         public string NavApiBaseUrl { get; set; }
         public string NavPath { get; set; }
         public string NavCompanyId { get; set; }
@@ -18,10 +17,21 @@ namespace POS.DTO
         public string NavUserName { get; set; }
         public string NavPassword { get; set; }
         // public string IRDBillUrl { get; set; }
+        public string FonePayGenerateQRUrl { get; set; }
+        public string FonePayCheckStatusUrl { get; set; }
+        public string FonePaySecretKey { get; set; }
+        public string FonePayMerchantCode { get; set; }
+        public string FonePayUserName { get; set; }
+        public string FonePayPassword { get; set; }
+        public decimal FonePayDiscountPercent { get; set; }
+        public decimal FonePayDiscountLimit { get; set; }
+        public bool FonePayDiscountActive { get; set; }
+        public bool StopPostingIRD { get; set; } = false;
         public bool StopInvoicePosting { get; set; }
         public bool StopCreditNotePosting { get; set; }
         public bool StopCustomerPosting { get; set; }
-
+        public string OfficeHourStart { get; set; } = "16:00:00.3041840";
+        public string OfficeHourEnd { get; set; } = "21:00:00.3041840";
 
         public string Location { get; set; }
 

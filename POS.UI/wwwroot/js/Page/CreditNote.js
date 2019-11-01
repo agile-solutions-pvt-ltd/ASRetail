@@ -2,11 +2,12 @@
     //*********Private Variables **************//
     let salesItems = [];
     var isFirstTimeLoadItem = true;
+    var saveInProcess = false;
     var invoiceExpiredDays = 30;
     var table = document.getElementById("item_table").getElementsByTagName('tbody')[0];
     let $form = $('form#Credit_Note_Form');
     let taxPercent = 13;
-   
+
     let init = () => {
         //console.log("isredeem", document.getElementById('isRedeemed').value)
         $('input[type="checkbox"]').click(function () {
@@ -41,11 +42,11 @@
                 },
                 {
                     title: "BarCode",
-                    width: "8%"
+                    width: "15%"
                 },
                 {
                     title: "Item",
-                    width: "31%"
+                    width: "24%"
                 },
                 {
                     title: "Unit",
@@ -116,7 +117,7 @@
         //});
         //hide bill to customer info
         $(".bill_to_info_div").hide();
-      
+
         AssignKeyEvent();
     };
     let loadInvoice = (invoiceNumber) => {
@@ -124,7 +125,6 @@
         if (validateInvoiceNumber(invoiceNumber)) {
             getInvoice(invoiceNumber, function (data) {
                 if (validateInvoiceData(data.invoiceData)) {
-                    debugger;
                     salesItems = data.invoiceData.salesInvoiceItems;
                     resetTransactionData();
                     loadPausedTransactionData(data.invoiceData);
@@ -197,7 +197,7 @@
         //isFirstTimeLoadItem = false;
         $.each(table.rows, function (i, v) {
             if (parseFloat($(this).find(".Quantity").val()) >= parseFloat($(this).find(".Quantity").attr("max"))) {
-               // displayError("Return quantity cannot be greater than sales quantity !!");
+                // displayError("Return quantity cannot be greater than sales quantity !!");
                 $(this).find(".Quantity").val($(this).find(".Quantity").attr("max"));
                 isValid = false;
                 return false;
@@ -283,7 +283,7 @@
                 var promoDiscount = parseFloat($(this).find(".Discount").data("promodiscount") || 0);
                 var loyaltyDiscount = parseFloat($(this).find(".Discount").data("loyaltydiscount") || 0);
                 var discountPercent = parseFloat($(this).find(".Discount").data("discountpercent") || 0);
-                debugger;
+
 
                 var tax = $(this).find(".Tax").val() || 0;
                 let taxable = $(this).find(".Tax").data("isvatable");
@@ -300,9 +300,9 @@
 
                     totalQuantity += quantity;
                     totalDiscount += parseFloat(discount.toFixed(2));
-                    totalTax += tax;
+                    //totalTax += tax;
                     totalGrossAmount += grossAmount;
-                    totalNetAmount += netAmount;
+                    //totalNetAmount += netAmount;
 
 
                     //calc taxable and non taxable
@@ -312,12 +312,21 @@
                     //    totalNonTaxableAmount += rate * quantity;
                     //}
 
+
                     //new logic
+                    //if (taxable)
+                    //    totalTaxableAmount += parseFloat(parseFloat((rateExcludeVat * quantity).toFixed(2)) - parseFloat(discount.toFixed(2)).toFixed(2))// parseFloat(((rateExcludeTax - discountExcVat) * quantity).toFixed(2));
+                    //else {
+                    //    totalNonTaxableAmount += parseFloat((rateExcludeVat * quantity).toFixed(2));
+                    //}
+
+                    //new new logic
+                    var grossRateN = parseFloat((rateExcludeVat * quantity).toFixed(2));
+                    var grossDiscountN = parseFloat((grossRateN * discountPercent / 100).toFixed(2));
                     if (taxable)
-                        totalTaxableAmount += parseFloat(parseFloat((rateExcludeVat * quantity).toFixed(2)) - parseFloat(discount.toFixed(2)).toFixed(2))// parseFloat(((rateExcludeTax - discountExcVat) * quantity).toFixed(2));
-                    else {
-                        totalNonTaxableAmount += parseFloat((rateExcludeVat * quantity).toFixed(2));
-                    }
+                        totalTaxableAmount += parseFloat(grossRateN - grossDiscountN);// parseFloat(((rateExcludeTax - discountExcVat) * quantity).toFixed(2));
+                    else
+                        totalNonTaxableAmount += parseFloat(grossRateN - grossDiscountN);
 
 
                     //for promo or loyalty discount
@@ -330,18 +339,23 @@
                     $(this).find(".GrossAmount").val(grossAmount.toFixed(2));
                     $(this).find(".NetAmount").val(netAmount.toFixed(2));
                     $(this).find(".Discount").val(discount.toFixed(2));
-                    
                     $(this).find(".Tax").val(tax.toFixed(2));
-                    //assign total
-                    $("#totalQuantity").text(NumberFormat(totalQuantity));
-                    $("#totalGrossAmount").text(CurrencyFormat(totalGrossAmount));
-                    $("#totalDiscount").text(CurrencyFormat(totalDiscount));
-                    $("#totalTax").text(CurrencyFormat(totalTax));
-                    $("#totalNetAmount").text(CurrencyFormat(totalNetAmount));
+
 
                 }
 
             });
+
+            totalTax = totalTaxableAmount * 13 / 100;
+            totalNetAmount = totalTaxableAmount + totalNonTaxableAmount + parseFloat(totalTax.toFixed(2));
+
+
+            //assign total
+            $("#totalQuantity").text(NumberFormat(totalQuantity));
+            $("#totalGrossAmount").text(CurrencyFormat(totalGrossAmount));
+            $("#totalDiscount").text(CurrencyFormat(totalDiscount));
+            $("#totalTax").text(CurrencyFormat(totalTax));
+            $("#totalNetAmount").text(CurrencyFormat(totalNetAmount));
         }
         else {
             //assign total
@@ -351,7 +365,7 @@
             $("#totalTax").text("0");
             $("#totalNetAmount").text("0");
         }
-        debugger;
+
         $("#NonTaxableAmount").val(totalNonTaxableAmount.toFixed(2));
         $("#TaxableAmount").val(totalTaxableAmount.toFixed(2));
     };
@@ -385,7 +399,7 @@
     let calcTotalPromoDiscount = () => {
         var table = document.getElementById("item_table").getElementsByTagName('tbody')[0];
         var total = 0;
-        debugger;
+
         $.each(table.rows, function (i, v) {
             //calculations
             total += parseFloat($(this).find(".Discount").data("promodiscount") || 0);
@@ -393,7 +407,7 @@
         return total;
     };
     let calcTotalMembershipDiscount = () => {
-        debugger;
+
         var table = document.getElementById("item_table").getElementsByTagName('tbody')[0];
         var total = 0;
         $.each(table.rows, function (i, v) {
@@ -507,7 +521,7 @@
         cell10.className = "netAmount-width-item p-1 pr-3";
         cell11.className = "action-width-item p-1";
 
-        debugger;
+
         var barCode = result.bar_Code || result.Bar_Code;
         var itemName = result.name || result.Name;
         var itemCode = result.itemCode || result.ItemCode; //temporary update code to remarks field :)               
@@ -533,10 +547,10 @@
         $("<span class='barcode'>" + barCode + "</span>").appendTo(cell2);
         $("<span class='itemName' data-item-id='" + itemId + "' data-item-code= '" + itemCode + "'>" + itemName + "</span>").appendTo(cell3);
         $("<span>" + unit + "</span>").appendTo(cell4);
-        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Rate" type="number" onkeyup="creditNote.calcTotal()" disabled name="Rate" min="0" data-RateExcludedVat="'+rate+'" data-RateExcludedVatWithoutRoundoff=' + rateWithoutRoundOff+' value=' + rate.toFixed(2) + '>').appendTo(cell5);
+        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Rate" type="number" onkeyup="creditNote.calcTotal()" disabled name="Rate" min="0" data-RateExcludedVat="' + rate + '" data-RateExcludedVatWithoutRoundoff=' + rateWithoutRoundOff + ' value=' + rate.toFixed(2) + '>').appendTo(cell5);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Quantity" type="number" onkeyup="creditNote.quantityChangeEvent(this);creditNote.calcTotal();" name="Quantity" min="0.01" max=' + quantity.toString() + ' value=' + quantity.toString() + '>').appendTo(cell6);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right GrossAmount" type="number" name="GrossAmount" disabled value=' + grossAmount.toFixed(2) + '>').appendTo(cell7);
-        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Discount" type="number" disabled onkeyup="creditNote.calcTotal()" name="Discount" min="0" data-DiscountPercent="'+discountPercent+'" data-original-discount ="' + discount.toFixed(2) + '" data-promoDiscount= ' + promoDiscount + ' data-membershipDiscount=' + membershipDiscount + ' value=' + discount.toFixed(2) + '>').appendTo(cell8);
+        $('<input class="tabledit-input form-control form-control-sm input-sm text-right Discount" type="number" disabled onkeyup="creditNote.calcTotal()" name="Discount" min="0" data-DiscountPercent="' + discountPercent + '" data-original-discount ="' + discount.toFixed(2) + '" data-promoDiscount= ' + promoDiscount + ' data-membershipDiscount=' + membershipDiscount + ' value=' + discount.toFixed(2) + '>').appendTo(cell8);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right Tax" type="number" name="Tax" data-isVatable="' + isVatable + '" disabled value=' + tax.toFixed(2) + '>').appendTo(cell9);
         $('<input class="tabledit-input form-control form-control-sm input-sm text-right NetAmount" type="number" name="NetAmount" disabled value=' + netAmount.toFixed(2) + '>').appendTo(cell10);
 
@@ -546,7 +560,7 @@
     };
     let AssignKeyEvent = () => {
 
-        Mousetrap.bindGlobal(['ctrl+end','end'], function (e) {
+        Mousetrap.bindGlobal(['ctrl+end', 'end'], function (e) {
             e.preventDefault(); e.stopPropagation();
             saveForm();
         });
@@ -589,7 +603,7 @@
 
 
     let saveForm = () => {
-        $("#SaveButton").attr("disabled", true);
+        $("#SaveButton").attr("disabled", true);       
         bootbox.confirm({
             message: "Are you Sure you want to save?",
             buttons: {
@@ -602,15 +616,14 @@
                     className: 'btn-success'
                 }
             },
-            callback: function (result) {
-
+            callback: function (result) {              
                 if (result) {
                     SaveCreditNote();
                 }
                 else {
-                    $("#SaveButton").attr("disabled", false);
+                    $("#SaveButton").attr("disabled", false);                   
                 }
-               
+
 
             }
         });
@@ -629,79 +642,90 @@
             $("#SaveButton").attr("disabled", false);
             return false;
         }
+        let tableRows = document.getElementById("item_table").getElementsByTagName('tbody')[0];
+        if (tableRows === undefined || tableRows.rows.length === 0) {
+            bootbox.alert("No Item selected !!");
+            return false;
+        }
 
-        debugger;
-        //console.log("isredeem", document.getElementById('isRedeemed').value)
-        //get items
-        var table = $("#item_table");
-        var invoiceItems = [];
-        table.find('tbody > tr').each(function (i, el) {
-            var $tds = $(this).find('td');
-            let discountType = $(this).find('td input.Discount').data("discountType");
-            let promoDiscount = discountType === undefined || discountType !== "MembershipDiscount" ? $(this).find('td input.Discount').val() : 0;
-            let membershipDiscount = discountType === "MembershipDiscount" ? $(this).find('td input.Discount').val() : 0;
-            invoiceItems.push({
-                Bar_Code: $tds.eq(1).text(),
-                ItemCode: $(this).find('td .itemName').data("item-code"),
-                ItemId: $(this).find('td .itemName').data("item-id"),
-                Name: $tds.eq(2).text(),
-                Unit: $tds.eq(3).text(),
-                Rate: $(this).find('td input.Rate').val(),
-                RateExcludeVat: $(this).find('td input.Rate').data("rateexcludedvat"),
-                RateExcludeVatWithoutRoundoff: $(this).find('td input.Rate').data("rateexcludedvatwithoutroundoff"),
-                Quantity: $(this).find('td input.Quantity').val(),
-                Gross_Amount: $(this).find('td input.GrossAmount').val(),
-                Discount: $(this).find('td input.Discount').val(),
-                DiscountPercent: $(this).find('td input.Discount').data("discountpercent"),
-                PromoDiscount: parseFloat($(this).find('td input.Discount').data("promodiscount") || 0),
-                MembershipDiscount: parseFloat($(this).find('td input.Discount').data("membershipdiscount") || 0),
-                Tax: $(this).find('td input.Tax').val(),
-                Is_Vatable: $(this).find('td input.Tax').data("isvatable"),
-                Net_Amount: $(this).find('td input.NetAmount').val(),
-                
-               
+
+        if (!saveInProcess) {
+            saveInProcess = true;
+
+
+            //console.log("isredeem", document.getElementById('isRedeemed').value)
+            //get items
+            var table = $("#item_table");
+            var invoiceItems = [];
+            table.find('tbody > tr').each(function (i, el) {
+                var $tds = $(this).find('td');
+                let discountType = $(this).find('td input.Discount').data("discountType");
+                let promoDiscount = discountType === undefined || discountType !== "MembershipDiscount" ? $(this).find('td input.Discount').val() : 0;
+                let membershipDiscount = discountType === "MembershipDiscount" ? $(this).find('td input.Discount').val() : 0;
+                invoiceItems.push({
+                    Bar_Code: $tds.eq(1).text(),
+                    ItemCode: $(this).find('td .itemName').data("item-code"),
+                    ItemId: $(this).find('td .itemName').data("item-id"),
+                    Name: $tds.eq(2).text(),
+                    Unit: $tds.eq(3).text(),
+                    Rate: $(this).find('td input.Rate').val(),
+                    RateExcludeVat: $(this).find('td input.Rate').data("rateexcludedvat"),
+                    RateExcludeVatWithoutRoundoff: $(this).find('td input.Rate').data("rateexcludedvatwithoutroundoff"),
+                    Quantity: $(this).find('td input.Quantity').val(),
+                    Gross_Amount: $(this).find('td input.GrossAmount').val(),
+                    Discount: $(this).find('td input.Discount').val(),
+                    DiscountPercent: $(this).find('td input.Discount').data("discountpercent"),
+                    PromoDiscount: parseFloat($(this).find('td input.Discount').data("promodiscount") || 0),
+                    MembershipDiscount: parseFloat($(this).find('td input.Discount').data("membershipdiscount") || 0),
+                    Tax: $(this).find('td input.Tax').val(),
+                    Is_Vatable: $(this).find('td input.Tax').data("isvatable"),
+                    Net_Amount: $(this).find('td input.NetAmount').val(),
+
+
+                });
             });
-        });
 
 
-        var data = $('form#Credit_Note_Form').serializeObject();
+            var data = $('form#Credit_Note_Form').serializeObject();
 
-        data.Customer_Id = $("#Customer_Id").val();
-        data.isRedeem = document.getElementById('isRedeemed').value;
-        //add membership discount
+            data.Customer_Id = $("#Customer_Id").val();
+            data.isRedeem = document.getElementById('isRedeemed').value;
+            //add membership discount
 
-        data.MembershipDiscount = calcTotalMembershipDiscount();
-        data.PromoDiscount = calcTotalPromoDiscount();
+            data.MembershipDiscount = calcTotalMembershipDiscount();
+            data.PromoDiscount = calcTotalPromoDiscount();
 
-        data.CreditNoteItems = invoiceItems;
+            data.CreditNoteItems = invoiceItems;
 
-        $.ajax({
-            method: "POST",
-            url: "/CreditNote/Index",
-            //dataType: "json",
-            contentType: "application/json; charset=utf-8",
-            data: JSON.stringify(data),
-            complete: function (result) {
-                if (result.status === 200) {
-                    printer.PrintCreditNoteInvoice(result.responseJSON, function () {
-                        StatusNotify("success", result.responseJSON.message);
-                        setTimeout(function () {
-                            window.location.href = window.location.origin + result.responseJSON.redirectUrl;
-                        }, 3000);
-                    });
-                    // window.location.href = window.location.origin + result.responseJSON.redirectUrl;
+            $.ajax({
+                method: "POST",
+                url: "/CreditNote/Index",
+                //dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(data),
+                complete: function (result) {
+                    if (result.status === 200) {
+                        printer.PrintCreditNoteInvoice(result.responseJSON, function () {
+                            StatusNotify("success", result.responseJSON.message);
+                            setTimeout(function () {
+                                window.location.href = window.location.origin + result.responseJSON.redirectUrl;
+                            }, 3000);
+                        });
+                        // window.location.href = window.location.origin + result.responseJSON.redirectUrl;
+                    }
+                    else {
+                        StatusNotify("error", "Error occur, try again later !!");
+                        $("#SaveButton").attr("disabled", false);
+                    }
+                    saveInProcess = false;
                 }
-                else {
-                    StatusNotify("error", "Error occur, try again later !!");
-                    $("#SaveButton").attr("disabled", false);
-                }
-            }
-        });
+            });
 
 
-        // $('form#Sales_Invoice_Form').submit();
+            // $('form#Sales_Invoice_Form').submit();
 
 
+        }
 
     };
     let holdTransaction = () => {
@@ -783,7 +807,7 @@
     };
 
 
-       
+
     //events
 
 

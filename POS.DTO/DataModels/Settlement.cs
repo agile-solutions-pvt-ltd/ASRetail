@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
 namespace POS.DTO
 {
     public partial class Settlement
-    {     
+    {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
@@ -15,7 +13,7 @@ namespace POS.DTO
         public int? TerminalId { get; set; }
         public string UserId { get; set; }
         public int DenominationId { get; set; }
-       
+
         public string TransactionNumber { get; set; }
         public DateTime TransactionDate { get; set; }
         public string PaymentMode { get; set; }
@@ -24,7 +22,7 @@ namespace POS.DTO
         public string VerifiedBy { get; set; }
         public DateTime VerifiedDate { get; set; }
         public decimal AdjustmentAmount { get; set; }
-        public decimal ShortExcessAmount { get; set; }       
+        public decimal ShortExcessAmount { get; set; }
         public string Remarks { get; set; }
 
         [ForeignKey("UserId")]

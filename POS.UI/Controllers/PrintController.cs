@@ -57,15 +57,25 @@ namespace POS.UI.Controllers
 
 
 
-
+        /// <summary>
+        /// Get Print Count of invoice.
+        /// </summary>
+        /// <param name="invoiceNumber">Invoice Number (Strinf)</param>
+        /// <returns>Count Number</returns>
         [HttpPost]
         public IActionResult GetPrintCount(string invoiceNumber)
         {
             var printCount = _context.InvoicePrint.FirstOrDefault(x => x.InvoiceNumber == invoiceNumber);
             var billData = _context.SalesInvoiceBill.Where(x => x.Invoice_Number == invoiceNumber);
             string paymentMode = string.Join(", ", billData.Select(x => x.Trans_Mode).Distinct());
-            return Ok(new { printCount = printCount, paymentMode = paymentMode,billData =billData });
+            return Ok(new { printCount = printCount, paymentMode = paymentMode, billData = billData });
         }
+
+        /// <summary>
+        /// Update print count of invoice.
+        /// </summary>
+        /// <param name="invoiceNumber">Required Invoice Number (string)</param>
+        /// <returns>Ok Status</returns>
         [HttpPost]
         public IActionResult UpdatePrintCount(string invoiceNumber)
         {

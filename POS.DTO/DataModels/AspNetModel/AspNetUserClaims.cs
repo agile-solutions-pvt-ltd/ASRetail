@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace POS.DTO
+﻿namespace POS.DTO
 {
     public partial class AspNetUserClaims
     {

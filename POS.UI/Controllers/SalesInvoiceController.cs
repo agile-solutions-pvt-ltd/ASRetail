@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using Hangfire;
+using javax.crypto;
+using javax.crypto.spec;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -9,10 +11,16 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using POS.Core;
 using POS.DTO;
+using POS.UI.Helper;
 using POS.UI.Sync;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace POS.UI.Controllers
@@ -33,7 +41,12 @@ namespace POS.UI.Controllers
         }
 
 
-
+        /// <summary>
+        /// Get view for selling items with invoice number
+        /// </summary>
+        /// <param name="id">Optional Guid</param>
+        /// <param name="StatusMessage">string message</param>
+        /// <returns></returns>
         [HttpGet]
         public IActionResult Index(Guid? id, string StatusMessage)
         {
@@ -43,22 +56,28 @@ namespace POS.UI.Controllers
             {
                 tmp = _context.SalesInvoiceTmp.Include(x => x.SalesInvoiceItems).FirstOrDefault(x => x.Id == id);
                 //remove self reference object
-                tmp = JsonConvert.DeserializeObject<SalesInvoiceTmp>(
-                    JsonConvert.SerializeObject(tmp, Formatting.Indented, new JsonSerializerSettings
-                    {
-                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-                    }));
+                //tmp = JsonConvert.DeserializeObject<SalesInvoiceTmp>(
+                //    JsonConvert.SerializeObject(tmp, Formatting.Indented, new JsonSerializerSettings
+                //    {
+                //        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                //    }));
             }
             else
             {
 
                 // var store = _context.Store.FirstOrDefault();
-               
+
                 int invoiceId = 0;
                 if (Request.Query["Mode"].ToString() != null && Request.Query["Mode"].ToString() == "tax")
-                    invoiceId = _context.SalesInvoice.Where(x => x.Trans_Type == "Tax").Select(x => x.Invoice_Id).DefaultIfEmpty(0).Max() + 1;
+                {
+                    invoiceId = _context.SalesInvoice.Where(x => x.Trans_Type == "Tax").Max(x => x.Invoice_Id as int?) ?? 0;
+                    // invoiceId = _context.SalesInvoice.Where(x => x.Trans_Type == "Tax").Select(x => x.Invoice_Id).DefaultIfEmpty(0).Max() + 1;
+                }
                 else
-                    invoiceId = _context.SalesInvoice.Where(x => x.Trans_Type == "Sales").Select(x => x.Invoice_Id).DefaultIfEmpty(0).Max() + 1;
+                {
+                    invoiceId = _context.SalesInvoice.Where(x => x.Trans_Type == "Sales").Max(x => x.Invoice_Id as int?) ?? 0;
+                   // invoiceId = _context.SalesInvoice.Where(x => x.Trans_Type == "Sales").Select(x => x.Invoice_Id).DefaultIfEmpty(0).Max() + 1;
+                }
                 tmp = new SalesInvoiceTmp()
                 {
                     Invoice_Number = "SI-" + invoiceId.ToString("0000") + "-" + store.INITIAL + "-" + store.FISCAL_YEAR
@@ -66,6 +85,7 @@ namespace POS.UI.Controllers
             }
             TempData["StatusMessage"] = StatusMessage;
             ViewData["Store"] = store;
+            ViewData["Config"] = ConfigJSON.Read();
 
             //for customer
             //display only ismember data later
@@ -82,15 +102,23 @@ namespace POS.UI.Controllers
             return View(tmp);
         }
 
+        /// <summary>
+        /// Post sold item details
+        /// </summary>
+        /// <param name="model">Main obj for posting</param>
+        /// <returns>Status</returns>
+        /// <response code="200">If posting is successfull.</response>
+        /// <response code="400">If invoice date is not same as today's date.</reponse>
+        /// <response code="500">Exception error i.e Internal Server Error.</response>
         [HttpPost]
-        public async Task<IActionResult> Index([FromBody] SalesInvoiceAndCustomerViewModel model)
+        public IActionResult Index([FromBody] SalesInvoiceAndCustomerViewModel model)
         {
             SalesInvoiceTmp salesInvoiceTmp = model.SalesInvoice;
             Customer customer = model.Customer;
 
             if (ModelState.IsValid)
             {
-                if(model.SalesInvoice.Trans_Date_Ad.Value.ToShortDateString() != DateTime.Now.ToShortDateString())
+                if (model.SalesInvoice.Trans_Date_Ad.Value.ToShortDateString() != DateTime.Now.ToShortDateString())
                 {
                     return StatusCode(400, "Date is not Up-to-Date !!");
                 }
@@ -101,7 +129,7 @@ namespace POS.UI.Controllers
                     bool isExistOldSalesInvoice = false;
                     if (salesInvoiceTmp.Id != null)
                     {
-                        oldData = await _context.SalesInvoiceTmp.FirstOrDefaultAsync(x => x.Id == salesInvoiceTmp.Id);
+                        oldData =  _context.SalesInvoiceTmp.FirstOrDefault(x => x.Id == salesInvoiceTmp.Id);
                         if (oldData != null) isExistOldSalesInvoice = true;
                     }
 
@@ -138,7 +166,7 @@ namespace POS.UI.Controllers
 
 
 
-                    await _context.SaveChangesAsync();
+                    _context.SaveChanges();
 
                     //if everything goes right then delete old sales invoice in background
                     if (isExistOldSalesInvoice)
@@ -163,7 +191,8 @@ namespace POS.UI.Controllers
                         return Ok(new { RedirectUrl = "/SalesInvoice/Billing/" + salesInvoiceTmp.Id + "?M=" + salesInvoiceTmp.MemberId + "&Mode=tax" });
                     else
                         return Ok(new { RedirectUrl = "/SalesInvoice/Billing/" + salesInvoiceTmp.Id + "?M=" + salesInvoiceTmp.MemberId });
-                }catch(Exception ex)
+                }
+                catch (Exception ex)
                 {
                     return StatusCode(500, ex.InnerException);
                 }
@@ -171,7 +200,11 @@ namespace POS.UI.Controllers
             return View(salesInvoiceTmp);
         }
 
-
+        /// <summary>
+        /// Get landing page for sales invoice.
+        /// </summary>
+        /// <param name="StatusMessage">string</param>
+        /// <returns>Landing view with store name.</returns>
         [HttpGet]
         public IActionResult Landing(string StatusMessage)
         {
@@ -190,8 +223,12 @@ namespace POS.UI.Controllers
             return View(JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store")));
         }
 
-
-       [RolewiseAuthorized]
+        /// <summary>
+        /// Get landing page for credit invoice.
+        /// </summary>
+        /// <param name="StatusMessage">string</param>
+        /// <returns>Landing view.</returns>
+        [RolewiseAuthorized]
         [HttpGet]
         public IActionResult CrLanding(string StatusMessage)
         {
@@ -225,49 +262,89 @@ namespace POS.UI.Controllers
 
         public IActionResult SavedTransactionListPartial()
         {
-           
+
             var trans = _context.SalesInvoiceTmp.Where(x => x.Trans_Type == "Save").ToList();
             return PartialView("_SavedTransactionListPartial", trans);
         }
 
 
-        public IActionResult GetItemReferenceData(Guid id)
+        public IActionResult GetItemReferenceData(Guid id, bool getFromDatabase = false)
         {
             //for item Reference Data           
             var item = _context.SalesInvoiceItemsTmp.Where(x => x.Invoice_Id == id).ToList();
             List<string> barCodeList = item.Select(x => x.Bar_Code).ToList();
             barCodeList = barCodeList.Concat(item.Select(x => x.ItemCode)).ToList();
             IList<ItemViewModel> items;
-            if (!_cache.TryGetValue("ItemViewModel", out items))
+            _cache.TryGetValue("ItemViewModel", out items);
+            if (items == null)
             {
                 // Key not in cache, so get data.
 
                 items = GetItemsRawDataByBarcodeList(barCodeList).ToList();
+                getFromDatabase = true;
 
 
             }
             var temp = items.Where(x => barCodeList.Contains(x.Bar_Code));
+            if (temp.Count() == 0 && getFromDatabase == false)
+                temp = GetItemsRawDataByBarcodeList(barCodeList).Where(x => barCodeList.Contains(x.Bar_Code));
+
+            temp = temp.Where(x => (x.RateStartDate == null || Convert.ToDateTime(x.RateStartDate.Value.ToShortDateString()) <= Convert.ToDateTime(DateTime.Now.ToShortDateString()))
+            && (x.RateEndDate == null || Convert.ToDateTime(x.RateEndDate.Value.ToShortDateString()) >= Convert.ToDateTime(DateTime.Now.ToShortDateString()))
+            && (x.DiscountStartDate == null || Convert.ToDateTime(x.DiscountStartDate.Value.ToShortDateString()) <= Convert.ToDateTime(DateTime.Now.ToShortDateString()))
+            && (x.DiscountEndDate == null || Convert.ToDateTime(x.DiscountEndDate.Value.ToShortDateString()) >= Convert.ToDateTime(DateTime.Now.ToShortDateString())));
             return Ok(temp);
         }
 
+        /// <summary>
+        /// Get view for payment.
+        /// </summary>
+        /// <param name="id">Guid</param>
+        /// <returns>payment view</returns>
         [HttpGet]
         public IActionResult Billing(Guid id)
         {
             var salesInvoiceTMP = _context.SalesInvoiceTmp.FirstOrDefault(x => x.Id == id);
             ViewBag.SalesInvoiceTemp = salesInvoiceTMP;
-            IEnumerable<Customer> customers;
-            if (!_cache.TryGetValue("Customers", out customers))
+            IEnumerable<CustomerViewModel> customers;
+            _cache.TryGetValue("Customers", out customers);
+            if (customers == null)
             {
                 // Key not in cache, so get data.
-                customers = _context.Customer;
-                //Donot save from here
-               // _cache.Set("Customers", customers);
+                customers = _context.Customer
+                    .Where(x => x.Membership_Number == salesInvoiceTMP.MemberId)
+                    .Select(x => new CustomerViewModel
+                    {
+                        Address = x.Address,
+                        Barcode = x.Barcode,
+                        Code = x.Code,
+                        CustomerDiscGroup = x.CustomerDiscGroup,
+                        CustomerPriceGroup = x.CustomerPriceGroup,
+                        Is_Member = x.Is_Member,
+                        Is_Sale_Refused = x.Is_Sale_Refused,
+                        MembershipDiscGroup = x.MembershipDiscGroup,
+                        Membership_Number = x.Membership_Number,
+                        Membership_Number_Old = x.Membership_Number_Old,
+                        Member_Id = x.Member_Id,
+                        Mobile1 = x.Mobile1,
+                        Name = x.Name,
+                        Type = x.Type,
+                        Vat = x.Vat
+                    });
             }
-            ViewData["Customer"] = customers.Where(x => x.Membership_Number == salesInvoiceTMP.MemberId);
+            else
+                customers = customers.Where(x => x.Membership_Number == salesInvoiceTMP.MemberId);
+            ViewData["Customer"] = customers;
+
+            ViewData["Config"] = ConfigJSON.Read();
             return View();
         }
 
-
+        /// <summary>
+        /// Post payment of invoice and its details.
+        /// </summary>
+        /// <param name="model">Main obj for psoting</param>
+        /// <returns>Bill Status</returns>
         [HttpPost]
         public IActionResult Billing([FromBody] SalesInvoiceBillingViewModel model)
         {
@@ -285,19 +362,23 @@ namespace POS.UI.Controllers
 
                 using (var trans = _context.Database.BeginTransaction())
                 {
+                    Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
                     SalesInvoice salesInvoice = new SalesInvoice();
+                    SalesInvoiceItems salesItem = new SalesInvoiceItems();
                     try
                     {
                         //get store info
-                        Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
-                        //convert to sales invoice and save
                        
-                        
+                        //convert to sales invoice and save
+
+
                         //if (_context.ChangeTracker.HasChanges(.Any(x => x.Id == model.salesInvoiceId))
                         //    salesInvoice = _context.SalesInvoice.FirstOrDefault(x => x.Id == model.salesInvoiceId);
                         //else
-                            salesInvoice = _mapper.Map<SalesInvoice>(salesInvoiceTmp);
+                        salesInvoice = _mapper.Map<SalesInvoice>(salesInvoiceTmp);
                         salesInvoice.Id = Guid.NewGuid();
+
+                       
 
                         salesInvoice.Total_Bill_Discount = model.billDiscount;
                         salesInvoice.Total_Payable_Amount = model.totalPayable;
@@ -306,7 +387,30 @@ namespace POS.UI.Controllers
                         salesInvoice.Change_Amount = model.changeAmount;
                         salesInvoice.Invoice_Id = _context.SalesInvoice.Where(x => x.Trans_Type == salesInvoice.Trans_Type).Select(x => x.Invoice_Id).DefaultIfEmpty(0).Max() + 1;
                         salesInvoice.Invoice_Number = SalesInvoiceNumberFormat(store, salesInvoice.Invoice_Id, salesInvoice.Trans_Type);
+
+                        if (model.bill.FirstOrDefault().Trans_Mode == "FonePay")
+                        {
+                            var totalPayableAmount = salesInvoiceTmp.FonepayTaxable + salesInvoiceTmp.FonepayNonTaxable + salesInvoiceTmp.FonepayTax;
+                            var totalDiscount = salesInvoiceTmp.Total_Discount.Value + salesInvoiceTmp.FonepayDiscountAmount;
+
+                            salesInvoice.TaxableAmount = salesInvoiceTmp.FonepayTaxable;
+                            salesInvoice.NonTaxableAmount = salesInvoiceTmp.FonepayNonTaxable;
+                            salesInvoice.Total_Vat = salesInvoiceTmp.FonepayTax;
+                            salesInvoice.Total_Net_Amount = totalPayableAmount;
+                            salesInvoice.TOTAL_DISCOUNT_EXC_VAT = salesInvoiceTmp.FonepayTotalDiscountExcVat;
+                            salesInvoice.Total_Net_Amount_Roundup = totalPayableAmount + totalDiscount;
+                            salesInvoice.Total_Bill_Discount = totalDiscount- salesInvoice.PromoDiscount;
+                            salesInvoice.Total_Discount = totalDiscount;
+
+                        }
+                        else
+                        {
+                            salesInvoice.FonepayDiscountAmount = 0;
+                            salesInvoice.FonepayDiscountPercent = 0;
+                        }
+
                         _context.SalesInvoice.Add(salesInvoice);
+                        _context.SaveChanges();
 
 
                         //get invoice items temp convert to sales invoice item and save them
@@ -314,11 +418,29 @@ namespace POS.UI.Controllers
                         foreach (var item in itemtmp)
                         {
                             item.Invoice = null;
-                            SalesInvoiceItems salesItem = _mapper.Map<SalesInvoiceItems>(item);
+                            salesItem = _mapper.Map<SalesInvoiceItems>(item);
                             salesItem.Id = 0;
                             salesItem.Invoice_Id = salesInvoice.Id;
                             salesItem.Invoice_Number = salesInvoice.Invoice_Number;
-                            _context.SalesInvoiceItems.Add(salesItem);
+                            if (model.bill.FirstOrDefault().Trans_Mode == "FonePay")
+                            {
+                                
+                                salesItem.FonepayDiscountPercent = item.FonepayDiscountPercent;
+                                salesItem.FonepayDiscountAmount = item.FonepayDiscountAmount;
+                                salesItem.Discount = item.Discount + salesItem.FonepayDiscountAmount;
+                                salesItem.DiscountPercent = salesItem.Discount.Value / salesItem.Gross_Amount.Value * 100;
+                                salesItem.Tax = Math.Round(((Math.Round(salesItem.RateExcludeVat * salesItem.Quantity.Value, 2) - salesItem.Discount.Value) * 13 / 100),2);
+
+
+                            }
+                            else
+                            {
+                                salesItem.FonepayDiscountPercent = 0;
+                                salesItem.FonepayDiscountAmount = 0;
+                            }
+
+
+                                _context.SalesInvoiceItems.Add(salesItem);
                         }
                         _context.SaveChanges();
 
@@ -451,7 +573,10 @@ namespace POS.UI.Controllers
                             accountabilitycenter = store.INITIAL,
                             assigneduserid = salesInvoice.Created_By,
                             externalDocumentNumber = crNumber,
-                            amountrounded = salesInvoice.Total_Net_Amount != salesInvoice.Total_Payable_Amount
+                            amountrounded = salesInvoice.Total_Net_Amount != salesInvoice.Total_Payable_Amount,
+                            fonepaydiscount = salesInvoice.Trans_Type == "Tax" ? Convert.ToDecimal(Math.Round(salesInvoice.FonepayDiscountAmount * 113 / 100,2)) : salesInvoice.FonepayDiscountAmount,
+                            billtype = salesInvoice.Trans_Type == "Tax" ? "2" : (salesInvoice.Trans_Type == "Sales" ? "1" : "0"),
+                            posbillamt = salesInvoice.Total_Net_Amount.Value
 
                         };
 
@@ -462,11 +587,17 @@ namespace POS.UI.Controllers
 
                         trans.Commit();
                         //*********** background task
+                        Config config = ConfigJSON.Read();
                         //Send data to IRD
-                        BackgroundJob.Enqueue(() => SendDataToIRD(salesInvoice, store));
+                        if (!config.StopPostingIRD)
+                            BackgroundJob.Enqueue(() => SendDataToIRD(salesInvoice, store));
                         //Send data to NAV
-                        NavPostData navPostData = new NavPostData(_context, _mapper,_logger);
-                        BackgroundJob.Enqueue(() => navPostData.PostSalesInvoice(navSalesInvoice));
+
+                        if (!config.StopInvoicePosting)
+                        {
+                            NavPostData navPostData = new NavPostData(_context, _mapper);
+                            BackgroundJob.Enqueue(() => navPostData.PostSalesInvoice(navSalesInvoice));
+                        }
 
 
 
@@ -477,20 +608,22 @@ namespace POS.UI.Controllers
                     {
                         trans.Rollback();
                         if (ex.Message.Contains("UniqueInvoiceNumber") || ex.InnerException.Message.Contains("UniqueInvoiceNumber"))
-                        {
+                        {                            
                             _context.Entry(salesInvoice).State = EntityState.Detached;
-                            return Billing(model);
+                            _context.Entry(salesItem).State = EntityState.Detached;
+                           // _context.SaveChanges();
+                            return Billing(model);                           
                         }
                         else
                             return BadRequest(ex.Message);
                     }
                 };
 
-               
+
             }
             catch (Exception ex)
             {
-                
+
                 return BadRequest(ex.Message);
             }
 
@@ -524,7 +657,7 @@ namespace POS.UI.Controllers
                 customer.CustomerDiscGroup = "RSP";
                 _context.Add(customer);
                 _context.SaveChanges();
-                NavPostData navPost = new NavPostData(_context, _mapper, _logger);
+                NavPostData navPost = new NavPostData(_context, _mapper);
                 BackgroundJob.Enqueue(() => navPost.PostCustomer());
                 return customer;
 
@@ -539,9 +672,34 @@ namespace POS.UI.Controllers
         }
 
         //api get salesinvoice
+        /// <summary>
+        /// Get Invoice details by invoice number
+        /// </summary>
+        /// <param name="invoiceNumber">Required invoice number (string)</param>
+        /// <returns>Invoice Details.</returns>
         public IActionResult GetInvoice(string invoiceNumber)
         {
-            SalesInvoice tmp = _context.SalesInvoice.Include(x => x.SalesInvoiceItems).FirstOrDefault(x => x.Invoice_Number == invoiceNumber || x.Invoice_Id.ToString("0000") == invoiceNumber);
+            Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
+            SalesInvoice tmp;
+            int invoiceIntNumber;
+            if(int.TryParse(invoiceNumber,out invoiceIntNumber))
+            {
+                string invoiceFormat = "SI-" + invoiceIntNumber.ToString("0000") + "-" + store.INITIAL + "-" + store.FISCAL_YEAR;
+                tmp = _context.SalesInvoice.Include(x => x.SalesInvoiceItems).FirstOrDefault(x => x.Invoice_Number == invoiceFormat);
+                if(tmp == null)
+                {
+                    invoiceFormat = "TI-" + invoiceIntNumber.ToString("0000") + "-" + store.INITIAL + "-" + store.FISCAL_YEAR;
+                    tmp = _context.SalesInvoice.Include(x => x.SalesInvoiceItems).FirstOrDefault(x => x.Invoice_Number == invoiceFormat);
+                }
+
+            }
+            else if(!invoiceNumber.Contains(store.INITIAL) && !invoiceNumber.Contains(store.FISCAL_YEAR))
+            {
+                string invoiceFormat = invoiceNumber + "-" + store.INITIAL + "-" + store.FISCAL_YEAR;
+                tmp = _context.SalesInvoice.Include(x => x.SalesInvoiceItems).FirstOrDefault(x => x.Invoice_Number == invoiceFormat);                
+            }
+            else
+              tmp = _context.SalesInvoice.Include(x => x.SalesInvoiceItems).FirstOrDefault(x => x.Invoice_Number == invoiceNumber);
             if (tmp == null)
                 return NotFound();
             //remove self reference object
@@ -625,18 +783,14 @@ namespace POS.UI.Controllers
             string query = @"SELECT Distinct
         ROW_NUMBER() OVER(PARTITION BY Bar_Code order by Rate) AS SN ,
        i.Code,i.Id as ItemId,i.Name,i.KeyInWeight,
-       ISNULL(b.BarCode,0) as Bar_Code,b.Unit,  
-       ISNULL(q.Quantity,0) as Quantity, 
+       ISNULL(b.BarCode,0) as Bar_Code,b.Unit, 
 	   ISNULL(d.DiscountPercent,0) as Discount,d.MinimumQuantity as DiscountMinimumQuantity, d.StartDate as DiscountStartDate, d.EndDate as DiscountEndDate, d.StartTime as DiscountStartTime, d.EndTime as DiscountEndTime,d.SalesType as DiscountType,d.SalesCode as DiscountSalesGroupCode,d.ItemType as DiscountItemType, d.Location as DiscountLocation,ISNULL(p.AllowLineDiscount,1) as Is_Discountable,i.No_Discount,
 	   ISNULL(p.UnitPrice,0) as Rate,p.MinimumQuantity as RateMinimumQuantity, p.StartDate as RateStartDate, p.EndDate as RateEndDate, p.SalesType, p.SalesCode,
-	   i.Is_Vatable,
-	   s.INITIAL as Location, s.CustomerPriceGroup as LocationwisePriceGroup
+	   i.Is_Vatable
 FROM ITEM i
 left join ITEM_BARCODE b on i.Code = b.ItemCode AND b.IsActive = 1
-left join ITEM_QUANTITY q on i.Code = q.ItemCode
-left join ITEM_PRICE p on i.Code = p.ItemCode
+inner join ITEM_PRICE p on i.Code = p.ItemCode
 left join ITEM_DISCOUNT d on i.Code = d.ItemCode Or (d.ItemType = 'Item Disc. Group' and  d.ItemCode =  i.DiscountGroup)
-cross join STORE s
 where b.BarCode in ('" + barcodeListString + "') OR i.Code in ('" + barcodeListString + "')";
 
             // string barcodeListString =string.Join("','",barcodes); 
@@ -645,5 +799,175 @@ where b.BarCode in ('" + barcodeListString + "') OR i.Code in ('" + barcodeListS
             return data;
 
         }
+
+        /// <summary>
+        /// Generate QR code for fonePay payment method.
+        /// </summary>
+        /// <param name="fonePay">FonePay obj  get QR codeto</param>
+        /// <returns>Data for QR code.</returns>
+        [HttpPost]
+        public IActionResult FonePayGenerateQR([FromBody]FonePay fonePay)
+        {
+            try
+            {
+                Config config = ConfigJSON.Read();
+                string url = config.FonePayGenerateQRUrl;  //"https://merchantapi.fonepay.com/api/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrDownload";
+                //string srcretKey = "7116fabfe73e4afc901df48bd7805907";
+                var client = new RestClient(url);
+                var request = new RestRequest(url, Method.POST);
+
+                //request.AddHeader("Content-Type", "application/json");
+
+
+                //post data
+
+
+                fonePay.merchantCode = config.FonePayMerchantCode; //"FONEPAY_SUBODH";
+                fonePay.prn = Regex.Replace(Convert.ToBase64String(Guid.NewGuid().ToByteArray()), "[/+=]", ""); //Guid.NewGuid().ToString();
+                fonePay.secret_key = config.FonePaySecretKey;
+                fonePay.remarks1 = User.Identity.Name;
+                fonePay.remarks2 = HttpContext.Session.GetString("Terminal");
+                fonePay.username = config.FonePayUserName; //"test_merchant";
+                fonePay.password = config.FonePayPassword; //"aY1wWHHmM";
+
+                string message = fonePay.amount + "," + fonePay.prn + "," + fonePay.merchantCode + "," + fonePay.remarks1 + "," + fonePay.remarks2;
+                fonePay.dataValidation = SHA512_ComputeHash(fonePay.secret_key, message);
+
+                //request.RequestFormat = DataFormat.Json;
+
+
+                request.AddHeader("merchantCode", fonePay.merchantCode);
+                request.AddHeader("prn", fonePay.prn);
+                request.AddHeader("username", fonePay.username);
+                request.AddHeader("password", fonePay.password);
+                request.AddHeader("dataValidation",fonePay.dataValidation);
+                request.AddHeader("amount", fonePay.amount);
+                request.AddHeader("remarks1", fonePay.remarks1);
+                request.AddHeader("remarks2", fonePay.remarks2);
+
+                var jsonModel = JsonConvert.SerializeObject(fonePay);
+                request.AddJsonBody(jsonModel);
+               
+
+                IRestResponse response = client.Execute(request);
+
+                if (response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Created)
+                {
+                    dynamic obj = JsonConvert.DeserializeObject<dynamic>(response.Content);
+                    obj.prn = fonePay.prn;
+                    return Ok(obj);
+                }
+                else
+                    return StatusCode(500,response.Content);
+
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500);
+            }
+        }
+
+
+        /// <summary>
+        /// Check status if amount is paid via fonePay
+        /// </summary>
+        /// <param name="fonePay">FonePay class to check status</param>
+        /// <returns>Payment Status.</returns>
+        [HttpPost]
+        public IActionResult FonePayCheckStatus([FromBody]FonePay fonePay)
+        {
+            try
+            {
+                Config config = ConfigJSON.Read();
+                string url = config.FonePayCheckStatusUrl;//"https://merchantapi.fonepay.com/api/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrGetStatus";
+                //string srcretKey = "7116fabfe73e4afc901df48bd7805907";
+                var client = new RestClient(url);
+                var request = new RestRequest(url, Method.POST);
+
+                //request.AddHeader("Content-Type", "application/json");
+
+
+                //post data
+
+
+                fonePay.merchantCode = config.FonePayMerchantCode;//"FONEPAY_SUBODH";
+                fonePay.prn = fonePay.prn;
+                fonePay.secret_key = config.FonePaySecretKey;
+                fonePay.username = config.FonePayUserName;// "test_merchant";
+                fonePay.password = config.FonePayPassword;//"aY1wWHHmM";
+
+                string message = fonePay.prn + "," + fonePay.merchantCode;
+                fonePay.dataValidation = SHA512_ComputeHash(fonePay.secret_key, message);
+
+                //request.RequestFormat = DataFormat.Json;
+
+
+                request.AddHeader("merchantCode", fonePay.merchantCode);
+                request.AddHeader("prn", fonePay.prn);
+                request.AddHeader("username", fonePay.username);
+                request.AddHeader("password", fonePay.password);
+                request.AddHeader("dataValidation", fonePay.dataValidation);
+
+                var jsonModel = JsonConvert.SerializeObject(fonePay);
+                request.AddJsonBody(jsonModel);
+
+
+                IRestResponse response = client.Execute(request);
+
+                if (response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Created)
+                {
+                    //_context.SalesInvoiceBill.FirstOrDefault(x=>x.Remarks == response.Content.)
+                    dynamic obj = JsonConvert.DeserializeObject<dynamic>(response.Content);
+                    string traceId = obj.fonepayTraceId.Value.ToString();
+                    var salesBill = _context.SalesInvoiceBill.FirstOrDefault(x => x.Remarks == traceId);
+                    if(salesBill != null)
+                    {
+                        obj.paymentStatus = "Fonepay bill already used !!";
+                        return StatusCode(500, obj);
+                    }
+                    return Ok(response.Content);
+                }
+                else
+                    return StatusCode(500, response.Content);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
+        }
+
+
+        
+
+
+        public static string SHA512_ComputeHash(string secretKey, string text)
+        {
+            var hash = new StringBuilder(); ;
+            byte[] secretkeyBytes = Encoding.UTF8.GetBytes(secretKey);
+            byte[] inputBytes = Encoding.UTF8.GetBytes(text);
+            using (var hmac = new HMACSHA512(secretkeyBytes))
+            {
+                byte[] hashValue = hmac.ComputeHash(inputBytes);
+                foreach (var theByte in hashValue)
+                {
+                    hash.Append(theByte.ToString("x2"));
+                }
+            }
+
+            return hash.ToString();
+        }
+
+        private static string GetStringFromHash(byte[] hash)
+        {
+            StringBuilder result = new StringBuilder();
+
+            for (int i = 0; i < hash.Length; i++)
+            {
+                result.Append(hash[i].ToString("X2"));
+            }
+            return result.ToString();
+        }
+
     }
 }

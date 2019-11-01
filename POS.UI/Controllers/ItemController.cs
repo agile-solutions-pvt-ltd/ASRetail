@@ -1,21 +1,25 @@
 ﻿using Hangfire;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
+using MoreLinq;
+using Newtonsoft.Json;
 using POS.Core;
 using POS.DTO;
 using POS.UI.Helper;
 using POS.UI.Models;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace POS.UI.Controllers
 {
-    
+
     //[Authorize]
     public class ItemController : Controller
     {
@@ -290,24 +294,63 @@ namespace POS.UI.Controllers
         }
 
 
-       // [ResponseCache(Duration = 60, VaryByQueryKeys = new string[] { "code","cacheId" })]
-        public IEnumerable<ItemViewModel> GetItems(string code, string memberDiscountCategory)
+        // [ResponseCache(Duration = 60, VaryByQueryKeys = new string[] { "code","cacheId" })]
+        public IEnumerable<ItemViewModel> GetItems_Old(string code, bool getFromDataBase = false)
         {
-            
-            IList<ItemViewModel> items;
-            _cache.TryGetValue("ItemViewModel", out items);
-            if (items == null)
+
+
+            IList<ItemViewModel> items = new List<ItemViewModel>();
+            if (!getFromDataBase)
             {
-                //update cache
-                BackgroundJob.Enqueue(() => UpdateCacheItemViewModel());
+                _cache.TryGetValue("ItemViewModel", out items);
+                if (items == null)
+                {
+                    //update cache
+                    bool IsItemCacheInProcess = false;
+                    _cache.TryGetValue("IsItemCacheInProcess", out IsItemCacheInProcess);
+
+                    if (!IsItemCacheInProcess)
+                    {
+                        BackgroundJob.Enqueue(() => UpdateCacheItemViewModel());
+                    }
+
+                    //items = GetItemsRawData(code).ToList();
+                    items = new List<ItemViewModel>();
+                }
+            }
+            else
+            {
                 items = GetItemsRawData(code).ToList();
+                getFromDataBase = true;
             }
 
             var result = items.Where(x => (x.Code == code || x.Bar_Code == code)
             && (x.RateStartDate == null || Convert.ToDateTime(x.RateStartDate.Value.ToShortDateString()) <= Convert.ToDateTime(DateTime.Now.ToShortDateString()))
             && (x.RateEndDate == null || Convert.ToDateTime(x.RateEndDate.Value.ToShortDateString()) >= Convert.ToDateTime(DateTime.Now.ToShortDateString()))
             && (x.DiscountStartDate == null || Convert.ToDateTime(x.DiscountStartDate.Value.ToShortDateString()) <= Convert.ToDateTime(DateTime.Now.ToShortDateString()))
-            && (x.DiscountEndDate == null || Convert.ToDateTime(x.DiscountEndDate.Value.ToShortDateString()) >= Convert.ToDateTime(DateTime.Now.ToShortDateString())));
+            && (x.DiscountEndDate == null || Convert.ToDateTime(x.DiscountEndDate.Value.ToShortDateString()) >= Convert.ToDateTime(DateTime.Now.ToShortDateString()))).ToList();
+
+            //result = result.ToList();
+            if (result.Count() == 0 && getFromDataBase == false)
+            {
+                return GetItems_Old(code, true);
+            }
+            if (result.Count() > 0 && getFromDataBase == true)
+            {
+                //update item to cache
+                IList<ItemViewModel> itemInCache = new List<ItemViewModel>();
+                _cache.TryGetValue("ItemViewModel", out items);
+                if (items == null)
+                {
+                    _cache.Set("ItemViewModel", result);
+                }
+                else
+                {
+                    items = items.Concat(result).Distinct().ToList();
+                    _cache.Set("ItemViewModel", items);
+                }
+
+            }
             ////result.ToList().ForEach(x => { x.Bar_Code = result.FirstOrDefault().Bar_Code; x.SN = 1; });
             //result.ToList().Distinct();
             ///result.Select(x=> new ItemViewModel() { x.Bar_Code = x.Bar_Code,x.Code,x.Discount,x.DiscountEndTime})
@@ -344,6 +387,24 @@ namespace POS.UI.Controllers
             return result;
         }
 
+        /// <summary>
+        /// Get Items by item code or bar code and customer membership number.
+        /// </summary>
+        /// <param name="code">string item code or bar code.</param>
+        /// <param name="customerMembershipNo">customer membership number</param>
+        /// <returns>list of item details.</returns>
+        public IEnumerable<ItemViewModel> GetItems(string code, string customerMembershipNo)
+        {
+            var store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
+
+            var query = "exec Sp_GetItems @ItemCode, @customerMembershipNo, @StoreId";
+            IEnumerable<ItemViewModel> data = _context.ItemViewModel.FromSql(query,
+                new SqlParameter("@ItemCode", code),
+                new SqlParameter("@customerMembershipNo", customerMembershipNo),
+                new SqlParameter("@StoreId", store.ID)
+                ).ToList();
+            return data;
+        }
 
         public IEnumerable<ItemViewModel> GetItemsRawData(string code)
         {
@@ -359,56 +420,105 @@ FROM ITEM i
 left join ITEM_BARCODE b on i.Code = b.ItemCode and b.IsActive = 1
 inner join ITEM_PRICE p on i.Code = p.ItemCode
 left join ITEM_DISCOUNT d on i.Code = d.ItemCode Or (d.ItemType = 'Item Disc. Group' and  d.ItemCode =  i.DiscountGroup)
-where (p.StartDate is null or CONVERT(date,p.StartDate) <= CONVERT(date, GETDATE())) and (p.EndDate is null or CONVERT(date, p.EndDate) >= CONVERT(date,getdate()))
-      and (d.StartDate is null or CONVERT(date,d.StartDate) <= CONVERT(date, GETDATE())) and (d.EndDate is null or CONVERT(date, d.EndDate) >= CONVERT(date,getdate()))
-      and (b.BarCode = {0} or i.Code = {0})";
+where (b.BarCode = {0} or i.Code = {0})";
 
-            IEnumerable<ItemViewModel> data = _context.ItemViewModel.FromSql(query, code).ToList();
+            IEnumerable<ItemViewModel> data = _context.ItemViewModel.FromSql(query, code);
             return data;
 
+        }
+
+        public IActionResult GetItemReferenceData(Guid id, string CustomerMembershipNo)
+        {
+            //for item Reference Data        
+            var store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
+            var item = _context.SalesInvoiceItemsTmp.Where(x => x.Invoice_Id == id).ToList();
+            List<string> barCodeList = item.Select(x => x.Bar_Code).ToList();
+            barCodeList = barCodeList.Concat(item.Select(x => x.ItemCode)).ToList();
+            string listOfItemsCodeString = string.Join(",", barCodeList);
+            
+            IList<ItemViewModel> itemsTemp = _context.ItemViewModel.FromSql($"Sp_GetItemList {listOfItemsCodeString},{CustomerMembershipNo},{store.ID}").ToList();
+		
+
+			return Ok(itemsTemp);
         }
 
 
         public void UpdateCacheItemViewModel()
         {
-            bool IsItemCacheInProcess = false;
-            IList<ItemViewModel> itemsTotal = new List<ItemViewModel>();
-            IList<ItemViewModel> itemsTemp = new List<ItemViewModel>();
-            _cache.TryGetValue("IsItemCacheInProcess", out IsItemCacheInProcess);
-
-            if (!IsItemCacheInProcess)
+            _cache.Set("IsItemCacheInProcess", true);
+            //update cache
+            Config config = ConfigJSON.Read();
+            //split data to 1lakh and save to cache
+            int count = 100000, skip = 0, errorCount = 0;
+            DateTime startDate = DateTime.Now;
+            //_context.ChangeTracker.AutoDetectChangesEnabled = false;
+            for (; ; )
             {
-                _cache.Set("IsItemCacheInProcess", true);
-                //update cache
-                Config config = ConfigJSON.Read();
-                //split data to 1lakh and save to cache
-                int count = 100000, skip = 0;
-                //_context.ChangeTracker.AutoDetectChangesEnabled = false;
-                for (; ; )
+                try
                 {
-                    try
+                    IList<ItemViewModel> itemsTotal = new List<ItemViewModel>();
+                    _context.Database.SetCommandTimeout(TimeSpan.FromHours(1));
+                    //IList<ItemViewModel> itemsTemp = _context.ItemViewModel.FromSql("SPItemViewModel @p0, @p1", count, skip).ToList();
+                    IList<ItemViewModel> itemsTemp = _context.ItemViewModel.Skip(skip).Take(count).ToList();
+                    if (itemsTemp.Count() > 0)
                     {
-                        //itemsTemp = _context.ItemViewModel.FromSql("SPItemViewModel @p0, @p1", count, skip).ToList();
-                        itemsTemp = _context.ItemViewModel.Skip(skip).Take(count).ToList();
-                        if (itemsTemp.Count() == 0 && itemsTotal.Count() > 0)
+                        _cache.TryGetValue("ItemViewModel", out itemsTotal);
+                        if (itemsTotal == null)
                         {
-                            _cache.Set("ItemViewModel", itemsTotal);
-                            break;
+                            itemsTotal = new List<ItemViewModel>();
                         }
-                        config.Environment = itemsTemp.Count() + " item cached";
-                        itemsTotal = itemsTotal.Concat(itemsTemp).ToList();
-                        skip = skip + count;
-                        config.Environment = itemsTotal.Count() + " item cached";
-                        ConfigJSON.Write(config);
+                        itemsTotal = itemsTotal.Concat(itemsTemp).DistinctBy(x => new {
+                            x.Bar_Code,
+                            x.Code,
+                            x.Discount,
+                            x.DiscountEndDate,
+                            x.DiscountEndTime,
+                            x.DiscountItemType,
+                            x.DiscountLocation,
+                            x.DiscountMinimumQuantity,
+                            x.DiscountSalesGroupCode,
+                            x.DiscountStartDate,
+                            x.DiscountStartTime,
+                            x.DiscountType,
+                            x.Name,
+                            x.Rate,
+                            x.RateEndDate,
+                            x.RateMinimumQuantity,
+                            x.RateStartDate,
+                            x.SalesCode,
+                            x.SalesType
+                        }).ToList();
+                        _cache.Set("ItemViewModel", itemsTotal);
 
                     }
-                    catch (Exception ex)
+                    else
                     {
+                        double totalTimeTake = (DateTime.Now - startDate).TotalMinutes;
+                        config.Environment = "Total Time take " + totalTimeTake + " Mins";
+                        ConfigJSON.Write(config);
+                        _cache.Set("IsItemCacheInProcess", false);
                         break;
-
                     }
-                }
+                    config.Environment = itemsTotal.Count() + " item cached";
+                    // itemsTotal = itemsTotal.Concat(itemsTemp).ToList();
+                    skip = skip + count;
+                    // config.Environment = itemsTotal.Count() + " item cached";
+                    ConfigJSON.Write(config);
 
+                }
+                catch (Exception ex)
+                {
+                    if (ex.Message == "Invalid object name 'ItemViewModel'.")
+                    {
+                        _cache.Set("IsItemCacheInProcess", true);
+                        break;
+                    }
+                    if (errorCount > 5)
+                        break;
+                    errorCount += 1;
+
+
+                }
             }
 
 

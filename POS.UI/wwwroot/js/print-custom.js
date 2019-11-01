@@ -7,7 +7,6 @@
         get newClientPromise() {
             return new Promise((resolve, reject) => {
                 GetClientLocalIP(function (ip) {
-                    
                     var newIp = _.filter(serverIp, function (x, y) {
                         return y == ip;
                     });
@@ -40,7 +39,6 @@
                         //      }
 
                         // }
-
                     });
                 })
             });
@@ -51,20 +49,16 @@
             }
             return this.promise;
         }
-    }
+    };
 
     //********* Private Methos *****************//
     let init = () => {
-
-
     };
-
 
     let PrintInvoice = (data, callback) => {
         //if (data.invoiceData.trans_Type === "Sales")
         //    PrintSalesInvoice(data, callback);
         //else {
-
         //    if (data.copy !== undefined) {
         //        //print double
         //        PrintTaxInvoice(data, callback);
@@ -76,7 +70,7 @@
         //    }
 
         //}
-       
+
         if (data.invoiceData.trans_Type === "Sales") {
             PrintSalesInvoice(data, callback);
         }
@@ -84,11 +78,9 @@
             if (!_.isEmpty(data.copy) && data.copy.printCount == 0) {
                 //print double
                 PrintTaxInvoice(data, function () {
-                    debugger;
                     data.copy.printCount = 1;
                     PrintTaxInvoice(data, callback);
                 });
-
             }
             else {
                 //print single
@@ -105,33 +97,31 @@
 
         //Header Start here
         var header = "";
-        header += "         " + (data.storeData.COMPANY_NAME || data.storeData.companY_NAME) + "\r\n";
-        header += "         " + (data.storeData.ADDRESS || data.storeData.address) + "\r\n ";
-        header += "           Vat No.: " + (data.storeData.VAT || data.storeData.vat) + "\r\n";
-        header += "        " + (!_.isEmpty(data.copy) && (data.copy !== undefined && data.copy.printCount >= 1) ? "    INVOICE" : "    TAX INVOICE") + "\r\n";
-        header += (!_.isEmpty(data.copy) && data.copy.printCount > 1) ? "  (COPY OF ORIGINAL) (" + (data.copy.printCount - 1).toString() + ")\r\n\r\n" : "\r\n\r\n";
+        header += "\t" + (data.storeData.COMPANY_NAME || data.storeData.companY_NAME) + "\r\n";
+        header += "\t" + (data.storeData.ADDRESS || data.storeData.address) + "\r\n ";
+        header += "\t    Vat No.: " + (data.storeData.VAT || data.storeData.vat) + "\r\n";
+        header += "\t     " + (!_.isEmpty(data.copy) && (data.copy !== undefined && data.copy.printCount >= 1) ? "INVOICE" : "TAX INVOICE") + "\r\n";
+        header += (!_.isEmpty(data.copy) && data.copy.printCount > 1) ? "\t    (COPY OF ORIGINAL) (" + (data.copy.printCount - 1).toString() + ")\r\n\r\n" : "\r\n\r\n";
         header += "Bill #   : " + data.invoiceData.invoice_Number + "\r\n";
-        header += "Date     : " + FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)) + " (" + data.invoiceData.trans_Date_Bs + ") \r\n";
-        if (data.invoiceData.memberId !== "POS") {
-            header += "Bill To  : " + data.invoiceData.customer_Name + "  \r\n";
-            if (!_.isEmpty(data.invoiceData.customer_Vat)) {
-                header += "VAT      : " + data.invoiceData.customer_Vat + "\r\n";
-            }
-            if (!_.isEmpty(data.invoiceData.customer_Address)) {
-                header += "Address  : " + data.invoiceData.customer_Address + " \r\n";
-            }
-            if (!_.isEmpty(data.invoiceData.customer_Mobile)) {
-                header += "Mobile   : " + data.invoiceData.customer_Mobile + "\r\n";
-            }
+        header += "Date     : " + FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)) + " (" + data.invoiceData.trans_Date_Bs + ")\r\n";
+        if (data.invoiceData.customer_Name !== "Default Customer")
+            header += "Bill To  : " + data.invoiceData.customer_Name + "\r\n";
+        if (!_.isEmpty(data.invoiceData.customer_Address)) {
+            header += "Address  : " + data.invoiceData.customer_Address + "\r\n";
+        }
+        if (!_.isEmpty(data.invoiceData.customer_Mobile)) {
+            header += "Mobile   : " + data.invoiceData.customer_Mobile + "\r\n";
+        }
+        if ((!_.isEmpty(data.invoiceData.customer_Vat))) {
+            header += "Vat   : " + data.invoiceData.customer_Vat + "\r\n";
         }
         header += "Pay Mode : " + paymentMode + "\r\n";
-        header += "--------------------------------------- \r\n";
+        header += "----------------------------------------\r\n";
         //Header end here
 
-
         //Item Header Start here
-        var itemHeader = "Particulars  Qty  Rate  P.Dis   Amount  \r\n";
-        itemHeader += "------------------------------------- \r\n";
+        var itemHeader = "Particulars  Qty    Rate  P.Dis   Amount\r\n";
+        itemHeader += "----------------------------------------\r\n";
         //Item Header End here
 
         //items start here
@@ -151,111 +141,109 @@
             }
             item += itemName;
             qty = parseFloat(v.quantity).toFixed(2);
-            while (qty.length < 6) {
-                qty = qty + ' ';  //adds a space before the d
+            while (qty.length < 4) {
+                qty = ' ' + qty;  //adds a space before the d
             }
             item += qty;
             rate = parseFloat(v.rate).toFixed(2);
-            while (rate.length < 9) {
-                rate = rate + ' ';  //adds a space before the d
+            while (rate.length < 8) {
+                rate = ' ' + rate;  //adds a space before the d
             }
             item += rate;
             dis = parseFloat(v.promoDiscount).toFixed(2);
-            while (dis.length < 6) {
-                dis = dis + ' ';  //adds a space before the d
+            while (dis.length < 7) {
+                dis = ' ' + dis;  //adds a space before the d
             }
             item += dis;
             amt = parseFloat(v.gross_Amount).toFixed(2);
             while (amt.length < 9) {
-                amt = amt + ' ';  //adds a space before the d
+                amt = ' ' + amt;  //adds a space before the d
             }
             item += amt;
             item += "\r\n";
-
         });
 
         //Items end here
 
         //Adding Total Item
-        item += "            " + parseFloat(data.invoiceData.total_Quantity).toFixed(2) + "\r\n";
+        item += "\t      " + parseFloat(data.invoiceData.total_Quantity).toFixed(2) + "\r\n";
 
         //Items Total Start here
         let grossAmount = parseFloat(data.invoiceData.total_Gross_Amount).toFixed(2);
-        while (grossAmount.length < 7) {
+        while (grossAmount.length < 10) {
             grossAmount = ' ' + grossAmount;  //adds a space before the d
         }
         let promoDiscount = parseFloat(data.invoiceData.promoDiscount).toFixed(2);
-        while (promoDiscount.length < 7) {
+        while (promoDiscount.length < 10) {
             promoDiscount = ' ' + promoDiscount;  //adds a space before the d
         }
         let loyaltyDiscount = parseFloat(data.invoiceData.membershipDiscount).toFixed(2);
-        while (loyaltyDiscount.length < 7) {
+        while (loyaltyDiscount.length < 10) {
             loyaltyDiscount = ' ' + loyaltyDiscount;  //adds a space before the d
         }
         let taxable = parseFloat(data.invoiceData.taxableAmount).toFixed(2);
-        while (taxable.length < 7) {
+        while (taxable.length < 10) {
             taxable = ' ' + taxable;  //adds a space before the d
         }
         let nonTaxable = parseFloat(data.invoiceData.nonTaxableAmount).toFixed(2);
-        while (nonTaxable.length < 7) {
+        while (nonTaxable.length < 10) {
             nonTaxable = ' ' + nonTaxable;  //adds a space before the d
         }
         let vat = parseFloat(data.invoiceData.total_Vat).toFixed(2);
-        while (vat.length < 7) {
+        while (vat.length < 10) {
             vat = ' ' + vat;  //adds a space before the d
         }
-
-
-
         let netAmount = parseFloat(data.invoiceData.total_Payable_Amount).toFixed(2);
-        while (grossAmount.length < 7) {
+        while (netAmount.length < 10) {
             netAmount = ' ' + netAmount;  //adds a space before the d
         }
         let tender = parseFloat(data.invoiceData.tender_Amount).toFixed(2);
-        while (tender.length < 7) {
+        while (tender.length < 10) {
             tender = ' ' + tender;  //adds a space before the d
         }
         let change = parseFloat(data.invoiceData.change_Amount).toFixed(2);
-        while (change.length < 7) {
+        while (change.length < 10) {
             change = ' ' + change;  //adds a space before the d
         }
+        let fonePayDiscount = parseFloat(data.invoiceData.fonepayDiscountAmount).toFixed(2);
+        while (fonePayDiscount.length < 10) {
+            fonePayDiscount = ' ' + fonePayDiscount;  //adds a space before the d
+        }
         var itemTotal = "";
-        itemTotal += "                ------------------------\r\n";
-        itemTotal += "                Gross Amount  : " + grossAmount + "\r\n";
-        itemTotal += "                Promo Disc.   : " + promoDiscount + "\r\n";
-        itemTotal += "                Loyalty Disc. : " + loyaltyDiscount + "\r\n";
-        itemTotal += "                Taxable       : " + taxable + "\r\n";
-        itemTotal += "                Non Taxable   : " + nonTaxable + "\r\n";
-        itemTotal += "                Vat (13%)     : " + vat + "\r\n";
-        itemTotal += "                Net Amount    : " + netAmount + "\r\n";
-        itemTotal += "                ------------------------\r\n";
-        itemTotal += "                Tender        : " + tender + "\r\n";
-        itemTotal += "                Change        : " + change + "\r\n";
-        itemTotal += "                ------------------------\r\n";
+        itemTotal += "\t      --------------------------\r\n";
+        itemTotal += "\t      Gross Amount  : " + grossAmount + "\r\n";
+        itemTotal += "\t      Promo Disc.   : " + promoDiscount + "\r\n";
+        itemTotal += "\t      Loyalty Disc. : " + loyaltyDiscount + "\r\n";
+        if (paymentMode == "FonePay") {
+            itemTotal += "\t      FonePay Disc. : " + fonePayDiscount + "\r\n";
+        }
+        itemTotal += "\t      Taxable       : " + taxable + "\r\n";
+        itemTotal += "\t      Non Taxable   : " + nonTaxable + "\r\n";
+        itemTotal += "\t      Vat (13%)     : " + vat + "\r\n";
+        itemTotal += "\t      Net Amount    : " + netAmount + "\r\n";
+        itemTotal += "\t      --------------------------\r\n";
+        itemTotal += "\t      Tender        : " + tender + "\r\n";
+        itemTotal += "\t      Change        : " + change + "\r\n";
+        itemTotal += "\t      --------------------------\r\n";
         itemTotal += "Saving in this bill: Rs. " + parseFloat(data.invoiceData.total_Discount).toFixed(2) + "\r\n";
         //Items Total End Here
 
-
         //Footer start here
-        var footer = "--------------------------------------- \r\n";
+        var footer = "----------------------------------------\r\n";
         //footer += "Welcome to great shopping experience. Goods exchange within 7 days with original bill. contact: 01-5550422,23 \r\n";
-        footer += (data.storeData.PrintMessage || data.storeData.printMessage);
-        footer += "--------------------------------------- \r\n";
-        footer += "Counter : " + data.invoiceData.terminal + " (" + FormatForDisplayTime(data.invoiceData.trans_Time) + ") \r\n";
+        footer += (data.storeData.PrintMessage || data.storeData.printMessage) + "\r\n";
+        footer += "----------------------------------------\r\n";
+        footer += "Counter : " + data.invoiceData.terminal + " (" + FormatForDisplayTime(data.invoiceData.trans_Time) + ")\r\n";
         footer += "Cashier : " + data.invoiceData.created_By;
         footer += "\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n";
         //Footer end here
-
-
 
         //Final Data
         var finalBill = header + itemHeader + item + itemTotal + footer;
 
         printwsBill(finalBill, callback, data, PrintTaxInvoiceBrowser);
-
     };
     let PrintTaxInvoiceBrowser = (data, callback) => {
-        
         var url = ""
         var companyInitital = data.storeData.initial || data.storeData.INITIAL;
         if (data.billData !== null && data.billData.length > 0 && data.billData[0].trans_Mode === "Credit" && companyInitital === "WHS") {
@@ -269,9 +257,8 @@
             type: 'GET',
             complete: function (result) {
                 if (result.status === 200) {
-
                     let printText = $(result.responseText).find("#printbody").html();
-                    //replace all variables  
+                    //replace all variables
 
                     var paymentMode = _.pluck(data.billData, "trans_Mode").join(", ");
                     if (paymentMode === "") {
@@ -298,6 +285,8 @@
                     printText = printText.replace("{totalGrossAmount}", parseFloat(data.invoiceData.total_Gross_Amount).toFixed(2));
                     printText = printText.replace("{promoDiscount}", parseFloat(data.invoiceData.promoDiscount).toFixed(2));
                     printText = printText.replace("{loyaltyDiscount}", parseFloat(data.invoiceData.membershipDiscount).toFixed(2));
+                    printText = printText.replace(/{fonePayDiscounthide}/g, paymentMode != "FonePay" ? "display-none" : "");
+                    printText = printText.replace("{fonePayDiscount}", parseFloat(data.invoiceData.fonepayDiscountAmount).toFixed(2));
                     printText = printText.replace("{totalSaving}", parseFloat(data.invoiceData.total_Discount).toFixed(2));
                     printText = printText.replace("{totalNetAmount}", parseFloat(data.invoiceData.total_Payable_Amount).toFixed(2));
                     printText = printText.replace("{tenderAmount}", parseFloat(data.invoiceData.tender_Amount).toFixed(2));
@@ -309,7 +298,7 @@
                     printText = printText.replace("{terminalName}", data.invoiceData.terminal);
                     printText = printText.replace("{transTime}", FormatForDisplayTime(data.invoiceData.trans_Time));
                     printText = printText.replace("{cashierName}", data.invoiceData.created_By);
-                    printText = printText.replace("{printMessage}", data.storeData.PrintMessage || data.storeData.printMessage );
+                    printText = printText.replace("{printMessage}", data.storeData.PrintMessage || data.storeData.printMessage);
 
                     //get items template
                     let printItemTemplateOld = $(result.responseText).find("#items").html();
@@ -325,7 +314,6 @@
                         printItemTemplate = printItemTemplate.replace("{ItemTax}", (v.is_Vatable == true ? "V" : "N"));
                         printItems += printItemTemplate;
                     });
-
 
                     FinalPrint(printText, printItems, callback);
 
@@ -345,7 +333,6 @@
     };
 
     let PrintSalesInvoice = (data, callback) => {
-        
         var paymentMode = _.pluck(data.billData, "trans_Mode").join(", ");
         if (paymentMode === "") {
             paymentMode = data.paymentMode;
@@ -353,30 +340,32 @@
 
         //Header Start here
         var header = "";
-        header += "         " + (data.storeData.COMPANY_NAME || data.storeData.companY_NAME) + "\r\n";
-        header += "         " + (data.storeData.ADDRESS || data.storeData.address) + "\r\n ";
-        header += "           Vat No.: " + (data.storeData.VAT || data.storeData.vat) + "\r\n";
-        header += "       ABBREVIATED TAX INVOICE \r\n";
-        header += (_.isEmpty(data.copy) || data.copy.printCount === 0) ? "\r\n\r\n" : "    (COPY OF ORIGINAL) \r\n\r\n";
+        header += "\t" + (data.storeData.COMPANY_NAME || data.storeData.companY_NAME) + "\r\n";
+        header += "\t" + (data.storeData.ADDRESS || data.storeData.address) + "\r\n ";
+        header += "\t    Vat No.: " + (data.storeData.VAT || data.storeData.vat) + "\r\n";
+        header += "\t  ABBREVIATED TAX INVOICE \r\n";
+        header += (_.isEmpty(data.copy) || data.copy.printCount === 0) ? "\r\n\r\n" : "\t    (COPY OF ORIGINAL)\r\n\r\n";
         header += "Bill #   : " + data.invoiceData.invoice_Number + "\r\n";
-        header += "Date     : " + FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)) + " (" + data.invoiceData.trans_Date_Bs + ") \r\n";
-        if (data.invoiceData.memberId !== "POS") {
-            header += "Bill To  : " + data.invoiceData.customer_Name + "  \r\n";
-            if (!_.isEmpty(data.invoiceData.customer_Address)) {
-                header += "Address  : " + data.invoiceData.customer_Address + " \r\n";
-            }
-            if (!_.isEmpty(data.invoiceData.customer_Mobile)) {
-                header += "Mobile   : " + data.invoiceData.customer_Mobile + "\r\n";
-            }
+        header += "Date     : " + FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)) + " (" + data.invoiceData.trans_Date_Bs + ")\r\n";
+        if (data.invoiceData.customer_Name !== "Default Customer")
+            header += "Bill To  : " + data.invoiceData.customer_Name + "\r\n";
+        if (!_.isEmpty(data.invoiceData.customer_Address)) {
+            header += "Address  : " + data.invoiceData.customer_Address + "\r\n";
         }
+        if (!_.isEmpty(data.invoiceData.customer_Mobile)) {
+            header += "Mobile   : " + data.invoiceData.customer_Mobile + "\r\n";
+        }
+        if ((!_.isEmpty(data.invoiceData.customer_Vat))) {
+            header += "Vat   : " + data.invoiceData.customer_Vat + "\r\n";
+        }
+
         header += "Pay Mode : " + paymentMode + "\r\n";
-        header += "--------------------------------------- \r\n";
+        header += "----------------------------------------\r\n";
         //Header end here
 
-
         //Item Header Start here
-        var itemHeader = "Particulars  Qty  Rate  P.Dis   Amount  \r\n";
-        itemHeader += "------------------------------------- \r\n";
+        var itemHeader = "Particulars  Qty    Rate  P.Dis   Amount\r\n";
+        itemHeader += "----------------------------------------\r\n";
         //Item Header End here
 
         //items start here
@@ -396,94 +385,96 @@
             }
             item += itemName;
             qty = parseFloat(v.quantity).toFixed(2);
-            while (qty.length < 6) {
-                qty = qty + ' ';  //adds a space before the d
+            while (qty.length < 4) {
+                qty = ' ' + qty;  //adds a space before the d
             }
             item += qty;
             rate = parseFloat(v.rate).toFixed(2);
-            while (rate.length < 9) {
-                rate = rate + ' ';  //adds a space before the d
+            while (rate.length < 8) {
+                rate = ' ' + rate;  //adds a space before the d
             }
             item += rate;
             dis = parseFloat(v.promoDiscount).toFixed(2);
-            while (dis.length < 6) {
-                dis = dis + ' ';  //adds a space before the d
+            while (dis.length < 7) {
+                dis = ' ' + dis;  //adds a space before the d
             }
             item += dis;
             amt = parseFloat(v.gross_Amount).toFixed(2);
-            while (amt.length < 8) {
-                amt = amt + ' ';  //adds a space before the d
+            while (amt.length < 9) {
+                amt = ' ' + amt;  //adds a space before the d
             }
             item += amt;
             //item += "      ";
             item += "\r\n";
-
         });
 
         //Items end here
 
         //Adding Total Item
-        item += "            " + parseFloat(data.invoiceData.total_Quantity).toFixed(2) + "\r\n";
+        item += "\t      " + parseFloat(data.invoiceData.total_Quantity).toFixed(2) + "\r\n";
 
         //Items Total Start here
         let grossAmount = parseFloat(data.invoiceData.total_Gross_Amount).toFixed(2);
-        while (grossAmount.length < 7) {
+        while (grossAmount.length < 10) {
             grossAmount = ' ' + grossAmount;  //adds a space before the d
         }
         let promoDiscount = parseFloat(data.invoiceData.promoDiscount).toFixed(2);
-        while (promoDiscount.length < 7) {
+        while (promoDiscount.length < 10) {
             promoDiscount = ' ' + promoDiscount;  //adds a space before the d
         }
         let loyaltyDiscount = parseFloat(data.invoiceData.membershipDiscount).toFixed(2);
-        while (loyaltyDiscount.length < 7) {
+        while (loyaltyDiscount.length < 10) {
             loyaltyDiscount = ' ' + loyaltyDiscount;  //adds a space before the d
         }
         let netAmount = parseFloat(data.invoiceData.total_Payable_Amount).toFixed(2);
-        while (grossAmount.length < 7) {
+        while (netAmount.length < 10) {
             netAmount = ' ' + netAmount;  //adds a space before the d
         }
         let tender = parseFloat(data.invoiceData.tender_Amount).toFixed(2);
-        while (tender.length < 7) {
+        while (tender.length < 10) {
             tender = ' ' + tender;  //adds a space before the d
         }
         let change = parseFloat(data.invoiceData.change_Amount).toFixed(2);
-        while (change.length < 7) {
+        while (change.length < 10) {
             change = ' ' + change;  //adds a space before the d
         }
+        let fonePayDiscount = parseFloat(data.invoiceData.fonepayDiscountAmount).toFixed(2);
+        while (fonePayDiscount.length < 10) {
+            fonePayDiscount = ' ' + fonePayDiscount;  //adds a space before the d
+        }
         var itemTotal = "";
-        itemTotal += "                ------------------------\r\n";
-        itemTotal += "                Gross Amount  : " + grossAmount + "\r\n";
-        itemTotal += "                Promo Disc.   : " + promoDiscount + "\r\n";
-        itemTotal += "                Loyalty Disc. : " + loyaltyDiscount + "\r\n";
-        itemTotal += "                Net Amount    : " + netAmount + "\r\n";
-        itemTotal += "                ------------------------\r\n";
-        itemTotal += "                Tender        : " + tender + "\r\n";
-        itemTotal += "                Change        : " + change + "\r\n";
-        itemTotal += "                ------------------------\r\n";
+        itemTotal += "\t      --------------------------\r\n";
+        itemTotal += "\t      Gross Amount  : " + grossAmount + "\r\n";
+        itemTotal += "\t      Promo Disc.   : " + promoDiscount + "\r\n";
+        itemTotal += "\t      Loyalty Disc. : " + loyaltyDiscount + "\r\n";
+        if (paymentMode == "FonePay") {
+            itemTotal += "\t      FonePay Disc. : " + fonePayDiscount + "\r\n";
+        }
+
+        itemTotal += "\t      Net Amount    : " + netAmount + "\r\n";
+        itemTotal += "\t      --------------------------\r\n";
+        itemTotal += "\t      Tender        : " + tender + "\r\n";
+        itemTotal += "\t      Change        : " + change + "\r\n";
+        itemTotal += "\t      --------------------------\r\n";
         itemTotal += "Saving in this bill: Rs. " + parseFloat(data.invoiceData.total_Discount).toFixed(2) + "\r\n";
         //Items Total End Here
 
-
         //Footer start here
-        var footer = "--------------------------------------- \r\n";
+        var footer = "----------------------------------------\r\n";
         //footer += "Welcome to great shopping experience. Goods exchange within 7 days with original bill. contact: 01-5550422,23 \r\n";
-        footer += (data.storeData.PrintMessage || data.storeData.printMessage);
-        footer += "--------------------------------------- \r\n";
-        footer += "Counter : " + data.invoiceData.terminal + " (" + FormatForDisplayTime(data.invoiceData.trans_Time) + ") \r\n";
+        footer += (data.storeData.PrintMessage || data.storeData.printMessage) + "\r\n";
+        footer += "----------------------------------------\r\n";
+        footer += "Counter : " + data.invoiceData.terminal + " (" + FormatForDisplayTime(data.invoiceData.trans_Time) + ")\r\n";
         footer += "Cashier : " + data.invoiceData.created_By;
         footer += "\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n";
         //Footer end here
-
-
 
         //Final Data
         var finalBill = header + itemHeader + item + itemTotal + footer;
 
         printwsBill(finalBill, callback, data, PrintSalesInvoiceBrowser);
-
     };
     let PrintSalesInvoiceBrowser = (data, callback) => {
-
         $.ajax({
             url: window.location.origin + "/Print/SalesInvoice",
             type: 'GET',
@@ -492,7 +483,6 @@
                     let printText = $(result.responseText).find("#printbody").html();
                     //replace all variables
 
-                    debugger;
                     var paymentMode = _.pluck(data.billData, "trans_Mode").join(", ");
                     if (paymentMode === "") {
                         paymentMode = data.paymentMode;
@@ -506,17 +496,21 @@
                     printText = printText.replace("{billNumber}", data.invoiceData.invoice_Number);
                     printText = printText.replace("{dateAD}", FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)));
                     printText = printText.replace("{dateBS}", data.invoiceData.trans_Date_Bs);
-                    printText = printText.replace(/{customerhide}/g, data.invoiceData.memberId === "POS" ? "display-none" : "");
+                    //printText = printText.replace(/{customerhide}/g, data.invoiceData.memberId === "POS" ? "display-none" : "");
                     printText = printText.replace(/{addresshide}/g, _.isEmpty(data.invoiceData.customer_Address) ? "display-none" : "");
                     printText = printText.replace(/{mobilehide}/g, _.isEmpty(data.invoiceData.customer_Mobile) ? "display-none" : "");
+                    printText = printText.replace(/{billToVatHide}/g, _.isEmpty(data.invoiceData.customer_Vat) ? "display-none" : "");
                     printText = printText.replace("{billToName}", data.invoiceData.customer_Name);
                     printText = printText.replace("{billToAddress}", data.invoiceData.customer_Address);
                     printText = printText.replace("{billToMobile}", data.invoiceData.customer_Mobile);
+                    printText = printText.replace("{billToVat}", data.invoiceData.customer_Vat);
                     printText = printText.replace("{paymentMode}", paymentMode);
 
                     printText = printText.replace("{totalGrossAmount}", parseFloat(data.invoiceData.total_Gross_Amount).toFixed(2));
                     printText = printText.replace("{promoDiscount}", parseFloat(data.invoiceData.promoDiscount).toFixed(2));
                     printText = printText.replace("{loyaltyDiscount}", parseFloat(data.invoiceData.membershipDiscount).toFixed(2));
+                    printText = printText.replace(/{fonePayDiscounthide}/g, paymentMode != "FonePay" ? "display-none" : "");
+                    printText = printText.replace("{fonePayDiscount}", parseFloat(data.invoiceData.fonepayDiscountAmount).toFixed(2));
                     printText = printText.replace("{totalSaving}", parseFloat(data.invoiceData.total_Discount).toFixed(2));
                     printText = printText.replace("{totalNetAmount}", parseFloat(data.invoiceData.total_Payable_Amount).toFixed(2));
                     printText = printText.replace("{tenderAmount}", parseFloat(data.invoiceData.tender_Amount).toFixed(2));
@@ -541,8 +535,7 @@
                         printItems += printItemTemplate;
                     });
 
-
-                    //            //printText = 
+                    //            //printText =
                     //            //printText = printText.replace("", "");
                     //            //printText = printText.replace("", "");
                     //            //printText = printText.replace("", "");
@@ -554,9 +547,6 @@
                     //            //printText = printText.replace("", "");
                     //            //printText = printText.replace("", "");
                     //            //printText = printText.replace("", "");
-
-
-
 
                     FinalPrint(printText, printItems, callback);
                     // console.log(finalBill);
@@ -579,7 +569,150 @@
     };
 
     let PrintCreditNoteInvoice = (data, callback) => {
-        debugger;
+        //Header Start here
+        var header = "";
+        header += "\t" + (data.storeData.COMPANY_NAME || data.storeData.companY_NAME) + "\r\n";
+        header += "\t" + (data.storeData.ADDRESS || data.storeData.address) + "\r\n ";
+        header += "\t    Vat No.: " + (data.storeData.VAT || data.storeData.vat) + "\r\n";
+        header += "\t       CREDIT NOTE \r\n";
+        header += (data.copy === undefined || data.copy === false) ? "\r\n\r\n" : "\t    (COPY OF ORIGINAL)\r\n\r\n";
+        header += "Bill #   : " + data.invoiceData.credit_Note_Number + "\r\n";
+        header += "Ref No. #: " + data.invoiceData.reference_Number + "\r\n";
+        header += "Date     : " + FormatForDisplay(new Date(data.invoiceData.trans_Date_Ad)) + " (" + data.invoiceData.trans_Date_Bs + ")\r\n";
+        if (data.invoiceData.customer_Name !== "Default Customer")
+            header += "Bill To  : " + data.invoiceData.customer_Name + "\r\n";
+        if (!_.isEmpty(data.invoiceData.customer_Address)) {
+            header += "Address  : " + data.invoiceData.customer_Address + "\r\n";
+        }
+        if (!_.isEmpty(data.invoiceData.customer_Mobile)) {
+            header += "Mobile   : " + data.invoiceData.customer_Mobile + "\r\n";
+        }
+        if ((!_.isEmpty(data.invoiceData.customer_Vat))) {
+            header += "Vat   : " + data.invoiceData.customer_Vat + "\r\n";
+        }
+        header += "Remarks  : " + data.invoiceData.credit_Note + "\r\n";
+        header += "Pay Mode : " + data.invoiceData.payment_Mode + "\r\n";
+        header += "----------------------------------------\r\n";
+        //Header end here
+
+        //Item Header Start here
+        var itemHeader = "Particulars  Qty    Rate  P.Dis   Amount\r\n";
+        itemHeader += "----------------------------------------\r\n";
+        //Item Header End here
+
+        //items start here
+        let printItems = "";
+        var space = ' ';
+        var spaceMain = ' ';
+        var itemName = '';
+        var qty = '';
+        var rate = '';
+        var dis = '';
+        var amt = '';
+        var item = "";
+        _.each(data.invoiceData.creditNoteItems, function (v, k) {
+            itemName = v.name.substring(0, maximumCharAllowInItemName);
+            while (itemName.length < 12) {
+                itemName = itemName + ' ';  //adds a space before the d
+            }
+            item += itemName;
+            qty = parseFloat(v.quantity).toFixed(2);
+            while (qty.length < 4) {
+                qty = ' ' + qty;  //adds a space before the d
+            }
+            item += qty;
+            rate = parseFloat(v.rate).toFixed(2);
+            while (rate.length < 8) {
+                rate = ' ' + rate;  //adds a space before the d
+            }
+            item += rate;
+            dis = parseFloat(v.promoDiscount).toFixed(2);
+            while (dis.length < 7) {
+                dis = ' ' + dis;  //adds a space before the d
+            }
+            item += dis;
+            amt = parseFloat(v.gross_Amount).toFixed(2);
+            while (amt.length < 9) {
+                amt = ' ' + amt;  //adds a space before the d
+            }
+            item += amt;
+            //item += "      ";
+            item += "\r\n";
+        });
+
+        //Items end here
+
+        //Adding Total Item
+        item += "\t      " + parseFloat(data.invoiceData.total_Quantity).toFixed(2) + "\r\n";
+
+        //Items Total Start here
+        let grossAmount = parseFloat(data.invoiceData.total_Gross_Amount).toFixed(2);
+        while (grossAmount.length < 10) {
+            grossAmount = ' ' + grossAmount;  //adds a space before the d
+        }
+        let totalDiscount = parseFloat(data.invoiceData.total_Discount).toFixed(2);
+        while (totalDiscount.length < 10) {
+            totalDiscount = ' ' + totalDiscount;  //adds a space before the d
+        }
+        //let loyaltyDiscount = parseFloat(data.invoiceData.membershipDiscount).toFixed(2);
+        //while (loyaltyDiscount.length < 10) {
+        //    loyaltyDiscount = ' ' + loyaltyDiscount;  //adds a space before the d
+        //}
+        let taxable = parseFloat(data.invoiceData.taxableAmount).toFixed(2);
+        while (taxable.length < 10) {
+            taxable = ' ' + taxable;  //adds a space before the d
+        }
+        let nonTaxable = parseFloat(data.invoiceData.nonTaxableAmount).toFixed(2);
+        while (nonTaxable.length < 10) {
+            nonTaxable = ' ' + nonTaxable;  //adds a space before the d
+        }
+        let vat = parseFloat(data.invoiceData.total_Vat).toFixed(2);
+        while (vat.length < 10) {
+            vat = ' ' + vat;  //adds a space before the d
+        }
+        let netAmount = parseFloat(data.invoiceData.total_Net_Amount).toFixed(2);
+        while (netAmount.length < 10) {
+            netAmount = ' ' + netAmount;  //adds a space before the d
+        }
+        let tender = parseFloat(data.invoiceData.tender_Amount).toFixed(2);
+        while (tender.length < 10) {
+            tender = ' ' + tender;  //adds a space before the d
+        }
+        let change = parseFloat(data.invoiceData.change_Amount).toFixed(2);
+        while (change.length < 10) {
+            change = ' ' + change;  //adds a space before the d
+        }
+        var itemTotal = "";
+        itemTotal += "\t      --------------------------\r\n";
+        itemTotal += "\t      Gross Amount  : " + grossAmount + "\r\n";
+        itemTotal += "\t      Total Disc.   : " + totalDiscount + "\r\n";
+        //itemTotal += "\t      Loyalty Disc. : " + loyaltyDiscount + "\r\n";
+        itemTotal += "\t      Taxable       : " + taxable + "\r\n";
+        itemTotal += "\t      Non Taxable   : " + nonTaxable + "\r\n";
+        itemTotal += "\t      Vat (13%)     : " + vat + "\r\n";
+        itemTotal += "\t      Net Amount    : " + netAmount + "\r\n";
+        itemTotal += "\t      --------------------------\r\n";
+        itemTotal += "\t      Tender        : " + tender + "\r\n";
+        itemTotal += "\t      Change        : " + change + "\r\n";
+        //Items Total End Here
+
+        //Footer start here
+        var footer = "----------------------------------------\r\n";
+        //footer += "Welcome to great shopping experience. Goods exchange within 7 days with original bill. contact: 01-5550422,23 \r\n";
+        footer += (data.storeData.PrintMessage || data.storeData.printMessage) + "\r\n";
+        footer += "----------------------------------------\r\n";
+        footer += "Counter : " + data.invoiceData.terminal + " (" + FormatForDisplayTime(data.invoiceData.trans_Time) + ")\r\n";
+        footer += "Cashier : " + data.invoiceData.created_By;
+        footer += "\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n";
+        //Footer end here
+
+        //Final Data
+        var finalBill = header + itemHeader + item + itemTotal + footer;
+
+        printwsBill(finalBill, callback, data, PrintCreditNoteInvoiceBrowser);
+    };
+
+    let PrintCreditNoteInvoiceBrowser = (data, callback) => {
         var url = ""
         var companyInitital = data.storeData.initial || data.storeData.INITIAL;
         if (companyInitital === "WHS") {
@@ -622,7 +755,10 @@
                     printText = printText.replace("{totalGrossAmount}", parseFloat(data.invoiceData.total_Gross_Amount).toFixed(2));
                     printText = printText.replace("{promoDiscount}", parseFloat(data.invoiceData.promoDiscount).toFixed(2));
                     printText = printText.replace("{loyaltyDiscount}", parseFloat(data.invoiceData.membershipDiscount).toFixed(2));
+                    printText = printText.replace("{totalDiscount}", parseFloat(data.invoiceData.total_Discount).toFixed(2));
                     // printText = printText.replace("{totalSaving}", parseFloat(data.invoiceData.total_Discount).toFixed(2));
+                    printText = printText.replace(/{fonePayDiscounthide}/g, data.invoiceData.payment_Mode != "FonePay" ? "display-none" : "");
+                    printText = printText.replace("{fonePayDiscount}", parseFloat(data.invoiceData.fonepayDiscountAmount).toFixed(2));
                     printText = printText.replace("{totalTaxableAmount}", parseFloat(data.invoiceData.taxableAmount).toFixed(2));
                     printText = printText.replace("{totalNonTaxableAmount}", parseFloat(data.invoiceData.nonTaxableAmount).toFixed(2));
                     printText = printText.replace("{totalVat}", parseFloat(data.invoiceData.total_Vat).toFixed(2));
@@ -652,8 +788,7 @@
                         printItems += printItemTemplate;
                     });
 
-
-                    //printText = 
+                    //printText =
                     //printText = printText.replace("", "");
                     //printText = printText.replace("", "");
                     //printText = printText.replace("", "");
@@ -667,7 +802,6 @@
                     //printText = printText.replace("", "");
 
                     FinalPrint(printText, printItems, callback);
-
 
                     //update print count
                     $.ajax({
@@ -683,6 +817,7 @@
             }
         });
     };
+
     let PrintDenomination = (data, callback) => {
         //var bill = "";
         //bill += "       " + data.Store.COMPANY_NAME + "      ";
@@ -710,13 +845,15 @@
                     printText = printText.replace("{terminalName}", data.DenominationData.Terminal.Name);
                     printText = printText.replace("{cashierName}", data.DenominationData.User_Id);
 
-
                     printText = printText.replace("{cardHide}", data.DenominationData.Card !== null ? "" : "display-none");
                     printText = printText.replace("{card}", (parseFloat(data.DenominationData.Card).toFixed(2)));
                     printText = printText.replace("{creditHide}", data.DenominationData.Credit !== null ? "" : "display-none");
                     printText = printText.replace("{credit}", (parseFloat(data.DenominationData.Credit).toFixed(2)));
                     printText = printText.replace("{creditNoteHide}", data.DenominationData.CreditNote !== null ? "" : "display-none");
+                    printText = printText.replace("{fonePayHide}", data.DenominationData.FonePay !== null ? "" : "display-none");
+
                     printText = printText.replace("{creditNote}", (parseFloat(data.DenominationData.CreditNote).toFixed(2)));
+                    printText = printText.replace("{fonePay}", (parseFloat(data.DenominationData.FonePay).toFixed(2)));
 
                     printText = printText.replace("{ICHide}", data.DenominationData.Ric !== null ? "" : "display-none");
                     printText = printText.replace("{IC}", data.DenominationData.Ric);
@@ -773,7 +910,6 @@
                     var grandTotal = parseFloat(data.DenominationData.Total) + parseFloat(data.DenominationData.Card || 0) + parseFloat(data.DenominationData.Credit || 0) + parseFloat(data.DenominationData.CreditNote || 0);
                     printText = printText.replace("{GrandTotal}", grandTotal.toFixed(2));
 
-
                     FinalPrint(printText, undefined, callback);
                 }
 
@@ -802,14 +938,12 @@
                     printText = printText.replace("{cashierName}", data.settlementData[0].userId);
                     printText = printText.replace("{verifyBy}", data.settlementData[0].verifiedBy);
 
-
                     printText = printText.replace("{openingBalance}", "0.00");
                     //variable
 
                     var cash = _.sum(_.pluck(_.filter(data.settlementData, function (i, j) {
                         return i.paymentMode === "Cash";
                     }), "totalAmount"));
-
 
                     var card = _.sum(_.pluck(_.filter(data.settlementData, function (i, j) {
                         return i.paymentMode === "Card";
@@ -820,6 +954,9 @@
                     var creditNote = _.sum(_.pluck(_.filter(data.settlementData, function (i, j) {
                         return i.paymentMode === "CreditNote";
                     }), "totalAmount"));
+                    var fonePay = _.sum(_.pluck(_.filter(data.settlementData, function (i, j) {
+                        return i.paymentMode === "FonePay";
+                    }), "totalAmount"));
 
                     printText = printText.replace("{cashHide}", cash !== undefined && parseFloat(cash) > 0 ? "" : "display-none");
                     printText = printText.replace("{cash}", CurrencyFormat(cash.toString()));
@@ -829,6 +966,8 @@
                     printText = printText.replace("{credit}", CurrencyFormat(credit.toString()));
                     printText = printText.replace("{creditNoteHide}", creditNote !== undefined && parseFloat(creditNote) > 0 ? "" : "display-none");
                     printText = printText.replace("{creditNote}", CurrencyFormat(creditNote.toString()));
+                    printText = printText.replace("{fonePayHide}", fonePay !== undefined && parseFloat(fonePay) > 0 ? "" : "display-none");
+                    printText = printText.replace("{fonePay}", CurrencyFormat(fonePay.toString()));
 
                     var settlementCash = _.filter(data.settlementData, function (v, k) {
                         return v.paymentMode === "Cash";
@@ -841,6 +980,9 @@
                     })[0];
                     var settlementCreditNote = _.filter(data.settlementData, function (v, k) {
                         return v.paymentMode === "CreditNote";
+                    })[0];
+                    var settlementFonePay = _.filter(data.settlementData, function (v, k) {
+                        return v.paymentMode === "FonePay";
                     })[0];
                     printText = printText.replace("{cashAdjHide}", settlementCash !== undefined && parseFloat(settlementCash.adjustmentAmount) > 0 ? "" : "display-none");
                     if (settlementCash !== undefined)
@@ -855,7 +997,6 @@
                     if (settlementCreditNote !== undefined)
                         printText = printText.replace("{creditNoteAdj}", CurrencyFormat(settlementCreditNote.adjustmentAmount.toString()));
 
-
                     printText = printText.replace("{cashSEHide}", settlementCash !== undefined && parseFloat(settlementCash.shortExcessAmount) !== 0 ? "" : "display-none");
                     if (settlementCash !== undefined)
                         printText = printText.replace("{cashShortExcess}", CurrencyFormat(settlementCash.shortExcessAmount.toString()));
@@ -868,24 +1009,19 @@
                     printText = printText.replace("{creditNoteSEHide}", settlementCreditNote !== undefined && parseFloat(settlementCreditNote.shortExcessAmount) !== 0 ? "" : "display-none");
                     if (settlementCreditNote !== undefined)
                         printText = printText.replace("{creditNoteShortExcess}", CurrencyFormat(settlementCreditNote.shortExcessAmount.toString()));
-
-
-
+                    if (settlementFonePay !== undefined)
+                        printText = printText.replace("{fonePayShortExcess}", CurrencyFormat(settlementFonePay.shortExcessAmount.toString()));
 
                     FinalPrint(printText, undefined, callback);
                 }
-
-
             }
         });
     };
     let FinalPrint = (printText, printItemText, callback) => {
-
         $(document.body).find(".main-body").append('<div id="tempprint" ></div>');
         $("#tempprint").html(printText);
         if (printItemText !== undefined)
             $("#tempprint").find("#items").html(printItemText);
-        debugger;
 
         //
 
@@ -906,38 +1042,19 @@
             printable: 'tempprint',
             type: 'html',
             targetStyles: ['*'],
-            onLoadingEnd: function () {               
+            onLoadingEnd: function () {
                 $("#tempprint").remove();
 
                 if (callback !== undefined)
                     setTimeout(callback, 100);
-                   
-
-
             }
         });
     };
 
-    let printwsBill = (str, callback, data, errorcallback, ) => {
-        //var ws;
-        //ws = new WebSocket('ws://127.0.0.1:90');
-        //var state;
-        //ws.addEventListener('open', ws_open(str), false);
-        //ws.addEventListener('close', ws_close(str), false);
-        //function ws_open(text) {
-        //    // alert("Are you sure to print?");
-        //    console.log("printcalled");
-        //    ws.onopen = () => ws.send(text);
-        //    // ws.send(text);
-        //    if (callback !== undefined)
-        //        callback();
-        //}
-        //function ws_close(text) {
-        //    if (errorcallback !== undefined)
-        //        errorcallback(data, callback);
-        //}
+    let printwsBill = (str, callback, data, errorcallback) => {
+       
         try {
-            window.wsSingleton = new Ws()
+            window.wsSingleton = new Ws();
             window.wsSingleton.clientPromise
                 .then(wsClient => {
                     wsClient.send(str);
@@ -946,37 +1063,15 @@
                     if (callback !== undefined)
                         callback();
                 })
-                .catch((error) => {
+                .catch(() => {
                     if (errorcallback !== undefined)
                         errorcallback(data, callback);
                 });
-
-
         } catch{
             alert("error");
         }
 
-
-
-        //var ws;
-        //ws = new WebSocket('ws://127.0.0.1:90');
-        //var state;       
-        //ws.addEventListener('open', ws_open(str), false);
-
-        //function ws_open(text) {
-        //    // alert("Are you sure to print?");
-        //    console.log("printcalled");
-        //    ws.onopen = () => ws.send(text);
-        //    // ws.send(text);
-        //    if (callback !== undefined)
-        //        callback();
-        //}
-
-
     };
-
-
-
 
     //********* Events ************************//
 
@@ -988,7 +1083,6 @@
         PrintDenomination,
         PrintSettlement
     };
-
 })();
 
 printer.init();

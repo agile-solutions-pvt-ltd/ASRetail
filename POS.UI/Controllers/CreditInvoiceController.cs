@@ -1,10 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using POS.Core;
-using POS.DTO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace POS.UI.Controllers
 {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -6,7 +7,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace POS.DTO
 {
     [Table("SALES_INVOICE_TMP")]
-    public partial class SalesInvoiceTmp 
+    [JsonObject(IsReference = true)]
+    public partial class SalesInvoiceTmp
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -42,8 +44,8 @@ namespace POS.DTO
         public decimal? Flat_Discount_Percent { get; set; }
 
 
-       
-        public decimal? Total_Quantity { get; set; } 
+
+        public decimal? Total_Quantity { get; set; }
         public decimal? Total_Gross_Amount { get; set; }
         public decimal? Total_Discount { get; set; }
         public decimal TOTAL_DISCOUNT_EXC_VAT { get; set; } = 0;
@@ -57,7 +59,14 @@ namespace POS.DTO
         public DateTime? Created_Date { get; set; }
         public string Remarks { get; set; }
 
-       // [ForeignKey("Id")]
-       public ICollection<SalesInvoiceItemsTmp> SalesInvoiceItems { get; set; }
+        public decimal FonepayTaxable { get; set; }
+        public decimal FonepayNonTaxable { get; set; }
+        public decimal FonepayTax { get; set; }
+        public decimal FonepayDiscountPercent { get; set; }
+        public decimal FonepayDiscountAmount { get; set; }
+        public decimal FonepayTotalDiscountExcVat { get; set; }
+
+        // [ForeignKey("Id")]
+        public ICollection<SalesInvoiceItemsTmp> SalesInvoiceItems { get; set; }
     }
 }

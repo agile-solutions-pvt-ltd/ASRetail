@@ -1,13 +1,6 @@
-﻿using POS.DTO;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.AspNetCore.Identity;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Protocols;
+using POS.DTO;
 
 namespace POS.Core
 {
@@ -23,7 +16,7 @@ namespace POS.Core
         //}
         //public EntityCore() : base()
         //{
-           
+
 
         //}
 
@@ -54,7 +47,7 @@ namespace POS.Core
         public virtual DbSet<ItemBarCode> ItemBarCode { get; set; }
         public virtual DbSet<ItemPrice> ItemPrice { get; set; }
         public virtual DbSet<ItemDiscount> ItemDiscount { get; set; }
-
+        public virtual DbSet<ItemUpdateTrigger> ItemUpdateTrigger { get; set; }
 
 
 
@@ -72,20 +65,23 @@ namespace POS.Core
 
         public virtual DbSet<TodaySalesInvoicePaymentViewModel> TodaySalesInvoicePaymentViewModels { get; set; }
 
-       
+
 
         public virtual DbSet<User> User { get; set; }
 
 
         public virtual DbSet<InvoiceMaterializedView> InvoiceMaterializedView { get; set; }
 
-       
+
         public virtual DbSet<SpSalesInvoiceAggregateGet> SpSalesInvoiceAggregateGet { get; set; }
 
         public virtual DbSet<SalesInvoiceViewModel> SpSalesInvoiceSel { get; set; }
 
-        
+
         public virtual DbSet<SalesVatBookReport> SalesVatBookReport { get; set; }
+
+        public virtual DbSet<AbbreviatedSalesReport> AbbreviatedSalesReport { get; set; }
+
 
 
         public virtual DbSet<Company> Company { get; set; }

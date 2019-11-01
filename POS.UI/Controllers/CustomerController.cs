@@ -27,7 +27,7 @@ namespace POS.UI.Controllers
         private IMemoryCache _cache;
         private readonly IKendoGrid _kendoGrid;
         private ILogger _logger;
-        public CustomerController(EntityCore context, IMapper mapper, IMemoryCache memoryCache, IKendoGrid kendoGrid,ILoggerFactory loggerFactory)
+        public CustomerController(EntityCore context, IMapper mapper, IMemoryCache memoryCache, IKendoGrid kendoGrid, ILoggerFactory loggerFactory)
         {
             _context = context;
             _mapper = mapper;
@@ -66,7 +66,7 @@ namespace POS.UI.Controllers
             var customerList = await queryable.Skip(skip).Take(pageSize).ToListAsync();
             return Json(new { data = customerList, total = total });
         }
-        
+
         //[HttpPost]
         //public async Task<IActionResult> Index(int pageSize, int skip, Filter filter, IEnumerable<Sort> sort)
         //{
@@ -218,64 +218,26 @@ namespace POS.UI.Controllers
         }
 
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Create(Customer customer)
-        {
-            if (ModelState.IsValid)
-            {
-                if (AddCustomer(customer))
-                {
-                    NavPostData navPost = new NavPostData(_context, _mapper,_logger);
-                    BackgroundJob.Enqueue(() => navPost.PostCustomer());
-                    TempData["StatusMessage"] = "Customer Created Successfully !!";
-                }
-                else
-                    TempData["StatusMessage"] = "Error occor, try again later !!";
-                return RedirectToAction(nameof(Index));
-            }
-            return View(customer);
-        }
-
-        public bool AddCustomer(Customer customer)
-        {
-            try
-            {
-                customer.Code = Guid.NewGuid().ToString();
-                customer.Member_Id = _context.Customer.Where(x => x.Is_Member == true && x.Member_Id != null).Select(x => x.Member_Id).DefaultIfEmpty(0).Max() + 1;
-                Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
-                customer.Membership_Number = store.INITIAL + "-" + Convert.ToInt32(customer.Member_Id).ToString("000000");
-                customer.Created_By = User.Identity.Name;
-                customer.Registration_Date = DateTime.Now;
-                customer.MembershipDiscGroup = "CATEGORY D";
-                customer.CustomerPriceGroup = "RSP";
-                customer.CustomerDiscGroup = "RSP";
-                _context.Add(customer);
-                _context.SaveChanges();
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public IActionResult Create(Customer customer)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        if (CreateMembership(customer))
+        //        {
+        //            NavPostData navPost = new NavPostData(_context, _mapper);
+        //            BackgroundJob.Enqueue(() => navPost.PostCustomer());
+        //            TempData["StatusMessage"] = "Customer Created Successfully !!";
+        //        }
+        //        else
+        //            TempData["StatusMessage"] = "Error occor, try again later !!";
+        //        return RedirectToAction(nameof(Index));
+        //    }
+        //    return View(customer);
+        //}
 
 
-                //update cache
-                IEnumerable<Customer> customers;
-                if (!_cache.TryGetValue("Customers", out customers))
-                {
-                    // Key not in cache, so get data.
-                    customers = _context.Customer.ToList();
-
-                    _cache.Set("Customers", customers);
-                }
-                customers.ToList().Add(customer);
-                _cache.Set("Customer", customers);
-                return true;
-
-            }
-            catch (Exception ex)
-            {
-                if (ex.InnerException.Message.Contains("idx_unique_member_id"))
-                    return AddCustomer(customer);
-                else
-                    return false;
-            }
-        }
 
         //// GET: Customer/Edit/5
         //public async Task<IActionResult> Edit(int? id)
@@ -369,11 +331,29 @@ namespace POS.UI.Controllers
         {
             var value = (Request.Query["filter[filters][0][value]"]).ToString();
 
-            IEnumerable<Customer> customers;
+            IEnumerable<CustomerViewModel> customers;
             if (!_cache.TryGetValue("Customers", out customers))
             {
                 // Key not in cache, so get data.
-                customers = _context.Customer.ToList();
+                customers = _context.Customer
+                    .Select(x => new CustomerViewModel
+                    {
+                        Address = x.Address,
+                        Barcode = x.Barcode,
+                        Code = x.Code,
+                        CustomerDiscGroup = x.CustomerDiscGroup,
+                        CustomerPriceGroup = x.CustomerPriceGroup,
+                        Is_Member = x.Is_Member,
+                        Is_Sale_Refused = x.Is_Sale_Refused,
+                        MembershipDiscGroup = x.MembershipDiscGroup,
+                        Membership_Number = x.Membership_Number,
+                        Membership_Number_Old = x.Membership_Number_Old,
+                        Member_Id = x.Member_Id,
+                        Mobile1 = x.Mobile1,
+                        Name = x.Name,
+                        Type = x.Type,
+                        Vat = x.Vat
+                    }).ToList();
 
                 _cache.Set("Customers", customers);
             }
@@ -382,9 +362,15 @@ namespace POS.UI.Controllers
             return Ok(customers);
         }
 
+        /// <summary>
+        /// Get customer details by customer name or number.
+        /// </summary>
+        /// <param name="text">required string text</param>
+        /// <param name="customer">optional string customer</param>
+        /// <returns>list of customers.</returns>
         public IActionResult SearchMembership(string text, string customer = "")
         {
-            IEnumerable<Customer> customers;
+            IEnumerable<CustomerViewModel> customers;
             //_cache.TryGetValue("Customers", out customers);
             //if (customers == null)
             //{
@@ -393,11 +379,29 @@ namespace POS.UI.Controllers
             //    customers = GetItemsRawData(code).ToList();
             //}
 
+            _cache.TryGetValue("Customers", out customers);
 
-            if (!_cache.TryGetValue("Customers", out customers))
+            if (customers == null)
             {
                 // Key not in cache, so get data.
-                customers = _context.Customer.ToList();
+                customers = _context.Customer.Select(x => new CustomerViewModel
+                {
+                    Address = x.Address,
+                    Barcode = x.Barcode,
+                    Code = x.Code,
+                    CustomerDiscGroup = x.CustomerDiscGroup,
+                    CustomerPriceGroup = x.CustomerPriceGroup,
+                    Is_Member = x.Is_Member,
+                    Is_Sale_Refused = x.Is_Sale_Refused,
+                    MembershipDiscGroup = x.MembershipDiscGroup,
+                    Membership_Number = x.Membership_Number,
+                    Membership_Number_Old = x.Membership_Number_Old,
+                    Member_Id = x.Member_Id,
+                    Mobile1 = x.Mobile1,
+                    Name = x.Name,
+                    Type = x.Type,
+                    Vat = x.Vat
+                }).ToList();
 
                 _cache.Set("Customers", customers);
             }
@@ -405,28 +409,92 @@ namespace POS.UI.Controllers
                 customers = customers.Where(x => x.Is_Member == true);
             else if (customer == "Credit")
                 customers = customers.Where(x => x.Type == "1");
-            
+
             customers = customers.Where(x =>
             (!string.IsNullOrEmpty(x.Name) && x.Name.ToLower().Contains(text)) ||
             (!string.IsNullOrEmpty(x.Membership_Number) && x.Membership_Number.ToLower().Contains(text)) ||
             (!string.IsNullOrEmpty(x.Membership_Number_Old) && x.Membership_Number_Old.ToLower().Contains(text)) ||
             (!string.IsNullOrEmpty(x.Barcode) && x.Barcode.ToLower().Contains(text)) ||
             (!string.IsNullOrEmpty(x.Mobile1) && x.Mobile1.ToLower().Contains(text)));
-            customers.OrderBy(x => new { x.Membership_Number, x.Mobile1,x.Name});
-            customers.Take(50);
+            // customers = customers.OrderBy(x => new { x.Membership_Number_Old, x.Membership_Number, x.Mobile1, x.Name }).ToList();
+            customers = customers
+                .OrderBy(x => x.Membership_Number_Old)
+                .ThenBy(x => x.Membership_Number)
+                .ThenBy(x => x.Mobile1)
+                .ThenBy(x => x.Name)
+                .Take(50);
             return Ok(customers);
         }
 
         public IActionResult GetMembershipByNumber(string MembershipNumber)
         {
-            IEnumerable<Customer> customers = customers = _context.Customer.Where(x => x.Is_Member == true && x.Membership_Number == MembershipNumber);
+
+            IEnumerable<CustomerViewModel> customers;
+            _cache.TryGetValue("Customers", out customers);
+            if (customers == null)
+            {
+                // Key not in cache, so get data.
+                customers = _context.Customer
+                    .Where(x => x.Is_Member == true && x.Membership_Number == MembershipNumber)
+                    .Select(x => new CustomerViewModel
+                    {
+                        Address = x.Address,
+                        Barcode = x.Barcode,
+                        Code = x.Code,
+                        CustomerDiscGroup = x.CustomerDiscGroup,
+                        CustomerPriceGroup = x.CustomerPriceGroup,
+                        Is_Member = x.Is_Member,
+                        Is_Sale_Refused = x.Is_Sale_Refused,
+                        MembershipDiscGroup = x.MembershipDiscGroup,
+                        Membership_Number = x.Membership_Number,
+                        Membership_Number_Old = x.Membership_Number_Old,
+                        Member_Id = x.Member_Id,
+                        Mobile1 = x.Mobile1,
+                        Name = x.Name,
+                        Type = x.Type,
+                        Vat = x.Vat
+                    });
+            }
+            customers = customers.Where(x => x.Is_Member == true && x.Membership_Number == MembershipNumber);
 
             return Ok(customers);
         }
 
+        /// <summary>
+        /// Get Customer details by customer number.
+        /// </summary>
+        /// <param name="MembershipNumber">Membership number required. (string)</param>
+        /// <returns>Customer's detail.</returns>
         public IActionResult GetCustomerByNumber(string MembershipNumber)
         {
-            IEnumerable<Customer> customers = customers = _context.Customer.Where(x => x.Membership_Number == MembershipNumber);
+            IEnumerable<CustomerViewModel> customers;
+            _cache.TryGetValue("Customers", out customers);
+            if (customers == null)
+            {
+                // Key not in cache, so get data.
+                customers = _context.Customer
+                    .Where(x => x.Membership_Number == MembershipNumber)
+                    .Select(x => new CustomerViewModel
+                    {
+                        Address = x.Address,
+                        Barcode = x.Barcode,
+                        Code = x.Code,
+                        CustomerDiscGroup = x.CustomerDiscGroup,
+                        CustomerPriceGroup = x.CustomerPriceGroup,
+                        Is_Member = x.Is_Member,
+                        Is_Sale_Refused = x.Is_Sale_Refused,
+                        MembershipDiscGroup = x.MembershipDiscGroup,
+                        Membership_Number = x.Membership_Number,
+                        Membership_Number_Old = x.Membership_Number_Old,
+                        Member_Id = x.Member_Id,
+                        Mobile1 = x.Mobile1,
+                        Name = x.Name,
+                        Type = x.Type,
+                        Vat = x.Vat
+                    });
+            }
+            else
+                customers = customers.Where(x => x.Membership_Number == MembershipNumber);
 
             return Ok(customers);
         }
@@ -451,6 +519,18 @@ namespace POS.UI.Controllers
                     customer.Member_Id = _context.Customer.Where(x => x.Is_Member == true && x.Member_Id != null).Select(x => x.Member_Id).DefaultIfEmpty(0).Max() + 1;
                     Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
                     customer.Membership_Number = store.INITIAL + "-" + Convert.ToInt32(customer.Member_Id).ToString("000000");
+                    //check number series already
+                    Customer isCustomerExist = _context.Customer.FirstOrDefault(x => x.Membership_Number == customer.Membership_Number);
+                    if (isCustomerExist != null)
+                    {
+                        if (isCustomerExist.Member_Id != customer.Member_Id)
+                        {
+                            isCustomerExist.Member_Id = customer.Member_Id;
+                            _context.Entry(isCustomerExist).State = EntityState.Modified;
+                            _context.SaveChanges();
+                        }
+                        return CreateMembership(customer);
+                    }
                     customer.Created_By = User.Identity.Name;
                     customer.Registration_Date = DateTime.Now;
                     customer.CustomerDiscGroup = "RSP";
@@ -462,18 +542,53 @@ namespace POS.UI.Controllers
                     _context.SaveChanges();
 
                     //update cache
-                    IList<Customer> customers;
+                    IList<CustomerViewModel> customers;
                     if (!_cache.TryGetValue("Customers", out customers))
                     {
                         // Key not in cache, so get data.
-                        customers = _context.Customer.ToList();
+                        customers = _context.Customer
+                    .Select(x => new CustomerViewModel
+                    {
+                        Address = x.Address,
+                        Barcode = x.Barcode,
+                        Code = x.Code,
+                        CustomerDiscGroup = x.CustomerDiscGroup,
+                        CustomerPriceGroup = x.CustomerPriceGroup,
+                        Is_Member = x.Is_Member,
+                        Is_Sale_Refused = x.Is_Sale_Refused,
+                        MembershipDiscGroup = x.MembershipDiscGroup,
+                        Membership_Number = x.Membership_Number,
+                        Membership_Number_Old = x.Membership_Number_Old,
+                        Member_Id = x.Member_Id,
+                        Mobile1 = x.Mobile1,
+                        Name = x.Name,
+                        Type = x.Type,
+                        Vat = x.Vat
+                    }).ToList();
 
-                        _cache.Set("Customers", customers);
+
                     }
-                    customers.Add(customer);
+                    customers.Add(new CustomerViewModel()
+                    {
+                        Address = customer.Address,
+                        Barcode = customer.Barcode,
+                        Code = customer.Code,
+                        CustomerDiscGroup = customer.CustomerDiscGroup,
+                        CustomerPriceGroup = customer.CustomerPriceGroup,
+                        Is_Member = customer.Is_Member,
+                        Is_Sale_Refused = customer.Is_Sale_Refused,
+                        MembershipDiscGroup = customer.MembershipDiscGroup,
+                        Membership_Number = customer.Membership_Number,
+                        Membership_Number_Old = customer.Membership_Number_Old,
+                        Member_Id = customer.Member_Id,
+                        Mobile1 = customer.Mobile1,
+                        Name = customer.Name,
+                        Type = customer.Type,
+                        Vat = customer.Vat
+                    });
                     _cache.Set("Customer", customers);
 
-                    NavPostData navPost = new NavPostData(_context, _mapper,_logger);
+                    NavPostData navPost = new NavPostData(_context, _mapper);
                     BackgroundJob.Enqueue(() => navPost.PostCustomer());
                     return Ok(new { StatusMessage = "Membership Created Successfully !!", Membership = customer });
                 }
@@ -481,8 +596,10 @@ namespace POS.UI.Controllers
                 {
                     if (ex.Message.Contains("'UniqueMobileNumber") || ex.InnerException.Message.Contains("UniqueMobileNumber"))
                         return StatusCode(409, new { StatusMessage = "Mobile Number Already Register !!" });
-                    else if (ex.Message.Contains("idx_unique_member_id") || ex.InnerException.Message.Contains("idx_unique_member_id"))
+                    else if (ex.Message.Contains("idx_unique_member_id") || ex.InnerException.Message.Contains("idx_unique_member_id") &&
+                             ex.Message.Contains("duplicate") || ex.InnerException.Message.Contains("duplicate"))
                         return CreateMembership(customer);
+
                     else
                         return StatusCode(500, new { StatusMessage = ex.Message });
 
@@ -500,11 +617,29 @@ namespace POS.UI.Controllers
         {
             var value = (Request.Query["filter[filters][0][value]"]).ToString();
 
-            IEnumerable<Customer> customers;
+            IEnumerable<CustomerViewModel> customers;
             if (!_cache.TryGetValue("Customers", out customers))
             {
                 // Key not in cache, so get data.
-                customers = _context.Customer.ToList();
+                customers = _context.Customer
+                    .Select(x => new CustomerViewModel
+                    {
+                        Address = x.Address,
+                        Barcode = x.Barcode,
+                        Code = x.Code,
+                        CustomerDiscGroup = x.CustomerDiscGroup,
+                        CustomerPriceGroup = x.CustomerPriceGroup,
+                        Is_Member = x.Is_Member,
+                        Is_Sale_Refused = x.Is_Sale_Refused,
+                        MembershipDiscGroup = x.MembershipDiscGroup,
+                        Membership_Number = x.Membership_Number,
+                        Membership_Number_Old = x.Membership_Number_Old,
+                        Member_Id = x.Member_Id,
+                        Mobile1 = x.Mobile1,
+                        Name = x.Name,
+                        Type = x.Type,
+                        Vat = x.Vat
+                    }).ToList();
 
                 _cache.Set("Customers", customers);
             }

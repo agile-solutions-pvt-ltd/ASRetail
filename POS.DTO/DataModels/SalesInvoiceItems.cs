@@ -1,6 +1,4 @@
-﻿using POS.DTO;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -38,6 +36,10 @@ namespace POS.DTO
         public bool IsNavSync { get; set; }
         public int SyncErrorCount { get; set; } = 0;
         public DateTime? NavSyncDate { get; set; }
+
+
+        public decimal FonepayDiscountPercent { get; set; }
+        public decimal FonepayDiscountAmount { get; set; }
 
         [ForeignKey("Invoice_Id")]
         public SalesInvoice Invoice { get; set; }

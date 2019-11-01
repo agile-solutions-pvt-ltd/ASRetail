@@ -61,7 +61,7 @@ namespace POS.UI.Controllers
         public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
         {
             ViewData["ReturnUrl"] = null;
-            _logger.LogInformation("access login page");           
+            //_logger.LogInformation("access login page");           
             if (ModelState.IsValid)
             {
                 if (model.ClientDate.ToShortDateString() != DateTime.Now.ToShortDateString())
@@ -101,11 +101,15 @@ namespace POS.UI.Controllers
                     }
                     //get user role
                     var role = _context.UserViewModel.FirstOrDefault(x => x.UserName == user.UserName);
+                    var rolePermission = _context.RoleWisePermission.FirstOrDefault(x => x.RoleId == role.RoleId || x.RoleId == role.Role);
+
 
                     //save to session 
+                    HttpContext.Session.SetString("Role", JsonConvert.SerializeObject(role));
                     HttpContext.Session.SetString("TotalMenu", JsonConvert.SerializeObject(_context.Menu));
                     HttpContext.Session.SetString("Menus", JsonConvert.SerializeObject(_context.RoleWiseMenuPermission.Where(x => x.RoleId == role.Role).Include(x => x.Menu)));
                     HttpContext.Session.SetString("Store", JsonConvert.SerializeObject(store));
+                    HttpContext.Session.SetString("RolePermission", JsonConvert.SerializeObject(rolePermission));
                     if (model.TerminalId != 0)
                     {
                         HttpContext.Session.SetString("TerminalId", model.TerminalId.ToString());
@@ -120,7 +124,7 @@ namespace POS.UI.Controllers
 
                         //var roleName = User.FindFirstValue(ClaimTypes.Role);
                         //var role = _roleManager.FindByNameAsync(roleName);
-                        var rolePermission = _context.RoleWisePermission.FirstOrDefault(x => x.RoleId == role.RoleId);
+
                         bool requireTerminalToLogin = rolePermission == null ? false : rolePermission.Require_Terminal_To_Login;
                         if (requireTerminalToLogin)
                         {
@@ -207,7 +211,7 @@ namespace POS.UI.Controllers
                     //await _emailSender.SendEmailAsync(model.Email, "Confirm your account",
                     //    "Please confirm your account by clicking this link: <a href=\"" + callbackUrl + "\">link</a>");
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    _logger.LogInformation(3, "User created a new account with password.");
+                    // _logger.LogInformation(3, "User created a new account with password.");
                     return RedirectToAction("Index", "Home", new { Area = "" });
                 }
                 AddErrors(result);
@@ -226,7 +230,7 @@ namespace POS.UI.Controllers
             config.LoggedInUsers.Remove(User.Identity.Name);
             ConfigJSON.Write(config);
             await _signInManager.SignOutAsync();
-            _logger.LogInformation(4, "User logged out.");
+            // _logger.LogInformation(4, "User logged out.");
             Response.Cookies.Append(User.Identity.Name, "", new CookieOptions()
             {
                 Expires = DateTime.Now.AddDays(-1)
@@ -273,7 +277,7 @@ namespace POS.UI.Controllers
             var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
             if (result.Succeeded)
             {
-                _logger.LogInformation(5, "User logged in with {Name} provider.", info.LoginProvider);
+                // _logger.LogInformation(5, "User logged in with {Name} provider.", info.LoginProvider);
                 return RedirectToLocal(returnUrl);
             }
             if (result.RequiresTwoFactor)
@@ -766,7 +770,7 @@ namespace POS.UI.Controllers
             RoleWisePermissionCommon data = new RoleWisePermissionCommon();
             if (id != null)
             {
-                var role = _context.UserViewModel.FirstOrDefault(x => x.RoleId == id|| x.Role == id);
+                var role = _context.UserViewModel.FirstOrDefault(x => x.RoleId == id || x.Role == id);
                 data.roleWiseUserPermission = _context.RoleWisePermission.FirstOrDefault(x => x.RoleId == id || x.RoleId == role.Role);
                 data.roleWiseMenuPermissions = _context.RoleWiseMenuPermission.Where(x => x.RoleId == id || x.RoleId == role.Role).ToList();
             }
@@ -813,12 +817,12 @@ namespace POS.UI.Controllers
         [HttpGet]
         public IActionResult RoleWiseUserPermission()
         {
-            var userName = User.Identity.Name;
-            var role = _context.UserViewModel.FirstOrDefault(x => x.UserName == User.Identity.Name);
+            //var userName = User.Identity.Name;
+            //var role = _context.UserViewModel.FirstOrDefault(x => x.UserName == User.Identity.Name);
             RoleWisePermissionCommon data = new RoleWisePermissionCommon();
-            if (role != null)
+            if (HttpContext.Session.GetString("RolePermission") != null)
             {
-                data.roleWiseUserPermission = _context.RoleWisePermission.FirstOrDefault(x => x.RoleId == role.RoleId || x.RoleId == role.Role);
+                data.roleWiseUserPermission = JsonConvert.DeserializeObject<RoleWisePermission>(HttpContext.Session.GetString("RolePermission"));//_context.RoleWisePermission.FirstOrDefault(x => x.RoleId == role.RoleId || x.RoleId == role.Role);
                 // data.roleWiseMenuPermissions = _context.RoleWiseMenuPermission.Where(x => x.RoleId == id).ToList();
             }
             return Ok(data);
@@ -827,17 +831,10 @@ namespace POS.UI.Controllers
         [HttpGet]
         public IActionResult RoleWiseMenuPermission()
         {
-            //var roleName = ((ClaimsIdentity)User.Identity).Claims
-            //     .Where(c => c.Type == ClaimTypes.Role)
-            //     .Select(c => c.Value).FirstOrDefault();
-            var userName = User.Identity.Name;
-            var role = _context.UserViewModel.FirstOrDefault(x => x.UserName == User.Identity.Name);
-            //var role = _roleManager.FindByNameAsync(roleName);
-            //var roleId = role.Result.Id;
-            IList<RoleWiseMenuPermission> permission = _context.RoleWiseMenuPermission.Where(x => x.RoleId == role.RoleId || x.RoleId == role.Role).Include(x => x.Menu).ToList();
 
-
-            HttpContext.Session.SetString("Menus", JsonConvert.SerializeObject(permission));
+            IList<RoleWiseMenuPermission> permission = new List<RoleWiseMenuPermission>();
+            if (HttpContext.Session.GetString("Menus") != null)
+                permission = JsonConvert.DeserializeObject<List<RoleWiseMenuPermission>>(HttpContext.Session.GetString("Menus"));
             return Ok(permission);
         }
         #endregion

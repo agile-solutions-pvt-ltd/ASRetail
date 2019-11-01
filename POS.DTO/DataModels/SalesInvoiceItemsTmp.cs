@@ -1,6 +1,4 @@
-﻿using POS.DTO;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -34,6 +32,9 @@ namespace POS.DTO
         public decimal? Net_Amount { get; set; }
         public bool? Is_Vatable { get; set; } = false;
         public string Remarks { get; set; }
+
+        public decimal FonepayDiscountPercent { get; set; }
+        public decimal FonepayDiscountAmount { get; set; }
 
         [ForeignKey("Invoice_Id")]
         public SalesInvoiceTmp Invoice { get; set; }

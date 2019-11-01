@@ -19,7 +19,7 @@ using System.Reflection;
 
 namespace POS.UI.Controllers
 {
-    [SessionAuthorized]
+   
     public class SettingsController : Controller
     {
         private readonly EntityCore _context;
@@ -64,6 +64,7 @@ namespace POS.UI.Controllers
             return RedirectToAction("Index");
         }
 
+        [SessionAuthorized]
         public IActionResult GetMenu()
         {
 
@@ -94,17 +95,23 @@ namespace POS.UI.Controllers
         public IActionResult SchedulerSetup()
         {
             ViewData["Scheduler"] = ConfigJSON.Read();
-            IList<Customer> customer;
+            IList<CustomerViewModel> customer;
             _cache.TryGetValue("Customers", out customer);
             if (customer != null)
+            {
                 ViewData["IsCustomerCache"] = true;
+                ViewData["CustomerCacheCount"] = customer.Count();
+            }
             else
                 ViewData["IsCustomerCache"] = false;
 
             IList<ItemViewModel> item;
             _cache.TryGetValue("ItemViewModel", out item);
             if (item != null)
+            {
                 ViewData["IsItemCache"] = true;
+                ViewData["ItemCacheCount"] = item.Count();
+            }
             else
                 ViewData["IsItemCache"] = false;
 
@@ -126,7 +133,7 @@ namespace POS.UI.Controllers
         {
             if (!string.IsNullOrEmpty(name))
             {
-                NavSync sync = new NavSync(_context, _mapper, _userManager, _roleManager, _cache,Configuration);
+                NavSync sync = new NavSync(_context, _mapper, _userManager, _roleManager, _cache, Configuration);
                 Type t = sync.GetType();
                 MethodInfo method = t.GetMethod(name);
                 var result = (bool)method.Invoke(sync, null);
@@ -139,15 +146,15 @@ namespace POS.UI.Controllers
             return StatusCode(400);
         }
 
-
+        [AutomaticRetry(Attempts = 0)]
         public IActionResult PostInvoiceToNAV()
         {
-            NavPostData sync = new NavPostData(_context, _mapper, _logger);
+            NavPostData sync = new NavPostData(_context, _mapper);
             Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
             //sync.PostSalesInvoice(store);
             //sync.PostSalesInvoice(store);
             BackgroundJob.Enqueue(() => sync.PostSalesInvoice(store));
-            BackgroundJob.Enqueue(() => Console.WriteLine("test from background"));
+            // BackgroundJob.Enqueue(() => Console.WriteLine("test from background"));
             var data = new
             {
                 Status = 200,
@@ -155,9 +162,10 @@ namespace POS.UI.Controllers
             };
             return Ok(data);
         }
+        [AutomaticRetry(Attempts = 0)]
         public IActionResult PostCreditNoteToNAV()
         {
-            NavPostData sync = new NavPostData(_context, _mapper, _logger);
+            NavPostData sync = new NavPostData(_context, _mapper);
             Store store = JsonConvert.DeserializeObject<Store>(HttpContext.Session.GetString("Store"));
             //sync.PostSalesInvoice(store);
 
@@ -169,10 +177,100 @@ namespace POS.UI.Controllers
             };
             return Ok(data);
         }
+        [AutomaticRetry(Attempts = 0)]
         public IActionResult PostCustomerToNAV()
         {
-            NavPostData sync = new NavPostData(_context, _mapper,_logger);
+            NavPostData sync = new NavPostData(_context, _mapper);
             BackgroundJob.Enqueue(() => sync.PostCustomer());
+            var data = new
+            {
+                Status = 200,
+                Message = "Success"
+            };
+            return Ok(data);
+        }
+        [AutomaticRetry(Attempts = 0)]
+        [AllowAnonymous]
+        public IActionResult PostUnSyncInvoiceToNav()
+        {
+            NavPostData sync = new NavPostData(_context, _mapper);
+            Store store = _context.Store.FirstOrDefault();
+            //sync.PostSalesInvoice(store);
+            //sync.PostSalesInvoice(store);
+            BackgroundJob.Enqueue(() => sync.PostCustomer());
+            BackgroundJob.Enqueue(() => sync.PostUnSyncInvoie(store));
+            // BackgroundJob.Enqueue(() => Console.WriteLine("test from background"));
+            var data = new
+            {
+                Status = 200,
+                Message = "Success"
+            };
+            return Ok(data);
+        }
+        public IActionResult PostUnSyncInvoiceToNavSchedulerStart()
+        {
+            // RecurringJob.AddOrUpdate(() => PostCustomerToNAV(), Cron.Daily);
+            RecurringJob.AddOrUpdate(() => PostUnSyncInvoiceToNav(), "15 17 * * *");
+
+            var data = new
+            {
+                Status = 200,
+                Message = "Success"
+            };
+            return Ok(data);
+        }
+        public IActionResult DeleteSalesOrder()
+        {
+            NavPostData sync = new NavPostData(_context, _mapper);
+           
+            //sync.PostSalesInvoice(store);
+            //sync.PostSalesInvoice(store);
+            BackgroundJob.Enqueue(() => sync.DeleteSalesOrder());
+            // BackgroundJob.Enqueue(() => Console.WriteLine("test from background"));
+            var data = new
+            {
+                Status = 200,
+                Message = "Success"
+            };
+            return Ok(data);
+        }
+
+        [AutomaticRetry(Attempts = 0)]
+        [AllowAnonymous]
+        public IActionResult PostUnSyncCreditNoteToNav()
+        {
+            NavPostData sync = new NavPostData(_context, _mapper);
+            Store store = _context.Store.FirstOrDefault();
+            
+            BackgroundJob.Enqueue(() => sync.PostUnSyncCreditMemo(store));
+            // BackgroundJob.Enqueue(() => Console.WriteLine("test from background"));
+            var data = new
+            {
+                Status = 200,
+                Message = "Success"
+            };
+            return Ok(data);
+        }
+        public IActionResult PostUnSyncCreditNoteToNavSchedulerStart()
+        {
+            // RecurringJob.AddOrUpdate(() => PostCustomerToNAV(), Cron.Daily);
+            RecurringJob.AddOrUpdate(() => PostUnSyncCreditNoteToNav(), "15 17 * * *");
+
+            var data = new
+            {
+                Status = 200,
+                Message = "Success"
+            };
+            return Ok(data);
+        }
+        public IActionResult DeleteCreditNote()
+        {
+            NavPostData sync = new NavPostData(_context, _mapper);
+
+            //sync.PostSalesInvoice(store);
+            //sync.PostSalesInvoice(store);
+            BackgroundJob.Enqueue(() => sync.DeleteCreditMemo());
+            // BackgroundJob.Enqueue(() => Console.WriteLine("test from background"));
             var data = new
             {
                 Status = 200,
@@ -185,6 +283,7 @@ namespace POS.UI.Controllers
 
         ////////********** scheduling jobs
         ///[HttpGet]
+        [SessionAuthorized]
         public IActionResult APISetup()
         {
             ViewData["API"] = ConfigJSON.Read();
@@ -198,15 +297,27 @@ namespace POS.UI.Controllers
             data.SchedulerDuration = config.SchedulerDuration;
             data.ClientPort = config.ClientPort;
             data.Environment = config.Environment;
+            data.FonePayCheckStatusUrl = config.FonePayCheckStatusUrl;
+            data.FonePayDiscountActive = config.FonePayDiscountActive;
+            data.FonePayDiscountLimit = config.FonePayDiscountLimit;
+            data.FonePayDiscountPercent = config.FonePayDiscountPercent;
+            data.FonePayGenerateQRUrl = config.FonePayGenerateQRUrl;
+            data.FonePayMerchantCode = config.FonePayMerchantCode;
+            data.FonePayPassword = config.FonePayPassword;
+            data.FonePaySecretKey = config.FonePaySecretKey;
+            data.FonePayUserName = config.FonePayUserName;
+            data.OfficeHourStart = config.OfficeHourStart;
+            data.OfficeHourEnd = config.OfficeHourEnd;
+
             ConfigJSON.Write(data);
             return Ok();
         }
 
-       
+
         public IActionResult NAVTestConnection()
         {
             Config config = ConfigJSON.Read();
-            NavSync sync = new NavSync(_context, _mapper, _userManager, _roleManager, _cache,Configuration);
+            NavSync sync = new NavSync(_context, _mapper, _userManager, _roleManager, _cache, Configuration);
             var result = sync.TestNavConnection();
 
             if (result is string && result != "Success")
@@ -220,7 +331,7 @@ namespace POS.UI.Controllers
 
 
 
-
+        [SessionAuthorized]
         public IActionResult DatabaseBackupRestore()
         {
             return View();
@@ -258,17 +369,17 @@ namespace POS.UI.Controllers
         //transaction type: 1 = Sales, 2 = Tax Invoice, 2 = Credit Note Invoice
         public IActionResult NavUnsyncedInvoiceByTransaction(int transactionType)
         {
-            if(transactionType == 1)
+            if (transactionType == 1)
             {
                 var list = _context.SalesInvoice.Where(x => x.IsNavSync == false && x.Trans_Type == "Sales");
                 return Ok(list);
             }
-            else if(transactionType == 2)
+            else if (transactionType == 2)
             {
                 var list = _context.SalesInvoice.Where(x => x.IsNavSync == false && x.Trans_Type == "Tax");
                 return Ok(list);
             }
-            else if(transactionType == 3)
+            else if (transactionType == 3)
             {
                 var list = _context.CreditNote
                     .Where(x => x.IsNavSync == false)
@@ -288,5 +399,9 @@ namespace POS.UI.Controllers
                 return BadRequest();
             }
         }
+
+
+
+
     }
 }

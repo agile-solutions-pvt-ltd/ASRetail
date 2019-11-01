@@ -2,14 +2,11 @@
 using Hangfire;
 using Hangfire.Dashboard;
 using Hangfire.SqlServer;
-using Hangfire.Storage;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -98,7 +95,9 @@ namespace POS.UI
             });
 
 
+#pragma warning disable CS0618 // 'ServiceCollectionExtensions.AddAutoMapper(IServiceCollection)' is obsolete: 'This overload is error prone and it will be removed. Please pass the assemblies to scan explicitly. You can use AppDomain.CurrentDomain.GetAssemblies() if that works for you.'
             services.AddAutoMapper();
+#pragma warning restore CS0618 // 'ServiceCollectionExtensions.AddAutoMapper(IServiceCollection)' is obsolete: 'This overload is error prone and it will be removed. Please pass the assemblies to scan explicitly. You can use AppDomain.CurrentDomain.GetAssemblies() if that works for you.'
             services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
             services.AddResponseCompression(options =>
             {
@@ -106,7 +105,12 @@ namespace POS.UI
                 options.EnableForHttps = true;
             });
 
-            services.AddMemoryCache();
+            services.AddMemoryCache(options =>
+            {
+                options.CompactionPercentage = 1;
+               
+
+            });
             services.AddResponseCaching();
 
             services.AddSingleton<IKendoGrid, KendoGrid>();
@@ -114,7 +118,7 @@ namespace POS.UI
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                 .AddJsonOptions(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore); ;
 
-           
+
             services.AddSingleton<InMemoryCache>();
 
             services.AddSession(options =>
@@ -145,7 +149,10 @@ namespace POS.UI
     {
         PrepareSchemaIfNecessary = true,
         CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-        QueuePollInterval = TimeSpan.FromMinutes(30),
+        QueuePollInterval = TimeSpan.Zero,
+        JobExpirationCheckInterval = TimeSpan.FromMinutes(30),
+        CountersAggregateInterval = TimeSpan.FromMinutes(5),
+
         UseRecommendedIsolationLevel = true,
         UsePageLocksOnDequeue = true,
         DisableGlobalLocks = true
@@ -167,7 +174,7 @@ namespace POS.UI
             //}
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles();           
+            app.UseStaticFiles();
             app.UseSession();
             app.UseCookiePolicy();
             app.UseResponseCompression();
@@ -176,19 +183,24 @@ namespace POS.UI
 
 
             app.UseAuthentication();
-            app.UseHangfireServer();
-            app.UseResponseCaching();
 
+            app.UseResponseCaching();
+            var options = new BackgroundJobServerOptions
+            {
+                WorkerCount = 2,//Environment.ProcessorCount,
+                HeartbeatInterval = TimeSpan.FromMinutes(5)
+            };
+            app.UseHangfireServer(options);
             app.UseHangfireDashboard(options: new DashboardOptions()
             {
                 Authorization = new IDashboardAuthorizationFilter[]
            {
                  new Helper.HangFireAuthorizationFilter()
            },
-                StatsPollingInterval = 30000
+                StatsPollingInterval = 600000
             });
-           
-           
+
+
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
@@ -198,6 +210,7 @@ namespace POS.UI
 
             Task t = CreateUserRoles(service);
             t.Wait();
+            ClearAnyPendingJob();
 
 
 
@@ -205,11 +218,11 @@ namespace POS.UI
             // RecurringJob.AddOrUpdate(() => POSScheduler(), Cron.Daily);
 
 
-           
+
         }
 
 
-        
+
         private async Task CreateUserRoles(IServiceProvider serviceProvider)
         {
             var RoleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -241,11 +254,16 @@ namespace POS.UI
             await UserManager.RemoveFromRolesAsync(user, roles.ToArray());
             await UserManager.AddToRoleAsync(user, "Administrator");
         }
+        private void ClearAnyPendingJob()
+        {
+            //sql to delete and create hangfiredatabase
+            JobStorage.Current?.GetMonitoringApi()?.PurgeJobs();
+        }
 
 
 
     }
 
 
-  
+
 }

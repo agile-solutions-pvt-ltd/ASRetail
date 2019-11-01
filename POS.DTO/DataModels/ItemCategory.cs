@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
 namespace POS.DTO
 {
@@ -11,8 +9,8 @@ namespace POS.DTO
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
-        public string Id { get; set; }                    
-        public string Code { get; set; }  
+        public string Id { get; set; }
+        public string Code { get; set; }
         public string ParentCode { get; set; }
         public string Name { get; set; }
         [Display(Name = "Modified Date")]
@@ -20,6 +18,6 @@ namespace POS.DTO
         public int Order { get; set; }
         public bool HasChild { get; set; }
         public DateTime ModifiedDate { get; set; } = DateTime.Now;
-       
+
     }
 }

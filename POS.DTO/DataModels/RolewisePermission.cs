@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace POS.DTO
 {
     [Table("ROLEWISE_PERMISSION")]
-    public partial class RoleWisePermission 
+    public partial class RoleWisePermission
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        [Display(Name ="Role")]
+        [Display(Name = "Role")]
         public string RoleId { get; set; }
         [Display(Name = "Sales Discount Flat")]
         public bool Sales_Discount_Flat_Item { get; set; } = false;
@@ -31,5 +29,8 @@ namespace POS.DTO
         public bool Require_Terminal_To_Login { get; set; }
         [Display(Name = "Sales Rate Commission Right")]
         public bool Sales_Rate_Commission_Right { get; set; } = false;
+        [Display(Name = "FonePay Right")]
+        public bool FonePay { get; set; } = false;
+        public bool FonePayDiscountActive { get; set; }
     }
 }

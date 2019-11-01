@@ -93,8 +93,11 @@
                                     <button type="button" id="filer" value="Filter" class="btn btn-sm btn-primary"> Filter</button>
 
                                 </div>
-                                <div class="form-group col-md-2 pt-3">
+                                <div class="form-group col-md-1 pt-3">
                                     <input type="button" class="btn btn-success btn-sm" id="print" value="Print" />
+                                </div>
+                                <div class="form-group col-md-2 pt-3">
+                                    <button class="btn btn-success btn-sm" id="export">Export &nbsp;<span class="fa fa-file-excel-o"></span></button>
                                 </div>
                             </div>
                             <hr />
@@ -297,7 +300,25 @@
                 window.location.href = url;
             });
 
+             $("#export").on("click", function () {
+                var tT = new XMLSerializer().serializeToString(document.querySelector('table')); //Serialised table
+                var tF = 'Invoice Material View.xls'; //Filename
+                var tB = new Blob([tT]); //Blub
 
+                if (window.navigator.msSaveOrOpenBlob) {
+                    //Store Blob in IE
+                    window.navigator.msSaveOrOpenBlob(tB, tF)
+                }
+                else {
+                    //Store Blob in others
+                    var tA = document.body.appendChild(document.createElement('a'));
+                    tA.href = URL.createObjectURL(tB);
+                    tA.download = tF;
+                    tA.style.display = 'none';
+                    tA.click();
+                    tA.parentNode.removeChild(tA)
+                }
+            })
 
 
         });

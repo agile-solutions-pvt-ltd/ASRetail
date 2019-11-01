@@ -78,7 +78,7 @@
                                                 Customer
                                                 @if (@ViewBag.IsCustomerCache)
                                 {
-                                                <span class="pcoded-badge label label-primary">Cached</span>
+                                                <span class="pcoded-badge label label-primary" >Cached</span>
                                 }
                                             </td>
                                             <td> <input type="number" class="form-control form-control-sm interval interval-Customer" value="@ViewBag.Scheduler.SchedulerDuration.Customer" /></td>
@@ -103,7 +103,7 @@
                                                 Items
                                                 @if (@ViewBag.IsItemCache)
                                 {
-                                                <span class="pcoded-badge label label-primary">Cached</span>
+                                                <span class="pcoded-badge label label-primary" title="@ViewBag.ItemCacheCount">Cached</span>
                                 }
 
 

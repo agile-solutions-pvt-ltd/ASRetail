@@ -11,7 +11,7 @@
 
 
 
-    <environment exclude="Development">
+    <environment exclude="Production">
         <!-- Required Fremwork -->
 
         <link href="~/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
@@ -22,14 +22,14 @@
 
 
         @*<link href="~/lib/nepali.datepicker/nepali.datepicker.v2.2.min.css" rel="stylesheet" />
-        <link href="~/lib/datatable/datatables.min.css" rel="stylesheet" />*@
+            <link href="~/lib/datatable/datatables.min.css" rel="stylesheet" />*@
 
         <!--icons  -->
         <link rel="stylesheet" type="text/css" href="~/icon/themify-icons/themify-icons.css">
         @*<link rel="stylesheet" type="text/css" href="~/icon/icofont/css/icofont.css">
-        <link rel="stylesheet" type="text/css" href="~/css/linearicons.css">
-        <link rel="stylesheet" type="text/css" href="~/css/simple-line-icons.css">
-        <link rel="stylesheet" type="text/css" href="~/css/ionicons.css">*@
+            <link rel="stylesheet" type="text/css" href="~/css/linearicons.css">
+            <link rel="stylesheet" type="text/css" href="~/css/simple-line-icons.css">
+            <link rel="stylesheet" type="text/css" href="~/css/ionicons.css">*@
         <link href="~/lib/font-awesome/css/font-awesome.css" rel="stylesheet" />
 
         @*<link rel="stylesheet" type="text/css" href="~/css/jquery.mCustomScrollbar.css">*@
@@ -50,6 +50,9 @@
 
 
 
+    </environment>
+    <environment include="Production">
+        <link rel="stylesheet" href="~/css/main.min.css" />
     </environment>
 </head>
 <body>
@@ -83,7 +86,7 @@
     </div>
 
 
-    <environment exclude="Development">
+    <environment exclude="Production">
         @*<script src="~/js/main.min.js"></script>*@
 
 
@@ -93,7 +96,7 @@
         <script src="~/lib/jquery-ui/jquery-ui.min.js" asp-append-version="true"></script>
         <script src="~/lib/popper.js/js/popper.min.js" asp-append-version="true"></script>
         <script src="~/lib/bootstrap/js/bootstrap.min.js" asp-append-version="true"></script>
-
+        <script src="~/lib/math/math.min.js" asp-append-version="true"></script>
 
         <script src="~/lib/bootstrap-treeview/js/bootstrap-treeview.js" asp-append-version="true"></script>
 
@@ -104,8 +107,8 @@
         <script src="~/lib/moment/js/moment.min.js" asp-append-version="true"></script>
 
         @*<script src="~/lib/jquery.mCustomScrollbar.concat/jquery.mCustomScrollbar.concat.min.js"></script>
-        <script src="~/lib/jquery.mCustomScrollbar.concat/jquery.mousewheel.min.js"></script>
-        <script src="~/js/jquery.mCustomScrollbar.concat.min.js"></script>*@
+            <script src="~/lib/jquery.mCustomScrollbar.concat/jquery.mousewheel.min.js"></script>
+            <script src="~/js/jquery.mCustomScrollbar.concat.min.js"></script>*@
 
         <script src="~/lib/kendo-ui/jszip.min.js" asp-append-version="true"></script>
         <script src="~/lib/modernizr/js/modernizr.js" asp-append-version="true"></script>
@@ -148,20 +151,13 @@
 
         @*<script src="~/lib/datatable/datatables.min.js"></script>*@
         <script src="~/lib/nepali.datepicker/nepali.datepicker.v2.2.min.js" asp-append-version="true"></script>
+        <script src="~/lib/jquery.qrcode/jquery.qrcode.js"></script>
+        <script src="~/lib/jquery.qrcode/qrcode.js"></script>
 
         <script src="~/js/site.js" asp-append-version="true"></script>
-
-
-
-
-
-
-
-
-
-
-
-
+    </environment>
+    <environment include="Production">
+        <script src="~/js/main.min.js" asp-append-version="true"></script>
     </environment>
 
     @RenderSection("Scripts", required: false)

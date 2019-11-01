@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace POS.DTO
+﻿namespace POS.DTO
 {
-   public class PrintViewModel
+    public class PrintViewModel
     {
         public string CompanyName { get; set; }
         public string Address { get; set; }

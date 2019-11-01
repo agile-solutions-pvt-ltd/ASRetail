@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
 namespace POS.DTO
 {
@@ -13,7 +10,7 @@ namespace POS.DTO
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string ID { get; set; }
         [Required]
-        [Display(Name ="Initial")]
+        [Display(Name = "Initial")]
         public string INITIAL { get; set; }
         [Display(Name = "Store Name")]
         public string NAME { get; set; }

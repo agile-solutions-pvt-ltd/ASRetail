@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace POS.Core.Helpers
 {
-   
+
 
     public static class Cast
     {
@@ -27,8 +26,8 @@ namespace POS.Core.Helpers
             object value;
             foreach (var memberInfo in members)
             {
-                propertyInfo = typeof(T).GetProperty(memberInfo.Name);                
-                value = myobj.GetType().GetProperty(memberInfo.Name).GetValue(myobj, null);                
+                propertyInfo = typeof(T).GetProperty(memberInfo.Name);
+                value = myobj.GetType().GetProperty(memberInfo.Name).GetValue(myobj, null);
                 propertyInfo.SetValue(x, value, null);
             }
             return (T)x;
